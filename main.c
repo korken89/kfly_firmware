@@ -13,10 +13,6 @@ int main(void)
 	halInit();
 	chSysInit();
 
-	/*
-	 * Normal main() thread activity, in this demo it does nothing except
-	 * sleeping in a loop and check the button state.
-	 */
 	while (1) 
 	{
 	}
