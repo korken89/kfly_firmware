@@ -25,6 +25,8 @@ local.properties
 
 # GCC
 *.o
+*.d
+*.lst
 *.elf
 *.map
 .goutputstream*
