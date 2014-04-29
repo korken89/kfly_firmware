@@ -24,7 +24,7 @@
 /*
  * Board identifier.
  */
-#define BOARD_ST_STM32F4_DISCOVERY
+#define BOARD_KFLY
 #define BOARD_NAME                  "KFly v3.1"
 
 
