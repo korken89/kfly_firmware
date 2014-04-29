@@ -63,6 +63,12 @@ endif
 # Define project name here
 PROJECT = kfly
 
+# Create include paths and find sources of all the modules
+MODULES = $(wildcard ./modules/*)
+$(foreach dir, $(MODULES) , $(eval MODULES_INC += $(dir)/inc))
+$(foreach dir, $(MODULES), $(eval MODULES_CSRCS += $(wildcard $(dir)/src/*.c)))
+$(foreach dir, $(MODULES), $(eval MODULES_ASRCS += $(wildcard $(dir)/src/*.s)))
+
 # Imported source files and paths
 CHIBIOS = ../ChibiOS-RT
 include board/board.mk
@@ -73,8 +79,8 @@ include $(CHIBIOS)/os/kernel/kernel.mk
 #include $(CHIBIOS)/test/test.mk
 
 # Define linker script file here
-LDSCRIPT= $(PORTLD)/STM32F407xG.ld
-#LDSCRIPT= $(PORTLD)/STM32F407xG_CCM.ld
+#LDSCRIPT= $(PORTLD)/STM32F407xG.ld
+LDSCRIPT= $(PORTLD)/STM32F407xG_CCM.ld
 
 # C sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
@@ -86,7 +92,8 @@ CSRC = $(PORTSRC) \
        $(BOARDSRC) \
        $(CHIBIOS)/os/various/shell.c \
        $(CHIBIOS)/os/various/chprintf.c \
-       main.c
+       main.c \
+       $(MODULES_CSRCS)
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
@@ -113,11 +120,11 @@ TCSRC =
 TCPPSRC =
 
 # List ASM source files here
-ASMSRC = $(PORTASM)
+ASMSRC = $(PORTASM) $(MODULES_ASRCS)
 
 INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
          $(HALINC) $(PLATFORMINC) $(BOARDINC) \
-         $(CHIBIOS)/os/various
+         $(CHIBIOS)/os/various $(MODULES_INC)
 
 #
 # Project, sources and paths
