@@ -146,3 +146,11 @@ const SerialUSBConfig serusbcfg = {
   USBD1_DATA_AVAILABLE_EP,
   USBD1_INTERRUPT_REQUEST_EP
 };
+
+bool_t isUSBActive(void)
+{
+	if (serusbcfg.usbp->state == USB_ACTIVE)
+		return TRUE;
+	else
+		return FALSE;
+}

@@ -16,5 +16,6 @@ extern const USBConfig usbcfg;
 extern const SerialUSBConfig serusbcfg;
 
 /* Global functions */
+bool_t isUSBActive(void);
 
 #endif
