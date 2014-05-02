@@ -1,5 +1,6 @@
 /* *
  *
+ * Abstraction Layer for MPU6050 Accelerometer & Gyroscope
  *
  * */
 
