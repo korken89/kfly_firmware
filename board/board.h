@@ -25,7 +25,9 @@
  * Board identifier.
  */
 #define BOARD_KFLY
-#define BOARD_NAME                  "KFly v3.1"
+#define BOARD_NAME                  "KFly"
+#define BOARD_MAJOR_VERSION         3
+#define BOARD_MINOR_VERSION         1
 
 
 /*
@@ -88,8 +90,8 @@
 #define GPIOB_CONTROL_IN2           14
 #define GPIOB_CONTROL_IN3           15
 
-#define GPIOC_LED_U2                0
-#define GPIOC_LED_U1                1
+#define GPIOC_LED_ERR               0
+#define GPIOC_LED_USR               1
 #define GPIOC_PIN2                  2
 #define GPIOC_PIN3                  3
 #define GPIOC_FLASH_SEL             4
@@ -478,8 +480,8 @@
 /*
  * GPIOC setup:
  *
- * PC0  - LED_U2                    (input pullup).
- * PC1  - LED_U1                    (input pullup).
+ * PC0  - LED_ERR                   (input pullup).
+ * PC1  - LED_USR                   (input pullup).
  * PC2  - PIN2                      (input pullup).
  * PC3  - PIN3                      (input pullup).
  * PC4  - FLASH_SEL                 (input pullup).
@@ -495,8 +497,8 @@
  * PC14 - IRQ_MPU                   (input pullup).
  * PC15 - IRQ_RF                    (input pullup).
  */
-#define VAL_GPIOC_MODER             (PIN_MODE_OUTPUT(GPIOC_LED_U2) |            \
-                                     PIN_MODE_OUTPUT(GPIOC_LED_U1) |            \
+#define VAL_GPIOC_MODER             (PIN_MODE_OUTPUT(GPIOC_LED_ERR) |           \
+                                     PIN_MODE_OUTPUT(GPIOC_LED_USR) |           \
                                      PIN_MODE_INPUT(GPIOC_PIN2) |               \
                                      PIN_MODE_INPUT(GPIOC_PIN3) |               \
                                      PIN_MODE_OUTPUT(GPIOC_FLASH_SEL) |         \
@@ -512,8 +514,8 @@
                                      PIN_MODE_INPUT(GPIOC_IRQ_MPU) |            \
                                      PIN_MODE_INPUT(GPIOC_IRQ_RF))
 
-#define VAL_GPIOC_OTYPER            (PIN_OTYPE_PUSHPULL(GPIOC_LED_U2) |         \
-                                     PIN_OTYPE_PUSHPULL(GPIOC_LED_U1) |         \
+#define VAL_GPIOC_OTYPER            (PIN_OTYPE_PUSHPULL(GPIOC_LED_ERR) |        \
+                                     PIN_OTYPE_PUSHPULL(GPIOC_LED_USR) |        \
                                      PIN_OTYPE_PUSHPULL(GPIOC_PIN2) |           \
                                      PIN_OTYPE_PUSHPULL(GPIOC_PIN3) |           \
                                      PIN_OTYPE_PUSHPULL(GPIOC_FLASH_SEL) |      \
@@ -529,8 +531,8 @@
                                      PIN_OTYPE_PUSHPULL(GPIOC_IRQ_MPU) |        \
                                      PIN_OTYPE_PUSHPULL(GPIOC_IRQ_RF))
 
-#define VAL_GPIOC_OSPEEDR           (PIN_OSPEED_2M(GPIOC_LED_U2) |              \
-                                     PIN_OSPEED_2M(GPIOC_LED_U1) |              \
+#define VAL_GPIOC_OSPEEDR           (PIN_OSPEED_2M(GPIOC_LED_ERR) |             \
+                                     PIN_OSPEED_2M(GPIOC_LED_USR) |             \
                                      PIN_OSPEED_100M(GPIOC_PIN2) |              \
                                      PIN_OSPEED_100M(GPIOC_PIN3) |              \
                                      PIN_OSPEED_2M(GPIOC_FLASH_SEL) |           \
@@ -546,8 +548,8 @@
                                      PIN_OSPEED_100M(GPIOC_IRQ_MPU) |           \
                                      PIN_OSPEED_100M(GPIOC_IRQ_RF))
 
-#define VAL_GPIOC_PUPDR             (PIN_PUPDR_PULLUP(GPIOC_LED_U2) |           \
-                                     PIN_PUPDR_PULLUP(GPIOC_LED_U1) |           \
+#define VAL_GPIOC_PUPDR             (PIN_PUPDR_PULLUP(GPIOC_LED_ERR) |          \
+                                     PIN_PUPDR_PULLUP(GPIOC_LED_USR) |          \
                                      PIN_PUPDR_PULLUP(GPIOC_PIN2) |             \
                                      PIN_PUPDR_PULLUP(GPIOC_PIN3) |             \
                                      PIN_PUPDR_PULLUP(GPIOC_FLASH_SEL) |        \
@@ -563,8 +565,8 @@
                                      PIN_PUPDR_PULLUP(GPIOC_IRQ_MPU) |          \
                                      PIN_PUPDR_PULLUP(GPIOC_IRQ_RF))
 
-#define VAL_GPIOC_ODR               (PIN_ODR_HIGH(GPIOC_LED_U2) |       \
-                                     PIN_ODR_HIGH(GPIOC_LED_U1) |       \
+#define VAL_GPIOC_ODR               (PIN_ODR_HIGH(GPIOC_LED_ERR) |      \
+                                     PIN_ODR_HIGH(GPIOC_LED_USR) |      \
                                      PIN_ODR_HIGH(GPIOC_PIN2) |         \
                                      PIN_ODR_HIGH(GPIOC_PIN3) |         \
                                      PIN_ODR_HIGH(GPIOC_FLASH_SEL) |    \
@@ -580,8 +582,8 @@
                                      PIN_ODR_HIGH(GPIOC_IRQ_MPU) |      \
                                      PIN_ODR_HIGH(GPIOC_IRQ_RF))
 
-#define VAL_GPIOC_AFRL              (PIN_AFIO_AF(GPIOC_LED_U2, 0) |         \
-                                     PIN_AFIO_AF(GPIOC_LED_U1, 0) |         \
+#define VAL_GPIOC_AFRL              (PIN_AFIO_AF(GPIOC_LED_ERR, 0) |        \
+                                     PIN_AFIO_AF(GPIOC_LED_USR, 0) |        \
                                      PIN_AFIO_AF(GPIOC_PIN2, 0) |           \
                                      PIN_AFIO_AF(GPIOC_PIN3, 0) |           \
                                      PIN_AFIO_AF(GPIOC_FLASH_SEL, 0) |      \

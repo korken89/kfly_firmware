@@ -62,4 +62,6 @@ void __early_init(void) {
  * @todo    Add your board-specific code, if any.
  */
 void boardInit(void) {
+  palClearPad(GPIOC, GPIOC_LED_USR);
+  palClearPad(GPIOC, GPIOC_LED_ERR);
 }
