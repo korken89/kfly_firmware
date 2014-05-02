@@ -1,6 +1,48 @@
 #include "ch.h"
 #include "hal.h"
 #include "myusb.h"
+#include "mpu6050.h"
+#include "hmc5983.h"
+
+/* I2C interface #2 Configuration */
+static const I2CConfig i2cfg2 = {
+	OPMODE_I2C,
+	400000,
+	FAST_DUTY_CYCLE_2,
+};
+
+/* MPU6050 Configuration */
+static const MPU6050_Configuration mpu6050cfg = {
+	MPU6050_DLPF_BW_42,				/* Digital low-pass filter config 	*/
+	MPU6050_EXT_SYNC_DISABLED,		/* External sync config 			*/
+	MPU6050_GYRO_FS_2000,			/* Gyro range config 				*/
+	MPU6050_ACCEL_FS_16,			/* Accel range config 				*/
+	MPU6050_FIFO_DISABLED,			/* FIFO config 						*/
+	MPU6050_INTMODE_ACTIVEHIGH | \
+	MPU6050_INTDRIVE_PUSHPULL  | \
+	MPU6050_INTLATCH_50USPULSE | \
+	MPU6050_INTCLEAR_ANYREAD,		/* Interrupt config 				*/
+	MPU6050_INTDRDY_ENABLE,			/* Interrupt enable config 			*/
+	MPU6050_ADDRESS_AD0_HIGH,		/* MPU6050 address 					*/
+	MPU6050_CLK_X_REFERENCE,		/* Clock reference 					*/
+	4,								/* Sample rate divider 				*/
+	&I2CD2							/* Pointer to I2C Driver 			*/
+};
+
+static const HMC5983_Configuration hmc5983cfg = {
+	HMC5983_TEMPERATURE_ENABLE,		/* Enable/disable temperatuer sensor */
+	HMC5983_AVERAGE_8_SAMPLE,		/* Sample averaging */
+	HMC5983_DATA_RATE_75D0_HZ,		/* Output data rate */
+	HMC5983_MEAS_MODE_NORMAL,		/* Measurement mode */
+	HMC5983_GAIN_1D3_GA,			/* Gain */
+	HMC5983_OP_MODE_CONTINOUS,		/* Operating mode */
+	HMC5983_I2C_FAST_DISABLE,		/* Enable/disable 3.4 MHz I2C */
+	HMC5983_LOW_POWER_DISABLE,		/* Enable/disable low power mode */
+	HMC5983_ADDRESS,				/* HMC5983 address */
+	&I2CD2							/* Pointer to I2C Driver */
+};
+
+void panic(void);
 
 int main(void)
 {
@@ -23,10 +65,38 @@ int main(void)
 	/*
 	 * Activates the USB driver and then the USB bus pull-up on D+.
 	 */
+	usbDisconnectBus(serusbcfg.usbp);
+	chThdSleepMilliseconds(500);
 	usbStart(serusbcfg.usbp, &usbcfg);
 	usbConnectBus(serusbcfg.usbp);
 
-	while (1) 
+	/*
+	 * Start I2C and set up sensors
+	 */
+	i2cStart(&I2CD2, &i2cfg2);
+
+	if (MPU6050Init(&mpu6050cfg) != RDY_OK)
+		panic(); /* Initialization failed */
+
+	if (HMC5983Init(&hmc5983cfg) != RDY_OK)
+		panic(); /* Initialization failed */
+	
+	while(1)
 	{
+		palClearPad(GPIOC, GPIOC_LED_USR);
+		chThdSleepMilliseconds(500);
+		palSetPad(GPIOC, GPIOC_LED_USR);
+		chThdSleepMilliseconds(500);
+	}
+}
+
+void panic(void)
+{
+	while (1)
+	{
+		palClearPad(GPIOC, GPIOC_LED_ERR);
+		chThdSleepMilliseconds(200);
+		palSetPad(GPIOC, GPIOC_LED_ERR);
+		chThdSleepMilliseconds(200);
 	}
 }
