@@ -241,7 +241,6 @@ typedef struct
 	uint8_t clock_reference;
 	uint8_t sample_rate_divider;
 	I2CDriver *i2cp;
-	bool_t configured;
 } MPU6050_Configuration;
 
 /* Global variable defines */
