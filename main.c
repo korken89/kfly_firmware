@@ -57,6 +57,7 @@ static const HMC5983_Configuration hmc5983cfg = {
 	&I2CD2							/* Pointer to I2C Driver 			 */
 };
 
+/* External interrupt configuration */
 static const EXTConfig extcfg = {
 	{
 		{EXT_CH_MODE_DISABLED, NULL},
@@ -74,11 +75,11 @@ static const EXTConfig extcfg = {
 		{EXT_CH_MODE_DISABLED, NULL},
 		{EXT_CH_MODE_RISING_EDGE    |
 		 EXT_CH_MODE_AUTOSTART 		|
-		 EXT_MODE_GPIOC, HMC5983cb}, 	/* 13: HMC5983 IRQ */
+		 EXT_MODE_GPIOC, HMC5983cb}, 	/* 13: HMC5983 IRQ 		*/
 		{EXT_CH_MODE_FALLING_EDGE   |
 		 EXT_CH_MODE_AUTOSTART 		|
-		 EXT_MODE_GPIOC, MPU6050cb}, 	/* 14: MPU6050 IRQ */
-		{EXT_CH_MODE_DISABLED, NULL}, 	/* 15: RF Module IRQ */
+		 EXT_MODE_GPIOC, MPU6050cb}, 	/* 14: MPU6050 IRQ 		*/
+		{EXT_CH_MODE_DISABLED, NULL}, 	/* 15: RF Module IRQ 	*/
 		{EXT_CH_MODE_DISABLED, NULL},
 		{EXT_CH_MODE_DISABLED, NULL},
 		{EXT_CH_MODE_DISABLED, NULL},
@@ -133,13 +134,17 @@ int main(void)
 	chSysInit();
 
 	/*
+	 *
      * Initializes a serial-over-USB CDC driver.
+     * 
    	 */
 	sduObjectInit(&SDU1);
 	sduStart(&SDU1, &serusbcfg);
 
 	/*
+	 *
 	 * Activates the USB driver and then the USB bus pull-up on D+.
+	 * 
 	 */
 	usbDisconnectBus(serusbcfg.usbp);
 	chThdSleepMilliseconds(500);
@@ -147,27 +152,39 @@ int main(void)
 	usbConnectBus(serusbcfg.usbp);
 
 	/*
+	 *
 	 * Start I2C and set up sensors
+	 * 
 	 */
 	i2cStart(&I2CD2, &i2cfg2);
 
+	/* Initialize Accelerometer and Gyroscope */
 	if (MPU6050Init(&mpu6050cfg) != RDY_OK)
 		panic(); /* Initialization failed */
 
+	/* Initialize Magnetometer */
 	if (HMC5983Init(&hmc5983cfg) != RDY_OK)
 		panic(); /* Initialization failed */
 	
+	/* Initialize Barometer */
+	/* TODO: Add barometer code */
+
+	/* Initialize sensor readout */
 	if (SensorReadInit(&mpu6050cfg, &hmc5983cfg,
 					   &mpu6050cal, &hmc5983cal) != RDY_OK)
 		panic(); /* Initialization failed */
 
 	/*
+	 *
 	 * Start the external interrupts
+	 * 
 	 */
 	extStart(&EXTD1, &extcfg);
 
 	/*
+	 *
 	 * Start test thread
+	 * 
 	 */
 	chThdCreateStatic(	waThreadTestEvents,
 						sizeof(waThreadTestEvents), 
