@@ -91,11 +91,13 @@ static msg_t ThreadSensorRead(void *arg)
 	while (1)
 	{
 		/* Waiting for an IRQ to happen.*/
-		events = chEvtWaitAny((eventmask_t)(MPU6050_DATA_AVAILABLE_MASK | 
-											HMC5983_DATA_AVAILABLE_MASK | 
-											MS5611_DATA_AVAILABLE_MASK));
+		events = chEvtWaitAny((eventmask_t)(MPU6050_DATA_AVAILABLE_EVENTMASK | 
+											HMC5983_DATA_AVAILABLE_EVENTMASK | 
+											MS5611_DATA_AVAILABLE_EVENTMASK));
 
-		if (events & MPU6050_DATA_AVAILABLE_MASK)
+		
+
+		if (events & MPU6050_DATA_AVAILABLE_EVENTMASK)
 		{
 			/* Read the data */
 			MPU6050ReadData(prv_mpu6050cfg, temp_data);
@@ -120,12 +122,17 @@ static msg_t ThreadSensorRead(void *arg)
 			/* Unlock the data structure */
 			chMtxUnlock();
 
+
+
 			/* Broadcast new data available */
-			chEvtBroadcastFlags(&prv_mpu6050cfg->data_holder->es,
-								(flagsmask_t)MPU6050_DATA_AVAILABLE_MASK);
+			chSysLock();
+			if (chEvtIsListeningI(&prv_mpu6050cfg->data_holder->es))
+				chEvtBroadcastFlagsI(&prv_mpu6050cfg->data_holder->es,
+									 (flagsmask_t)MPU6050_DATA_AVAILABLE_EVENTMASK);
+			chSysUnlock();
 		}
 
-		if (events & HMC5983_DATA_AVAILABLE_MASK)
+		if (events & HMC5983_DATA_AVAILABLE_EVENTMASK)
 		{
 			/* Read the data */
 			HMC5983ReadData(prv_hmc5983cfg, temp_data);
@@ -146,11 +153,14 @@ static msg_t ThreadSensorRead(void *arg)
 			chMtxUnlock();
 
 			/* Broadcast new data available */
-			chEvtBroadcastFlags(&prv_hmc5983cfg->data_holder->es,
-								(flagsmask_t)HMC5983_DATA_AVAILABLE_MASK);
+			chSysLock();
+			if (chEvtIsListeningI(&prv_hmc5983cfg->data_holder->es))
+				chEvtBroadcastFlagsI(&prv_hmc5983cfg->data_holder->es,
+									 (flagsmask_t)HMC5983_DATA_AVAILABLE_EVENTMASK);
+			chSysUnlock();
 		}
 
-		if (events & MS5611_DATA_AVAILABLE_MASK)
+		if (events & MS5611_DATA_AVAILABLE_EVENTMASK)
 		{
 
 		}
@@ -230,7 +240,7 @@ void MPU6050cb(EXTDriver *extp, expchannel_t channel)
 	{
 		/* Wakes up the sensor read thread */
 		chSysLockFromIsr();
-		chEvtSignalI(tp, (eventmask_t)MPU6050_DATA_AVAILABLE_MASK);
+		chEvtSignalI(tp, (eventmask_t)MPU6050_DATA_AVAILABLE_EVENTMASK);
 		chSysUnlockFromIsr();
 	}
 }
@@ -244,7 +254,7 @@ void HMC5983cb(EXTDriver *extp, expchannel_t channel)
 	{
 		/* Wakes up the sensor read thread */
 		chSysLockFromIsr();
-		chEvtSignalI(tp, (eventmask_t)HMC5983_DATA_AVAILABLE_MASK);
+		chEvtSignalI(tp, (eventmask_t)HMC5983_DATA_AVAILABLE_EVENTMASK);
 		chSysUnlockFromIsr();
 	}
 }

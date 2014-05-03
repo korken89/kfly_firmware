@@ -2,7 +2,7 @@
 #define __SENSOR_READ_H
 
 /* Defines */
-#define MS5611_DATA_AVAILABLE_MASK		0x04
+#define MS5611_DATA_AVAILABLE_EVENTMASK		0x04
 
 /* Typedefs */
 
