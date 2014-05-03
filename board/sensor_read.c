@@ -30,6 +30,9 @@ static Thread *tp = NULL;
 /* Temporary holder of sensor data */
 static uint8_t temp_data[14];
 
+/* Working area for the sensor read thread */
+static WORKING_AREA(waThreadSensorRead, 128);
+
 /* Private function defines */
 static void ApplyCalibration(	Sensor_Calibration *cal,
 								int16_t raw_data[3], 
@@ -39,13 +42,96 @@ static void MPU6050ConvertAndSave(	MPU6050_Data *dh,
 									uint8_t data[14]);
 static void HMC5983ConvertAndSave(	HMC5983_Data *dh, 
 									uint8_t data[6]);
+static msg_t ThreadSensorRead(void *arg);
 
 /* Private external functions */
 
-/*
- * Sensor readout thread
+/**
+ * @brief Initializes the sensor read thread and config pointers
+ * 
+ * @param[in] mpu6050cfg Pointer to MPU6050 config
+ * @param[in] hmc5983cfg Pointer to HMC5983 config
+ * 
+ * @return RDY_OK if the initialization was successful
  */
-static WORKING_AREA(waThreadSensorRead, 128);
+msg_t SensorReadInit(const MPU6050_Configuration *mpu6050cfg,
+					 const HMC5983_Configuration *hmc5983cfg)
+{
+	prv_mpu6050cfg = mpu6050cfg;
+	prv_hmc5983cfg = hmc5983cfg;
+
+	/* Initialize read thread */
+	chThdCreateStatic(	waThreadSensorRead,
+						sizeof(waThreadSensorRead), 
+						HIGHPRIO, 
+						ThreadSensorRead, 
+						NULL);
+
+	return RDY_OK;
+}
+
+/**
+ * @brief MPU6050 external interrupt callback
+ * 
+ * @param[in] extp 		Pointer to EXT Driver
+ * @param[in] channel 	EXT Channel whom fired the interrupt
+ */
+void MPU6050cb(EXTDriver *extp, expchannel_t channel)
+{
+	(void)extp;
+	(void)channel;
+
+	if (tp != NULL)
+	{
+		/* Wakes up the sensor read thread */
+		chSysLockFromIsr();
+		chEvtSignalI(tp, (eventmask_t)MPU6050_DATA_AVAILABLE_EVENTMASK);
+		chSysUnlockFromIsr();
+	}
+}
+
+/**
+ * @brief HMC5983 external interrupt callback
+ * 
+ * @param[in] extp 		Pointer to EXT Driver
+ * @param[in] channel 	EXT Channel whom fired the interrupt
+ */
+void HMC5983cb(EXTDriver *extp, expchannel_t channel)
+{
+	(void)extp;
+	(void)channel;
+
+	if (tp != NULL)
+	{
+		/* Wakes up the sensor read thread */
+		chSysLockFromIsr();
+		chEvtSignalI(tp, (eventmask_t)HMC5983_DATA_AVAILABLE_EVENTMASK);
+		chSysUnlockFromIsr();
+	}
+}
+
+/**
+ * @brief Converts two bytes in 2's complement form to a signed 16-bit value
+ * 
+ * @param[in] msb Most significant byte
+ * @param[in] lsb Least significant byte
+ * 
+ * @return Signed 16-bit value
+ */
+int16_t twoscomplement2signed(uint8_t msb, uint8_t lsb)
+{
+	return (int16_t)((((uint16_t)msb) << 8) | ((uint16_t)lsb));
+}
+
+
+/* Private functions */
+
+/**
+ * @brief Reads data from the sensors whom have new data available
+ * 
+ * @param[in] arg Unused.
+ * @return Never arrives at the return value.
+ */
 static msg_t ThreadSensorRead(void *arg)
 {
 	(void)arg;
@@ -61,8 +147,6 @@ static msg_t ThreadSensorRead(void *arg)
 		events = chEvtWaitAny((eventmask_t)(MPU6050_DATA_AVAILABLE_EVENTMASK | 
 											HMC5983_DATA_AVAILABLE_EVENTMASK | 
 											MS5611_DATA_AVAILABLE_EVENTMASK));
-
-		
 
 		if (events & MPU6050_DATA_AVAILABLE_EVENTMASK)
 		{
@@ -136,22 +220,17 @@ static msg_t ThreadSensorRead(void *arg)
 	return RDY_OK;
 }
 
-msg_t SensorReadInit(const MPU6050_Configuration *mpu6050cfg,
-					 const HMC5983_Configuration *hmc5983cfg)
-{
-	prv_mpu6050cfg = mpu6050cfg;
-	prv_hmc5983cfg = hmc5983cfg;
-
-	/* Initialize read thread */
-	chThdCreateStatic(	waThreadSensorRead,
-						sizeof(waThreadSensorRead), 
-						HIGHPRIO, 
-						ThreadSensorRead, 
-						NULL);
-
-	return RDY_OK;
-}
-
+/**
+ * @brief Applies sensor calibration to raw data values.
+ * 
+ * @details The calibration will provide unity output to the reference
+ * 			vector. Use senor_gain to get correct output relative to reality.
+ * 
+ * @param[in] cal Pointer to calibration structure
+ * @param[in] raw_data Pointer to the raw data array
+ * @param[out] calibrated_data Pointer to the calibrated data array
+ * @param[in] sensor_gain The gain of the sensor after calibration
+ */
 static void ApplyCalibration(	Sensor_Calibration *cal,
 								int16_t raw_data[3], 
 								float calibrated_data[3],
@@ -175,6 +254,12 @@ static void ApplyCalibration(	Sensor_Calibration *cal,
 	
 }
 
+/**
+ * @brief Converts raw MPU6050 sensor data to signed 16-bit values
+ * 
+ * @param[out] dh Pointer to data holder structure
+ * @param[in] data Pointer to temporary raw data holder
+ */
 static void MPU6050ConvertAndSave(	MPU6050_Data *dh, 
 									uint8_t data[14])
 {
@@ -189,6 +274,12 @@ static void MPU6050ConvertAndSave(	MPU6050_Data *dh,
 	dh->raw_accel_data[2] = twoscomplement2signed(data[12], data[13]);
 }
 
+/**
+ * @brief Converts raw HMC5983 sensor data to signed 16-bit values
+ * 
+ * @param[out] dh Pointer to data holder structure
+ * @param[in] data Pointer to temporary raw data holder
+ */
 static void HMC5983ConvertAndSave(	HMC5983_Data *dh, 
 									uint8_t data[6])
 {
@@ -196,37 +287,4 @@ static void HMC5983ConvertAndSave(	HMC5983_Data *dh,
 	dh->raw_mag_data[2] = twoscomplement2signed(data[2], data[3]);
 	dh->raw_mag_data[1] = twoscomplement2signed(data[4], data[5]);
 
-}
-
-void MPU6050cb(EXTDriver *extp, expchannel_t channel)
-{
-	(void)extp;
-	(void)channel;
-
-	if (tp != NULL)
-	{
-		/* Wakes up the sensor read thread */
-		chSysLockFromIsr();
-		chEvtSignalI(tp, (eventmask_t)MPU6050_DATA_AVAILABLE_EVENTMASK);
-		chSysUnlockFromIsr();
-	}
-}
-
-void HMC5983cb(EXTDriver *extp, expchannel_t channel)
-{
-	(void)extp;
-	(void)channel;
-
-	if (tp != NULL)
-	{
-		/* Wakes up the sensor read thread */
-		chSysLockFromIsr();
-		chEvtSignalI(tp, (eventmask_t)HMC5983_DATA_AVAILABLE_EVENTMASK);
-		chSysUnlockFromIsr();
-	}
-}
-
-int16_t twoscomplement2signed(uint8_t msb, uint8_t lsb)
-{
-	return (int16_t)((((uint16_t)msb) << 8) | ((uint16_t)lsb));
 }

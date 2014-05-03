@@ -15,6 +15,12 @@
 
 /* Private external functions */
 
+/**
+ * @brief Initializes the MPU6050 sensor
+ * 
+ * @param[in] cfg Pointer to configuration structure
+ * @return RDY_OK if the initialization was successful
+ */
 msg_t MPU6050Init(const MPU6050_Configuration *cfg)
 {
 	static uint8_t txbuf[2];
@@ -174,6 +180,12 @@ msg_t MPU6050Init(const MPU6050_Configuration *cfg)
 	return status;
 }
 
+/**
+ * @brief Resets the MPU6050 sensor and the internal signal paths
+ * 
+ * @param[in] cfg Pointer to configuration structure
+ * @return RDY_OK if the initialization was successful
+ */
 msg_t MPU6050DeviceReset(const MPU6050_Configuration *cfg)
 {
 	static uint8_t txbuf[2] = {MPU6050_RA_PWR_MGMT_1, MPU6050_DEVICE_RESET};
@@ -220,6 +232,14 @@ msg_t MPU6050DeviceReset(const MPU6050_Configuration *cfg)
 	return status;
 }
 
+/**
+ * @brief Reads the ID of the MPU6050 sensor
+ * 
+ * @param[in] cfg Pointer to configuration structure
+ * @param[out] id Pointer to where the single byte id will be saved
+ *  
+ * @return RDY_OK if the initialization was successful
+ */
 msg_t MPU6050GetID(const MPU6050_Configuration *cfg, uint8_t id[1])
 {
 	static uint8_t txbuf[1] = {MPU6050_RA_WHO_AM_I};
@@ -242,6 +262,14 @@ msg_t MPU6050GetID(const MPU6050_Configuration *cfg, uint8_t id[1])
 	return status;
 }
 
+/**
+ * @brief Reads the data registers of the MPU6050
+ *
+ * @param[in] cfg Pointer to configuration structure
+ * @param[out] data Pointer to where the data will be saved
+ * 
+ * @return [description]
+ */
 msg_t MPU6050ReadData(const MPU6050_Configuration *cfg, uint8_t data[14])
 {
 	static uint8_t txbuf[1] = {MPU6050_RA_ACCEL_XOUT_H};
@@ -261,6 +289,12 @@ msg_t MPU6050ReadData(const MPU6050_Configuration *cfg, uint8_t data[14])
 	return status;
 }
 
+/**
+ * @brief Get the gain of the accelerometer
+ * 
+ * @param[in] cfg Pointer to configuration structure
+ * @return The gain of the accelerometer
+ */
 float MPU6050GetAccelGain(const MPU6050_Configuration *cfg)
 {
 	if (cfg->gyro_range_sel == MPU6050_ACCEL_FS_2)
@@ -279,6 +313,12 @@ float MPU6050GetAccelGain(const MPU6050_Configuration *cfg)
 		return 0.0f;
 }
 
+/**
+ * @brief Get the gain of the gyroscope
+ * 
+ * @param[in] cfg Pointer to configuration structure
+ * @return The gain of the gyroscope
+ */
 float MPU6050GetGyroGain(const MPU6050_Configuration *cfg)
 {
 	if (cfg->gyro_range_sel == MPU6050_GYRO_FS_250)

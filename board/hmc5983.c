@@ -15,6 +15,12 @@
 
 /* Private external functions */
 
+/**
+ * @brief Initializes the HMC5983 sensor
+ * 
+ * @param[in] cfg Pointer to configuration structure
+ * @return RDY_OK if the initialization was successful
+ */
 msg_t HMC5983Init(const HMC5983_Configuration *cfg)
 {
 	static uint8_t txbuf[2];
@@ -84,6 +90,14 @@ msg_t HMC5983Init(const HMC5983_Configuration *cfg)
 	return status;
 }
 
+/**
+ * @brief Reads the ID of the HMC5983 sensor
+ * 
+ * @param[in] cfg Pointer to configuration structure
+ * @param[out] id Pointer to where the three byte id will be saved
+ * 
+ * @return [description]
+ */
 msg_t HMC5983GetID(const HMC5983_Configuration *cfg, uint8_t id[3])
 {
 	static uint8_t txbuf[1] = {HMC5983_RA_ID_A};
@@ -103,6 +117,14 @@ msg_t HMC5983GetID(const HMC5983_Configuration *cfg, uint8_t id[3])
 	return status;
 }
 
+/**
+ * @brief Reads the data registers of the HMC5983
+ *
+ * @param[in] cfg Pointer to configuration structure
+ * @param[out] data Pointer to where the data will be saved
+ * 
+ * @return [description]
+ */
 msg_t HMC5983ReadData(const HMC5983_Configuration *cfg, uint8_t data[6])
 {
 	static uint8_t txbuf[1] = {HMC5983_RA_DATAX_H};
