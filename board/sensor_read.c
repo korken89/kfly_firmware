@@ -222,9 +222,12 @@ static void MPU6050ConvertAndSave(	const MPU6050_Configuration *cfg,
 static void HMC5983ConvertAndSave(	const HMC5983_Configuration *cfg, 
 									uint8_t data[6])
 {
-	cfg->data_holder->raw_mag_data[0] = twoscomplement2signed(data[0], data[1]);
-	cfg->data_holder->raw_mag_data[2] = twoscomplement2signed(data[2], data[3]);
-	cfg->data_holder->raw_mag_data[1] = twoscomplement2signed(data[4], data[5]);
+	cfg->data_holder->raw_mag_data[0] = twoscomplement2signed(data[0], 
+															  data[1]);
+	cfg->data_holder->raw_mag_data[2] = twoscomplement2signed(data[2], 
+															  data[3]);
+	cfg->data_holder->raw_mag_data[1] = twoscomplement2signed(data[4], 
+															  data[5]);
 
 }
 
