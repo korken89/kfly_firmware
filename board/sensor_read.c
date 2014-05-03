@@ -59,12 +59,17 @@ msg_t SensorReadInit(const MPU6050_Configuration *mpu6050cfg,
 					 Sensor_Calibration *accelerometer_cal,
 					 Sensor_Calibration *magnetometer_cal)
 {
+	/* Parameter checks */
+	if ((mpu6050cfg == NULL) || (hmc5983cfg == NULL))
+		return !RDY_OK; /* Error! */
+
 	prv_mpu6050cfg = mpu6050cfg;
 	prv_hmc5983cfg = hmc5983cfg;
 
 	prv_accelerometer_cal = accelerometer_cal;
 	prv_magnetometer_cal = magnetometer_cal;
 
+	/* If there are valid calibration pointers, initialize mutexes */
 	if (accelerometer_cal != NULL)
 		chMtxInit(&accelerometer_cal->lock);
 
