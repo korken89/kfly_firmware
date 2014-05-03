@@ -353,7 +353,7 @@ float MPU6050GetSampleTime(const MPU6050_Configuration *cfg)
 	else
 		fs = 1000.0f;
 
-	rate_div = (float)cfg->sample_rate_divider;
+	rate_div = (float)(cfg->sample_rate_divider + 1);
 
 	return (rate_div / fs);
 }
