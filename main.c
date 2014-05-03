@@ -12,6 +12,7 @@ static const I2CConfig i2cfg2 = {
 };
 
 /* MPU6050 Configuration */
+static MPU6050_Data mpu6050data;
 static const MPU6050_Configuration mpu6050cfg = {
 	MPU6050_DLPF_BW_42,				/* Digital low-pass filter config 	*/
 	MPU6050_EXT_SYNC_DISABLED,		/* External sync config 			*/
@@ -26,20 +27,24 @@ static const MPU6050_Configuration mpu6050cfg = {
 	MPU6050_ADDRESS_AD0_HIGH,		/* MPU6050 address 					*/
 	MPU6050_CLK_X_REFERENCE,		/* Clock reference 					*/
 	4,								/* Sample rate divider 				*/
+	&mpu6050data,					/* Pointer to data holder 			*/
 	&I2CD2							/* Pointer to I2C Driver 			*/
 };
 
+/* HMC5983 Configuration */
+static HMC5983_Data hmc5983data;
 static const HMC5983_Configuration hmc5983cfg = {
-	HMC5983_TEMPERATURE_ENABLE,		/* Enable/disable temperatuer sensor */
-	HMC5983_AVERAGE_8_SAMPLE,		/* Sample averaging */
-	HMC5983_DATA_RATE_75D0_HZ,		/* Output data rate */
-	HMC5983_MEAS_MODE_NORMAL,		/* Measurement mode */
-	HMC5983_GAIN_1D3_GA,			/* Gain */
-	HMC5983_OP_MODE_CONTINOUS,		/* Operating mode */
-	HMC5983_I2C_FAST_DISABLE,		/* Enable/disable 3.4 MHz I2C */
-	HMC5983_LOW_POWER_DISABLE,		/* Enable/disable low power mode */
-	HMC5983_ADDRESS,				/* HMC5983 address */
-	&I2CD2							/* Pointer to I2C Driver */
+	HMC5983_TEMPERATURE_ENABLE,		/* Enable/disable temperature sensor 	*/
+	HMC5983_AVERAGE_8_SAMPLES,		/* Sample averaging config				*/
+	HMC5983_DATA_RATE_75D0_HZ,		/* Output data rate config				*/
+	HMC5983_MEAS_MODE_NORMAL,		/* Measurement mode config				*/
+	HMC5983_GAIN_1D3_GA,			/* Gain config							*/
+	HMC5983_OP_MODE_CONTINOUS,		/* Operating mode config				*/
+	HMC5983_I2C_FAST_DISABLE,		/* Enable/disable 3.4 MHz I2C 			*/
+	HMC5983_LOW_POWER_DISABLE,		/* Enable/disable low power mode 		*/
+	HMC5983_ADDRESS,				/* HMC5983 address 						*/
+	&hmc5983data,					/* Pointer to data holder 				*/
+	&I2CD2							/* Pointer to I2C Driver 				*/
 };
 
 void panic(void);
@@ -92,6 +97,7 @@ int main(void)
 
 void panic(void)
 {
+	chSysLock();
 	while (1)
 	{
 		palClearPad(GPIOC, GPIOC_LED_ERR);
