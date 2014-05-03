@@ -33,8 +33,10 @@ msg_t HMC5983Init(const HMC5983_Configuration *cfg)
 	/* Initialize the sensor */
 	/* Set averaging, update rate and bias */
 	txbuf[0] = HMC5983_RA_CONFIG_A; 	/* Power management register 1 */
-	txbuf[1] = (cfg->temperature_sensor | cfg->sample_averaging | \
-				cfg->output_rate | cfg->measurement_mode);
+	txbuf[1] = (cfg->temperature_sensor | 
+				cfg->sample_averaging 	|
+				cfg->output_rate 		| 
+				cfg->measurement_mode);
 	i2cAcquireBus(cfg->i2cp);
 	status = i2cMasterTransmitTimeout(	cfg->i2cp,
 										cfg->address_7bit, 
@@ -95,6 +97,25 @@ msg_t HMC5983GetID(const HMC5983_Configuration *cfg, uint8_t id[3])
 										1, 
 										id, 
 										3, 
+										MS2ST(20));
+	i2cReleaseBus(cfg->i2cp);
+
+	return status;
+}
+
+msg_t HMC5983ReadData(const HMC5983_Configuration *cfg, uint8_t data[6])
+{
+	static uint8_t txbuf[1] = {HMC5983_RA_DATAX_H};
+	msg_t status = RDY_OK;
+
+	/* Get ID */
+	i2cAcquireBus(cfg->i2cp);
+	status = i2cMasterTransmitTimeout(	cfg->i2cp, 
+										cfg->address_7bit, 
+										txbuf, 
+										1, 
+										data, 
+										6, 
 										MS2ST(20));
 	i2cReleaseBus(cfg->i2cp);
 

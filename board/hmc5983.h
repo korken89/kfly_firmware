@@ -2,6 +2,8 @@
 #define __HMC5983_H
 
 /* Defines */
+#define HMC5983_DATA_AVAILABLE_MASK		0x02
+
 #define HMC5983_ADDRESS					0x1E
 
 #define HMC5983_RA_CONFIG_A				0x00
@@ -111,6 +113,6 @@ typedef struct
 /* Global function defines */
 msg_t HMC5983Init(const HMC5983_Configuration *cfg);
 msg_t HMC5983GetID(const HMC5983_Configuration *cfg, uint8_t id[3]);
-
+msg_t HMC5983ReadData(const HMC5983_Configuration *cfg, uint8_t data[6]);
 
 #endif
