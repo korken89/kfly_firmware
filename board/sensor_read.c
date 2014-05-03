@@ -121,6 +121,8 @@ static msg_t ThreadSensorRead(void *arg)
 			chMtxUnlock();
 
 			/* Broadcast new data available */
+			chEvtBroadcastFlags(&prv_mpu6050cfg->data_holder->es,
+								(flagsmask_t)MPU6050_DATA_AVAILABLE_MASK);
 		}
 
 		if (events & HMC5983_DATA_AVAILABLE_MASK)
@@ -144,7 +146,8 @@ static msg_t ThreadSensorRead(void *arg)
 			chMtxUnlock();
 
 			/* Broadcast new data available */
-
+			chEvtBroadcastFlags(&prv_hmc5983cfg->data_holder->es,
+								(flagsmask_t)HMC5983_DATA_AVAILABLE_MASK);
 		}
 
 		if (events & MS5611_DATA_AVAILABLE_MASK)
@@ -205,7 +208,8 @@ static void MPU6050ConvertAndSave(	const MPU6050_Configuration *cfg,
 	cfg->data_holder->raw_accel_data[2] = twoscomplement2signed(data[4], 
 																data[5]);
 
-	cfg->data_holder->temperature = twoscomplement2signed(data[6], data[7]);
+	cfg->data_holder->temperature = twoscomplement2signed(data[6], 
+														  data[7]);
 
 	cfg->data_holder->raw_accel_data[0] = twoscomplement2signed(data[8], 
 																data[9]);
