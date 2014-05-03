@@ -2,6 +2,8 @@
 #define __MPU6050_H
 
 /* Defines */
+#define MPU6050_DATA_AVAILABLE_MASK		0x01
+
 /* Conversions */
 #define MPU6050_DPS250_TO_RADPS 			(0.0174532925f / 131.0f)
 #define MPU6050_DPS500_TO_RADPS 			(0.0174532925f / 65.5f)
