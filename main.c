@@ -3,6 +3,7 @@
 #include "myusb.h"
 #include "mpu6050.h"
 #include "hmc5983.h"
+#include "sensor_calibration.h"
 #include "sensor_read.h"
 
 /* I2C interface #2 Configuration */
@@ -13,6 +14,10 @@ static const I2CConfig i2cfg2 = {
 };
 
 /* MPU6050 Configuration */
+static Sensor_Calibration mpu6050cal = {
+	.bias = {0.0f, 0.0f, 0.0f},
+	.gain = {1.0f, 1.0f, 1.0f}
+};
 static MPU6050_Data mpu6050data;
 static const MPU6050_Configuration mpu6050cfg = {
 	MPU6050_DLPF_BW_42,				/* Digital low-pass filter config 	*/
@@ -33,6 +38,10 @@ static const MPU6050_Configuration mpu6050cfg = {
 };
 
 /* HMC5983 Configuration */
+static Sensor_Calibration hmc5983cal = {
+	.bias = {0.0f, 0.0f, 0.0f},
+	.gain = {1.0f, 1.0f, 1.0f}
+};
 static HMC5983_Data hmc5983data;
 static const HMC5983_Configuration hmc5983cfg = {
 	HMC5983_TEMPERATURE_ENABLE,		/* Enable/disable temperature sensor 	*/
@@ -148,7 +157,9 @@ int main(void)
 	if (HMC5983Init(&hmc5983cfg) != RDY_OK)
 		panic(); /* Initialization failed */
 	
-	SensorReadInit(&mpu6050cfg, &hmc5983cfg);
+	if (SensorReadInit(&mpu6050cfg, &hmc5983cfg,
+					   &mpu6050cal, &hmc5983cal) != RDY_OK)
+		panic(); /* Initialization failed */
 
 	/*
 	 * Start the external interrupts
