@@ -9,8 +9,8 @@
 #include "board.h"
 #include "mpu6050.h"
 #include "hmc5983.h"
-#include "sensor_read.h"
 #include "sensor_calibration.h"
+#include "sensor_read.h"
 
 /* Global variable defines */
 
@@ -21,8 +21,8 @@ static const MPU6050_Configuration *prv_mpu6050cfg;
 static const HMC5983_Configuration *prv_hmc5983cfg;
 
 /* Private pointers to sensor calibrations */
-static Sensor_Calibration *prv_mpu6050cal = NULL;
-static Sensor_Calibration *prv_hmc5983cal = NULL;
+static Sensor_Calibration *prv_accelerometer_cal = NULL;
+static Sensor_Calibration *prv_magnetometer_cal = NULL;
 
 /* Private pointer to the Sensor Read Thread */
 static Thread *tp = NULL;
@@ -55,10 +55,21 @@ static msg_t ThreadSensorRead(void *arg);
  * @return RDY_OK if the initialization was successful
  */
 msg_t SensorReadInit(const MPU6050_Configuration *mpu6050cfg,
-					 const HMC5983_Configuration *hmc5983cfg)
+					 const HMC5983_Configuration *hmc5983cfg,
+					 Sensor_Calibration *accelerometer_cal,
+					 Sensor_Calibration *magnetometer_cal)
 {
 	prv_mpu6050cfg = mpu6050cfg;
 	prv_hmc5983cfg = hmc5983cfg;
+
+	prv_accelerometer_cal = accelerometer_cal;
+	prv_magnetometer_cal = magnetometer_cal;
+
+	if (accelerometer_cal != NULL)
+		chMtxInit(&accelerometer_cal->lock);
+
+	if (magnetometer_cal != NULL)
+		chMtxInit(&magnetometer_cal->lock);
 
 	/* Initialize read thread */
 	chThdCreateStatic(	waThreadSensorRead,
@@ -160,7 +171,7 @@ static msg_t ThreadSensorRead(void *arg)
 			MPU6050ConvertAndSave(prv_mpu6050cfg->data_holder, temp_data);
 
 			/* Apply calibration and save calibrated data */
-			ApplyCalibration(	prv_mpu6050cal,
+			ApplyCalibration(	prv_accelerometer_cal,
 								prv_mpu6050cfg->data_holder->raw_accel_data,
 								prv_mpu6050cfg->data_holder->accel_data,
 								9.81f);
@@ -195,7 +206,7 @@ static msg_t ThreadSensorRead(void *arg)
 			HMC5983ConvertAndSave(prv_hmc5983cfg->data_holder, temp_data);
 
 			/* Apply calibration and save calibrated data */
-			ApplyCalibration(	prv_hmc5983cal,
+			ApplyCalibration(	prv_magnetometer_cal,
 								prv_hmc5983cfg->data_holder->raw_mag_data,
 								prv_hmc5983cfg->data_holder->mag_data,
 								1.0f);
@@ -238,12 +249,14 @@ static void ApplyCalibration(	Sensor_Calibration *cal,
 {
 	if (cal != NULL)
 	{
+		chMtxLock(&cal->lock);
 		calibrated_data[0] = ((float)raw_data[0] - cal->bias[0]) * cal->gain[0]
 							 * sensor_gain;
 		calibrated_data[1] = ((float)raw_data[1] - cal->bias[1]) * cal->gain[1]
 							 * sensor_gain;
 		calibrated_data[2] = ((float)raw_data[2] - cal->bias[2]) * cal->gain[2]
 							 * sensor_gain;
+		chMtxUnlock();
 	}
 	else
 	{
