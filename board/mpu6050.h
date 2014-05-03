@@ -21,23 +21,23 @@
 #define MPU6050_ACCEL_GYRO_TEMP_DATA_SIZE	14
 
 /* MPU6050 Register Map */
-#define MPU6050_RA_XG_OFFS_TC       		0x00 //[7] PWR_MODE, [6:1] XG_OFFS_TC, [0] OTP_BNK_VLD
-#define MPU6050_RA_YG_OFFS_TC       		0x01 //[7] PWR_MODE, [6:1] YG_OFFS_TC, [0] OTP_BNK_VLD
-#define MPU6050_RA_ZG_OFFS_TC       		0x02 //[7] PWR_MODE, [6:1] ZG_OFFS_TC, [0] OTP_BNK_VLD
-#define MPU6050_RA_X_FINE_GAIN      		0x03 //[7:0] X_FINE_GAIN
-#define MPU6050_RA_Y_FINE_GAIN      		0x04 //[7:0] Y_FINE_GAIN
-#define MPU6050_RA_Z_FINE_GAIN      		0x05 //[7:0] Z_FINE_GAIN
-#define MPU6050_RA_XA_OFFS_H        		0x06 //[15:0] XA_OFFS
+#define MPU6050_RA_XG_OFFS_TC       		0x00
+#define MPU6050_RA_YG_OFFS_TC       		0x01
+#define MPU6050_RA_ZG_OFFS_TC       		0x02
+#define MPU6050_RA_X_FINE_GAIN      		0x03
+#define MPU6050_RA_Y_FINE_GAIN      		0x04
+#define MPU6050_RA_Z_FINE_GAIN      		0x05
+#define MPU6050_RA_XA_OFFS_H        		0x06
 #define MPU6050_RA_XA_OFFS_L_TC     		0x07
-#define MPU6050_RA_YA_OFFS_H        		0x08 //[15:0] YA_OFFS
+#define MPU6050_RA_YA_OFFS_H        		0x08
 #define MPU6050_RA_YA_OFFS_L_TC     		0x09
-#define MPU6050_RA_ZA_OFFS_H        		0x0A //[15:0] ZA_OFFS
+#define MPU6050_RA_ZA_OFFS_H        		0x0A
 #define MPU6050_RA_ZA_OFFS_L_TC     		0x0B
-#define MPU6050_RA_XG_OFFS_USRH     		0x13 //[15:0] XG_OFFS_USR
+#define MPU6050_RA_XG_OFFS_USRH     		0x13
 #define MPU6050_RA_XG_OFFS_USRL     		0x14
-#define MPU6050_RA_YG_OFFS_USRH     		0x15 //[15:0] YG_OFFS_USR
+#define MPU6050_RA_YG_OFFS_USRH     		0x15
 #define MPU6050_RA_YG_OFFS_USRL     		0x16
-#define MPU6050_RA_ZG_OFFS_USRH     		0x17 //[15:0] ZG_OFFS_USR
+#define MPU6050_RA_ZG_OFFS_USRH     		0x17
 #define MPU6050_RA_ZG_OFFS_USRL     		0x18
 #define MPU6050_RA_SMPLRT_DIV       		0x19
 #define MPU6050_RA_CONFIG           		0x1A

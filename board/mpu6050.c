@@ -31,7 +31,13 @@ msg_t MPU6050Init(const MPU6050_Configuration *cfg)
 	txbuf[0] = MPU6050_RA_PWR_MGMT_1; 	/* Power management register 1 */
 	txbuf[1] = cfg->clock_reference;
 	i2cAcquireBus(cfg->i2cp);
-	status = i2cMasterTransmitTimeout(cfg->i2cp, cfg->address_7bit, txbuf, 2, NULL, 0, MS2ST(20));
+	status = i2cMasterTransmitTimeout(	cfg->i2cp,
+										cfg->address_7bit, 
+										txbuf, 
+										2, 
+										NULL, 
+										0, 
+										MS2ST(20));
 	i2cReleaseBus(cfg->i2cp);
 
 	/* Error check */
@@ -42,7 +48,13 @@ msg_t MPU6050Init(const MPU6050_Configuration *cfg)
 	txbuf[0] = MPU6050_RA_FIFO_EN; 		/* FIFO Enable register */
 	txbuf[1] = cfg->fifo_cfg;
 	i2cAcquireBus(cfg->i2cp);
-	status = i2cMasterTransmitTimeout(cfg->i2cp, cfg->address_7bit, txbuf, 2, NULL, 0, MS2ST(20));
+	status = i2cMasterTransmitTimeout(	cfg->i2cp,
+										cfg->address_7bit, 
+										txbuf, 
+										2, 
+										NULL, 
+										0, 
+										MS2ST(20));
 	i2cReleaseBus(cfg->i2cp);
 
 	/* Error check */
@@ -53,7 +65,13 @@ msg_t MPU6050Init(const MPU6050_Configuration *cfg)
 	txbuf[0] = MPU6050_RA_GYRO_CONFIG; 	/* Gyro configuration register */
 	txbuf[1] = cfg->gyro_range_sel;
 	i2cAcquireBus(cfg->i2cp);
-	status = i2cMasterTransmitTimeout(cfg->i2cp, cfg->address_7bit, txbuf, 2, NULL, 0, MS2ST(20));
+	status = i2cMasterTransmitTimeout(	cfg->i2cp,
+										cfg->address_7bit, 
+										txbuf, 
+										2, 
+										NULL, 
+										0, 
+										MS2ST(20));
 	i2cReleaseBus(cfg->i2cp);
 
 	/* Error check */
@@ -64,7 +82,13 @@ msg_t MPU6050Init(const MPU6050_Configuration *cfg)
 	txbuf[0] = MPU6050_RA_ACCEL_CONFIG; /* Accel configuration register */
 	txbuf[1] = cfg->accel_range_sel;
 	i2cAcquireBus(cfg->i2cp);
-	status = i2cMasterTransmitTimeout(cfg->i2cp, cfg->address_7bit, txbuf, 2, NULL, 0, MS2ST(20));
+	status = i2cMasterTransmitTimeout(	cfg->i2cp,
+										cfg->address_7bit, 
+										txbuf, 
+										2, 
+										NULL, 
+										0, 
+										MS2ST(20));
 	i2cReleaseBus(cfg->i2cp);
 
 	/* Error check */
@@ -75,7 +99,13 @@ msg_t MPU6050Init(const MPU6050_Configuration *cfg)
 	txbuf[0] = MPU6050_RA_CONFIG; 		/* Configuration register */
 	txbuf[1] = (cfg->dlp_cfg | cfg->ext_sync_cfg);
 	i2cAcquireBus(cfg->i2cp);
-	status = i2cMasterTransmitTimeout(cfg->i2cp, cfg->address_7bit, txbuf, 2, NULL, 0, MS2ST(20));
+	status = i2cMasterTransmitTimeout(	cfg->i2cp,
+										cfg->address_7bit, 
+										txbuf, 
+										2, 
+										NULL, 
+										0, 
+										MS2ST(20));
 	i2cReleaseBus(cfg->i2cp);
 
 	/* Error check */
@@ -86,7 +116,13 @@ msg_t MPU6050Init(const MPU6050_Configuration *cfg)
 	txbuf[0] = MPU6050_RA_SMPLRT_DIV; 	/* Sample rate register */
 	txbuf[1] = cfg->sample_rate_divider;
 	i2cAcquireBus(cfg->i2cp);
-	status = i2cMasterTransmitTimeout(cfg->i2cp, cfg->address_7bit, txbuf, 2, NULL, 0, MS2ST(20));
+	status = i2cMasterTransmitTimeout(	cfg->i2cp,
+										cfg->address_7bit, 
+										txbuf, 
+										2, 
+										NULL, 
+										0, 
+										MS2ST(20));
 	i2cReleaseBus(cfg->i2cp);
 
 	/* Error check */
@@ -97,7 +133,13 @@ msg_t MPU6050Init(const MPU6050_Configuration *cfg)
 	txbuf[0] = MPU6050_RA_INT_PIN_CFG; 	/* Interrupt pin register */
 	txbuf[1] = cfg->int_pin_cfg;
 	i2cAcquireBus(cfg->i2cp);
-	status = i2cMasterTransmitTimeout(cfg->i2cp, cfg->address_7bit, txbuf, 2, NULL, 0, MS2ST(20));
+	status = i2cMasterTransmitTimeout(	cfg->i2cp,
+										cfg->address_7bit, 
+										txbuf, 
+										2, 
+										NULL, 
+										0, 
+										MS2ST(20));
 	i2cReleaseBus(cfg->i2cp);
 
 	/* Error check */
@@ -108,7 +150,13 @@ msg_t MPU6050Init(const MPU6050_Configuration *cfg)
 	txbuf[0] = MPU6050_RA_INT_ENABLE; 	/* Interrupt enable register */
 	txbuf[1] = cfg->int_cfg;
 	i2cAcquireBus(cfg->i2cp);
-	status = i2cMasterTransmitTimeout(cfg->i2cp, cfg->address_7bit, txbuf, 2, NULL, 0, MS2ST(20));
+	status = i2cMasterTransmitTimeout(	cfg->i2cp,
+										cfg->address_7bit, 
+										txbuf, 
+										2, 
+										NULL, 
+										0, 
+										MS2ST(20));
 	i2cReleaseBus(cfg->i2cp);
 
 	return status;
@@ -121,7 +169,13 @@ msg_t MPU6050DeviceReset(const MPU6050_Configuration *cfg)
 
 	/* Reset device */
 	i2cAcquireBus(cfg->i2cp);
-	status = i2cMasterTransmitTimeout(cfg->i2cp, cfg->address_7bit, txbuf, 2, NULL, 0, MS2ST(20));
+	status = i2cMasterTransmitTimeout(	cfg->i2cp,
+										cfg->address_7bit, 
+										txbuf, 
+										2, 
+										NULL, 
+										0, 
+										MS2ST(20));
 	i2cReleaseBus(cfg->i2cp);
 
 	/* Error check */
@@ -135,7 +189,13 @@ msg_t MPU6050DeviceReset(const MPU6050_Configuration *cfg)
 	txbuf[0] = MPU6050_RA_SIGNAL_PATH_RESET;
 	txbuf[1] = (MPU6050_GYRO_RESET | MPU6050_ACCEL_RESET | MPU6050_TEMP_RESET);
 	i2cAcquireBus(cfg->i2cp);
-	status = i2cMasterTransmitTimeout(cfg->i2cp, cfg->address_7bit, txbuf, 2, NULL, 0, MS2ST(20));
+	status = i2cMasterTransmitTimeout(	cfg->i2cp,
+										cfg->address_7bit, 
+										txbuf, 
+										2, 
+										NULL, 
+										0, 
+										MS2ST(20));
 	i2cReleaseBus(cfg->i2cp);
 
 	/* Error check */
@@ -155,7 +215,13 @@ msg_t MPU6050GetID(const MPU6050_Configuration *cfg, uint8_t *id)
 
 	/* Get ID */
 	i2cAcquireBus(cfg->i2cp);
-	status = i2cMasterTransmitTimeout(cfg->i2cp, cfg->address_7bit, txbuf, 1, id, 1, MS2ST(20));
+	status = i2cMasterTransmitTimeout(	cfg->i2cp, 
+										cfg->address_7bit, 
+										txbuf, 
+										1, 
+										id, 
+										1, 
+										MS2ST(20));
 	i2cReleaseBus(cfg->i2cp);
 
 	/* Get the six middle bits */
