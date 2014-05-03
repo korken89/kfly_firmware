@@ -19,9 +19,9 @@ static const MPU6050_Configuration mpu6050cfg = {
 	MPU6050_GYRO_FS_2000,			/* Gyro range config 				*/
 	MPU6050_ACCEL_FS_16,			/* Accel range config 				*/
 	MPU6050_FIFO_DISABLED,			/* FIFO config 						*/
-	MPU6050_INTMODE_ACTIVEHIGH | \
-	MPU6050_INTDRIVE_PUSHPULL  | \
-	MPU6050_INTLATCH_50USPULSE | \
+	MPU6050_INTMODE_ACTIVEHIGH |
+	MPU6050_INTDRIVE_PUSHPULL  |
+	MPU6050_INTLATCH_50USPULSE |
 	MPU6050_INTCLEAR_ANYREAD,		/* Interrupt config 				*/
 	MPU6050_INTDRDY_ENABLE,			/* Interrupt enable config 			*/
 	MPU6050_ADDRESS_AD0_HIGH,		/* MPU6050 address 					*/
