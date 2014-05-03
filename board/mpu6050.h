@@ -230,12 +230,16 @@
 /* Typedefs */
 typedef struct
 {
-	int16_t accel_data[3];	/* Accelerometer data holder 					  */
-	int16_t gyro_data[3];	/* Gyroscope data holder 						  */
-	int16_t temperature;	/* Temperature data holder 						  */
-	Mutex read_lock;		/* Keep listeners from reading if
-							   new data is being written 					  */
-	EventSource es;			/* Event Source for new data and error broadcasts */
+	int16_t raw_accel_data[3];	/* Accelerometer raw data holder 		*/
+	int16_t raw_gyro_data[3];	/* Gyroscope raw data holder 			*/
+	int16_t raw_temperature;	/* Temperature raw data holder 			*/
+	float accel_data[3];		/* Accelerometer calibrated data holder */
+	float gyro_data[3];			/* Gyroscope calibrated data holder 	*/
+	float temperature;			/* Temperature calibrated data holder 	*/
+	Mutex read_lock;			/* Keep listeners from reading if
+								   new data is being written 			*/
+	EventSource es;				/* Event Source for new data and
+								   error broadcasts 					*/
 } MPU6050_Data;
 
 typedef struct
@@ -259,7 +263,8 @@ typedef struct
 /* Global function defines */
 msg_t MPU6050Init(const MPU6050_Configuration *cfg);
 msg_t MPU6050DeviceReset(const MPU6050_Configuration *cfg);
-msg_t MPU6050GetID(const MPU6050_Configuration *cfg, uint8_t *id);
+msg_t MPU6050GetID(const MPU6050_Configuration *cfg, uint8_t id[1]);
+msg_t MPU6050ReadData(const MPU6050_Configuration *cfg, uint8_t data[14]);
 float MPU6050GetAccelGain(const MPU6050_Configuration *cfg);
 float MPU6050GetGyroGain(const MPU6050_Configuration *cfg);
 

@@ -85,10 +85,12 @@
 /* Typedefs */
 typedef struct
 {
-	int16_t mag_data[3];	/* Magnetometer data holder 					  */
-	Mutex read_lock;		/* Keep listeners from reading if
-							   new data is being written 					  */
-	EventSource es;			/* Event Source for new data and error broadcasts */
+	int16_t raw_mag_data[3];	/* Magnetometer raw data holder 		*/
+	float mag_data[3];			/* Magnetometer calibrated data holder 	*/
+	Mutex read_lock;			/* Keep listeners from reading if
+							  	   new data is being written 			*/
+	EventSource es;				/* Event Source for new data and
+								   error broadcasts 					*/
 } HMC5983_Data;
 
 typedef struct
@@ -108,7 +110,7 @@ typedef struct
 
 /* Global function defines */
 msg_t HMC5983Init(const HMC5983_Configuration *cfg);
-msg_t HMC5983GetID(const HMC5983_Configuration *cfg, uint8_t *id);
+msg_t HMC5983GetID(const HMC5983_Configuration *cfg, uint8_t id[3]);
 
 
 #endif
