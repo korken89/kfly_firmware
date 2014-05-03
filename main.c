@@ -186,7 +186,6 @@ int main(void)
 
 void panic(void)
 {
-	chSysLock();
 	while (1)
 	{
 		palClearPad(GPIOC, GPIOC_LED_ERR);
