@@ -3,6 +3,7 @@
 #include "myusb.h"
 #include "mpu6050.h"
 #include "hmc5983.h"
+#include "sensor_read.h"
 
 /* I2C interface #2 Configuration */
 static const I2CConfig i2cfg2 = {
@@ -47,6 +48,38 @@ static const HMC5983_Configuration hmc5983cfg = {
 	&I2CD2							/* Pointer to I2C Driver 				*/
 };
 
+static const EXTConfig extcfg = {
+	{
+		{EXT_CH_MODE_DISABLED, NULL},
+		{EXT_CH_MODE_DISABLED, NULL},
+		{EXT_CH_MODE_DISABLED, NULL},
+		{EXT_CH_MODE_DISABLED, NULL},
+		{EXT_CH_MODE_DISABLED, NULL},
+		{EXT_CH_MODE_DISABLED, NULL},
+		{EXT_CH_MODE_DISABLED, NULL},
+		{EXT_CH_MODE_DISABLED, NULL},
+		{EXT_CH_MODE_DISABLED, NULL},
+		{EXT_CH_MODE_DISABLED, NULL},
+		{EXT_CH_MODE_DISABLED, NULL},
+		{EXT_CH_MODE_DISABLED, NULL},
+		{EXT_CH_MODE_DISABLED, NULL},
+		{EXT_CH_MODE_RISING_EDGE    |
+		 EXT_CH_MODE_AUTOSTART 		|
+		 EXT_MODE_GPIOC, HMC5983cb}, 	/* 13: HMC5983 IRQ */
+		{EXT_CH_MODE_FALLING_EDGE   |
+		 EXT_CH_MODE_AUTOSTART 		|
+		 EXT_MODE_GPIOC, MPU6050cb}, 	/* 14: MPU6050 IRQ */
+		{EXT_CH_MODE_DISABLED, NULL}, 	/* 15: RF Module IRQ */
+		{EXT_CH_MODE_DISABLED, NULL},
+		{EXT_CH_MODE_DISABLED, NULL},
+		{EXT_CH_MODE_DISABLED, NULL},
+		{EXT_CH_MODE_DISABLED, NULL},
+		{EXT_CH_MODE_DISABLED, NULL},
+		{EXT_CH_MODE_DISABLED, NULL},
+		{EXT_CH_MODE_DISABLED, NULL}
+	}
+};
+
 void panic(void);
 
 int main(void)
@@ -86,6 +119,11 @@ int main(void)
 	if (HMC5983Init(&hmc5983cfg) != RDY_OK)
 		panic(); /* Initialization failed */
 	
+	/*
+	 *	Start the external interrupts
+	 */
+	extStart(&EXTD1, &extcfg);
+
 	while(1)
 	{
 		palClearPad(GPIOC, GPIOC_LED_USR);
