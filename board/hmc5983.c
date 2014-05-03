@@ -6,6 +6,7 @@
 
 #include "ch.h"
 #include "hal.h"
+#include "board.h"
 #include "hmc5983.h"
 
 /* Global variable defines */
@@ -16,7 +17,6 @@
 
 msg_t HMC5983Init(const HMC5983_Configuration *cfg)
 {
-	/* Setup the sensor */
 	static uint8_t txbuf[2];
 	msg_t status = RDY_OK;
 
@@ -25,12 +25,12 @@ msg_t HMC5983Init(const HMC5983_Configuration *cfg)
 		return RDY_RESET;
 
 
-	/* Setup the data event source and mutex */
+	/* Initialize the data event source and mutex */
 	chMtxInit(&cfg->data_holder->read_lock);
 	chEvtInit(&cfg->data_holder->es);
 
 
-	/* Setup the sensor */
+	/* Initialize the sensor */
 	/* Set averaging, update rate and bias */
 	txbuf[0] = HMC5983_RA_CONFIG_A; 	/* Power management register 1 */
 	txbuf[1] = (cfg->temperature_sensor | cfg->sample_averaging | \

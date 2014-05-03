@@ -6,6 +6,7 @@
 
 #include "ch.h"
 #include "hal.h"
+#include "board.h"
 #include "mpu6050.h"
 
 /* Global variable defines */
@@ -25,7 +26,7 @@ msg_t MPU6050Init(const MPU6050_Configuration *cfg)
 		return RDY_RESET;
 
 
-	/* Setup the data event source and mutex */
+	/* Initialize the data event source and mutex */
 	chMtxInit(&cfg->data_holder->read_lock);
 	chEvtInit(&cfg->data_holder->es);
 
@@ -37,7 +38,7 @@ msg_t MPU6050Init(const MPU6050_Configuration *cfg)
 	if (status != RDY_OK)
 		return status;
 
-	/* Setup the sensor */
+	/* Initialize the sensor */
 	/* Set internal clock source and Sleep mode */
 	txbuf[0] = MPU6050_RA_PWR_MGMT_1; 	/* Power management register 1 */
 	txbuf[1] = cfg->clock_reference;
@@ -219,7 +220,7 @@ msg_t MPU6050DeviceReset(const MPU6050_Configuration *cfg)
 	return status;
 }
 
-msg_t MPU6050GetID(const MPU6050_Configuration *cfg, uint8_t *id)
+msg_t MPU6050GetID(const MPU6050_Configuration *cfg, uint8_t id[1])
 {
 	static uint8_t txbuf[1] = {MPU6050_RA_WHO_AM_I};
 	msg_t status = RDY_OK;
@@ -237,6 +238,25 @@ msg_t MPU6050GetID(const MPU6050_Configuration *cfg, uint8_t *id)
 
 	/* Get the six middle bits */
 	*id &= ~0x81;
+
+	return status;
+}
+
+msg_t MPU6050ReadData(const MPU6050_Configuration *cfg, uint8_t data[14])
+{
+	static uint8_t txbuf[1] = {MPU6050_RA_ACCEL_XOUT_H};
+	msg_t status = RDY_OK;
+
+	/* Get ID */
+	i2cAcquireBus(cfg->i2cp);
+	status = i2cMasterTransmitTimeout(	cfg->i2cp, 
+										cfg->address_7bit, 
+										txbuf, 
+										1, 
+										data, 
+										14, 
+										MS2ST(20));
+	i2cReleaseBus(cfg->i2cp);
 
 	return status;
 }
