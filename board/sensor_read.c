@@ -179,9 +179,12 @@ static void ApplyCalibration(	Sensor_Calibration *cal,
 {
 	if (cal != NULL)
 	{
-		calibrated_data[0] = ((float)raw_data[0] - cal->bias[0]) / cal->gain[0] * sensor_gain;
-		calibrated_data[1] = ((float)raw_data[1] - cal->bias[1]) / cal->gain[1] * sensor_gain;
-		calibrated_data[2] = ((float)raw_data[2] - cal->bias[2]) / cal->gain[2] * sensor_gain;
+		calibrated_data[0] = ((float)raw_data[0] - cal->bias[0]) / cal->gain[0]
+							 * sensor_gain;
+		calibrated_data[1] = ((float)raw_data[1] - cal->bias[1]) / cal->gain[1]
+							 * sensor_gain;
+		calibrated_data[2] = ((float)raw_data[2] - cal->bias[2]) / cal->gain[2]
+							 * sensor_gain;
 	}
 	else
 	{
@@ -195,15 +198,21 @@ static void ApplyCalibration(	Sensor_Calibration *cal,
 static void MPU6050ConvertAndSave(	const MPU6050_Configuration *cfg, 
 									uint8_t data[14])
 {
-	cfg->data_holder->raw_accel_data[0] = twoscomplement2signed(data[0], data[1]);
-	cfg->data_holder->raw_accel_data[1] = twoscomplement2signed(data[2], data[3]);
-	cfg->data_holder->raw_accel_data[2] = twoscomplement2signed(data[4], data[5]);
+	cfg->data_holder->raw_accel_data[0] = twoscomplement2signed(data[0],
+																data[1]);
+	cfg->data_holder->raw_accel_data[1] = twoscomplement2signed(data[2], 
+																data[3]);
+	cfg->data_holder->raw_accel_data[2] = twoscomplement2signed(data[4], 
+																data[5]);
 
 	cfg->data_holder->temperature = twoscomplement2signed(data[6], data[7]);
 
-	cfg->data_holder->raw_accel_data[0] = twoscomplement2signed(data[8], data[9]);
-	cfg->data_holder->raw_accel_data[1] = twoscomplement2signed(data[10], data[11]);
-	cfg->data_holder->raw_accel_data[2] = twoscomplement2signed(data[12], data[13]);
+	cfg->data_holder->raw_accel_data[0] = twoscomplement2signed(data[8], 
+																data[9]);
+	cfg->data_holder->raw_accel_data[1] = twoscomplement2signed(data[10], 
+																data[11]);
+	cfg->data_holder->raw_accel_data[2] = twoscomplement2signed(data[12], 
+																data[13]);
 }
 
 static void HMC5983ConvertAndSave(	const HMC5983_Configuration *cfg, 
