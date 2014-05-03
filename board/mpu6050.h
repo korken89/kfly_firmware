@@ -230,11 +230,12 @@
 /* Typedefs */
 typedef struct
 {
-	int16_t accel_data[3];
-	int16_t gyro_data[3];
-	int16_t temperature;
-	Mutex read_lock;
-	EventSource es;
+	int16_t accel_data[3];	/* Accelerometer data holder 					  */
+	int16_t gyro_data[3];	/* Gyroscope data holder 						  */
+	int16_t temperature;	/* Temperature data holder 						  */
+	Mutex read_lock;		/* Keep listeners from reading if
+							   new data is being written 					  */
+	EventSource es;			/* Event Source for new data and error broadcasts */
 } MPU6050_Data;
 
 typedef struct
