@@ -44,17 +44,17 @@ static Sensor_Calibration hmc5983cal = {
 };
 static HMC5983_Data hmc5983data;
 static const HMC5983_Configuration hmc5983cfg = {
-	HMC5983_TEMPERATURE_ENABLE,		/* Enable/disable temperature sensor 	*/
-	HMC5983_AVERAGE_8_SAMPLES,		/* Sample averaging config				*/
-	HMC5983_DATA_RATE_75D0_HZ,		/* Output data rate config				*/
-	HMC5983_MEAS_MODE_NORMAL,		/* Measurement mode config				*/
-	HMC5983_GAIN_1D3_GA,			/* Gain config							*/
-	HMC5983_OP_MODE_CONTINOUS,		/* Operating mode config				*/
-	HMC5983_I2C_FAST_DISABLE,		/* Enable/disable 3.4 MHz I2C 			*/
-	HMC5983_LOW_POWER_DISABLE,		/* Enable/disable low power mode 		*/
-	HMC5983_ADDRESS,				/* HMC5983 address 						*/
-	&hmc5983data,					/* Pointer to data holder 				*/
-	&I2CD2							/* Pointer to I2C Driver 				*/
+	HMC5983_TEMPERATURE_ENABLE,		/* Enable/disable temperature sensor */
+	HMC5983_AVERAGE_8_SAMPLES,		/* Sample averaging config			 */
+	HMC5983_DATA_RATE_75D0_HZ,		/* Output data rate config			 */
+	HMC5983_MEAS_MODE_NORMAL,		/* Measurement mode config			 */
+	HMC5983_GAIN_1D3_GA,			/* Gain config						 */
+	HMC5983_OP_MODE_CONTINOUS,		/* Operating mode config			 */
+	HMC5983_I2C_FAST_DISABLE,		/* Enable/disable 3.4 MHz I2C 		 */
+	HMC5983_LOW_POWER_DISABLE,		/* Enable/disable low power mode 	 */
+	HMC5983_ADDRESS,				/* HMC5983 address 					 */
+	&hmc5983data,					/* Pointer to data holder 			 */
+	&I2CD2							/* Pointer to I2C Driver 			 */
 };
 
 static const EXTConfig extcfg = {
@@ -124,10 +124,10 @@ int main(void)
 {
 	/*
 	 * System initializations.
-	 * - HAL initialization, this also initializes the configured device drivers
-	 *   and performs the board-specific initializations.
-	 * - Kernel initialization, the main() function becomes a thread and the
-	 *   RTOS is active.
+	 * - HAL initialization, this also initializes the configured 
+	 *   device drivers and performs the board-specific initializations.
+	 * - Kernel initialization, the main() function becomes a thread
+	 *   and the RTOS is active.
 	 */
 	halInit();
 	chSysInit();
