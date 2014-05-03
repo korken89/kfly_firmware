@@ -54,9 +54,9 @@
 #define HMC5983_DATA_RATE_220D0_HZ		(7 << HMC5983_DO0_BIT)
 
 #define HMC5983_AVERAGE_1_SAMPLE		(0 << HMC5983_MA0_BIT)
-#define HMC5983_AVERAGE_2_SAMPLE		(1 << HMC5983_MA0_BIT)
-#define HMC5983_AVERAGE_4_SAMPLE		(2 << HMC5983_MA0_BIT)
-#define HMC5983_AVERAGE_8_SAMPLE		(3 << HMC5983_MA0_BIT)
+#define HMC5983_AVERAGE_2_SAMPLES		(1 << HMC5983_MA0_BIT)
+#define HMC5983_AVERAGE_4_SAMPLES		(2 << HMC5983_MA0_BIT)
+#define HMC5983_AVERAGE_8_SAMPLES		(3 << HMC5983_MA0_BIT)
 
 #define HMC5983_TEMPERATURE_ENABLE		(1 << HMC5983_CRA7_BIT)
 #define HMC5983_TEMPERATURE_DISABLE		(0 << HMC5983_CRA7_BIT)
@@ -85,6 +85,13 @@
 /* Typedefs */
 typedef struct
 {
+	int16_t mag_data[3];
+	Mutex read_lock;
+	EventSource es;
+} HMC5983_Data;
+
+typedef struct
+{
 	uint8_t temperature_sensor;
 	uint8_t sample_averaging;
 	uint8_t output_rate;
@@ -94,6 +101,7 @@ typedef struct
 	uint8_t i2c_speed;
 	uint8_t low_power_mode;
 	uint8_t address_7bit;
+	HMC5983_Data *data_holder;
 	I2CDriver *i2cp;
 } HMC5983_Configuration;
 

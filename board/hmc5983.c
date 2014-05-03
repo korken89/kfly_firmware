@@ -20,6 +20,16 @@ msg_t HMC5983Init(const HMC5983_Configuration *cfg)
 	static uint8_t txbuf[2];
 	msg_t status = RDY_OK;
 
+	/* Error: Pointers not defined */
+	if ((cfg->data_holder == NULL) || (cfg->i2cp == NULL))
+		return RDY_RESET;
+
+
+	/* Setup the data event source and mutex */
+	chMtxInit(&cfg->data_holder->read_lock);
+	chEvtInit(&cfg->data_holder->es);
+
+
 	/* Setup the sensor */
 	/* Set averaging, update rate and bias */
 	txbuf[0] = HMC5983_RA_CONFIG_A; 	/* Power management register 1 */

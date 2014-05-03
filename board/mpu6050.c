@@ -19,6 +19,17 @@ msg_t MPU6050Init(const MPU6050_Configuration *cfg)
 	static uint8_t txbuf[2];
 	msg_t status = RDY_OK;
 
+
+	/* Error: Pointers not defined */
+	if ((cfg->data_holder == NULL) || (cfg->i2cp == NULL))
+		return RDY_RESET;
+
+
+	/* Setup the data event source and mutex */
+	chMtxInit(&cfg->data_holder->read_lock);
+	chEvtInit(&cfg->data_holder->es);
+
+
 	/* Perform sensor reset */
 	status = MPU6050DeviceReset(cfg);
 
