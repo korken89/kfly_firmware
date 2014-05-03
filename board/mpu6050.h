@@ -269,5 +269,6 @@ msg_t MPU6050GetID(const MPU6050_Configuration *cfg, uint8_t id[1]);
 msg_t MPU6050ReadData(const MPU6050_Configuration *cfg, uint8_t data[14]);
 float MPU6050GetAccelGain(const MPU6050_Configuration *cfg);
 float MPU6050GetGyroGain(const MPU6050_Configuration *cfg);
+float MPU6050GetSampleTime(const MPU6050_Configuration *cfg);
 
 #endif

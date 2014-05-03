@@ -336,3 +336,24 @@ float MPU6050GetGyroGain(const MPU6050_Configuration *cfg)
 	else
 		return 0.0f;
 }
+
+/**
+ * @brief Get the sample time of the sensor
+ * 
+ * @param[in] cfg Pointer to configuration structure
+ * @return The sample time of the sensor in seconds
+ */
+float MPU6050GetSampleTime(const MPU6050_Configuration *cfg)
+{
+	float fs, rate_div;
+
+	/* MPU6050 internal sample rate is 8 kHz if DLP is off, else 1 kHz. */
+	if (cfg->dlp_cfg == MPU6050_DLPF_BW_256)
+		fs = 8000.0f;
+	else
+		fs = 1000.0f;
+
+	rate_div = (float)cfg->sample_rate_divider;
+
+	return (rate_div / fs);
+}
