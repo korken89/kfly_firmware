@@ -82,6 +82,35 @@ static const EXTConfig extcfg = {
 
 void panic(void);
 
+static WORKING_AREA(waThreadTestEvents, 128);
+static msg_t ThreadTestEvents(void *arg)
+{
+	(void)arg;
+	EventListener el;
+	eventmask_t events;
+	int i = 0;
+
+	chEvtRegisterMask(	&hmc5983cfg.data_holder->es,
+						&el,
+						HMC5983_DATA_AVAILABLE_EVENTMASK);	
+	
+	while(1)
+	{
+		events = chEvtWaitOne(HMC5983_DATA_AVAILABLE_EVENTMASK);
+
+		if (events == HMC5983_DATA_AVAILABLE_EVENTMASK)
+		{
+			if (i++ > 10)
+			{
+				palTogglePad(GPIOC, GPIOC_LED_ERR);
+				i = 0;
+			}
+		}
+	}
+
+	return RDY_OK;
+}
+
 int main(void)
 {
 	/*
@@ -119,10 +148,21 @@ int main(void)
 	if (HMC5983Init(&hmc5983cfg) != RDY_OK)
 		panic(); /* Initialization failed */
 	
+	SensorReadInit(&mpu6050cfg, &hmc5983cfg);
+
 	/*
-	 *	Start the external interrupts
+	 * Start the external interrupts
 	 */
 	extStart(&EXTD1, &extcfg);
+
+	/*
+	 * Start test thread
+	 */
+	chThdCreateStatic(	waThreadTestEvents,
+						sizeof(waThreadTestEvents), 
+						HIGHPRIO, 
+						ThreadTestEvents, 
+						NULL);
 
 	while(1)
 	{
