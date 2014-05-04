@@ -5,6 +5,7 @@
 #include "hmc5983.h"
 #include "sensor_calibration.h"
 #include "sensor_read.h"
+#include "rc_output.h"
 
 /* I2C interface #2 Configuration */
 static const I2CConfig i2cfg2 = {
@@ -88,6 +89,26 @@ static const EXTConfig extcfg = {
 		{EXT_CH_MODE_DISABLED, NULL},
 		{EXT_CH_MODE_DISABLED, NULL}
 	}
+};
+
+/* RC Output Configuration */
+static const PWMConfig pwmcfg = {
+	RCOUTPUT_1MHZ_CLOCK_FREQUENCY,		/* 1 MHz PWM clock frequency	*/
+	RCOUTPUT_400HZ,						/* Initial PWM period: 400 Hz	*/
+	NULL,								/* No callback */
+	{
+		{PWM_OUTPUT_ACTIVE_HIGH, NULL}, /* Active high, no callback 	*/
+		{PWM_OUTPUT_ACTIVE_HIGH, NULL}, /* Active high, no callback 	*/
+		{PWM_OUTPUT_ACTIVE_HIGH, NULL}, /* Active high, no callback 	*/
+		{PWM_OUTPUT_ACTIVE_HIGH, NULL}  /* Active high, no callback 	*/
+	},
+	0,
+	0
+};
+static const RCOutput_Configuration rcoutputcfg = {
+	&PWMD4,
+	&PWMD8,
+	&pwmcfg
 };
 
 void panic(void);
@@ -180,6 +201,14 @@ int main(void)
 	 * 
 	 */
 	extStart(&EXTD1, &extcfg);
+
+	/*
+	 *
+	 * Initialize the RC Outputs
+	 * 
+	 */
+	if (RCOutputInit(&rcoutputcfg) != RDY_OK)
+		panic(); /* Initialization failed */
 
 	/*
 	 *
