@@ -10,7 +10,7 @@
 typedef enum
 {
 	RCOUTPUT_400HZ = 2500,
-	RCUTPUT_50HZ = 20000
+	RCOUTPUT_50HZ = 20000
 } RCOutput_Rate_Selector;
 
 typedef enum
