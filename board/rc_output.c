@@ -141,7 +141,9 @@ msg_t RCOutputSetChannelPeriod(const RCOutput_Configuration *cfg,
 							   RCOutput_Bank_Selector sel,
 							   RCOutput_Rate_Selector rate)
 {
-	if ((sel > RCOUTPUT_BANK_5_8) || (rate > RCUTPUT_50HZ))
+	if ((sel > RCOUTPUT_BANK_5_8) ||
+		(rate != RCOUTPUT_400HZ) ||
+		(rate != RCOUTPUT_50HZ))
 		return !RDY_OK;
 
 	if (sel == RCOUTPUT_BANK_1_4)
