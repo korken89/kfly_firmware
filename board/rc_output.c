@@ -18,7 +18,7 @@
 /**
  * @brief Initializes RC outputs
  * 
- * @param[in] rcoutputcfg Pointer to configuration structure
+ * @param[in] cfg Pointer to configuration structure
  * @return RDY_OK if the initialization was successful
  */
 msg_t RCOutputInit(const RCOutput_Configuration *cfg)
