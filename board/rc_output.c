@@ -106,7 +106,7 @@ msg_t RCOutputSetChannelWidthRelativePositive(const RCOutput_Configuration *cfg,
  * 
  * @param[in] cfg Pointer to configuration structure
  * @param[in] sel Channel selector
- * @param[in] width New width in 0.0 to 1.0
+ * @param[in] width New width in -1.0 to 1.0
  * @return RDY_OK if the change was successful
  */
 msg_t RCOutputSetChannelWidthRelative(const RCOutput_Configuration *cfg,
