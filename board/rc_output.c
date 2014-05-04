@@ -18,7 +18,7 @@
 /**
  * @brief Initializes RC outputs
  * 
- * @param rcoutputcfg Pointer to configuration structure
+ * @param[in] rcoutputcfg Pointer to configuration structure
  * @return RDY_OK if the initialization was successful
  */
 msg_t RCOutputInit(const RCOutput_Configuration *cfg)
@@ -46,9 +46,9 @@ msg_t RCOutputInit(const RCOutput_Configuration *cfg)
 /**
  * @brief Set output channel width in microseconds
  * 
- * @param cfg Pointer to configuration structure
- * @param sel Channel selector
- * @param width_us New width in microseconds
+ * @param[in] cfg Pointer to configuration structure
+ * @param[in] sel Channel selector
+ * @param[in] width_us New width in microseconds
  * @return RDY_OK if the change was successful
  */
 msg_t RCOutputSetChannelWidthUs(const RCOutput_Configuration *cfg,
@@ -76,9 +76,9 @@ msg_t RCOutputSetChannelWidthUs(const RCOutput_Configuration *cfg,
  * @brief Set relative output channel width
  * @details Set the width from 1 to 2 milliseconds using 0-1.
  * 
- * @param cfg Pointer to configuration structure
- * @param sel Channel selector
- * @param width New width in 0.0 to 1.0
+ * @param[in] cfg Pointer to configuration structure
+ * @param[in] sel Channel selector
+ * @param[in] width New width in 0.0 to 1.0
  * @return RDY_OK if the change was successful
  */
 msg_t RCOutputSetChannelWidthRelative(const RCOutput_Configuration *cfg,
@@ -104,9 +104,9 @@ msg_t RCOutputSetChannelWidthRelative(const RCOutput_Configuration *cfg,
  * @brief Change the output rate of one output bank
  * @details [long description]
  * 
- * @param cfg Pointer to configuration structure
- * @param sel Bank selector
- * @param rate Rate 
+ * @param[in] cfg Pointer to configuration structure
+ * @param[in] sel Bank selector
+ * @param[in] rate Rate 
  * @return RDY_OK if the change was successful
  */
 msg_t RCOutputSetChannelPeriod(const RCOutput_Configuration *cfg,
