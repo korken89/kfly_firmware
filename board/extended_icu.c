@@ -1,6 +1,6 @@
 /* *
  *
- * Abstraction Layer for Timer Input Capture
+ * Hardware Abstraction Layer for Extended Input Capture Unit
  *
  * */
 

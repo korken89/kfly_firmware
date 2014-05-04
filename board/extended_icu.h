@@ -1,6 +1,7 @@
 #ifndef __EXTENDED_ICU_H
 #define __EXTENDED_ICU_H
 
+#include "stm32_tim.h"
 
 /* Defines */
 /* Input capture Polarity */
