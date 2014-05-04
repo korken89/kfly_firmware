@@ -43,6 +43,9 @@ msg_t RCOutputInit(const RCOutput_Configuration *cfg);
 msg_t RCOutputSetChannelWidthUs(const RCOutput_Configuration *cfg,
 							   RCOutput_Channel_Selector sel, 
 							   pwmcnt_t width_us);
+msg_t RCOutputSetChannelWidthRelativePositive(const RCOutput_Configuration *cfg,
+							 		 		  RCOutput_Channel_Selector sel, 
+							 		 		  float width);
 msg_t RCOutputSetChannelWidthRelative(const RCOutput_Configuration *cfg,
 							 		 RCOutput_Channel_Selector sel, 
 							 		 float width);

@@ -74,16 +74,16 @@ msg_t RCOutputSetChannelWidthUs(const RCOutput_Configuration *cfg,
 
 /**
  * @brief Set relative output channel width
- * @details Set the width from 1 to 2 milliseconds using 0-1.
+ * @details Set the width from 1 to 2 milliseconds using 0% to 100%.
  * 
  * @param[in] cfg Pointer to configuration structure
  * @param[in] sel Channel selector
  * @param[in] width New width in 0.0 to 1.0
  * @return RDY_OK if the change was successful
  */
-msg_t RCOutputSetChannelWidthRelative(const RCOutput_Configuration *cfg,
-							 		 RCOutput_Channel_Selector sel, 
-							 		 float width)
+msg_t RCOutputSetChannelWidthRelativePositive(const RCOutput_Configuration *cfg,
+							 		 		  RCOutput_Channel_Selector sel, 
+							 		 		  float width)
 {
 	if (sel > RCOUTPUT_CHANNEL_8)
 		return !RDY_OK;
@@ -98,6 +98,34 @@ msg_t RCOutputSetChannelWidthRelative(const RCOutput_Configuration *cfg,
 	return RCOutputSetChannelWidthUs(cfg,
 							  		 sel, 
 							  		 (pwmcnt_t)(width * 1000.0f + 1000.0f));
+}
+
+/**
+ * @brief Set relative output channel width
+ * @details Set the width from 1 to 2 milliseconds using -100% to 100%.
+ * 
+ * @param[in] cfg Pointer to configuration structure
+ * @param[in] sel Channel selector
+ * @param[in] width New width in 0.0 to 1.0
+ * @return RDY_OK if the change was successful
+ */
+msg_t RCOutputSetChannelWidthRelative(const RCOutput_Configuration *cfg,
+							 		  RCOutput_Channel_Selector sel, 
+							 		  float width)
+{
+	if (sel > RCOUTPUT_CHANNEL_8)
+		return !RDY_OK;
+
+	/* Bound the width from -100% to 100% */
+	if (width < -1.0f)
+		width = -1.0f;
+	else if (width > 1.0f)
+		width = 1.0f;
+
+	/* Convert to us and send */
+	return RCOutputSetChannelWidthUs(cfg,
+							  		 sel, 
+							  		 (pwmcnt_t)(width * 500.0f + 1500.0f));
 }
 
 /**
