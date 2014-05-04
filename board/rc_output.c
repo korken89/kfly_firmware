@@ -15,32 +15,44 @@
 
 /* Private external functions */
 
-
-msg_t RCOutputInit(const RCOutput_Configuration *rcoutputcfg)
+/**
+ * @brief Initializes RC outputs
+ * 
+ * @param rcoutputcfg Pointer to configuration structure
+ * @return RDY_OK if the initialization was successful
+ */
+msg_t RCOutputInit(const RCOutput_Configuration *cfg)
 {
 	msg_t status = RDY_OK;
 
-	pwmStart(rcoutputcfg->pwmp_lowbank, rcoutputcfg->pwmcfg);
-	pwmStart(rcoutputcfg->pwmp_highbank, rcoutputcfg->pwmcfg);
+	pwmStart(cfg->pwmp_lowbank, cfg->pwmcfg);
+	pwmStart(cfg->pwmp_highbank, cfg->pwmcfg);
 
 	/* Initialize with lowest output width */
-	pwmEnableChannel(rcoutputcfg->pwmp_lowbank, 0, 1000);
-	pwmEnableChannel(rcoutputcfg->pwmp_lowbank, 1, 1000);
-	pwmEnableChannel(rcoutputcfg->pwmp_lowbank, 2, 1000);
-	pwmEnableChannel(rcoutputcfg->pwmp_lowbank, 3, 1000);
+	pwmEnableChannel(cfg->pwmp_lowbank, 0, 1000);
+	pwmEnableChannel(cfg->pwmp_lowbank, 1, 1000);
+	pwmEnableChannel(cfg->pwmp_lowbank, 2, 1000);
+	pwmEnableChannel(cfg->pwmp_lowbank, 3, 1000);
 
-	pwmEnableChannel(rcoutputcfg->pwmp_highbank, 0, 1000);
-	pwmEnableChannel(rcoutputcfg->pwmp_highbank, 1, 1000);
-	pwmEnableChannel(rcoutputcfg->pwmp_highbank, 2, 1000);
-	pwmEnableChannel(rcoutputcfg->pwmp_highbank, 3, 1000);
+	pwmEnableChannel(cfg->pwmp_highbank, 0, 1000);
+	pwmEnableChannel(cfg->pwmp_highbank, 1, 1000);
+	pwmEnableChannel(cfg->pwmp_highbank, 2, 1000);
+	pwmEnableChannel(cfg->pwmp_highbank, 3, 1000);
 
 	return status;
 }
 
 
-
-msg_t RCOutputSetChannelWidthUs(const RCOutput_Configuration *rcoutputcfg,
-							   RCOutput_Channel_Sector sel, 
+/**
+ * @brief Set output channel width in microseconds
+ * 
+ * @param cfg Pointer to configuration structure
+ * @param sel Channel selector
+ * @param width_us New width in microseconds
+ * @return RDY_OK if the change was successful
+ */
+msg_t RCOutputSetChannelWidthUs(const RCOutput_Configuration *cfg,
+							   RCOutput_Channel_Selector sel, 
 							   pwmcnt_t width_us)
 {
 	static const uint32_t pwmchannellut[8] = {3, 2, 1, 0, 3, 2, 1, 0};
@@ -49,19 +61,28 @@ msg_t RCOutputSetChannelWidthUs(const RCOutput_Configuration *rcoutputcfg,
 		return !RDY_OK;
 
 	if (sel <= RCOUTPUT_CHANNEL_4)
-		pwmEnableChannel(rcoutputcfg->pwmp_lowbank,
+		pwmEnableChannel(cfg->pwmp_lowbank,
 						 pwmchannellut[sel],
 						 width_us);
 	else
-		pwmEnableChannel(rcoutputcfg->pwmp_highbank, 
+		pwmEnableChannel(cfg->pwmp_highbank, 
 						 pwmchannellut[sel], 
 						 width_us);
 
 	return RDY_OK;
 }
 
-msg_t RCOutputSetChannelWidthRelative(const RCOutput_Configuration *rcoutputcfg,
-							 		 RCOutput_Channel_Sector sel, 
+/**
+ * @brief Set relative output channel width
+ * @details Set the width from 1 to 2 milliseconds using 0-1.
+ * 
+ * @param cfg Pointer to configuration structure
+ * @param sel Channel selector
+ * @param width New width in 0.0 to 1.0
+ * @return RDY_OK if the change was successful
+ */
+msg_t RCOutputSetChannelWidthRelative(const RCOutput_Configuration *cfg,
+							 		 RCOutput_Channel_Selector sel, 
 							 		 float width)
 {
 	if (sel > RCOUTPUT_CHANNEL_8)
@@ -74,24 +95,31 @@ msg_t RCOutputSetChannelWidthRelative(const RCOutput_Configuration *rcoutputcfg,
 		width = 1.0f;
 
 	/* Convert to us and send */
-	RCOutputSetChannelWidthUs(rcoutputcfg,
-							  sel, 
-							  (pwmcnt_t)(width * 1000.0f + 1000.0f));
-
-	return RDY_OK;
+	return RCOutputSetChannelWidthUs(cfg,
+							  		 sel, 
+							  		 (pwmcnt_t)(width * 1000.0f + 1000.0f));
 }
 
-msg_t RCOutputSetChannelPeriod(const RCOutput_Configuration *rcoutputcfg,
-							   RCOutput_Bank_Sector sel,
-							   RCOutput_Rate_Sector rate)
+/**
+ * @brief Change the output rate of one output bank
+ * @details [long description]
+ * 
+ * @param cfg Pointer to configuration structure
+ * @param sel Bank selector
+ * @param rate Rate 
+ * @return RDY_OK if the change was successful
+ */
+msg_t RCOutputSetChannelPeriod(const RCOutput_Configuration *cfg,
+							   RCOutput_Bank_Selector sel,
+							   RCOutput_Rate_Selector rate)
 {
 	if ((sel > RCOUTPUT_BANK_5_8) || (rate > RCUTPUT_50HZ))
 		return !RDY_OK;
 
 	if (sel == RCOUTPUT_BANK_1_4)
-		pwmChangePeriod(rcoutputcfg->pwmp_lowbank, (pwmcnt_t)rate);
+		pwmChangePeriod(cfg->pwmp_lowbank, (pwmcnt_t)rate);
 	else
-		pwmChangePeriod(rcoutputcfg->pwmp_highbank, (pwmcnt_t)rate);
+		pwmChangePeriod(cfg->pwmp_highbank, (pwmcnt_t)rate);
 
 	return RDY_OK;
 }

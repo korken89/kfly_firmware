@@ -11,7 +11,7 @@ typedef enum
 {
 	RCOUTPUT_400HZ = 2500,
 	RCUTPUT_50HZ = 20000
-} RCOutput_Rate_Sector;
+} RCOutput_Rate_Selector;
 
 typedef enum
 {
@@ -23,13 +23,13 @@ typedef enum
 	RCOUTPUT_CHANNEL_6 = 5,
 	RCOUTPUT_CHANNEL_7 = 6,
 	RCOUTPUT_CHANNEL_8 = 7
-} RCOutput_Channel_Sector;
+} RCOutput_Channel_Selector;
 
 typedef enum
 {
 	RCOUTPUT_BANK_1_4 = 0,
 	RCOUTPUT_BANK_5_8 = 1
-} RCOutput_Bank_Sector;
+} RCOutput_Bank_Selector;
 
 typedef struct
 {
@@ -39,16 +39,16 @@ typedef struct
 } RCOutput_Configuration;
 
 /* Global function defines */
-msg_t RCOutputInit(const RCOutput_Configuration *rcoutputcfg);
-msg_t RCOutputSetChannelWidthUs(const RCOutput_Configuration *rcoutputcfg,
-							   RCOutput_Channel_Sector sel, 
+msg_t RCOutputInit(const RCOutput_Configuration *cfg);
+msg_t RCOutputSetChannelWidthUs(const RCOutput_Configuration *cfg,
+							   RCOutput_Channel_Selector sel, 
 							   pwmcnt_t width_us);
-msg_t RCOutputSetChannelWidthRelative(const RCOutput_Configuration *rcoutputcfg,
-							 		 RCOutput_Channel_Sector sel, 
+msg_t RCOutputSetChannelWidthRelative(const RCOutput_Configuration *cfg,
+							 		 RCOutput_Channel_Selector sel, 
 							 		 float width);
-msg_t RCOutputSetChannelPeriod(const RCOutput_Configuration *rcoutputcfg,
-							   RCOutput_Bank_Sector sel,
-							   RCOutput_Rate_Sector rate);
+msg_t RCOutputSetChannelPeriod(const RCOutput_Configuration *cfg,
+							   RCOutput_Bank_Selector sel,
+							   RCOutput_Rate_Selector rate);
 
 
 #endif
