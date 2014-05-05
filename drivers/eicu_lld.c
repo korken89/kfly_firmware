@@ -416,6 +416,24 @@ void eicu_lld_start(EICUDriver *eicup) {
               (eicup->config->iccfgp[3] == NULL),
               "icu_lld_start(), #1", "invalid input configuration");
 
+#if STM32_EICU_USE_TIM9
+  chDbgAssert((eicup == &EICUD9) &&
+             ((eicup->config->iccfgp[2] != NULL) ||
+              (eicup->config->iccfgp[3] != NULL)),
+              "icu_lld_start(), #1", "TIM9 and TIM12 does not have CCR2");
+#elif STM32_EICU_USE_TIM12
+  chDbgAssert((eicup == &EICUD12) &&
+             ((eicup->config->iccfgp[2] != NULL) ||
+              (eicup->config->iccfgp[3] != NULL)),
+              "icu_lld_start(), #1", "TIM9 and TIM12 does not have CCR2");
+#elif STM32_EICU_USE_TIM9 && STM32_EICU_USE_TIM12
+  chDbgAssert(((eicup == &EICUD9) ||
+               (eicup == &EICUD12)) &&
+              ((eicup->config->iccfgp[2] != NULL) ||
+               (eicup->config->iccfgp[3] != NULL)),
+              "icu_lld_start(), #1", "TIM9 and TIM12 does not have CCR2");
+#endif
+
   if (eicup->state == EICU_STOP) {
     /* Clock activation and timer reset.*/
 #if STM32_EICU_USE_TIM1
@@ -527,6 +545,7 @@ void eicu_lld_start(EICUDriver *eicup) {
   eicup->wccrp[1] = NULL;
   eicup->wccrp[2] = NULL;
   eicup->wccrp[3] = NULL;
+  eicup->pccrp = NULL;
 
 #if STM32_EICU_USE_TIM9
   if (eicup != &EICUD9)
@@ -610,30 +629,12 @@ void eicu_lld_start(EICUDriver *eicup) {
       eicup->wccrp[1] = &eicup->tim->CCR[1];
     }
 
-#if STM32_EICU_USE_TIM9
-    if ((eicup->config->iccfgp[2] != NULL) && (eicup != &EICUD9)) {
-#elif STM32_EICU_USE_TIM12
-    if ((eicup->config->iccfgp[2] != NULL) && (eicup != &EICUD12)) {
-#elif STM32_EICU_USE_TIM9 && STM32_EICU_USE_TIM12
-    if ((eicup->config->iccfgp[2] != NULL) && ((eicup != &EICUD9) ||
-                                               (eicup != &EICUD12))) {
-#else
     if (eicup->config->iccfgp[2] != NULL) {
-#endif
       eicup->tim->CCMR2 |= STM32_TIM_CCMR1_CC1S(1);
       eicup->wccrp[2] = &eicup->tim->CCR[2];
     }
 
-#if STM32_EICU_USE_TIM9
-    if ((eicup->config->iccfgp[3] != NULL) && (eicup != &EICUD9)) {
-#elif STM32_EICU_USE_TIM12
-    if ((eicup->config->iccfgp[3] != NULL) && (eicup != &EICUD12)) {
-#elif STM32_EICU_USE_TIM9 && STM32_EICU_USE_TIM12
-    if ((eicup->config->iccfgp[3] != NULL) && ((eicup != &EICUD9) ||
-                                               (eicup != &EICUD12))) {
-#else
     if (eicup->config->iccfgp[3] != NULL) {
-#endif
       eicup->tim->CCMR2 |= STM32_TIM_CCMR1_CC2S(1);
       eicup->wccrp[3] = &eicup->tim->CCR[3];
     }
