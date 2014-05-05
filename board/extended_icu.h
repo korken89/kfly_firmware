@@ -3,7 +3,11 @@
 
 #include "stm32_tim.h"
 
-/* Defines */
+
+/*===========================================================================*/
+/* Driver constants.                                                         */
+/*===========================================================================*/
+
 /* Input capture Polarity */
 #define EICU_ICPolarity_Rising				((uint16_t)0x0000)
 #define EICU_ICPolarity_Falling				((uint16_t)0x0002)
@@ -32,19 +36,60 @@
 
 #define EICU_SlaveMode_Reset				((uint16_t)0x0004)
 
-/* Global variable defines */
 
+/*===========================================================================*/
+/* Driver pre-compile time settings.                                         */
+/*===========================================================================*/
 
-/* Typedefs */
+/*===========================================================================*/
+/* Derived constants and error checks.                                       */
+/*===========================================================================*/
+
+/*===========================================================================*/
+/* Driver data structures and types.                                         */
+/*===========================================================================*/
+/**
+ * @brief   Driver state machine possible states.
+ */
+typedef enum {
+  EICU_UNINIT = 0,						/* Not initialized.					  */
+  EICU_STOP = 1,						/* Stopped.							  */
+  EICU_READY = 2,						/* Ready.							  */
+  EICU_WAITING = 3,						/* Waiting for first edge.			  */
+  EICU_ACTIVE = 4,						/* Active cycle phase.				  */
+  EICU_IDLE = 5							/* Idle cycle phase.				  */
+} eicustate_t;
+
+/**
+ * @brief   Input type selector.
+ */
+typedef enum {
+  EICU_INPUT_EDGE = 0,					/* Triggers callback on input edge */
+  EICU_INPUT_PULSE = 1,					/* Triggers callback on detected
+  										   pulse */
+  EICU_INPUT_PWM = 2					/* Triggers callback on detected PWM
+										   period and width */
+} eicuinput_t;
+
 /** 
  * @brief	EICU channel selection definition
  */
 typedef enum {
-	EICU_Channel_1 = 0,
-	EICU_Channel_2 = 1,
-	EICU_Channel_3 = 2,
-	EICU_Channel_4 = 3,
-} EICU_Channel;
+	EICU_CHANNEL_1 = 0,
+	EICU_CHANNEL_2 = 1,
+	EICU_CHANNEL_3 = 2,
+	EICU_CHANNEL_4 = 3
+} eicuchannel_t;
+
+/** 
+ * @brief	EICU PWM channel selection definition
+ */
+typedef enum {
+	EICU_PWM_CHANNEL_1 = 0,
+	EICU_PWM_CHANNEL_2 = 1
+} eicupwmchannel_t;
+
+typedef struct EICUDriver EICUDriver;
 
 /**
  * @brief	EICU notification callback type.
@@ -52,7 +97,7 @@ typedef enum {
  * @param[in] eicup 	Pointer to a EICUDriver object
  * @param[in] channel 	EICU channel that fired the interrupt
  */
-typedef void (*eicucallback_t)(ICUDriver *eicup, EICU_Channel channel);
+typedef void (*eicucallback_t)(EICUDriver *eicup, eicuchannel_t channel);
 
 /** 
  * @brief	EICU Time Base Settings structure definition
@@ -61,10 +106,10 @@ typedef struct
 {
 	uint16_t EICU_Prescaler; /* Specifies the prescaler value used to divide
 								the timer clock.  This parameter can be between 
-								0x0000 and 0xFFFF */
+								0x0000 and 0xFFFF. 							  */
 
 	uint32_t EICU_Period;	 /* Specifies the period value of the timer. This
-								parameter can be between 0x0000 and 0xFFFF */
+								parameter can be between 0x0000 and 0xFFFF.   */
 } EICU_TimeBase_Settings; 
 
 /** 
@@ -73,67 +118,124 @@ typedef struct
 typedef struct
 {
 	uint16_t EICU_ICPolarity;	/* Specifies the active edge of the input
-								   signal. */
+								   signal. 									  */
 
-	uint16_t EICU_ICSelection;  /* Specifies the input selection. */
+	uint16_t EICU_ICSelection;  /* Specifies the input selection. 			  */
 
-	uint16_t EICU_ICPrescaler;  /* Specifies the Input Capture Prescaler. */
+	uint16_t EICU_ICPrescaler;  /* Specifies the Input Capture Prescaler. 	  */
 
 	uint16_t EICU_ICFilter;     /* Specifies the input capture filter. This
 								   parameter can be a number between
-								   0x0 and 0xF */
+								   0x0 and 0xF. 							  */
 
-	eicucallback_t capture_cb;	/* Capture event callback */
+	eicucallback_t width_cb;	/* Capture event callback. Used for PWM width,
+								   Pulse width and normal capture event.	  */
 
-	eicucallback_t period_cb;	/* Period capture event callback */
+	eicucallback_t period_cb;	/* Period capture event callback. 			  */
 
-	eicucallback_t overflow_cb;	/* Timer overflow event callback */
+	eicucallback_t overflow_cb;	/* Timer overflow event callback. 			  */
 } EICU_IC_Settings;
+
+typedef struct 
+{
+	eicupwmchannel_t channel;			/* Timer input channel to be used for
+										   PWM input 						  */
+
+	uint16_t EICU_InputTriggerSource;	/* Select the input trigger for PWM
+										   measurement mode. This parameter
+										   can be EICU_TS_TI1FP1 or 
+										   EICU_TS_TI2FP2. 					  */
+} EICU_PWM_Settings;
 
 /** 
  * @brief	EICU Input Capture Config structure definition  
  */
 typedef struct
 {
-	bool_t pwm_measurement;				/* PWM Measurement can be
-										   TRUE or FALSE */
+	eicuinput_t input_type;				/* Select which input type the driver 
+										   will be configured for			  */
 
-	uint16_t EICU_InputTriggerSource;	/* Select the input trigger for PWM
-										   measurement mode. This parameter can
-										   be EICU_TS_TI1FP1 or 
-										   EICU_TS_TI2FP2 */
-
-	EICU_TimeBase_Settings tbcfg;		/* TimeBase settings */
+	EICU_TimeBase_Settings tbcfg;		/* TimeBase settings. 				  */
 
 	EICU_IC_Settings *iccfgp[4];		/* Pointer to each Input Capture channel
 										   configuration. A NULL parameter
 										   indicates the channel as unused. 
 										   Note: In PWM mode, only Channel 1 OR
-										   Channel 2 may be used. */
+										   Channel 2 may be used. 			  */
+
+	EICU_PWM_Settings *pwmcfg;			/* Pointer to the PWM input
+										   configuration. A NULL parameter
+										   indicates the feature as unused.   */
 } EICU_Config;
 
 /** 
  * @brief	EICU Input Capture Driver structure definition  
  */
-typedef struct
+struct EICUDriver
 {
 	stm32_tim_t *tim;					/* Timer peripheral for
-										   Input Capture. */
+										   Input Capture. 					  */
 
-	uint32_t clock;						/* Timer base clock. */
+	eicustate_t state;					/* Driver state. 					  */
 
-	EICU_Config *cfg;					/* Pointer to configuration for the
-										   driver. */
+	uint32_t clock;						/* Timer base clock. 				  */
 
-	volatile uint32_t *wccrp[4];		/* CCR registers for width capture. */
+	EICU_Config *config;				/* Pointer to configuration for the
+										   driver. 							  */
+
+	volatile uint32_t *wccrp[4];		/* CCR registers for width capture.   */
 
 	volatile uint32_t *pccrp;			/* CCR register for period capture.
 										   Only one is needed since only one
-										   PWM input per timer is allowed. */
-} EICUDriver;
+										   PWM input per timer is allowed. 	  */
+};
 
+/*===========================================================================*/
+/* Driver macros.                                                            */
+/*===========================================================================*/
 
-/* Global Variable Defines */
+/**
+ * @brief   Common ISR code, EICU width event.
+ *
+ * @param[in] icup      Pointer to the EICUDriver object
+ *
+ * @notapi
+ */
+#define _eicu_isr_invoke_width_cb(eicup, n) {                                \
+  if ((eicup)->state != EICU_WAITING) {                                      \
+    (eicup)->state = EICU_IDLE;                                              \
+    (eicup)->config->iccfgp[n]->width_cb(eicup, n);                          \
+  }                                                                          \
+}
+
+/**
+ * @brief   Common ISR code, EICU period event.
+ *
+ * @param[in] icup      Pointer to the EICUDriver object
+ *
+ * @notapi
+ */
+#define _eicu_isr_invoke_period_cb(eicup, n) {                               \
+  eicustate_t previous_state = (eicup)->state;                               \
+  (eicup)->state = EICU_ACTIVE;                                              \
+  if (previous_state != EICU_WAITING)                                        \
+    (eicup)->config->iccfgp[n]->period_cb(eicup, n);                         \
+}
+
+/**
+ * @brief   Common ISR code, EICU timer overflow event.
+ *
+ * @param[in] icup      Pointer to the EICUDriver object
+ *
+ * @notapi
+ */
+#define _eicu_isr_invoke_overflow_cb(icup, n) {                              \
+  (eicup)->config->iccfgp[n]->overflow_cb(eicup, n);                         \
+}
+
+/*===========================================================================*/
+/* External declarations.                                                    */
+/*===========================================================================*/
 #if STM32_EICU_USE_TIM1 && !defined(__DOXYGEN__)
 extern EICUDriver EICUD1;
 #endif
@@ -166,6 +268,6 @@ extern EICUDriver EICUD9;
 extern EICUDriver EICUD12;
 #endif
 
-/* Global function defines */
+
 
 #endif
