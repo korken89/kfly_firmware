@@ -547,7 +547,7 @@ void eicu_lld_start(EICUDriver *eicup) {
   
         /* Direct pointers to the capture registers in order to make reading
            data faster from within callbacks.*/
-        eicup->wccrp[0] = &eicup->tim->CCR[1];
+        eicup->wccrp[EICU_PWM_CHANNEL_1] = &eicup->tim->CCR[1];
         eicup->pccrp = &eicup->tim->CCR[0];
       } else {
         /* Selected input 2.
@@ -572,13 +572,22 @@ void eicu_lld_start(EICUDriver *eicup) {
   
       /* Direct pointers to the capture registers in order to make reading
          data faster from within callbacks.*/
-      eicup->wccrp[0] = &eicup->tim->CCR[0];
+      eicup->wccrp[EICU_PWM_CHANNEL_2] = &eicup->tim->CCR[0];
       eicup->pccrp = &eicup->tim->CCR[1];
     }
-  } else if (eicup->config->input_type == EICU_INPUT_PULSE) {
-
-  } else { /* EICU_INPUT_EDGE */
-
+  } else { /* EICU_INPUT_EDGE & EICU_INPUT_PULSE */
+    if (eicup->config->iccfgp[0] != NULL) {
+      
+    }
+    if (eicup->config->iccfgp[1] != NULL) {
+      
+    }
+    if (eicup->config->iccfgp[2] != NULL) {
+      
+    }
+    if (eicup->config->iccfgp[3] != NULL) {
+      
+    }
   }
 }
 
