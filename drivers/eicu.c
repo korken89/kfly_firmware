@@ -8,7 +8,7 @@
 
 #include "ch.h"
 #include "hal.h"
-#include "eicu.h"
+#include "eicu.h" /* Should be in hal.h but is not a part of ChibiOS */
 
 #if HAL_USE_EICU || defined(__DOXYGEN__)
 
@@ -35,8 +35,6 @@
 
 /**
  * @brief   EICU Driver initialization.
- * @note    This function is implicitly invoked by @p halInit(), there is
- *          no need to explicitly initialize the driver.
  *
  * @init
  */

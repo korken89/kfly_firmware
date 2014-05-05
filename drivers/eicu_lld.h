@@ -10,32 +10,32 @@
 /*===========================================================================*/
 
 /* Input capture Polarity */
-#define EICU_ICPolarity_Rising				((uint16_t)0x0000)
-#define EICU_ICPolarity_Falling				((uint16_t)0x0002)
-#define EICU_ICPolarity_BothEdge			((uint16_t)0x000A)
+#define EICU_ICPolarity_Rising        ((uint16_t)0x0000)
+#define EICU_ICPolarity_Falling       ((uint16_t)0x0002)
+#define EICU_ICPolarity_BothEdge      ((uint16_t)0x000A)
 
 /* Input capture selection */
-#define EICU_ICSelection_DirectTI			((uint16_t)0x0001)
-#define EICU_ICSelection_IndirectTI 		((uint16_t)0x0002)
+#define EICU_ICSelection_DirectTI     ((uint16_t)0x0001)
+#define EICU_ICSelection_IndirectTI     ((uint16_t)0x0002)
 
 /* Input capture prescaler */
-#define EICU_ICPSC_DIV1						((uint16_t)0x0000)
-#define EICU_ICPSC_DIV2						((uint16_t)0x0004)
-#define EICU_ICPSC_DIV4						((uint16_t)0x0008)
-#define EICU_ICPSC_DIV8						((uint16_t)0x000C)
+#define EICU_ICPSC_DIV1           ((uint16_t)0x0000)
+#define EICU_ICPSC_DIV2           ((uint16_t)0x0004)
+#define EICU_ICPSC_DIV4           ((uint16_t)0x0008)
+#define EICU_ICPSC_DIV8           ((uint16_t)0x000C)
 
 /* Interrupts */
-#define EICU_IT_Update						((uint16_t)0x0001)
-#define EICU_IT_CC1							((uint16_t)0x0002)
-#define EICU_IT_CC2							((uint16_t)0x0004)
-#define EICU_IT_CC3							((uint16_t)0x0008)
-#define EICU_IT_CC4							((uint16_t)0x0010)
+#define EICU_IT_Update            ((uint16_t)0x0001)
+#define EICU_IT_CC1             ((uint16_t)0x0002)
+#define EICU_IT_CC2             ((uint16_t)0x0004)
+#define EICU_IT_CC3             ((uint16_t)0x0008)
+#define EICU_IT_CC4             ((uint16_t)0x0010)
 
 /* Input Trigger Sources */
-#define EICU_TS_TI1FP1						((uint16_t)0x0050)
-#define EICU_TS_TI2FP2						((uint16_t)0x0060)
+#define EICU_TS_TI1FP1            ((uint16_t)0x0050)
+#define EICU_TS_TI2FP2            ((uint16_t)0x0060)
 
-#define EICU_SlaveMode_Reset				((uint16_t)0x0004)
+#define EICU_SlaveMode_Reset        ((uint16_t)0x0004)
 
 
 /*===========================================================================*/
@@ -211,10 +211,10 @@
 #error "TIM12 not present in the selected device"
 #endif
 
-#if !STM32_EICU_USE_TIM1 && !STM32_EICU_USE_TIM2 &&                           \
-    !STM32_EICU_USE_TIM3 && !STM32_EICU_USE_TIM4 &&                           \
-    !STM32_EICU_USE_TIM5 && !STM32_EICU_USE_TIM8 &&                           \
-    !STM32_EICU_USE_TIM9 && !STM32_EICU_USE_TIM9
+#if !STM32_EICU_USE_TIM1 && !STM32_EICU_USE_TIM2 &&                          \
+    !STM32_EICU_USE_TIM3 && !STM32_EICU_USE_TIM4 &&                          \
+    !STM32_EICU_USE_TIM5 && !STM32_EICU_USE_TIM8 &&                          \
+    !STM32_EICU_USE_TIM9 && !STM32_EICU_USE_TIM12
 #error "EICU driver activated but no TIM peripheral assigned"
 #endif
 
@@ -253,7 +253,7 @@
 #error "Invalid IRQ priority assigned to TIM9"
 #endif
 
-#if STM32_EICU_USE_TIM12 &&                                                   \
+#if STM32_EICU_USE_TIM12 &&                                                  \
     !CORTEX_IS_VALID_KERNEL_PRIORITY(STM32_EICU_TIM12_IRQ_PRIORITY)
 #error "Invalid IRQ priority assigned to TIM12"
 #endif
@@ -289,6 +289,15 @@
 /*===========================================================================*/
 /* Driver data structures and types.                                         */
 /*===========================================================================*/
+
+/**
+ * @brief   EICU driver mode.
+ */
+typedef enum {
+  EICU_INPUT_ACTIVE_HIGH = 0,        /* Trigger on rising edge.             */
+  EICU_INPUT_ACTIVE_LOW = 1,         /* Trigger on falling edge.            */
+} eicumode_t;
+
 /**
  * @brief   EICU frequency type.
  */
@@ -305,92 +314,61 @@ typedef uint32_t eicuper_t;
 typedef uint16_t eicucnt_t;
 
 /** 
- * @brief	EICU Time Base Settings structure definition
+ * @brief EICU Input Capture Settings structure definition  
  */
 typedef struct
 {
-	eicufreq_t frequency; /* Specifies the Timer clock in Hz. 				  */
+  eicumode_t mode;                /* Specifies the active edge of the input
+                                     signal.                                  */
 
-	eicuper_t period;	 /* Specifies the period value of the timer. This
-							parameter can be between 0x0000 and 0xFFFF.  	 */
-} EICU_TimeBase_Settings; 
+  eicucallback_t width_cb;        /* Capture event callback. Used for PWM width,
+                                     Pulse width and normal capture event.    */
 
-/** 
- * @brief	EICU Input Capture Settings structure definition  
- */
-typedef struct
-{
-	uint16_t EICU_ICPolarity;	/* Specifies the active edge of the input
-								   signal. 									  */
+  eicucallback_t period_cb;       /* Period capture event callback.           */
 
-	uint16_t EICU_ICSelection;  /* Specifies the input selection. 			  */
-
-	uint16_t EICU_ICPrescaler;  /* Specifies the Input Capture Prescaler. 	  */
-
-	uint16_t EICU_ICFilter;     /* Specifies the input capture filter. This
-								   parameter can be a number between
-								   0x0 and 0xF. 							  */
-
-	eicucallback_t width_cb;	/* Capture event callback. Used for PWM width,
-								   Pulse width and normal capture event.	  */
-
-	eicucallback_t period_cb;	/* Period capture event callback. 			  */
-
-	eicucallback_t overflow_cb;	/* Timer overflow event callback. 			  */
+  eicucallback_t overflow_cb;     /* Timer overflow event callback.           */
 } EICU_IC_Settings;
 
-typedef struct 
-{
-	eicupwmchannel_t channel;			/* Timer input channel to be used for
-										   PWM input 						  */
-
-	uint16_t EICU_InputTriggerSource;	/* Select the input trigger for PWM
-										   measurement mode. This parameter
-										   can be EICU_TS_TI1FP1 or 
-										   EICU_TS_TI2FP2. 					  */
-} EICU_PWM_Settings;
-
 /** 
- * @brief	EICU Input Capture Config structure definition  
+ * @brief EICU Input Capture Config structure definition  
  */
 typedef struct
 {
-	eicuinput_t input_type;				/* Select which input type the driver 
-										   will be configured for			  */
+  eicuinput_t input_type;         /* Select which input type the driver 
+                                   will be configured for                     */
 
-	EICU_TimeBase_Settings tbcfg;		/* TimeBase settings. 				  */
+  eicufreq_t frequency;           /* Specifies the Timer clock in Hz.         */
 
-	EICU_IC_Settings *iccfgp[4];		/* Pointer to each Input Capture channel
-										   configuration. A NULL parameter
-										   indicates the channel as unused. 
-										   Note: In PWM mode, only Channel 1 OR
-										   Channel 2 may be used. 			  */
+  EICU_IC_Settings *iccfgp[4];    /* Pointer to each Input Capture channel
+                                     configuration. A NULL parameter
+                                     indicates the channel as unused. 
+                                     Note: In PWM mode, only Channel 1 OR
+                                     Channel 2 may be used.                   */
 
-	EICU_PWM_Settings *pwmcfg;			/* Pointer to the PWM input
-										   configuration. A NULL parameter
-										   indicates the feature as unused.   */
+   eicupwmchannel_t pwm_channel;    /* Timer input channel to be used for
+                                       PWM input                              */
+
+  uint32_t                  dier; /* TIM DIER register initialization data.   */
 } EICUConfig;
 
 /** 
- * @brief	EICU Input Capture Driver structure definition  
+ * @brief EICU Input Capture Driver structure definition  
  */
 struct EICUDriver
 {
-	stm32_tim_t *tim;					/* Timer peripheral for
-										   Input Capture. 					  */
+  stm32_tim_t *tim;               /* Timer peripheral for Input Capture.      */
 
-	eicustate_t state;					/* Driver state. 					  */
+  eicustate_t state;              /* Driver state.                            */
 
-	uint32_t clock;						/* Timer base clock. 				  */
+  uint32_t clock;                 /* Timer base clock.                        */
 
-	const EICUConfig *config;			/* Pointer to configuration for the
-										   driver. 							  */
+  const EICUConfig *config;       /* Pointer to configuration for the driver. */
 
-	volatile uint32_t *wccrp[4];		/* CCR registers for width capture.   */
+  volatile uint32_t *wccrp[4];    /* CCR registers for width capture.         */
 
-	volatile uint32_t *pccrp;			/* CCR register for period capture.
-										   Only one is needed since only one
-										   PWM input per timer is allowed. 	  */
+  volatile uint32_t *pccrp;       /* CCR register for period capture.
+                                     Only one is needed since only one
+                                     PWM input per timer is allowed.          */
 };
 
 /*===========================================================================*/

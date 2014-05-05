@@ -23,41 +23,41 @@
  * @brief   Driver state machine possible states.
  */
 typedef enum {
-  EICU_UNINIT = 0,						/* Not initialized.					  */
-  EICU_STOP = 1,						/* Stopped.							  */
-  EICU_READY = 2,						/* Ready.							  */
-  EICU_WAITING = 3,						/* Waiting for first edge.			  */
-  EICU_ACTIVE = 4,						/* Active cycle phase.				  */
-  EICU_IDLE = 5							/* Idle cycle phase.				  */
+  EICU_UNINIT = 0,              /* Not initialized.                           */
+  EICU_STOP = 1,                /* Stopped.                                   */
+  EICU_READY = 2,               /* Ready.                                     */
+  EICU_WAITING = 3,             /* Waiting for first edge.                    */
+  EICU_ACTIVE = 4,              /* Active cycle phase.                        */
+  EICU_IDLE = 5                 /* Idle cycle phase.                          */
 } eicustate_t;
 
 /**
  * @brief   Input type selector.
  */
 typedef enum {
-  EICU_INPUT_EDGE = 0,					/* Triggers callback on input edge */
-  EICU_INPUT_PULSE = 1,					/* Triggers callback on detected
-  										   pulse */
-  EICU_INPUT_PWM = 2					/* Triggers callback on detected PWM
-										   period and width */
+  EICU_INPUT_EDGE = 0,          /* Triggers callback on input edge            */
+  EICU_INPUT_PULSE = 1,         /* Triggers callback on detected
+                                   pulse                                      */
+  EICU_INPUT_PWM = 2            /* Triggers callback on detected PWM
+                                   period and width                           */
 } eicuinput_t;
 
 /** 
- * @brief	EICU channel selection definition
+ * @brief EICU channel selection definition
  */
 typedef enum {
-	EICU_CHANNEL_1 = 0,
-	EICU_CHANNEL_2 = 1,
-	EICU_CHANNEL_3 = 2,
-	EICU_CHANNEL_4 = 3
+  EICU_CHANNEL_1 = 0,
+  EICU_CHANNEL_2 = 1,
+  EICU_CHANNEL_3 = 2,
+  EICU_CHANNEL_4 = 3
 } eicuchannel_t;
 
 /** 
- * @brief	EICU PWM channel selection definition
+ * @brief EICU PWM channel selection definition
  */
 typedef enum {
-	EICU_PWM_CHANNEL_1 = 0,
-	EICU_PWM_CHANNEL_2 = 1
+  EICU_PWM_CHANNEL_1 = 0,
+  EICU_PWM_CHANNEL_2 = 1
 } eicupwmchannel_t;
 
 /**
@@ -66,10 +66,10 @@ typedef enum {
 typedef struct EICUDriver EICUDriver;
 
 /**
- * @brief	EICU notification callback type.
+ * @brief EICU notification callback type.
  *
- * @param[in] eicup 	Pointer to a EICUDriver object
- * @param[in] channel 	EICU channel that fired the interrupt
+ * @param[in] eicup   Pointer to a EICUDriver object
+ * @param[in] channel   EICU channel that fired the interrupt
  */
 typedef void (*eicucallback_t)(EICUDriver *eicup, eicuchannel_t channel);
 
