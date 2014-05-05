@@ -191,6 +191,7 @@
 #define STM32_EICU_TIM5_IRQ_PRIORITY        7
 #define STM32_EICU_TIM8_IRQ_PRIORITY        7
 #define STM32_EICU_TIM9_IRQ_PRIORITY        7
+#define STM32_EICU_TIM12_IRQ_PRIORITY       7
 
 /*
  * MAC driver system settings.

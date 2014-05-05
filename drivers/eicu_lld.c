@@ -8,15 +8,11 @@
 
 #include "ch.h"
 #include "hal.h"
+#include "eicu.h" /* Should be in hal.h but is not a part of ChibiOS */
 
-#if HAL_USE_EICU
-#if !STM32_EICU_USE_TIM1 && !STM32_EICU_USE_TIM2 && !STM32_EICU_USE_TIM3 && \
-    !STM32_EICU_USE_TIM4 && !STM32_EICU_USE_TIM5 && !STM32_EICU_USE_TIM8 && \
-    !STM32_EICU_USE_TIM9 && !STM32_EICU_USE_TIM12
-#error "Extended ICU driver activated but no TIM peripheral assigned"
-#endif
 
-#include "eicu_lld.h"
+#if HAL_USE_EICU || defined(__DOXYGEN__)
+
 
 /*===========================================================================*/
 /* Driver local definitions.                                                 */
@@ -136,9 +132,6 @@ static void eicu_lld_serve_interrupt(EICUDriver *eicup)
 /*===========================================================================*/
 
 #if STM32_EICU_USE_TIM1
-#if STM32_ICU_USE_TIM1
-#error "The ICU1 driver is active, it must be disabled to use this driver."
-#endif
 #if !defined(STM32_TIM1_UP_HANDLER)
 #error "STM32_TIM1_UP_HANDLER not defined"
 #endif
@@ -181,9 +174,7 @@ CH_IRQ_HANDLER(STM32_TIM1_CC_HANDLER) {
 #endif /* STM32_EICU_USE_TIM1 */
 
 #if STM32_EICU_USE_TIM2
-#if STM32_ICU_USE_TIM2
-#error "The ICU2 driver is active, it must be disabled to use this driver."
-#endif
+
 #if !defined(STM32_TIM2_HANDLER)
 #error "STM32_TIM2_HANDLER not defined"
 #endif
@@ -206,9 +197,6 @@ CH_IRQ_HANDLER(STM32_TIM2_HANDLER) {
 #endif /* STM32_EICU_USE_TIM2 */
 
 #if STM32_EICU_USE_TIM3
-#if STM32_ICU_USE_TIM3
-#error "The ICU3 driver is active, it must be disabled to use this driver."
-#endif
 #if !defined(STM32_TIM3_HANDLER)
 #error "STM32_TIM3_HANDLER not defined"
 #endif
@@ -231,9 +219,6 @@ CH_IRQ_HANDLER(STM32_TIM3_HANDLER) {
 #endif /* STM32_EICU_USE_TIM3 */
 
 #if STM32_EICU_USE_TIM4
-#if STM32_ICU_USE_TIM4
-#error "The ICU4 driver is active, it must be disabled to use this driver."
-#endif
 #if !defined(STM32_TIM4_HANDLER)
 #error "STM32_TIM4_HANDLER not defined"
 #endif
@@ -256,9 +241,6 @@ CH_IRQ_HANDLER(STM32_TIM4_HANDLER) {
 #endif /* STM32_EICU_USE_TIM4 */
 
 #if STM32_EICU_USE_TIM5
-#if STM32_ICU_USE_TIM5
-#error "The ICU5 driver is active, it must be disabled to use this driver."
-#endif
 #if !defined(STM32_TIM5_HANDLER)
 #error "STM32_TIM5_HANDLER not defined"
 #endif
@@ -281,9 +263,6 @@ CH_IRQ_HANDLER(STM32_TIM5_HANDLER) {
 #endif /* STM32_EICU_USE_TIM5 */
 
 #if STM32_EICU_USE_TIM8
-#if STM32_ICU_USE_TIM8
-#error "The ICU8 driver is active, it must be disabled to use this driver."
-#endif
 #if !defined(STM32_TIM8_UP_HANDLER)
 #error "STM32_TIM8_UP_HANDLER not defined"
 #endif
@@ -326,9 +305,6 @@ CH_IRQ_HANDLER(STM32_TIM8_CC_HANDLER) {
 #endif /* STM32_EICU_USE_TIM8 */
 
 #if STM32_EICU_USE_TIM9
-#if STM32_ICU_USE_TIM9
-#error "The ICU9 driver is active, it must be disabled to use this driver."
-#endif
 #if !defined(STM32_TIM9_HANDLER)
 #error "STM32_TIM9_HANDLER not defined"
 #endif
@@ -375,5 +351,72 @@ CH_IRQ_HANDLER(STM32_TIM12_HANDLER) {
 /*===========================================================================*/
 /* Driver exported functions.                                                */
 /*===========================================================================*/
+
+void eicu_lld_init(void) {
+#if STM32_EICU_USE_TIM1
+  /* Driver initialization.*/
+  eicuObjectInit(&EICUD1);
+  EICUD1.tim = STM32_TIM1;
+#endif
+
+#if STM32_EICU_USE_TIM2
+  /* Driver initialization.*/
+  eicuObjectInit(&EICUD2);
+  EICUD2.tim = STM32_TIM2;
+#endif
+
+#if STM32_EICU_USE_TIM3
+  /* Driver initialization.*/
+  eicuObjectInit(&EICUD3);
+  EICUD3.tim = STM32_TIM3;
+#endif
+
+#if STM32_EICU_USE_TIM4
+  /* Driver initialization.*/
+  eicuObjectInit(&EICUD4);
+  EICUD4.tim = STM32_TIM4;
+#endif
+
+#if STM32_EICU_USE_TIM5
+  /* Driver initialization.*/
+  eicuObjectInit(&EICUD5);
+  EICUD5.tim = STM32_TIM5;
+#endif
+
+#if STM32_EICU_USE_TIM8
+  /* Driver initialization.*/
+  eicuObjectInit(&EICUD8);
+  EICUD8.tim = STM32_TIM8;
+#endif
+
+#if STM32_EICU_USE_TIM9
+  /* Driver initialization.*/
+  eicuObjectInit(&EICUD9);
+  EICUD9.tim = STM32_TIM9;
+#endif
+
+#if STM32_EICU_USE_TIM12
+  /* Driver initialization.*/
+  eicuObjectInit(&EICUD12);
+  EICUD12.tim = STM32_TIM12;
+#endif
+}
+
+void eicu_lld_start(EICUDriver *eicup) {
+  (void)eicup;
+}
+
+void eicu_lld_stop(EICUDriver *eicup) {
+  (void)eicup;
+}
+
+void eicu_lld_enable(EICUDriver *eicup) {
+  (void)eicup;
+}
+
+void eicu_lld_disable(EICUDriver *eicup) {
+  (void)eicup;
+}
+
 
 #endif /* HAL_USE_EICU */

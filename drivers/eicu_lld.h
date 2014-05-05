@@ -3,6 +3,7 @@
 
 #include "stm32_tim.h"
 
+#if HAL_USE_EICU || defined(__DOXYGEN__)
 
 /*===========================================================================*/
 /* Driver constants.                                                         */
@@ -41,55 +42,253 @@
 /* Driver pre-compile time settings.                                         */
 /*===========================================================================*/
 
+/**
+ * @name    Configuration options
+ * @{
+ */
+/**
+ * @brief   EICUD1 driver enable switch.
+ * @details If set to @p TRUE the support for EICUD1 is included.
+ * @note    The default is @p TRUE.
+ */
+#if !defined(STM32_EICU_USE_TIM1) || defined(__DOXYGEN__)
+#define STM32_EICU_USE_TIM1                  FALSE
+#endif
+
+/**
+ * @brief   EICUD2 driver enable switch.
+ * @details If set to @p TRUE the support for EICUD2 is included.
+ * @note    The default is @p TRUE.
+ */
+#if !defined(STM32_EICU_USE_TIM2) || defined(__DOXYGEN__)
+#define STM32_EICU_USE_TIM2                  FALSE
+#endif
+
+/**
+ * @brief   EICUD3 driver enable switch.
+ * @details If set to @p TRUE the support for EICUD3 is included.
+ * @note    The default is @p TRUE.
+ */
+#if !defined(STM32_EICU_USE_TIM3) || defined(__DOXYGEN__)
+#define STM32_EICU_USE_TIM3                  FALSE
+#endif
+
+/**
+ * @brief   EICUD4 driver enable switch.
+ * @details If set to @p TRUE the support for EICUD4 is included.
+ * @note    The default is @p TRUE.
+ */
+#if !defined(STM32_EICU_USE_TIM4) || defined(__DOXYGEN__)
+#define STM32_EICU_USE_TIM4                  FALSE
+#endif
+
+/**
+ * @brief   EICUD5 driver enable switch.
+ * @details If set to @p TRUE the support for EICUD5 is included.
+ * @note    The default is @p TRUE.
+ */
+#if !defined(STM32_EICU_USE_TIM5) || defined(__DOXYGEN__)
+#define STM32_EICU_USE_TIM5                  FALSE
+#endif
+
+/**
+ * @brief   EICUD8 driver enable switch.
+ * @details If set to @p TRUE the support for EICUD8 is included.
+ * @note    The default is @p TRUE.
+ */
+#if !defined(STM32_EICU_USE_TIM8) || defined(__DOXYGEN__)
+#define STM32_EICU_USE_TIM8                  FALSE
+#endif
+
+/**
+ * @brief   EICUD9 driver enable switch.
+ * @details If set to @p TRUE the support for EICUD9 is included.
+ * @note    The default is @p TRUE.
+ */
+#if !defined(STM32_EICU_USE_TIM9) || defined(__DOXYGEN__)
+#define STM32_EICU_USE_TIM9                  FALSE
+#endif
+
+/**
+ * @brief   EICUD12 driver enable switch.
+ * @details If set to @p TRUE the support for EICUD12 is included.
+ * @note    The default is @p TRUE.
+ */
+#if !defined(STM32_EICU_USE_TIM12) || defined(__DOXYGEN__)
+#define STM32_EICU_USE_TIM12                 FALSE
+#endif
+
+/**
+ * @brief   EICUD1 interrupt priority level setting.
+ */
+#if !defined(STM32_EICU_TIM1_IRQ_PRIORITY) || defined(__DOXYGEN__)
+#define STM32_EICU_TIM1_IRQ_PRIORITY         7
+#endif
+
+/**
+ * @brief   EICUD2 interrupt priority level setting.
+ */
+#if !defined(STM32_EICU_TIM2_IRQ_PRIORITY) || defined(__DOXYGEN__)
+#define STM32_EICU_TIM2_IRQ_PRIORITY         7
+#endif
+
+/**
+ * @brief   EICUD3 interrupt priority level setting.
+ */
+#if !defined(STM32_EICU_TIM3_IRQ_PRIORITY) || defined(__DOXYGEN__)
+#define STM32_EICU_TIM3_IRQ_PRIORITY         7
+#endif
+
+/**
+ * @brief   EICUD4 interrupt priority level setting.
+ */
+#if !defined(STM32_EICU_TIM4_IRQ_PRIORITY) || defined(__DOXYGEN__)
+#define STM32_EICU_TIM4_IRQ_PRIORITY         7
+#endif
+
+/**
+ * @brief   EICUD5 interrupt priority level setting.
+ */
+#if !defined(STM32_EICU_TIM5_IRQ_PRIORITY) || defined(__DOXYGEN__)
+#define STM32_EICU_TIM5_IRQ_PRIORITY         7
+#endif
+
+/**
+ * @brief   EICUD8 interrupt priority level setting.
+ */
+#if !defined(STM32_EICU_TIM8_IRQ_PRIORITY) || defined(__DOXYGEN__)
+#define STM32_EICU_TIM8_IRQ_PRIORITY         7
+#endif
+
+/**
+ * @brief   EICUD9 interrupt priority level setting.
+ */
+#if !defined(STM32_EICU_TIM9_IRQ_PRIORITY) || defined(__DOXYGEN__)
+#define STM32_EICU_TIM9_IRQ_PRIORITY         7
+#endif
+
+/**
+ * @brief   EICUD12 interrupt priority level setting.
+ */
+#if !defined(STM32_EICU_TIM12_IRQ_PRIORITY) || defined(__DOXYGEN__)
+#define STM32_EICU_TIM12_IRQ_PRIORITY        7
+#endif
+/** @} */
+
 /*===========================================================================*/
 /* Derived constants and error checks.                                       */
 /*===========================================================================*/
 
+#if STM32_EICU_USE_TIM1 && !STM32_HAS_TIM1
+#error "TIM1 not present in the selected device"
+#endif
+
+#if STM32_EICU_USE_TIM2 && !STM32_HAS_TIM2
+#error "TIM2 not present in the selected device"
+#endif
+
+#if STM32_EICU_USE_TIM3 && !STM32_HAS_TIM3
+#error "TIM3 not present in the selected device"
+#endif
+
+#if STM32_EICU_USE_TIM4 && !STM32_HAS_TIM4
+#error "TIM4 not present in the selected device"
+#endif
+
+#if STM32_EICU_USE_TIM5 && !STM32_HAS_TIM5
+#error "TIM5 not present in the selected device"
+#endif
+
+#if STM32_EICU_USE_TIM8 && !STM32_HAS_TIM8
+#error "TIM8 not present in the selected device"
+#endif
+
+#if STM32_EICU_USE_TIM9 && !STM32_HAS_TIM9
+#error "TIM9 not present in the selected device"
+#endif
+
+#if STM32_EICU_USE_TIM12 && !STM32_HAS_TIM12
+#error "TIM12 not present in the selected device"
+#endif
+
+#if !STM32_EICU_USE_TIM1 && !STM32_EICU_USE_TIM2 &&                           \
+    !STM32_EICU_USE_TIM3 && !STM32_EICU_USE_TIM4 &&                           \
+    !STM32_EICU_USE_TIM5 && !STM32_EICU_USE_TIM8 &&                           \
+    !STM32_EICU_USE_TIM9 && !STM32_EICU_USE_TIM9
+#error "EICU driver activated but no TIM peripheral assigned"
+#endif
+
+#if STM32_EICU_USE_TIM1 &&                                                   \
+    !CORTEX_IS_VALID_KERNEL_PRIORITY(STM32_EICU_TIM1_IRQ_PRIORITY)
+#error "Invalid IRQ priority assigned to TIM1"
+#endif
+
+#if STM32_EICU_USE_TIM2 &&                                                   \
+    !CORTEX_IS_VALID_KERNEL_PRIORITY(STM32_EICU_TIM2_IRQ_PRIORITY)
+#error "Invalid IRQ priority assigned to TIM2"
+#endif
+
+#if STM32_EICU_USE_TIM3 &&                                                   \
+    !CORTEX_IS_VALID_KERNEL_PRIORITY(STM32_EICU_TIM3_IRQ_PRIORITY)
+#error "Invalid IRQ priority assigned to TIM3"
+#endif
+
+#if STM32_EICU_USE_TIM4 &&                                                   \
+    !CORTEX_IS_VALID_KERNEL_PRIORITY(STM32_EICU_TIM4_IRQ_PRIORITY)
+#error "Invalid IRQ priority assigned to TIM4"
+#endif
+
+#if STM32_EICU_USE_TIM5 &&                                                   \
+    !CORTEX_IS_VALID_KERNEL_PRIORITY(STM32_EICU_TIM5_IRQ_PRIORITY)
+#error "Invalid IRQ priority assigned to TIM5"
+#endif
+
+#if STM32_EICU_USE_TIM8 &&                                                   \
+    !CORTEX_IS_VALID_KERNEL_PRIORITY(STM32_EICU_TIM8_IRQ_PRIORITY)
+#error "Invalid IRQ priority assigned to TIM8"
+#endif
+
+#if STM32_EICU_USE_TIM9 &&                                                   \
+    !CORTEX_IS_VALID_KERNEL_PRIORITY(STM32_EICU_TIM9_IRQ_PRIORITY)
+#error "Invalid IRQ priority assigned to TIM9"
+#endif
+
+#if STM32_EICU_USE_TIM12 &&                                                   \
+    !CORTEX_IS_VALID_KERNEL_PRIORITY(STM32_EICU_TIM12_IRQ_PRIORITY)
+#error "Invalid IRQ priority assigned to TIM12"
+#endif
+
+#if STM32_EICU_USE_TIM1 && STM32_ICU_USE_TIM1
+#error "The ICU1 driver is active, it must be disabled to use this driver."
+#endif
+
+#if STM32_EICU_USE_TIM2 && STM32_ICU_USE_TIM2
+#error "The ICU2 driver is active, it must be disabled to use this driver."
+#endif
+
+#if STM32_EICU_USE_TIM3 && STM32_ICU_USE_TIM3
+#error "The ICU3 driver is active, it must be disabled to use this driver."
+#endif
+
+#if STM32_EICU_USE_TIM4 && STM32_ICU_USE_TIM4
+#error "The ICU4 driver is active, it must be disabled to use this driver."
+#endif
+
+#if STM32_EICU_USE_TIM5 && STM32_ICU_USE_TIM5
+#error "The ICU5 driver is active, it must be disabled to use this driver."
+#endif
+
+#if STM32_EICU_USE_TIM8 && TM32_ICU_USE_TIM8
+#error "The ICU8 driver is active, it must be disabled to use this driver."
+#endif
+
+#if STM32_EICU_USE_TIM9 && STM32_ICU_USE_TIM9
+#error "The ICU9 driver is active, it must be disabled to use this driver."
+#endif
+
 /*===========================================================================*/
 /* Driver data structures and types.                                         */
 /*===========================================================================*/
-/**
- * @brief   Driver state machine possible states.
- */
-typedef enum {
-  EICU_UNINIT = 0,						/* Not initialized.					  */
-  EICU_STOP = 1,						/* Stopped.							  */
-  EICU_READY = 2,						/* Ready.							  */
-  EICU_WAITING = 3,						/* Waiting for first edge.			  */
-  EICU_ACTIVE = 4,						/* Active cycle phase.				  */
-  EICU_IDLE = 5							/* Idle cycle phase.				  */
-} eicustate_t;
-
-/**
- * @brief   Input type selector.
- */
-typedef enum {
-  EICU_INPUT_EDGE = 0,					/* Triggers callback on input edge */
-  EICU_INPUT_PULSE = 1,					/* Triggers callback on detected
-  										   pulse */
-  EICU_INPUT_PWM = 2					/* Triggers callback on detected PWM
-										   period and width */
-} eicuinput_t;
-
-/** 
- * @brief	EICU channel selection definition
- */
-typedef enum {
-	EICU_CHANNEL_1 = 0,
-	EICU_CHANNEL_2 = 1,
-	EICU_CHANNEL_3 = 2,
-	EICU_CHANNEL_4 = 3
-} eicuchannel_t;
-
-/** 
- * @brief	EICU PWM channel selection definition
- */
-typedef enum {
-	EICU_PWM_CHANNEL_1 = 0,
-	EICU_PWM_CHANNEL_2 = 1
-} eicupwmchannel_t;
-
-
 /**
  * @brief   EICU frequency type.
  */
@@ -104,16 +303,6 @@ typedef uint32_t eicuper_t;
  * @brief   EICU counter type.
  */
 typedef uint16_t eicucnt_t;
-
-typedef struct EICUDriver EICUDriver;
-
-/**
- * @brief	EICU notification callback type.
- *
- * @param[in] eicup 	Pointer to a EICUDriver object
- * @param[in] channel 	EICU channel that fired the interrupt
- */
-typedef void (*eicucallback_t)(EICUDriver *eicup, eicuchannel_t channel);
 
 /** 
  * @brief	EICU Time Base Settings structure definition
@@ -180,7 +369,7 @@ typedef struct
 	EICU_PWM_Settings *pwmcfg;			/* Pointer to the PWM input
 										   configuration. A NULL parameter
 										   indicates the feature as unused.   */
-} EICU_Config;
+} EICUConfig;
 
 /** 
  * @brief	EICU Input Capture Driver structure definition  
@@ -194,7 +383,7 @@ struct EICUDriver
 
 	uint32_t clock;						/* Timer base clock. 				  */
 
-	EICU_Config *config;				/* Pointer to configuration for the
+	const EICUConfig *config;			/* Pointer to configuration for the
 										   driver. 							  */
 
 	volatile uint32_t *wccrp[4];		/* CCR registers for width capture.   */
@@ -209,43 +398,30 @@ struct EICUDriver
 /*===========================================================================*/
 
 /**
- * @brief   Common ISR code, EICU width event.
+ * @brief   Returns the width of the latest pulse.
+ * @details The pulse width is defined as number of ticks between the start
+ *          edge and the stop edge.
  *
- * @param[in] icup      Pointer to the EICUDriver object
+ * @param[in] eicup     Pointer to the EICUDriver object.
+ * @param[in] channel   The timer channel that fired the interrupt.
+ * @return              The number of ticks.
  *
  * @notapi
  */
-#define _eicu_isr_invoke_width_cb(eicup, n) {                                \
-  if ((eicup)->state != EICU_WAITING) {                                      \
-    (eicup)->state = EICU_IDLE;                                              \
-    (eicup)->config->iccfgp[n]->width_cb(eicup, n);                          \
-  }                                                                          \
-}
+#define eicu_lld_get_width(eicup, channel) (*((eicup)->wccrp[channel]) + 1)
 
 /**
- * @brief   Common ISR code, EICU period event.
+ * @brief   Returns the width of the latest cycle.
+ * @details The cycle width is defined as number of ticks between a start
+ *          edge and the next start edge.
  *
- * @param[in] icup      Pointer to the EICUDriver object
- *
- * @notapi
- */
-#define _eicu_isr_invoke_period_cb(eicup, n) {                               \
-  eicustate_t previous_state = (eicup)->state;                               \
-  (eicup)->state = EICU_ACTIVE;                                              \
-  if (previous_state != EICU_WAITING)                                        \
-    (eicup)->config->iccfgp[n]->period_cb(eicup, n);                         \
-}
-
-/**
- * @brief   Common ISR code, EICU timer overflow event.
- *
- * @param[in] icup      Pointer to the EICUDriver object
+ * @param[in] eicup     Pointer to the EICUDriver object.
+ * @param[in] channel   The timer channel that fired the interrupt.
+ * @return              The number of ticks.
  *
  * @notapi
  */
-#define _eicu_isr_invoke_overflow_cb(icup, n) {                              \
-  (eicup)->config->iccfgp[n]->overflow_cb(eicup, n);                         \
-}
+#define eicu_lld_get_period(eicup) (*((eicup)->pccrp) + 1)
 
 /*===========================================================================*/
 /* External declarations.                                                    */
@@ -286,12 +462,14 @@ extern EICUDriver EICUD12;
 extern "C" {
 #endif
   void eicu_lld_init(void);
-  void eicu_lld_start(EICUDriver *icup);
-  void eicu_lld_stop(EICUDriver *icup);
-  void eicu_lld_enable(EICUDriver *icup);
-  void eicu_lld_disable(EICUDriver *icup);
+  void eicu_lld_start(EICUDriver *eicup);
+  void eicu_lld_stop(EICUDriver *eicup);
+  void eicu_lld_enable(EICUDriver *eicup);
+  void eicu_lld_disable(EICUDriver *eicup);
 #ifdef __cplusplus
 }
 #endif
+
+#endif /* HAL_USE_EICU */
 
 #endif /* __EICU_LLD_H */
