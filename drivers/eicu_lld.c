@@ -617,26 +617,62 @@ void eicu_lld_start(EICUDriver *eicup) {
     }
   } else { /* EICU_INPUT_EDGE & EICU_INPUT_PULSE */
 
-    /* Set each input channel that is used as a normal input channel and link
-       the corresponding CCR register. */
+    /* Set each input channel that is used as: a normal input capture channel,
+       link the corresponding CCR register and set polarity. */
     if (eicup->config->iccfgp[0] != NULL) {
+      /* Normal capture input input */
       eicup->tim->CCMR1 |= STM32_TIM_CCMR1_CC1S(1);
+
+      /* Link CCR register */
       eicup->wccrp[0] = &eicup->tim->CCR[0];
+
+      /* Set input polarity */
+      if (eicup->config->iccfgp[0]->mode == EICU_INPUT_ACTIVE_HIGH)
+        eicup->tim->CCER |= STM32_TIM_CCER_CC1E;
+      else 
+        eicup->tim->CCER |= STM32_TIM_CCER_CC1E | STM32_TIM_CCER_CC1P;
     }
     
     if (eicup->config->iccfgp[1] != NULL) {
+      /* Normal capture input input */
       eicup->tim->CCMR1 |= STM32_TIM_CCMR1_CC2S(1);
+
+      /* Link CCR register */
       eicup->wccrp[1] = &eicup->tim->CCR[1];
+
+      /* Set input polarity */
+      if (eicup->config->iccfgp[1]->mode == EICU_INPUT_ACTIVE_HIGH)
+        eicup->tim->CCER |= STM32_TIM_CCER_CC2E;
+      else 
+        eicup->tim->CCER |= STM32_TIM_CCER_CC2E | STM32_TIM_CCER_CC2P;
     }
 
     if (eicup->config->iccfgp[2] != NULL) {
-      eicup->tim->CCMR2 |= STM32_TIM_CCMR1_CC1S(1);
+      /* Normal capture input input */
+      eicup->tim->CCMR2 |= STM32_TIM_CCMR2_CC3S(1);
+
+      /* Link CCR register */
       eicup->wccrp[2] = &eicup->tim->CCR[2];
+
+      /* Set input polarity */
+      if (eicup->config->iccfgp[2]->mode == EICU_INPUT_ACTIVE_HIGH)
+        eicup->tim->CCER |= STM32_TIM_CCER_CC3E;
+      else 
+        eicup->tim->CCER |= STM32_TIM_CCER_CC3E | STM32_TIM_CCER_CC3P;
     }
 
     if (eicup->config->iccfgp[3] != NULL) {
-      eicup->tim->CCMR2 |= STM32_TIM_CCMR1_CC2S(1);
+      /* Normal capture input input */
+      eicup->tim->CCMR2 |= STM32_TIM_CCMR2_CC4S(1);
+
+      /* Link CCR register */
       eicup->wccrp[3] = &eicup->tim->CCR[3];
+
+      /* Set input polarity */
+      if (eicup->config->iccfgp[3]->mode == EICU_INPUT_ACTIVE_HIGH)
+        eicup->tim->CCER |= STM32_TIM_CCER_CC4E;
+      else 
+        eicup->tim->CCER |= STM32_TIM_CCER_CC4E | STM32_TIM_CCER_CC4P;
     }
   }
 }
