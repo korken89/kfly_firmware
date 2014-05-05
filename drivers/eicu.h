@@ -170,8 +170,8 @@ typedef void (*eicucallback_t)(EICUDriver *eicup, eicuchannel_t channel);
  *
  * @notapi
  */
-#define _eicu_isr_invoke_overflow_cb(icup, channel) {                        \
-  (eicup)->config->iccfgp[channel]->overflow_cb(eicup, channel);             \
+#define _eicu_isr_invoke_overflow_cb(icup) {                                 \
+  (eicup)->config->overflow_cb(eicup);                                       \
 }
 /** @} */
 

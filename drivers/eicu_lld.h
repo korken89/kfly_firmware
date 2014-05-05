@@ -263,8 +263,6 @@ typedef struct
                                      Pulse width and normal capture event.    */
 
   eicucallback_t period_cb;       /* Period capture event callback.           */
-
-  eicucallback_t overflow_cb;     /* Timer overflow event callback.           */
 } EICU_IC_Settings;
 
 /** 
@@ -283,7 +281,9 @@ typedef struct
                                      Note: In PWM mode, only Channel 1 OR
                                      Channel 2 may be used.                   */
 
-   eicupwmchannel_t pwm_channel;  /* Timer input channel to be used for
+  eicucallback_t overflow_cb;     /* Timer overflow event callback.           */
+
+  eicupwmchannel_t pwm_channel;   /* Timer input channel to be used for
                                      PWM input                                */
 
   uint32_t                  dier; /* TIM DIER register initialization data.   */
