@@ -229,34 +229,6 @@
 #error "Invalid IRQ priority assigned to TIM12"
 #endif
 
-#if STM32_EICU_USE_TIM1 && STM32_ICU_USE_TIM1
-#error "The ICU1 driver is active, it must be disabled to use this driver."
-#endif
-
-#if STM32_EICU_USE_TIM2 && STM32_ICU_USE_TIM2
-#error "The ICU2 driver is active, it must be disabled to use this driver."
-#endif
-
-#if STM32_EICU_USE_TIM3 && STM32_ICU_USE_TIM3
-#error "The ICU3 driver is active, it must be disabled to use this driver."
-#endif
-
-#if STM32_EICU_USE_TIM4 && STM32_ICU_USE_TIM4
-#error "The ICU4 driver is active, it must be disabled to use this driver."
-#endif
-
-#if STM32_EICU_USE_TIM5 && STM32_ICU_USE_TIM5
-#error "The ICU5 driver is active, it must be disabled to use this driver."
-#endif
-
-#if STM32_EICU_USE_TIM8 && TM32_ICU_USE_TIM8
-#error "The ICU8 driver is active, it must be disabled to use this driver."
-#endif
-
-#if STM32_EICU_USE_TIM9 && STM32_ICU_USE_TIM9
-#error "The ICU9 driver is active, it must be disabled to use this driver."
-#endif
-
 /*===========================================================================*/
 /* Driver data structures and types.                                         */
 /*===========================================================================*/

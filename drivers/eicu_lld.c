@@ -539,6 +539,8 @@ void eicu_lld_start(EICUDriver *eicup) {
               "eicu_lld_start(), #1", "invalid frequency");
   eicup->tim->PSC   = (uint16_t)psc;
   eicup->tim->ARR   = 0xFFFF;
+
+  /* Reset registers */
   eicup->tim->SMCR  = 0;
   eicup->tim->CCMR1 = 0;
   eicup->wccrp[0] = NULL;
