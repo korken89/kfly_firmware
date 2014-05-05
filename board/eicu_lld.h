@@ -1,5 +1,5 @@
-#ifndef __EXTENDED_ICU_H
-#define __EXTENDED_ICU_H
+#ifndef __EICU_LLD_H
+#define __EICU_LLD_H
 
 #include "stm32_tim.h"
 
@@ -270,4 +270,4 @@ extern EICUDriver EICUD12;
 
 
 
-#endif
+#endif /* __EICU_LLD_H */

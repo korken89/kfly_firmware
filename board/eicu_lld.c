@@ -6,7 +6,7 @@
 
 #include "ch.h"
 #include "hal.h"
-#include "extended_icu.h"
+#include "eicu_lld.h"
 
 /*===========================================================================*/
 /* Driver local definitions.                                                 */
