@@ -519,8 +519,12 @@ void eicu_lld_start(EICUDriver *eicup) {
   chDbgAssert((psc <= 0xFFFF) &&
               ((psc + 1) * eicup->config->frequency) == eicup->clock,
               "eicu_lld_start(), #1", "invalid frequency");
-  eicup->tim->PSC = (uint16_t)psc;
-  eicup->tim->ARR = 0xFFFF;
+  eicup->tim->PSC   = (uint16_t)psc;
+  eicup->tim->ARR   = 0xFFFF;
+  eicup->tim->SMCR  = 0;
+  eicup->tim->CCMR1 = 0;
+  if ((eicup != &EICUD9) || (eicup != &EICUD12))
+    eicup->tim->CCMR2 = 0;
 
   if (eicup->config->input_type == EICU_INPUT_PWM)
   {
@@ -535,8 +539,9 @@ void eicu_lld_start(EICUDriver *eicup) {
         eicup->tim->SMCR  = STM32_TIM_SMCR_TS(5) | STM32_TIM_SMCR_SMS(4);
   
         /* The CCER settings depend on the selected trigger mode.
-           ICU_INPUT_ACTIVE_HIGH: Active on rising edge, idle on falling edge.
-           ICU_INPUT_ACTIVE_LOW:  Active on falling edge, idle on rising edge.*/
+           EICU_INPUT_ACTIVE_HIGH: Active on rising edge, idle on falling edge.
+           EICU_INPUT_ACTIVE_LOW:  Active on falling edge, idle on rising edge.
+         */
         if (eicup->config->iccfgp[EICU_PWM_CHANNEL_1]->mode == 
                                                         EICU_INPUT_ACTIVE_HIGH)
           eicup->tim->CCER = STM32_TIM_CCER_CC1E |
@@ -560,8 +565,9 @@ void eicu_lld_start(EICUDriver *eicup) {
         eicup->tim->SMCR  = STM32_TIM_SMCR_TS(6) | STM32_TIM_SMCR_SMS(4);
   
         /* The CCER settings depend on the selected trigger mode.
-           ICU_INPUT_ACTIVE_HIGH: Active on rising edge, idle on falling edge.
-           ICU_INPUT_ACTIVE_LOW:  Active on falling edge, idle on rising edge.*/
+           EICU_INPUT_ACTIVE_HIGH: Active on rising edge, idle on falling edge.
+           EICU_INPUT_ACTIVE_LOW:  Active on falling edge, idle on rising edge.
+         */
         if (eicup->config->iccfgp[EICU_PWM_CHANNEL_2]->mode ==
                                                         EICU_INPUT_ACTIVE_HIGH)
           eicup->tim->CCER = STM32_TIM_CCER_CC1E | STM32_TIM_CCER_CC1P |
@@ -577,16 +583,18 @@ void eicu_lld_start(EICUDriver *eicup) {
     }
   } else { /* EICU_INPUT_EDGE & EICU_INPUT_PULSE */
     if (eicup->config->iccfgp[0] != NULL) {
-      
+      eicup->tim->CCMR1 |= STM32_TIM_CCMR1_CC1S(1);
     }
     if (eicup->config->iccfgp[1] != NULL) {
-      
+      eicup->tim->CCMR1 |= STM32_TIM_CCMR1_CC2S(1);
     }
-    if (eicup->config->iccfgp[2] != NULL) {
-      
+    if ((eicup->config->iccfgp[2] != NULL) && ((eicup != &EICUD9) ||
+                                               (eicup != &EICUD12))) {
+      eicup->tim->CCMR2 |= STM32_TIM_CCMR1_CC1S(1);
     }
-    if (eicup->config->iccfgp[3] != NULL) {
-      
+    if ((eicup->config->iccfgp[3] != NULL) && ((eicup != &EICUD9) ||
+                                               (eicup != &EICUD12))) {
+      eicup->tim->CCMR2 |= STM32_TIM_CCMR1_CC2S(1);
     }
   }
 }
