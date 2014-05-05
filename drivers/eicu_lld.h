@@ -247,11 +247,6 @@ typedef enum {
 typedef uint32_t eicufreq_t;
 
 /**
- * @brief   EICU period type.
- */
-typedef uint32_t eicuper_t;
-
-/**
  * @brief   EICU counter type.
  */
 typedef uint16_t eicucnt_t;
