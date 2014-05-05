@@ -523,8 +523,23 @@ void eicu_lld_start(EICUDriver *eicup) {
   eicup->tim->ARR   = 0xFFFF;
   eicup->tim->SMCR  = 0;
   eicup->tim->CCMR1 = 0;
+  eicup->wccrp[0] = NULL;
+  eicup->wccrp[1] = NULL;
+  eicup->wccrp[2] = NULL;
+  eicup->wccrp[3] = NULL;
+
+#if STM32_EICU_USE_TIM9
+  if (eicup != &EICUD9)
+    eicup->tim->CCMR2 = 0;
+#elif STM32_EICU_USE_TIM12
+  if (eicup != &EICUD12)
+    eicup->tim->CCMR2 = 0;
+#elif STM32_EICU_USE_TIM9 && STM32_EICU_USE_TIM12
   if ((eicup != &EICUD9) || (eicup != &EICUD12))
     eicup->tim->CCMR2 = 0;
+#else
+  eicup->tim->CCMR2 = 0;
+#endif
 
   if (eicup->config->input_type == EICU_INPUT_PWM)
   {
@@ -582,19 +597,45 @@ void eicu_lld_start(EICUDriver *eicup) {
       eicup->pccrp = &eicup->tim->CCR[1];
     }
   } else { /* EICU_INPUT_EDGE & EICU_INPUT_PULSE */
+
+    /* Set each input channel that is used as a normal input channel and link
+       the corresponding CCR register. */
     if (eicup->config->iccfgp[0] != NULL) {
       eicup->tim->CCMR1 |= STM32_TIM_CCMR1_CC1S(1);
+      eicup->wccrp[0] = &eicup->tim->CCR[0];
     }
+    
     if (eicup->config->iccfgp[1] != NULL) {
       eicup->tim->CCMR1 |= STM32_TIM_CCMR1_CC2S(1);
+      eicup->wccrp[1] = &eicup->tim->CCR[1];
     }
+
+#if STM32_EICU_USE_TIM9
+    if ((eicup->config->iccfgp[2] != NULL) && (eicup != &EICUD9)) {
+#elif STM32_EICU_USE_TIM12
+    if ((eicup->config->iccfgp[2] != NULL) && (eicup != &EICUD12)) {
+#elif STM32_EICU_USE_TIM9 && STM32_EICU_USE_TIM12
     if ((eicup->config->iccfgp[2] != NULL) && ((eicup != &EICUD9) ||
                                                (eicup != &EICUD12))) {
+#else
+    if (eicup->config->iccfgp[2] != NULL) {
+#endif
       eicup->tim->CCMR2 |= STM32_TIM_CCMR1_CC1S(1);
+      eicup->wccrp[2] = &eicup->tim->CCR[2];
     }
+
+#if STM32_EICU_USE_TIM9
+    if ((eicup->config->iccfgp[3] != NULL) && (eicup != &EICUD9)) {
+#elif STM32_EICU_USE_TIM12
+    if ((eicup->config->iccfgp[3] != NULL) && (eicup != &EICUD12)) {
+#elif STM32_EICU_USE_TIM9 && STM32_EICU_USE_TIM12
     if ((eicup->config->iccfgp[3] != NULL) && ((eicup != &EICUD9) ||
                                                (eicup != &EICUD12))) {
+#else
+    if (eicup->config->iccfgp[3] != NULL) {
+#endif
       eicup->tim->CCMR2 |= STM32_TIM_CCMR1_CC2S(1);
+      eicup->wccrp[3] = &eicup->tim->CCR[3];
     }
   }
 }
