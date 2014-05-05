@@ -335,7 +335,7 @@ typedef struct
 typedef struct
 {
   eicuinput_t input_type;         /* Select which input type the driver 
-                                   will be configured for                     */
+                                     will be configured for                   */
 
   eicufreq_t frequency;           /* Specifies the Timer clock in Hz.         */
 
@@ -345,8 +345,8 @@ typedef struct
                                      Note: In PWM mode, only Channel 1 OR
                                      Channel 2 may be used.                   */
 
-   eicupwmchannel_t pwm_channel;    /* Timer input channel to be used for
-                                       PWM input                              */
+   eicupwmchannel_t pwm_channel;  /* Timer input channel to be used for
+                                     PWM input                                */
 
   uint32_t                  dier; /* TIM DIER register initialization data.   */
 } EICUConfig;

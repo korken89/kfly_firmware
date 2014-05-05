@@ -410,6 +410,12 @@ void eicu_lld_start(EICUDriver *eicup) {
               (eicup->config->input_type == EICU_INPUT_PWM),
               "icu_lld_start(), #1", "invalid input");
 
+  chDbgAssert((eicup->config->iccfgp[0] == NULL) &&
+              (eicup->config->iccfgp[1] == NULL) &&
+              (eicup->config->iccfgp[2] == NULL) &&
+              (eicup->config->iccfgp[3] == NULL),
+              "icu_lld_start(), #1", "invalid input configuration");
+
   if (eicup->state == EICU_STOP) {
     /* Clock activation and timer reset.*/
 #if STM32_EICU_USE_TIM1
@@ -570,9 +576,9 @@ void eicu_lld_start(EICUDriver *eicup) {
       eicup->pccrp = &eicup->tim->CCR[1];
     }
   } else if (eicup->config->input_type == EICU_INPUT_PULSE) {
-    
+
   } else { /* EICU_INPUT_EDGE */
-    
+
   }
 }
 
