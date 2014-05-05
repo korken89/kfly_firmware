@@ -120,11 +120,18 @@ static void eicu_lld_serve_interrupt(EICUDriver *eicup)
   } else if (eicup->config->input_type == EICU_INPUT_PULSE) {
 
   } else {  /* EICU_INPUT_EDGE */
-
+    if ((sr & STM32_TIM_SR_CC1IF) != 0)
+      _eicu_isr_invoke_width_cb(eicup, EICU_CHANNEL_1);
+    if ((sr & STM32_TIM_SR_CC2IF) != 0)
+      _eicu_isr_invoke_width_cb(eicup, EICU_CHANNEL_2);
+    if ((sr & STM32_TIM_SR_CC3IF) != 0)
+      _eicu_isr_invoke_width_cb(eicup, EICU_CHANNEL_3);
+    if ((sr & STM32_TIM_SR_CC4IF) != 0)
+      _eicu_isr_invoke_width_cb(eicup, EICU_CHANNEL_4);
   }
 
   if ((sr & STM32_TIM_SR_UIF) != 0)
-    _eicu_isr_invoke_overflow_cb(eicup, EICU_CHANNEL_1);
+    _eicu_isr_invoke_overflow_cb(eicup);
 }
 
 /*===========================================================================*/
