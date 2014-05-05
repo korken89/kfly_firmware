@@ -89,6 +89,22 @@ typedef enum {
 	EICU_PWM_CHANNEL_2 = 1
 } eicupwmchannel_t;
 
+
+/**
+ * @brief   EICU frequency type.
+ */
+typedef uint32_t eicufreq_t;
+
+/**
+ * @brief   EICU period type.
+ */
+typedef uint32_t eicuper_t;
+
+/**
+ * @brief   EICU counter type.
+ */
+typedef uint16_t eicucnt_t;
+
 typedef struct EICUDriver EICUDriver;
 
 /**
@@ -104,12 +120,10 @@ typedef void (*eicucallback_t)(EICUDriver *eicup, eicuchannel_t channel);
  */
 typedef struct
 {
-	uint16_t EICU_Prescaler; /* Specifies the prescaler value used to divide
-								the timer clock.  This parameter can be between 
-								0x0000 and 0xFFFF. 							  */
+	eicufreq_t frequency; /* Specifies the Timer clock in Hz. 				  */
 
-	uint32_t EICU_Period;	 /* Specifies the period value of the timer. This
-								parameter can be between 0x0000 and 0xFFFF.   */
+	eicuper_t period;	 /* Specifies the period value of the timer. This
+							parameter can be between 0x0000 and 0xFFFF.  	 */
 } EICU_TimeBase_Settings; 
 
 /** 
@@ -268,6 +282,16 @@ extern EICUDriver EICUD9;
 extern EICUDriver EICUD12;
 #endif
 
-
+#ifdef __cplusplus
+extern "C" {
+#endif
+  void eicu_lld_init(void);
+  void eicu_lld_start(EICUDriver *icup);
+  void eicu_lld_stop(EICUDriver *icup);
+  void eicu_lld_enable(EICUDriver *icup);
+  void eicu_lld_disable(EICUDriver *icup);
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __EICU_LLD_H */

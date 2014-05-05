@@ -4,8 +4,18 @@
  *
  * */
 
+
+
 #include "ch.h"
 #include "hal.h"
+
+#if HAL_USE_EICU
+#if !STM32_EICU_USE_TIM1 && !STM32_EICU_USE_TIM2 && !STM32_EICU_USE_TIM3 && \
+    !STM32_EICU_USE_TIM4 && !STM32_EICU_USE_TIM5 && !STM32_EICU_USE_TIM8 && \
+    !STM32_EICU_USE_TIM9 && !STM32_EICU_USE_TIM12
+#error "Extended ICU driver activated but no TIM peripheral assigned"
+#endif
+
 #include "eicu_lld.h"
 
 /*===========================================================================*/
@@ -89,7 +99,7 @@ EICUDriver EICUD12;
 /**
  * @brief   Shared IRQ handler.
  *
- * @param[in] icup      pointer to the @p ICUDriver object
+ * @param[in] eicup     Pointer to the @p EICUDriver object
  */
 static void eicu_lld_serve_interrupt(EICUDriver *eicup)
 {
@@ -99,20 +109,23 @@ static void eicu_lld_serve_interrupt(EICUDriver *eicup)
 	/* Clear interrupts */
 	eicup->tim->SR = ~sr;
 
-	if (eicup->config->pwmcfg->channel == EICU_PWM_CHANNEL_1)
-	{
-		if ((sr & STM32_TIM_SR_CC1IF) != 0)
-			_eicu_isr_invoke_period_cb(eicup, EICU_CHANNEL_1);
-		if ((sr & STM32_TIM_SR_CC2IF) != 0)
-			_eicu_isr_invoke_width_cb(eicup, EICU_CHANNEL_1);
-	}
-	else
-	{
-		if ((sr & STM32_TIM_SR_CC1IF) != 0)
-			_eicu_isr_invoke_width_cb(eicup, EICU_CHANNEL_2);
-		if ((sr & STM32_TIM_SR_CC2IF) != 0)
-			_eicu_isr_invoke_period_cb(eicup, EICU_CHANNEL_2);
-	}
+  if (eicup->config->input_type == EICU_INPUT_PWM) {
+  	if (eicup->config->pwmcfg->channel == EICU_PWM_CHANNEL_1)	{
+  		if ((sr & STM32_TIM_SR_CC1IF) != 0)
+  			_eicu_isr_invoke_period_cb(eicup, EICU_CHANNEL_1);
+  		if ((sr & STM32_TIM_SR_CC2IF) != 0)
+  			_eicu_isr_invoke_width_cb(eicup, EICU_CHANNEL_1);
+  	}	else {
+  		if ((sr & STM32_TIM_SR_CC1IF) != 0)
+  			_eicu_isr_invoke_width_cb(eicup, EICU_CHANNEL_2);
+  		if ((sr & STM32_TIM_SR_CC2IF) != 0)
+  			_eicu_isr_invoke_period_cb(eicup, EICU_CHANNEL_2);
+  	}
+  } else if (eicup->config->input_type == EICU_INPUT_PULSE) {
+
+  } else {  /* EICU_INPUT_EDGE */
+
+  }
 
 	if ((sr & STM32_TIM_SR_UIF) != 0)
 		_eicu_isr_invoke_overflow_cb(eicup, EICU_CHANNEL_1);
@@ -338,9 +351,6 @@ CH_IRQ_HANDLER(STM32_TIM9_HANDLER) {
 #endif /* STM32_EICU_USE_TIM9 */
 
 #if STM32_EICU_USE_TIM12
-#if STM32_ICU_USE_TIM12
-#error "The ICU12 driver is active, it must be disabled to use this driver."
-#endif
 #if !defined(STM32_TIM12_HANDLER)
 #error "STM32_TIM12_HANDLER not defined"
 #endif
@@ -365,3 +375,5 @@ CH_IRQ_HANDLER(STM32_TIM12_HANDLER) {
 /*===========================================================================*/
 /* Driver exported functions.                                                */
 /*===========================================================================*/
+
+#endif /* HAL_USE_EICU */
