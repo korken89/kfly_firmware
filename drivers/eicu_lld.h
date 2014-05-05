@@ -9,35 +9,6 @@
 /* Driver constants.                                                         */
 /*===========================================================================*/
 
-/* Input capture Polarity */
-#define EICU_ICPolarity_Rising        ((uint16_t)0x0000)
-#define EICU_ICPolarity_Falling       ((uint16_t)0x0002)
-#define EICU_ICPolarity_BothEdge      ((uint16_t)0x000A)
-
-/* Input capture selection */
-#define EICU_ICSelection_DirectTI     ((uint16_t)0x0001)
-#define EICU_ICSelection_IndirectTI     ((uint16_t)0x0002)
-
-/* Input capture prescaler */
-#define EICU_ICPSC_DIV1           ((uint16_t)0x0000)
-#define EICU_ICPSC_DIV2           ((uint16_t)0x0004)
-#define EICU_ICPSC_DIV4           ((uint16_t)0x0008)
-#define EICU_ICPSC_DIV8           ((uint16_t)0x000C)
-
-/* Interrupts */
-#define EICU_IT_Update            ((uint16_t)0x0001)
-#define EICU_IT_CC1             ((uint16_t)0x0002)
-#define EICU_IT_CC2             ((uint16_t)0x0004)
-#define EICU_IT_CC3             ((uint16_t)0x0008)
-#define EICU_IT_CC4             ((uint16_t)0x0010)
-
-/* Input Trigger Sources */
-#define EICU_TS_TI1FP1            ((uint16_t)0x0050)
-#define EICU_TS_TI2FP2            ((uint16_t)0x0060)
-
-#define EICU_SlaveMode_Reset        ((uint16_t)0x0004)
-
-
 /*===========================================================================*/
 /* Driver pre-compile time settings.                                         */
 /*===========================================================================*/
