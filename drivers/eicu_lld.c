@@ -619,6 +619,8 @@ void eicu_lld_start(EICUDriver *eicup) {
 
     /* Set each input channel that is used as: a normal input capture channel,
        link the corresponding CCR register and set polarity. */
+
+    /* Input capture channel 1 */
     if (eicup->config->iccfgp[0] != NULL) {
       /* Normal capture input input */
       eicup->tim->CCMR1 |= STM32_TIM_CCMR1_CC1S(1);
@@ -633,6 +635,7 @@ void eicu_lld_start(EICUDriver *eicup) {
         eicup->tim->CCER |= STM32_TIM_CCER_CC1E | STM32_TIM_CCER_CC1P;
     }
     
+    /* Input capture channel 2 */
     if (eicup->config->iccfgp[1] != NULL) {
       /* Normal capture input input */
       eicup->tim->CCMR1 |= STM32_TIM_CCMR1_CC2S(1);
@@ -647,6 +650,7 @@ void eicu_lld_start(EICUDriver *eicup) {
         eicup->tim->CCER |= STM32_TIM_CCER_CC2E | STM32_TIM_CCER_CC2P;
     }
 
+    /* Input capture channel 3 (not for TIM 9 and 12) */
     if (eicup->config->iccfgp[2] != NULL) {
       /* Normal capture input input */
       eicup->tim->CCMR2 |= STM32_TIM_CCMR2_CC3S(1);
@@ -661,6 +665,7 @@ void eicu_lld_start(EICUDriver *eicup) {
         eicup->tim->CCER |= STM32_TIM_CCER_CC3E | STM32_TIM_CCER_CC3P;
     }
 
+    /* Input capture channel 4 (not for TIM 9 and 12) */
     if (eicup->config->iccfgp[3] != NULL) {
       /* Normal capture input input */
       eicup->tim->CCMR2 |= STM32_TIM_CCMR2_CC4S(1);
