@@ -66,6 +66,7 @@ $(foreach dir, $(MODULES), $(eval MODULES_ASRCS += $(wildcard $(dir)/src/*.s)))
 # Imported source files and paths
 CHIBIOS = ../ChibiOS-RT
 include board/board.mk
+include drivers/drivers.mk
 include $(CHIBIOS)/os/hal/platforms/STM32F4xx/platform.mk
 include $(CHIBIOS)/os/hal/hal.mk
 include $(CHIBIOS)/os/ports/GCC/ARMCMx/STM32F4xx/port.mk
@@ -84,6 +85,7 @@ CSRC = $(PORTSRC) \
        $(HALSRC) \
        $(PLATFORMSRC) \
        $(BOARDSRC) \
+       $(ADRIVERSSRC) \
        $(CHIBIOS)/os/various/shell.c \
        $(CHIBIOS)/os/various/chprintf.c \
        $(CHIBIOS)/os/various/memstreams.c \
@@ -119,7 +121,7 @@ ASMSRC = $(PORTASM) $(MODULES_ASRCS)
 
 INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
          $(HALINC) $(PLATFORMINC) $(BOARDINC) \
-         $(CHIBIOS)/os/various $(MODULES_INC)
+         $(ADRIVERSINC) $(CHIBIOS)/os/various $(MODULES_INC)
 
 #
 # Project, sources and paths
