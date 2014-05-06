@@ -31,17 +31,6 @@ typedef enum {
   EICU_IDLE = 5                 /* Idle cycle phase.                          */
 } eicustate_t;
 
-/**
- * @brief   Input type selector.
- */
-typedef enum {
-  EICU_INPUT_EDGE = 0,          /* Triggers callback on input edge            */
-  EICU_INPUT_PULSE = 1,         /* Triggers callback on detected
-                                   pulse                                      */
-  EICU_INPUT_PWM = 2            /* Triggers callback on detected PWM
-                                   period and width                           */
-} eicuinput_t;
-
 /** 
  * @brief EICU channel selection definition
  */
@@ -51,14 +40,6 @@ typedef enum {
   EICU_CHANNEL_3 = 2,
   EICU_CHANNEL_4 = 3
 } eicuchannel_t;
-
-/** 
- * @brief EICU PWM channel selection definition
- */
-typedef enum {
-  EICU_PWM_CHANNEL_1 = 0,
-  EICU_PWM_CHANNEL_2 = 1
-} eicupwmchannel_t;
 
 /**
  * @brief   Type of a structure representing an EICU driver.
@@ -136,13 +117,14 @@ typedef void (*eicucallback_t)(EICUDriver *eicup, eicuchannel_t channel);
  * @{
  */
 /**
- * @brief   Common ISR code, EICU width event.
+ * @brief   Common ISR code, EICU PWM width event.
  *
- * @param[in] eicup      Pointer to the EICUDriver object
+ * @param[in] eicup     Pointer to the EICUDriver object
+ * @param[in] channel   The timer channel that fired the interrupt.
  *
  * @notapi
  */
-#define _eicu_isr_invoke_width_cb(eicup, channel) {                          \
+#define _eicu_isr_invoke_pwm_width_cb(eicup, channel) {                      \
   if ((eicup)->state != EICU_WAITING) {                                      \
     (eicup)->state = EICU_IDLE;                                              \
     (eicup)->config->iccfgp[channel]->width_cb(eicup, channel);              \
@@ -150,17 +132,50 @@ typedef void (*eicucallback_t)(EICUDriver *eicup, eicuchannel_t channel);
 }
 
 /**
- * @brief   Common ISR code, EICU period event.
+ * @brief   Common ISR code, EICU PWM period event.
  *
  * @param[in] icup      Pointer to the EICUDriver object
+ * @param[in] channel   The timer channel that fired the interrupt.
  *
  * @notapi
  */
-#define _eicu_isr_invoke_period_cb(eicup, channel) {                         \
+#define _eicu_isr_invoke_pwm_period_cb(eicup, channel) {                     \
   eicustate_t previous_state = (eicup)->state;                               \
   (eicup)->state = EICU_ACTIVE;                                              \
   if (previous_state != EICU_WAITING)                                        \
-    (eicup)->config->iccfgp[channel]->period_cb(eicup, channel);             \
+    (eicup)->config->period_cb(eicup, channel);                              \
+}
+
+/**
+ * @brief   Common ISR code, EICU Pulse width event.
+ *
+ * @param[in] icup      Pointer to the EICUDriver object
+ * @param[in] channel   The timer channel that fired the interrupt.
+ *
+ * @notapi
+ */
+#define _eicu_isr_invoke_pulse_width_cb(eicup, channel) {                    \
+  eicustate_t previous_state = (eicup)->state;                               \
+  if (previous_state == EICU_ACTIVE) {                                       \
+    (eicup)->state = EICU_READY;                                             \
+    (eicup)->config->iccfgp[channel]->width_cb(eicup, channel);              \
+  } else {                                                                   \
+    (eicup)->state = EICU_ACTIVE;                                            \
+    (eicup)->last_count[channel] = eicu_lld_get_width(eicup, channel);       \
+  }                                                                          \
+}
+
+/**
+ * @brief   Common ISR code, EICU Edge detect event.
+ *
+ * @param[in] icup      Pointer to the EICUDriver object
+ * @param[in] channel   The timer channel that fired the interrupt.
+ *
+ * @notapi
+ */
+#define _eicu_isr_invoke_edge_detect_cb(eicup, channel) {                    \
+  (eicup)->state = EICU_READY;                                               \
+  (eicup)->config->iccfgp[channel]->width_cb(eicup, channel);                \
 }
 
 /**
