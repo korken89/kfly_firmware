@@ -359,15 +359,15 @@ struct EICUDriver
 #define eicu_lld_get_compare(eicup, channel) (*((eicup)->wccrp[(channel)]) + 1)
 
 /**
- * @brief   Inverts the polarity for the given cananel.
+ * @brief   Inverts the polarity for the given channel.
  *
  * @param[in] eicup     Pointer to the EICUDriver object.
  * @param[in] channel   The timer channel to invert.
  *
  * @notapi
  */
-#define eicu_lld_invert_polarity(eicup, channel) { (eicup)->tim->CCER ^=      \
-((uint16_t)(STM32_TIM_CCER_CC1P << ((channel) * 4))); }
+#define eicu_lld_invert_polarity(eicup, channel)                               \
+  (eicup)->tim->CCER ^= ((uint16_t)(STM32_TIM_CCER_CC1P << ((channel) * 4)));
 
 /*===========================================================================*/
 /* External declarations.                                                    */

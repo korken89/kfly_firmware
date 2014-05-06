@@ -783,25 +783,17 @@ void eicu_lld_enable(EICUDriver *eicup) {
     eicup->tim->CR1 = STM32_TIM_CR1_URS | STM32_TIM_CR1_CEN;
   } else { /* EICU_INPUT_PULSE & EICU_INPUT_EDGE */
     if ((eicup->config->iccfgp[EICU_CHANNEL_1] != NULL) &&
-        (eicup->config->iccfgp[EICU_CHANNEL_1]->width_cb != NULL)) {
-      eicup->tim->EGR |= STM32_TIM_EGR_CC1G;
+        (eicup->config->iccfgp[EICU_CHANNEL_1]->width_cb != NULL))
       eicup->tim->DIER |= STM32_TIM_DIER_CC1IE;
-    }
     if ((eicup->config->iccfgp[EICU_CHANNEL_2] != NULL) &&
-        eicup->config->iccfgp[EICU_CHANNEL_2]->width_cb != NULL) {
-      eicup->tim->EGR |= STM32_TIM_EGR_CC2G;
+        eicup->config->iccfgp[EICU_CHANNEL_2]->width_cb != NULL)
       eicup->tim->DIER |= STM32_TIM_DIER_CC2IE;
-    }
     if ((eicup->config->iccfgp[EICU_CHANNEL_3] != NULL) &&
-        eicup->config->iccfgp[EICU_CHANNEL_3]->width_cb != NULL) {
-      eicup->tim->EGR |= STM32_TIM_EGR_CC3G;
+        eicup->config->iccfgp[EICU_CHANNEL_3]->width_cb != NULL)
       eicup->tim->DIER |= STM32_TIM_DIER_CC3IE;
-    }
     if ((eicup->config->iccfgp[EICU_CHANNEL_4] != NULL) &&
-        eicup->config->iccfgp[EICU_CHANNEL_4]->width_cb != NULL) {
-      eicup->tim->EGR |= STM32_TIM_EGR_CC4G;
+        eicup->config->iccfgp[EICU_CHANNEL_4]->width_cb != NULL)
       eicup->tim->DIER |= STM32_TIM_DIER_CC4IE;
-    }
     eicup->tim->CR1 = STM32_TIM_CR1_URS | STM32_TIM_CR1_CEN;
   }
   if (eicup->config->overflow_cb != NULL)
