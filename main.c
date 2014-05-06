@@ -6,6 +6,8 @@
 #include "sensor_calibration.h"
 #include "sensor_read.h"
 #include "rc_output.h"
+#include "eicu.h"
+#include "chprintf.h"
 
 /* I2C interface #2 Configuration */
 static const I2CConfig i2cfg2 = {
@@ -111,6 +113,39 @@ static const RCOutput_Configuration rcoutputcfg = {
 	&pwmcfg
 };
 
+/* EICU Configuration */
+static uint16_t ic_test;
+static void testwidthcb(EICUDriver *eicup, eicuchannel_t channel)
+{
+	(void)eicup;
+	(void)channel;
+	ic_test = eicuGetWidth(eicup, channel);
+	palTogglePad(GPIOC, GPIOC_LED_ERR);
+}
+
+static void testperiodcb(EICUDriver *eicup, eicuchannel_t channel)
+{
+	(void)eicup;
+	(void)channel;
+
+	
+}
+
+static const EICU_IC_Settings ic1settings = {
+	EICU_INPUT_ACTIVE_HIGH,
+	testwidthcb
+};
+static const EICUConfig rcinputcfg = {
+	EICU_INPUT_EDGE,
+	10000,
+	{&ic1settings, NULL, NULL, NULL},
+	testperiodcb,
+	testperiodcb,
+	0,
+	0
+};
+
+
 void panic(void);
 
 static WORKING_AREA(waThreadTestEvents, 128);
@@ -133,7 +168,7 @@ static msg_t ThreadTestEvents(void *arg)
 		{
 			if (i++ > 10)
 			{
-				palTogglePad(GPIOC, GPIOC_LED_ERR);
+				//palTogglePad(GPIOC, GPIOC_LED_ERR);
 				i = 0;
 			}
 		}
@@ -180,20 +215,20 @@ int main(void)
 	i2cStart(&I2CD2, &i2cfg2);
 
 	/* Initialize Accelerometer and Gyroscope */
-	if (MPU6050Init(&mpu6050cfg) != RDY_OK)
-		panic(); /* Initialization failed */
+	//if (MPU6050Init(&mpu6050cfg) != RDY_OK)
+	//	panic(); /* Initialization failed */
 
 	/* Initialize Magnetometer */
-	if (HMC5983Init(&hmc5983cfg) != RDY_OK)
-		panic(); /* Initialization failed */
+	//if (HMC5983Init(&hmc5983cfg) != RDY_OK)
+	//	panic(); /* Initialization failed */
 	
 	/* Initialize Barometer */
 	/* TODO: Add barometer code */
 
 	/* Initialize sensor readout */
-	if (SensorReadInit(&mpu6050cfg, &hmc5983cfg,
-					   &mpu6050cal, &hmc5983cal) != RDY_OK)
-		panic(); /* Initialization failed */
+	//if (SensorReadInit(&mpu6050cfg, &hmc5983cfg,
+		//			   &mpu6050cal, &hmc5983cal) != RDY_OK)
+	//	panic(); /* Initialization failed */
 
 	/*
 	 *
@@ -212,6 +247,15 @@ int main(void)
 
 	/*
 	 *
+	 * Start RC Inputs
+	 *
+	 */
+	eicuInit();
+	eicuStart(&EICUD9, &rcinputcfg);
+	eicuEnable(&EICUD9);
+
+	/*
+	 *
 	 * Start test thread
 	 * 
 	 */
@@ -227,6 +271,13 @@ int main(void)
 		chThdSleepMilliseconds(500);
 		palSetPad(GPIOC, GPIOC_LED_USR);
 		chThdSleepMilliseconds(500);
+		if (isUSBActive() == TRUE)
+		{
+			chprintf( (BaseSequentialStream *)&SDU1, "Width 1: %u\r\n", EICUD9.tim->CCR[0]);
+			chprintf( (BaseSequentialStream *)&SDU1, "Width 2: %u\r\n", EICUD9.tim->CCR[1]);
+			chprintf( (BaseSequentialStream *)&SDU1, "Width 3: %u\r\n", EICUD9.tim->CCR[2]);
+			chprintf( (BaseSequentialStream *)&SDU1, "Width 4: %u\r\n", EICUD9.tim->CCR[3]);
+		}
 	}
 }
 

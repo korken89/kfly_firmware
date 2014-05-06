@@ -95,7 +95,7 @@ typedef void (*eicucallback_t)(EICUDriver *eicup, eicuchannel_t channel);
  *
  * @special
  */
-#define eicuGetWidth(eicup, channel) eicu_lld_get_width(eicup, channel)
+#define eicuGetWidth(eicup, channel) eicu_lld_get_width((eicup), (channel))
 
 /**
  * @brief   Returns the width of the latest cycle.
@@ -124,11 +124,11 @@ typedef void (*eicucallback_t)(EICUDriver *eicup, eicuchannel_t channel);
  *
  * @notapi
  */
-#define _eicu_isr_invoke_pwm_width_cb(eicup, channel) {                      \
-  if ((eicup)->state != EICU_WAITING) {                                      \
-    (eicup)->state = EICU_IDLE;                                              \
-    (eicup)->config->iccfgp[channel]->width_cb(eicup, channel);              \
-  }                                                                          \
+#define _eicu_isr_invoke_pwm_width_cb(eicup, channel) {                        \
+  if ((eicup)->state != EICU_WAITING) {                                        \
+    (eicup)->state = EICU_IDLE;                                                \
+    (eicup)->config->iccfgp[channel]->width_cb((eicup), (channel));            \
+  }                                                                            \
 }
 
 /**
@@ -139,30 +139,35 @@ typedef void (*eicucallback_t)(EICUDriver *eicup, eicuchannel_t channel);
  *
  * @notapi
  */
-#define _eicu_isr_invoke_pwm_period_cb(eicup, channel) {                     \
-  eicustate_t previous_state = (eicup)->state;                               \
-  (eicup)->state = EICU_ACTIVE;                                              \
-  if (previous_state != EICU_WAITING)                                        \
-    (eicup)->config->period_cb(eicup, channel);                              \
+#define _eicu_isr_invoke_pwm_period_cb(eicup, channel) {                       \
+  eicustate_t previous_state = (eicup)->state;                                 \
+  (eicup)->state = EICU_ACTIVE;                                                \
+  if (previous_state != EICU_WAITING)                                          \
+    (eicup)->config->period_cb((eicup), (channel));                            \
 }
 
 /**
  * @brief   Common ISR code, EICU Pulse width event.
- *
+ * @details This macro needs special care since it needs to invert the
+ *          correct polarity bit to detect pulses.
+ * @note    This macro assumes that the polarity is not changed by some
+ *          external user. It must only be changed using the HAL.
+ * 
  * @param[in] icup      Pointer to the EICUDriver object
  * @param[in] channel   The timer channel that fired the interrupt.
  *
  * @notapi
  */
-#define _eicu_isr_invoke_pulse_width_cb(eicup, channel) {                    \
-  eicustate_t previous_state = (eicup)->state;                               \
-  if (previous_state == EICU_ACTIVE) {                                       \
-    (eicup)->state = EICU_READY;                                             \
-    (eicup)->config->iccfgp[channel]->width_cb(eicup, channel);              \
-  } else {                                                                   \
-    (eicup)->state = EICU_ACTIVE;                                            \
-    (eicup)->last_count[channel] = eicu_lld_get_width(eicup, channel);       \
-  }                                                                          \
+#define _eicu_isr_invoke_pulse_width_cb(eicup, channel) {                      \
+  if ((eicup)->state == EICU_ACTIVE) {                                         \
+    (eicup)->state = EICU_READY;                                               \
+    eicu_lld_invert_polarity((eicup), (channel));                              \
+    (eicup)->config->iccfgp[(channel)]->width_cb((eicup), (channel));          \
+  } else {                                                                     \
+    (eicup)->state = EICU_ACTIVE;                                              \
+    (eicup)->last_count[(channel)] = eicu_lld_get_compare((eicup), (channel)); \
+    eicu_lld_invert_polarity((eicup), (channel));                              \
+  }                                                                            \
 }
 
 /**
@@ -173,9 +178,9 @@ typedef void (*eicucallback_t)(EICUDriver *eicup, eicuchannel_t channel);
  *
  * @notapi
  */
-#define _eicu_isr_invoke_edge_detect_cb(eicup, channel) {                    \
-  (eicup)->state = EICU_READY;                                               \
-  (eicup)->config->iccfgp[channel]->width_cb(eicup, channel);                \
+#define _eicu_isr_invoke_edge_detect_cb(eicup, channel) {                      \
+  (eicup)->state = EICU_READY;                                                 \
+  (eicup)->config->iccfgp[(channel)]->width_cb((eicup), (channel));            \
 }
 
 /**
@@ -185,8 +190,8 @@ typedef void (*eicucallback_t)(EICUDriver *eicup, eicuchannel_t channel);
  *
  * @notapi
  */
-#define _eicu_isr_invoke_overflow_cb(icup) {                                 \
-  (eicup)->config->overflow_cb(eicup, 0);                                    \
+#define _eicu_isr_invoke_overflow_cb(icup) {                                   \
+  (eicup)->config->overflow_cb(eicup, 0);                                      \
 }
 /** @} */
 

@@ -562,6 +562,10 @@ void eicu_lld_start(EICUDriver *eicup) {
   eicup->wccrp[2] = NULL;
   eicup->wccrp[3] = NULL;
   eicup->pccrp = NULL;
+  eicup->last_count[0] = 0;
+  eicup->last_count[1] = 0;
+  eicup->last_count[2] = 0;
+  eicup->last_count[3] = 0;
 
 #if STM32_EICU_USE_TIM9
   if (eicup != &EICUD9)
@@ -766,24 +770,39 @@ void eicu_lld_enable(EICUDriver *eicup) {
     if (eicup->config->pwm_channel == EICU_PWM_CHANNEL_1) {
       if (eicup->config->period_cb != NULL)
         eicup->tim->DIER |= STM32_TIM_DIER_CC1IE;
-      if (eicup->config->iccfgp[EICU_PWM_CHANNEL_1]->width_cb != NULL)
+      if ((eicup->config->iccfgp[EICU_PWM_CHANNEL_1] != NULL) &&
+          (eicup->config->iccfgp[EICU_PWM_CHANNEL_1]->width_cb != NULL))
         eicup->tim->DIER |= STM32_TIM_DIER_CC2IE;
     } else {
-      if (eicup->config->iccfgp[EICU_PWM_CHANNEL_2]->width_cb != NULL)
+      if ((eicup->config->iccfgp[EICU_PWM_CHANNEL_2] != NULL) &&
+          (eicup->config->iccfgp[EICU_PWM_CHANNEL_2]->width_cb != NULL))
         eicup->tim->DIER |= STM32_TIM_DIER_CC1IE;
       if (eicup->config->period_cb != NULL)
         eicup->tim->DIER |= STM32_TIM_DIER_CC2IE;
     }
     eicup->tim->CR1 = STM32_TIM_CR1_URS | STM32_TIM_CR1_CEN;
   } else { /* EICU_INPUT_PULSE & EICU_INPUT_EDGE */
-    if (eicup->config->iccfgp[EICU_CHANNEL_1]->width_cb != NULL)
+    if ((eicup->config->iccfgp[EICU_CHANNEL_1] != NULL) &&
+        (eicup->config->iccfgp[EICU_CHANNEL_1]->width_cb != NULL)) {
+      eicup->tim->EGR |= STM32_TIM_EGR_CC1G;
       eicup->tim->DIER |= STM32_TIM_DIER_CC1IE;
-    if (eicup->config->iccfgp[EICU_CHANNEL_2]->width_cb != NULL)
+    }
+    if ((eicup->config->iccfgp[EICU_CHANNEL_2] != NULL) &&
+        eicup->config->iccfgp[EICU_CHANNEL_2]->width_cb != NULL) {
+      eicup->tim->EGR |= STM32_TIM_EGR_CC2G;
       eicup->tim->DIER |= STM32_TIM_DIER_CC2IE;
-    if (eicup->config->iccfgp[EICU_CHANNEL_3]->width_cb != NULL)
+    }
+    if ((eicup->config->iccfgp[EICU_CHANNEL_3] != NULL) &&
+        eicup->config->iccfgp[EICU_CHANNEL_3]->width_cb != NULL) {
+      eicup->tim->EGR |= STM32_TIM_EGR_CC3G;
       eicup->tim->DIER |= STM32_TIM_DIER_CC3IE;
-    if (eicup->config->iccfgp[EICU_CHANNEL_4]->width_cb != NULL)
+    }
+    if ((eicup->config->iccfgp[EICU_CHANNEL_4] != NULL) &&
+        eicup->config->iccfgp[EICU_CHANNEL_4]->width_cb != NULL) {
+      eicup->tim->EGR |= STM32_TIM_EGR_CC4G;
       eicup->tim->DIER |= STM32_TIM_DIER_CC4IE;
+    }
+    eicup->tim->CR1 = STM32_TIM_CR1_URS | STM32_TIM_CR1_CEN;
   }
   if (eicup->config->overflow_cb != NULL)
     eicup->tim->DIER |= STM32_TIM_DIER_UIE;
@@ -797,5 +816,24 @@ void eicu_lld_disable(EICUDriver *eicup) {
   eicup->tim->DIER &= ~STM32_TIM_DIER_IRQ_MASK;
 }
 
+/**
+ * @brief   Returns the width of the latest pulse.
+ * @details The pulse width is defined as number of ticks between the start
+ *          edge and the stop edge.
+ *
+ * @param[in] eicup     Pointer to the EICUDriver object.
+ * @param[in] channel   The timer channel that fired the interrupt.
+ * @return              The number of ticks.
+ *
+ * @notapi
+ */
+uint16_t eicu_lld_get_width(EICUDriver *eicup, uint16_t channel) {
+  uint16_t capture, last_count;
+  capture = eicu_lld_get_compare(eicup, channel);
+
+  /* Add code to compensate for overflows when in pulse of edge mode */
+
+  return capture;
+}
 
 #endif /* HAL_USE_EICU */

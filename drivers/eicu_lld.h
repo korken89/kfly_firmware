@@ -336,30 +336,38 @@ struct EICUDriver
 /*===========================================================================*/
 
 /**
- * @brief   Returns the width of the latest pulse.
- * @details The pulse width is defined as number of ticks between the start
- *          edge and the stop edge.
- *
- * @param[in] eicup     Pointer to the EICUDriver object.
- * @param[in] channel   The timer channel that fired the interrupt.
- * @return              The number of ticks.
- *
- * @notapi
- */
-#define eicu_lld_get_width(eicup, channel) (*((eicup)->wccrp[channel]) + 1)
-
-/**
  * @brief   Returns the width of the latest cycle.
  * @details The cycle width is defined as number of ticks between a start
  *          edge and the next start edge.
  *
  * @param[in] eicup     Pointer to the EICUDriver object.
- * @param[in] channel   The timer channel that fired the interrupt.
  * @return              The number of ticks.
  *
  * @notapi
  */
 #define eicu_lld_get_period(eicup) (*((eicup)->pccrp) + 1)
+
+/**
+ * @brief   Returns the compare value of the latest cycle.
+ *
+ * @param[in] eicup     Pointer to the EICUDriver object.
+ * @param[in] channel   The timer channel that fired the interrupt.
+ * @return              The number of ticks.
+ *
+ * @notapi
+ */
+#define eicu_lld_get_compare(eicup, channel) (*((eicup)->wccrp[(channel)]) + 1)
+
+/**
+ * @brief   Inverts the polarity for the given cananel.
+ *
+ * @param[in] eicup     Pointer to the EICUDriver object.
+ * @param[in] channel   The timer channel to invert.
+ *
+ * @notapi
+ */
+#define eicu_lld_invert_polarity(eicup, channel) { (eicup)->tim->CCER ^=      \
+((uint16_t)(STM32_TIM_CCER_CC1P << ((channel) * 4))); }
 
 /*===========================================================================*/
 /* External declarations.                                                    */
@@ -404,6 +412,7 @@ extern "C" {
   void eicu_lld_stop(EICUDriver *eicup);
   void eicu_lld_enable(EICUDriver *eicup);
   void eicu_lld_disable(EICUDriver *eicup);
+  uint16_t eicu_lld_get_width(EICUDriver *eicup, uint16_t channel);
 #ifdef __cplusplus
 }
 #endif
