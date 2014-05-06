@@ -108,26 +108,33 @@ static void eicu_lld_serve_interrupt(EICUDriver *eicup)
   if (eicup->config->input_type == EICU_INPUT_PWM) {
     if (eicup->config->pwm_channel == EICU_PWM_CHANNEL_1) {
       if ((sr & STM32_TIM_SR_CC1IF) != 0)
-        _eicu_isr_invoke_period_cb(eicup, EICU_CHANNEL_1);
+        _eicu_isr_invoke_pwm_period_cb(eicup, EICU_CHANNEL_1);
       if ((sr & STM32_TIM_SR_CC2IF) != 0)
-        _eicu_isr_invoke_width_cb(eicup, EICU_CHANNEL_1);
+        _eicu_isr_invoke_pwm_width_cb(eicup, EICU_CHANNEL_1);
     } else {
       if ((sr & STM32_TIM_SR_CC1IF) != 0)
-        _eicu_isr_invoke_width_cb(eicup, EICU_CHANNEL_2);
+        _eicu_isr_invoke_pwm_width_cb(eicup, EICU_CHANNEL_2);
       if ((sr & STM32_TIM_SR_CC2IF) != 0)
-        _eicu_isr_invoke_period_cb(eicup, EICU_CHANNEL_2);
+        _eicu_isr_invoke_pwm_period_cb(eicup, EICU_CHANNEL_2);
     }
   } else if (eicup->config->input_type == EICU_INPUT_PULSE) {
-
+    if ((sr & STM32_TIM_SR_CC1IF) != 0)
+      _eicu_isr_invoke_pulse_width_cb(eicup, EICU_CHANNEL_1);
+    if ((sr & STM32_TIM_SR_CC2IF) != 0)
+      _eicu_isr_invoke_pulse_width_cb(eicup, EICU_CHANNEL_2);
+    if ((sr & STM32_TIM_SR_CC3IF) != 0)
+      _eicu_isr_invoke_pulse_width_cb(eicup, EICU_CHANNEL_3);
+    if ((sr & STM32_TIM_SR_CC4IF) != 0)
+      _eicu_isr_invoke_pulse_width_cb(eicup, EICU_CHANNEL_4);
   } else {  /* EICU_INPUT_EDGE */
     if ((sr & STM32_TIM_SR_CC1IF) != 0)
-      _eicu_isr_invoke_width_cb(eicup, EICU_CHANNEL_1);
+      _eicu_isr_invoke_edge_detect_cb(eicup, EICU_CHANNEL_1);
     if ((sr & STM32_TIM_SR_CC2IF) != 0)
-      _eicu_isr_invoke_width_cb(eicup, EICU_CHANNEL_2);
+      _eicu_isr_invoke_edge_detect_cb(eicup, EICU_CHANNEL_2);
     if ((sr & STM32_TIM_SR_CC3IF) != 0)
-      _eicu_isr_invoke_width_cb(eicup, EICU_CHANNEL_3);
+      _eicu_isr_invoke_edge_detect_cb(eicup, EICU_CHANNEL_3);
     if ((sr & STM32_TIM_SR_CC4IF) != 0)
-      _eicu_isr_invoke_width_cb(eicup, EICU_CHANNEL_4);
+      _eicu_isr_invoke_edge_detect_cb(eicup, EICU_CHANNEL_4);
   }
 
   if ((sr & STM32_TIM_SR_UIF) != 0)
@@ -417,26 +424,26 @@ void eicu_lld_start(EICUDriver *eicup) {
               (eicup->config->input_type == EICU_INPUT_PWM),
               "icu_lld_start(), #1", "invalid input");
 
-  chDbgAssert((eicup->config->iccfgp[0] == NULL) &&
-              (eicup->config->iccfgp[1] == NULL) &&
-              (eicup->config->iccfgp[2] == NULL) &&
-              (eicup->config->iccfgp[3] == NULL),
+  chDbgAssert((eicup->config->iccfgp[0] != NULL) ||
+              (eicup->config->iccfgp[1] != NULL) ||
+              (eicup->config->iccfgp[2] != NULL) ||
+              (eicup->config->iccfgp[3] != NULL),
               "icu_lld_start(), #1", "invalid input configuration");
 
 #if STM32_EICU_USE_TIM9
-  chDbgAssert((eicup == &EICUD9) &&
-             ((eicup->config->iccfgp[2] != NULL) ||
-              (eicup->config->iccfgp[3] != NULL)),
+  chDbgAssert((eicup != &EICUD9) ||
+             ((eicup->config->iccfgp[2] == NULL) &&
+              (eicup->config->iccfgp[3] == NULL)),
               "icu_lld_start(), #1", "TIM9 and TIM12 does not have CCR2");
 #elif STM32_EICU_USE_TIM12
-  chDbgAssert((eicup == &EICUD12) &&
-             ((eicup->config->iccfgp[2] != NULL) ||
+  chDbgAssert((eicup != &EICUD12) ||
+             ((eicup->config->iccfgp[2] != NULL) &&
               (eicup->config->iccfgp[3] != NULL)),
               "icu_lld_start(), #1", "TIM9 and TIM12 does not have CCR2");
 #elif STM32_EICU_USE_TIM9 && STM32_EICU_USE_TIM12
-  chDbgAssert(((eicup == &EICUD9) ||
-               (eicup == &EICUD12)) &&
-              ((eicup->config->iccfgp[2] != NULL) ||
+  chDbgAssert(((eicup != &EICUD9) &&
+               (eicup != &EICUD12)) ||
+              ((eicup->config->iccfgp[2] != NULL) &&
                (eicup->config->iccfgp[3] != NULL)),
               "icu_lld_start(), #1", "TIM9 and TIM12 does not have CCR2");
 #endif
@@ -692,15 +699,102 @@ void eicu_lld_start(EICUDriver *eicup) {
 }
 
 void eicu_lld_stop(EICUDriver *eicup) {
-  (void)eicup;
+  if (eicup->state == EICU_READY) {
+    /* Clock deactivation.*/
+    eicup->tim->CR1  = 0;                     /* Timer disabled.              */
+    eicup->tim->DIER = 0;                     /* All IRQs disabled.           */
+    eicup->tim->SR   = 0;                     /* Clear eventual pending IRQs. */
+
+#if STM32_EICU_USE_TIM1
+    if (&EICUD1 == eicup) {
+      nvicDisableVector(STM32_TIM1_UP_NUMBER);
+      nvicDisableVector(STM32_TIM1_CC_NUMBER);
+      rccDisableTIM1(FALSE);
+    }
+#endif
+#if STM32_EICU_USE_TIM2
+    if (&EICUD2 == eicup) {
+      nvicDisableVector(STM32_TIM2_NUMBER);
+      rccDisableTIM2(FALSE);
+    }
+#endif
+#if STM32_EICU_USE_TIM3
+    if (&EICUD3 == eicup) {
+      nvicDisableVector(STM32_TIM3_NUMBER);
+      rccDisableTIM3(FALSE);
+    }
+#endif
+#if STM32_EICU_USE_TIM4
+    if (&EICUD4 == eicup) {
+      nvicDisableVector(STM32_TIM4_NUMBER);
+      rccDisableTIM4(FALSE);
+    }
+#endif
+#if STM32_EICU_USE_TIM5
+    if (&EICUD5 == eicup) {
+      nvicDisableVector(STM32_TIM5_NUMBER);
+      rccDisableTIM5(FALSE);
+    }
+#endif
+#if STM32_EICU_USE_TIM8
+    if (&EICUD8 == eicup) {
+      nvicDisableVector(STM32_TIM8_UP_NUMBER);
+      nvicDisableVector(STM32_TIM8_CC_NUMBER);
+      rccDisableTIM8(FALSE);
+    }
+#endif
+#if STM32_EICU_USE_TIM9
+    if (&EICUD9 == eicup) {
+      nvicDisableVector(STM32_TIM9_NUMBER);
+      rccDisableTIM9(FALSE);
+    }
+#endif
+#if STM32_EICU_USE_TIM12
+    if (&EICUD12 == eicup) {
+      nvicDisableVector(STM32_TIM12_NUMBER);
+      rccDisableTIM12(FALSE);
+    }
+#endif
+  }
 }
 
 void eicu_lld_enable(EICUDriver *eicup) {
-  (void)eicup;
+  eicup->tim->EGR |= STM32_TIM_EGR_UG;
+  eicup->tim->SR = 0;                         /* Clear pending IRQs (if any). */
+
+  if (eicup->config->input_type == EICU_INPUT_PWM) {
+    if (eicup->config->pwm_channel == EICU_PWM_CHANNEL_1) {
+      if (eicup->config->period_cb != NULL)
+        eicup->tim->DIER |= STM32_TIM_DIER_CC1IE;
+      if (eicup->config->iccfgp[EICU_PWM_CHANNEL_1]->width_cb != NULL)
+        eicup->tim->DIER |= STM32_TIM_DIER_CC2IE;
+    } else {
+      if (eicup->config->iccfgp[EICU_PWM_CHANNEL_2]->width_cb != NULL)
+        eicup->tim->DIER |= STM32_TIM_DIER_CC1IE;
+      if (eicup->config->period_cb != NULL)
+        eicup->tim->DIER |= STM32_TIM_DIER_CC2IE;
+    }
+    eicup->tim->CR1 = STM32_TIM_CR1_URS | STM32_TIM_CR1_CEN;
+  } else { /* EICU_INPUT_PULSE & EICU_INPUT_EDGE */
+    if (eicup->config->iccfgp[EICU_CHANNEL_1]->width_cb != NULL)
+      eicup->tim->DIER |= STM32_TIM_DIER_CC1IE;
+    if (eicup->config->iccfgp[EICU_CHANNEL_2]->width_cb != NULL)
+      eicup->tim->DIER |= STM32_TIM_DIER_CC2IE;
+    if (eicup->config->iccfgp[EICU_CHANNEL_3]->width_cb != NULL)
+      eicup->tim->DIER |= STM32_TIM_DIER_CC3IE;
+    if (eicup->config->iccfgp[EICU_CHANNEL_4]->width_cb != NULL)
+      eicup->tim->DIER |= STM32_TIM_DIER_CC4IE;
+  }
+  if (eicup->config->overflow_cb != NULL)
+    eicup->tim->DIER |= STM32_TIM_DIER_UIE;
 }
 
 void eicu_lld_disable(EICUDriver *eicup) {
-  (void)eicup;
+  eicup->tim->CR1   = 0;                      /* Initially stopped.           */
+  eicup->tim->SR    = 0;                      /* Clear pending IRQs (if any). */
+
+  /* All interrupts disabled.*/
+  eicup->tim->DIER &= ~STM32_TIM_DIER_IRQ_MASK;
 }
 
 
