@@ -360,7 +360,7 @@ CH_IRQ_HANDLER(STM32_TIM12_HANDLER) {
 
   CH_IRQ_EPILOGUE();
 }
-#endif /* STM32_EICU_USE_TIM9 */
+#endif /* STM32_EICU_USE_TIM12 */
 
 /*===========================================================================*/
 /* Driver exported functions.                                                */

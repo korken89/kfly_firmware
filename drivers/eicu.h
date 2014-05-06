@@ -119,7 +119,7 @@ typedef void (*eicucallback_t)(EICUDriver *eicup, eicuchannel_t channel);
 /**
  * @brief   Common ISR code, EICU PWM width event.
  *
- * @param[in] eicup     Pointer to the EICUDriver object
+ * @param[in] eicup     Pointer to the @p EICUDriver object
  * @param[in] channel   The timer channel that fired the interrupt.
  *
  * @notapi
@@ -134,7 +134,7 @@ typedef void (*eicucallback_t)(EICUDriver *eicup, eicuchannel_t channel);
 /**
  * @brief   Common ISR code, EICU PWM period event.
  *
- * @param[in] icup      Pointer to the EICUDriver object
+ * @param[in] eicup     Pointer to the @p EICUDriver object
  * @param[in] channel   The timer channel that fired the interrupt.
  *
  * @notapi
@@ -153,7 +153,7 @@ typedef void (*eicucallback_t)(EICUDriver *eicup, eicuchannel_t channel);
  * @note    This macro assumes that the polarity is not changed by some
  *          external user. It must only be changed using the HAL.
  * 
- * @param[in] icup      Pointer to the EICUDriver object
+ * @param[in] eicup     Pointer to the @p EICUDriver object
  * @param[in] channel   The timer channel that fired the interrupt.
  *
  * @notapi
@@ -173,7 +173,7 @@ typedef void (*eicucallback_t)(EICUDriver *eicup, eicuchannel_t channel);
 /**
  * @brief   Common ISR code, EICU Edge detect event.
  *
- * @param[in] icup      Pointer to the EICUDriver object
+ * @param[in] eicup     Pointer to the @p EICUDriver object
  * @param[in] channel   The timer channel that fired the interrupt.
  *
  * @notapi
@@ -186,7 +186,7 @@ typedef void (*eicucallback_t)(EICUDriver *eicup, eicuchannel_t channel);
 /**
  * @brief   Common ISR code, EICU timer overflow event.
  *
- * @param[in] icup      Pointer to the EICUDriver object
+ * @param[in] eicup      Pointer to the @p EICUDriver object
  *
  * @notapi
  */
