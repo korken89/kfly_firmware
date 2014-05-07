@@ -304,8 +304,8 @@
 
 #define VAL_GPIOA_PUPDR             (PIN_PUPDR_FLOATING(GPIOA_AUX3_TX) |       \
                                      PIN_PUPDR_PULLUP(GPIOA_AUX3_RX) |         \
-                                     PIN_PUPDR_FLOATING(GPIOA_CONTROL_IN1) |   \
-                                     PIN_PUPDR_FLOATING(GPIOA_CONTROL_IN6) |   \
+                                     PIN_PUPDR_PULLDOWN(GPIOA_CONTROL_IN1) |     \
+                                     PIN_PUPDR_PULLDOWN(GPIOA_CONTROL_IN6) |     \
                                      PIN_PUPDR_FLOATING(GPIOA_RF_SEL) |        \
                                      PIN_PUPDR_FLOATING(GPIOA_RF_SCLK) |       \
                                      PIN_PUPDR_FLOATING(GPIOA_RF_MISO) |       \
@@ -425,8 +425,8 @@
                                      PIN_OSPEED_100M(GPIOB_CONTROL_IN2) |      \
                                      PIN_OSPEED_100M(GPIOB_CONTROL_IN3))
 
-#define VAL_GPIOB_PUPDR             (PIN_PUPDR_PULLUP(GPIOB_CONTROL_IN5) |     \
-                                     PIN_PUPDR_PULLUP(GPIOB_CONTROL_IN4) |     \
+#define VAL_GPIOB_PUPDR             (PIN_PUPDR_PULLDOWN(GPIOB_CONTROL_IN5) |     \
+                                     PIN_PUPDR_PULLDOWN(GPIOB_CONTROL_IN4) |     \
                                      PIN_PUPDR_PULLUP(GPIOB_PIN2) |            \
                                      PIN_PUPDR_PULLUP(GPIOB_PIN3) |            \
                                      PIN_PUPDR_PULLUP(GPIOB_PIN4) |            \
@@ -439,8 +439,8 @@
                                      PIN_PUPDR_PULLUP(GPIOB_SENSORS_SDA) |     \
                                      PIN_PUPDR_PULLUP(GPIOB_CAN_RX) |          \
                                      PIN_PUPDR_PULLUP(GPIOB_CAN_TX) |          \
-                                     PIN_PUPDR_PULLUP(GPIOB_CONTROL_IN2) |     \
-                                     PIN_PUPDR_PULLUP(GPIOB_CONTROL_IN3))
+                                     PIN_PUPDR_PULLDOWN(GPIOB_CONTROL_IN2) |     \
+                                     PIN_PUPDR_PULLDOWN(GPIOB_CONTROL_IN3))
 
 #define VAL_GPIOB_ODR               (PIN_ODR_HIGH(GPIOB_CONTROL_IN5) |         \
                                      PIN_ODR_HIGH(GPIOB_CONTROL_IN4) |         \
