@@ -827,7 +827,15 @@ uint16_t eicu_lld_get_width(EICUDriver *eicup, uint16_t channel) {
   uint16_t capture, last_count;
   capture = eicu_lld_get_compare(eicup, channel);
 
-  /* Add code to compensate for overflows when in pulse of edge mode */
+  /* Add code to compensate for overflows when in pulse */
+  if (eicup->config->input_type == EICU_INPUT_PULSE) {
+    last_count = eicup->last_count[channel];
+
+    if (capture > last_count)       /* No overflow */
+      capture = capture - last_count;
+    else if (capture < last_count)  /* Timer overflow */
+      capture = ((0xFFFF - last_count) + capture); 
+  }
 
   return capture;
 }
