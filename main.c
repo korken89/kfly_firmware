@@ -123,24 +123,16 @@ static void testwidthcb(EICUDriver *eicup, eicuchannel_t channel)
 	palTogglePad(GPIOC, GPIOC_LED_ERR);
 }
 
-static void testperiodcb(EICUDriver *eicup, eicuchannel_t channel)
-{
-	(void)eicup;
-	(void)channel;
-
-	
-}
-
 static const EICU_IC_Settings ic1settings = {
 	EICU_INPUT_ACTIVE_HIGH,
 	testwidthcb
 };
 static const EICUConfig rcinputcfg = {
 	EICU_INPUT_EDGE,
-	10000,
+	1000000,
 	{&ic1settings, NULL, NULL, NULL},
-	testperiodcb,
-	testperiodcb,
+	NULL,
+	NULL,
 	0,
 	0
 };
@@ -215,20 +207,20 @@ int main(void)
 	i2cStart(&I2CD2, &i2cfg2);
 
 	/* Initialize Accelerometer and Gyroscope */
-	//if (MPU6050Init(&mpu6050cfg) != RDY_OK)
-	//	panic(); /* Initialization failed */
+	if (MPU6050Init(&mpu6050cfg) != RDY_OK)
+		panic(); /* Initialization failed */
 
 	/* Initialize Magnetometer */
-	//if (HMC5983Init(&hmc5983cfg) != RDY_OK)
-	//	panic(); /* Initialization failed */
+	if (HMC5983Init(&hmc5983cfg) != RDY_OK)
+		panic(); /* Initialization failed */
 	
 	/* Initialize Barometer */
 	/* TODO: Add barometer code */
 
 	/* Initialize sensor readout */
-	//if (SensorReadInit(&mpu6050cfg, &hmc5983cfg,
-		//			   &mpu6050cal, &hmc5983cal) != RDY_OK)
-	//	panic(); /* Initialization failed */
+	if (SensorReadInit(&mpu6050cfg, &hmc5983cfg,
+					   &mpu6050cal, &hmc5983cal) != RDY_OK)
+		panic(); /* Initialization failed */
 
 	/*
 	 *
@@ -271,13 +263,6 @@ int main(void)
 		chThdSleepMilliseconds(500);
 		palSetPad(GPIOC, GPIOC_LED_USR);
 		chThdSleepMilliseconds(500);
-		if (isUSBActive() == TRUE)
-		{
-			chprintf( (BaseSequentialStream *)&SDU1, "Width 1: %u\r\n", EICUD9.tim->CCR[0]);
-			chprintf( (BaseSequentialStream *)&SDU1, "Width 2: %u\r\n", EICUD9.tim->CCR[1]);
-			chprintf( (BaseSequentialStream *)&SDU1, "Width 3: %u\r\n", EICUD9.tim->CCR[2]);
-			chprintf( (BaseSequentialStream *)&SDU1, "Width 4: %u\r\n", EICUD9.tim->CCR[3]);
-		}
 	}
 }
 
