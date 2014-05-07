@@ -105,6 +105,10 @@ static void eicu_lld_serve_interrupt(EICUDriver *eicup)
   /* Clear interrupts */
   eicup->tim->SR = ~sr;
 
+  /* Pick out the interrupts we are interested in by using
+     the interrupt enable bits as mask */
+  sr &= (eicup->tim->DIER & 0x007F);
+
   if (eicup->config->input_type == EICU_INPUT_PWM) {
     if (eicup->config->pwm_channel == EICU_PWM_CHANNEL_1) {
       if ((sr & STM32_TIM_SR_CC1IF) != 0)
