@@ -2,7 +2,7 @@
 #define __HMC5983_H
 
 /* Defines */
-#define HMC5983_DATA_AVAILABLE_EVENTMASK	0x02
+#define HMC5983_DATA_AVAILABLE_EVENTMASK	((eventmask_t)0x02)
 
 #define HMC5983_ADDRESS						0x1E
 

@@ -2,7 +2,7 @@
 #define __MPU6050_H
 
 /* Defines */
-#define MPU6050_DATA_AVAILABLE_EVENTMASK	0x01
+#define MPU6050_DATA_AVAILABLE_EVENTMASK	((eventmask_t)0x01)
 
 /* Conversions */
 #define MPU6050_DPS250_TO_RADPS 			(0.0174532925f / 131.0f)
