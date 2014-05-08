@@ -25,7 +25,7 @@ static Sensor_Calibration *prv_accelerometer_cal = NULL;
 static Sensor_Calibration *prv_magnetometer_cal = NULL;
 
 /* Private pointer to the Sensor Read Thread */
-static Thread *tp = NULL;
+static Thread *thread_sensor_read_p = NULL;
 
 /* Temporary holder of sensor data */
 static uint8_t temp_data[14];
@@ -97,11 +97,11 @@ void MPU6050cb(EXTDriver *extp, expchannel_t channel)
 	(void)extp;
 	(void)channel;
 
-	if (tp != NULL)
+	if (thread_sensor_read_p != NULL)
 	{
 		/* Wakes up the sensor read thread */
 		chSysLockFromIsr();
-		chEvtSignalI(tp, (eventmask_t)MPU6050_DATA_AVAILABLE_EVENTMASK);
+		chEvtSignalI(thread_sensor_read_p, MPU6050_DATA_AVAILABLE_EVENTMASK);
 		chSysUnlockFromIsr();
 	}
 }
@@ -117,11 +117,11 @@ void HMC5983cb(EXTDriver *extp, expchannel_t channel)
 	(void)extp;
 	(void)channel;
 
-	if (tp != NULL)
+	if (thread_sensor_read_p != NULL)
 	{
 		/* Wakes up the sensor read thread */
 		chSysLockFromIsr();
-		chEvtSignalI(tp, (eventmask_t)HMC5983_DATA_AVAILABLE_EVENTMASK);
+		chEvtSignalI(thread_sensor_read_p, HMC5983_DATA_AVAILABLE_EVENTMASK);
 		chSysUnlockFromIsr();
 	}
 }
@@ -153,7 +153,7 @@ static msg_t ThreadSensorRead(void *arg)
 	(void)arg;
 
 	eventmask_t events;
-	tp = chThdSelf();
+	thread_sensor_read_p = chThdSelf();
 
 	chRegSetThreadName("Sensor Readout");
 
