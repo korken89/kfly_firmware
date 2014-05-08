@@ -434,12 +434,12 @@ void eicu_lld_start(EICUDriver *eicup) {
               (eicup->config->iccfgp[3] != NULL),
               "icu_lld_start(), #1", "invalid input configuration");
 
-#if STM32_EICU_USE_TIM9
+#if STM32_EICU_USE_TIM9 && !STM32_EICU_USE_TIM12
   chDbgAssert((eicup != &EICUD9) ||
              ((eicup->config->iccfgp[2] == NULL) &&
               (eicup->config->iccfgp[3] == NULL)),
               "icu_lld_start(), #1", "TIM9 and TIM12 does not have CCR2");
-#elif STM32_EICU_USE_TIM12
+#elif !STM32_EICU_USE_TIM9 && STM32_EICU_USE_TIM12
   chDbgAssert((eicup != &EICUD12) ||
              ((eicup->config->iccfgp[2] != NULL) &&
               (eicup->config->iccfgp[3] != NULL)),
