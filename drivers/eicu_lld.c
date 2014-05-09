@@ -423,33 +423,33 @@ void eicu_lld_init(void) {
 void eicu_lld_start(EICUDriver *eicup) {
   uint32_t psc;
 
-  chDbgAssert((eicup->config->input_type == EICU_INPUT_EDGE) ||
-              (eicup->config->input_type == EICU_INPUT_PULSE) ||
-              (eicup->config->input_type == EICU_INPUT_PWM),
-              "icu_lld_start(), #1", "invalid input");
+  osalDbgAssert((eicup->config->input_type == EICU_INPUT_EDGE) ||
+                (eicup->config->input_type == EICU_INPUT_PULSE) ||
+                (eicup->config->input_type == EICU_INPUT_PWM),
+                 "invalid input");
 
-  chDbgAssert((eicup->config->iccfgp[0] != NULL) ||
-              (eicup->config->iccfgp[1] != NULL) ||
-              (eicup->config->iccfgp[2] != NULL) ||
-              (eicup->config->iccfgp[3] != NULL),
-              "icu_lld_start(), #1", "invalid input configuration");
+  osalDbgAssert((eicup->config->iccfgp[0] != NULL) ||
+                (eicup->config->iccfgp[1] != NULL) ||
+                (eicup->config->iccfgp[2] != NULL) ||
+                (eicup->config->iccfgp[3] != NULL),
+                 "invalid input configuration");
 
 #if STM32_EICU_USE_TIM9 && !STM32_EICU_USE_TIM12
-  chDbgAssert((eicup != &EICUD9) ||
-             ((eicup->config->iccfgp[2] == NULL) &&
-              (eicup->config->iccfgp[3] == NULL)),
-              "icu_lld_start(), #1", "TIM9 and TIM12 does not have CCR2");
+  osalDbgAssert((eicup != &EICUD9) ||
+               ((eicup->config->iccfgp[2] == NULL) &&
+                (eicup->config->iccfgp[3] == NULL)),
+                 "TIM9 and TIM12 does not have CCR2");
 #elif !STM32_EICU_USE_TIM9 && STM32_EICU_USE_TIM12
-  chDbgAssert((eicup != &EICUD12) ||
-             ((eicup->config->iccfgp[2] != NULL) &&
-              (eicup->config->iccfgp[3] != NULL)),
-              "icu_lld_start(), #1", "TIM9 and TIM12 does not have CCR2");
+  osalDbgAssert((eicup != &EICUD12) ||
+               ((eicup->config->iccfgp[2] != NULL) &&
+                (eicup->config->iccfgp[3] != NULL)),
+                 "TIM9 and TIM12 does not have CCR2");
 #elif STM32_EICU_USE_TIM9 && STM32_EICU_USE_TIM12
-  chDbgAssert(((eicup != &EICUD9) &&
-               (eicup != &EICUD12)) ||
-              ((eicup->config->iccfgp[2] != NULL) &&
-               (eicup->config->iccfgp[3] != NULL)),
-              "icu_lld_start(), #1", "TIM9 and TIM12 does not have CCR2");
+  osalDbgAssert(((eicup != &EICUD9) &&
+                 (eicup != &EICUD12)) ||
+                ((eicup->config->iccfgp[2] != NULL) &&
+                 (eicup->config->iccfgp[3] != NULL)),
+                  "TIM9 and TIM12 does not have CCR2");
 #endif
 
   if (eicup->state == EICU_STOP) {
@@ -459,9 +459,9 @@ void eicu_lld_start(EICUDriver *eicup) {
       rccEnableTIM1(FALSE);
       rccResetTIM1();
       nvicEnableVector(STM32_TIM1_UP_NUMBER,
-                       CORTEX_PRIORITY_MASK(STM32_EICU_TIM1_IRQ_PRIORITY));
+                       NVIC_PRIORITY_MASK(STM32_EICU_TIM1_IRQ_PRIORITY));
       nvicEnableVector(STM32_TIM1_CC_NUMBER,
-                       CORTEX_PRIORITY_MASK(STM32_EICU_TIM1_IRQ_PRIORITY));
+                       NVIC_PRIORITY_MASK(STM32_EICU_TIM1_IRQ_PRIORITY));
 #if defined(STM32_TIM1CLK)
       eicup->clock = STM32_TIM1CLK;
 #else
@@ -474,7 +474,7 @@ void eicu_lld_start(EICUDriver *eicup) {
       rccEnableTIM2(FALSE);
       rccResetTIM2();
       nvicEnableVector(STM32_TIM2_NUMBER,
-                       CORTEX_PRIORITY_MASK(STM32_EICU_TIM2_IRQ_PRIORITY));
+                       NVIC_PRIORITY_MASK(STM32_EICU_TIM2_IRQ_PRIORITY));
       eicup->clock = STM32_TIMCLK1;
     }
 #endif
@@ -483,7 +483,7 @@ void eicu_lld_start(EICUDriver *eicup) {
       rccEnableTIM3(FALSE);
       rccResetTIM3();
       nvicEnableVector(STM32_TIM3_NUMBER,
-                       CORTEX_PRIORITY_MASK(STM32_EICU_TIM3_IRQ_PRIORITY));
+                       NVIC_PRIORITY_MASK(STM32_EICU_TIM3_IRQ_PRIORITY));
       eicup->clock = STM32_TIMCLK1;
     }
 #endif
@@ -492,7 +492,7 @@ void eicu_lld_start(EICUDriver *eicup) {
       rccEnableTIM4(FALSE);
       rccResetTIM4();
       nvicEnableVector(STM32_TIM4_NUMBER,
-                       CORTEX_PRIORITY_MASK(STM32_EICU_TIM4_IRQ_PRIORITY));
+                       NVIC_PRIORITY_MASK(STM32_EICU_TIM4_IRQ_PRIORITY));
       eicup->clock = STM32_TIMCLK1;
     }
 #endif
@@ -501,7 +501,7 @@ void eicu_lld_start(EICUDriver *eicup) {
       rccEnableTIM5(FALSE);
       rccResetTIM5();
       nvicEnableVector(STM32_TIM5_NUMBER,
-                       CORTEX_PRIORITY_MASK(STM32_EICU_TIM5_IRQ_PRIORITY));
+                       NVIC_PRIORITY_MASK(STM32_EICU_TIM5_IRQ_PRIORITY));
       eicup->clock = STM32_TIMCLK1;
     }
 #endif
@@ -510,9 +510,9 @@ void eicu_lld_start(EICUDriver *eicup) {
       rccEnableTIM8(FALSE);
       rccResetTIM8();
       nvicEnableVector(STM32_TIM8_UP_NUMBER,
-                       CORTEX_PRIORITY_MASK(STM32_EICU_TIM8_IRQ_PRIORITY));
+                       NVIC_PRIORITY_MASK(STM32_EICU_TIM8_IRQ_PRIORITY));
       nvicEnableVector(STM32_TIM8_CC_NUMBER,
-                       CORTEX_PRIORITY_MASK(STM32_EICU_TIM8_IRQ_PRIORITY));
+                       NVIC_PRIORITY_MASK(STM32_EICU_TIM8_IRQ_PRIORITY));
 #if defined(STM32_TIM8CLK)
       eicup->clock = STM32_TIM8CLK;
 #else
@@ -525,7 +525,7 @@ void eicu_lld_start(EICUDriver *eicup) {
       rccEnableTIM9(FALSE);
       rccResetTIM9();
       nvicEnableVector(STM32_TIM9_NUMBER,
-                       CORTEX_PRIORITY_MASK(STM32_EICU_TIM9_IRQ_PRIORITY));
+                       NVIC_PRIORITY_MASK(STM32_EICU_TIM9_IRQ_PRIORITY));
       eicup->clock = STM32_TIMCLK2;
     }
 #endif
@@ -534,7 +534,7 @@ void eicu_lld_start(EICUDriver *eicup) {
       rccEnableTIM12(FALSE);
       rccResetTIM12();
       nvicEnableVector(STM32_TIM12_NUMBER,
-                       CORTEX_PRIORITY_MASK(STM32_EICU_TIM12_IRQ_PRIORITY));
+                       NVIC_PRIORITY_MASK(STM32_EICU_TIM12_IRQ_PRIORITY));
       eicup->clock = STM32_TIMCLK1;
     }
 #endif
@@ -553,8 +553,8 @@ void eicu_lld_start(EICUDriver *eicup) {
   /* Timer configuration.*/
   psc = (eicup->clock / eicup->config->frequency) - 1;
   chDbgAssert((psc <= 0xFFFF) &&
-              ((psc + 1) * eicup->config->frequency) == eicup->clock,
-              "eicu_lld_start(), #1", "invalid frequency");
+             ((psc + 1) * eicup->config->frequency) == eicup->clock,
+               "invalid frequency");
   eicup->tim->PSC   = (uint16_t)psc;
   eicup->tim->ARR   = 0xFFFF;
 

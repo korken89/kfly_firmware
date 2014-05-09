@@ -238,9 +238,9 @@ typedef struct
 	float accel_data[3];		/* Accelerometer calibrated data holder */
 	float gyro_data[3];			/* Gyroscope calibrated data holder 	*/
 	float temperature;			/* Temperature calibrated data holder 	*/
-	Mutex read_lock;			/* Keep listeners from reading if
+	mutex_t read_lock;			/* Keep listeners from reading if
 								   new data is being written 			*/
-	EventSource es;				/* Event Source for new data and
+	event_source_t es;			/* Event Source for new data and
 								   error broadcasts 					*/
 } MPU6050_Data;
 

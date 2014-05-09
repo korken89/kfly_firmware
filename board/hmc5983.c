@@ -24,16 +24,16 @@
 msg_t HMC5983Init(const HMC5983_Configuration *cfg)
 {
 	static uint8_t txbuf[2];
-	msg_t status = RDY_OK;
+	msg_t status = MSG_OK;
 
 	/* Error: Pointers not defined */
 	if ((cfg->data_holder == NULL) || (cfg->i2cp == NULL))
-		return RDY_RESET;
+		return MSG_RESET;
 
 
 	/* Initialize the data event source and mutex */
-	chMtxInit(&cfg->data_holder->read_lock);
-	chEvtInit(&cfg->data_holder->es);
+	chMtxObjectInit(&cfg->data_holder->read_lock);
+	osalEventObjectInit(&cfg->data_holder->es);
 
 
 	/* Initialize the sensor */
@@ -54,7 +54,7 @@ msg_t HMC5983Init(const HMC5983_Configuration *cfg)
 	i2cReleaseBus(cfg->i2cp);
 
 	/* Error check */
-	if (status != RDY_OK)
+	if (status != MSG_OK)
 		return status;
 
 	/* Set the gain */
@@ -71,7 +71,7 @@ msg_t HMC5983Init(const HMC5983_Configuration *cfg)
 	i2cReleaseBus(cfg->i2cp);
 
 	/* Error check */
-	if (status != RDY_OK)
+	if (status != MSG_OK)
 		return status;
 
 	/* Set the mode */
@@ -101,7 +101,7 @@ msg_t HMC5983Init(const HMC5983_Configuration *cfg)
 msg_t HMC5983GetID(const HMC5983_Configuration *cfg, uint8_t id[3])
 {
 	static uint8_t txbuf[1] = {HMC5983_RA_ID_A};
-	msg_t status = RDY_OK;
+	msg_t status = MSG_OK;
 
 	/* Get ID */
 	i2cAcquireBus(cfg->i2cp);
@@ -128,7 +128,7 @@ msg_t HMC5983GetID(const HMC5983_Configuration *cfg, uint8_t id[3])
 msg_t HMC5983ReadData(const HMC5983_Configuration *cfg, uint8_t data[6])
 {
 	static uint8_t txbuf[1] = {HMC5983_RA_DATAX_H};
-	msg_t status = RDY_OK;
+	msg_t status = MSG_OK;
 
 	/* Get ID */
 	i2cAcquireBus(cfg->i2cp);

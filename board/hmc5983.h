@@ -89,9 +89,9 @@ typedef struct
 {
 	int16_t raw_mag_data[3];	/* Magnetometer raw data holder 		*/
 	float mag_data[3];			/* Magnetometer calibrated data holder 	*/
-	Mutex read_lock;			/* Keep listeners from reading if
+	mutex_t read_lock;			/* Keep listeners from reading if
 							  	   new data is being written 			*/
-	EventSource es;				/* Event Source for new data and
+	event_source_t es;			/* Event Source for new data and
 								   error broadcasts 					*/
 } HMC5983_Data;
 

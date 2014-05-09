@@ -67,15 +67,15 @@ void eicuObjectInit(EICUDriver *eicup) {
  */
 void eicuStart(EICUDriver *eicup, const EICUConfig *config) {
 
-  chDbgCheck((eicup != NULL) && (config != NULL), "eicuStart");
+  osalDbgCheck((eicup != NULL) && (config != NULL));
 
-  chSysLock();
-  chDbgAssert((eicup->state == EICU_STOP) || (eicup->state == EICU_READY),
-              "eicuStart(), #1", "invalid state");
+  osalSysLock();
+  osalDbgAssert((eicup->state == EICU_STOP) || (eicup->state == EICU_READY),
+                "invalid state");
   eicup->config = config;
   eicu_lld_start(eicup);
   eicup->state = EICU_READY;
-  chSysUnlock();
+  osalSysUnlock();
 }
 
 /**
@@ -87,14 +87,14 @@ void eicuStart(EICUDriver *eicup, const EICUConfig *config) {
  */
 void eicuStop(EICUDriver *eicup) {
 
-  chDbgCheck(eicup != NULL, "eicuStop");
+  osalDbgCheck(eicup != NULL);
 
-  chSysLock();
-  chDbgAssert((eicup->state == EICU_STOP) || (eicup->state == EICU_READY),
-              "eicuStop(), #1", "invalid state");
+  osalSysLock();
+  osalDbgAssert((eicup->state == EICU_STOP) || (eicup->state == EICU_READY),
+                "invalid state");
   eicu_lld_stop(eicup);
   eicup->state = EICU_STOP;
-  chSysUnlock();
+  osalSysUnlock();
 }
 
 /**
@@ -106,13 +106,13 @@ void eicuStop(EICUDriver *eicup) {
  */
 void eicuEnable(EICUDriver *eicup) {
 
-  chDbgCheck(eicup != NULL, "eicuEnable");
+  osalDbgCheck(eicup != NULL);
 
-  chSysLock();
-  chDbgAssert(eicup->state == EICU_READY, "eicuEnable(), #1", "invalid state");
+  osalSysLock();
+  osalDbgAssert(eicup->state == EICU_READY, "invalid state");
   eicu_lld_enable(eicup);
   eicup->state = EICU_WAITING;
-  chSysUnlock();
+  osalSysUnlock();
 }
 
 /**
@@ -124,15 +124,15 @@ void eicuEnable(EICUDriver *eicup) {
  */
 void eicuDisable(EICUDriver *eicup) {
 
-  chDbgCheck(eicup != NULL, "eicuDisable");
+  osalDbgCheck(eicup != NULL);
 
-  chSysLock();
-  chDbgAssert((eicup->state == EICU_READY) || (eicup->state == EICU_WAITING) ||
-              (eicup->state == EICU_ACTIVE) || (eicup->state == EICU_IDLE),
-              "eicuDisable(), #1", "invalid state");
+  osalSysLock();
+  osalDbgAssert((eicup->state == EICU_READY) || (eicup->state == EICU_WAITING) ||
+                (eicup->state == EICU_ACTIVE) || (eicup->state == EICU_IDLE),
+                 "invalid state");
   eicu_lld_disable(eicup);
   eicup->state = EICU_READY;
-  chSysUnlock();
+  osalSysUnlock();
 }
 
 #endif /* HAL_USE_EICU */

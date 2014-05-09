@@ -24,24 +24,24 @@
 msg_t MPU6050Init(const MPU6050_Configuration *cfg)
 {
 	static uint8_t txbuf[2];
-	msg_t status = RDY_OK;
+	msg_t status = MSG_OK;
 
 
 	/* Error: Pointers not defined */
 	if ((cfg->data_holder == NULL) || (cfg->i2cp == NULL))
-		return RDY_RESET;
+		return MSG_RESET;
 
 
 	/* Initialize the data event source and mutex */
-	chMtxInit(&cfg->data_holder->read_lock);
-	chEvtInit(&cfg->data_holder->es);
+	chMtxObjectInit(&cfg->data_holder->read_lock);
+	osalEventObjectInit(&cfg->data_holder->es);
 
 
 	/* Perform sensor reset */
 	status = MPU6050DeviceReset(cfg);
 
 	/* Error check */
-	if (status != RDY_OK)
+	if (status != MSG_OK)
 		return status;
 
 	/* Initialize the sensor */
@@ -59,7 +59,7 @@ msg_t MPU6050Init(const MPU6050_Configuration *cfg)
 	i2cReleaseBus(cfg->i2cp);
 
 	/* Error check */
-	if (status != RDY_OK)
+	if (status != MSG_OK)
 		return status;
 
 	/* Set FIFO */
@@ -76,7 +76,7 @@ msg_t MPU6050Init(const MPU6050_Configuration *cfg)
 	i2cReleaseBus(cfg->i2cp);
 
 	/* Error check */
-	if (status != RDY_OK)
+	if (status != MSG_OK)
 		return status;
 
 	/* Set Gyro range */
@@ -93,7 +93,7 @@ msg_t MPU6050Init(const MPU6050_Configuration *cfg)
 	i2cReleaseBus(cfg->i2cp);
 
 	/* Error check */
-	if (status != RDY_OK)
+	if (status != MSG_OK)
 		return status;
 
 	/* Set Accelerometer range */
@@ -110,7 +110,7 @@ msg_t MPU6050Init(const MPU6050_Configuration *cfg)
 	i2cReleaseBus(cfg->i2cp);
 
 	/* Error check */
-	if (status != RDY_OK)
+	if (status != MSG_OK)
 		return status;
 
 	/* Set Digital Low-Pass Filter and External Sync */
@@ -127,7 +127,7 @@ msg_t MPU6050Init(const MPU6050_Configuration *cfg)
 	i2cReleaseBus(cfg->i2cp);
 
 	/* Error check */
-	if (status != RDY_OK)
+	if (status != MSG_OK)
 		return status;
 
 	/* Set Sample Rate divider */
@@ -144,7 +144,7 @@ msg_t MPU6050Init(const MPU6050_Configuration *cfg)
 	i2cReleaseBus(cfg->i2cp);
 
 	/* Error check */
-	if (status != RDY_OK)
+	if (status != MSG_OK)
 		return status;
 
 	/* Set interrupt pin config */
@@ -161,7 +161,7 @@ msg_t MPU6050Init(const MPU6050_Configuration *cfg)
 	i2cReleaseBus(cfg->i2cp);
 
 	/* Error check */
-	if (status != RDY_OK)
+	if (status != MSG_OK)
 		return status;
 
 	/* Set interrupts */
@@ -189,7 +189,7 @@ msg_t MPU6050Init(const MPU6050_Configuration *cfg)
 msg_t MPU6050DeviceReset(const MPU6050_Configuration *cfg)
 {
 	static uint8_t txbuf[2] = {MPU6050_RA_PWR_MGMT_1, MPU6050_DEVICE_RESET};
-	msg_t status = RDY_OK;
+	msg_t status = MSG_OK;
 
 	/* Reset device */
 	i2cAcquireBus(cfg->i2cp);
@@ -203,7 +203,7 @@ msg_t MPU6050DeviceReset(const MPU6050_Configuration *cfg)
 	i2cReleaseBus(cfg->i2cp);
 
 	/* Error check */
-	if (status != RDY_OK)
+	if (status != MSG_OK)
 		return status;
 
 	/* Sleep for 100 ms as per datasheet */
@@ -223,7 +223,7 @@ msg_t MPU6050DeviceReset(const MPU6050_Configuration *cfg)
 	i2cReleaseBus(cfg->i2cp);
 
 	/* Error check */
-	if (status != RDY_OK)
+	if (status != MSG_OK)
 		return status;
 
 	/* Sleep for 100 ms as per datasheet */
@@ -243,7 +243,7 @@ msg_t MPU6050DeviceReset(const MPU6050_Configuration *cfg)
 msg_t MPU6050GetID(const MPU6050_Configuration *cfg, uint8_t id[1])
 {
 	static uint8_t txbuf[1] = {MPU6050_RA_WHO_AM_I};
-	msg_t status = RDY_OK;
+	msg_t status = MSG_OK;
 
 	/* Get ID */
 	i2cAcquireBus(cfg->i2cp);
@@ -273,7 +273,7 @@ msg_t MPU6050GetID(const MPU6050_Configuration *cfg, uint8_t id[1])
 msg_t MPU6050ReadData(const MPU6050_Configuration *cfg, uint8_t data[14])
 {
 	static uint8_t txbuf[1] = {MPU6050_RA_ACCEL_XOUT_H};
-	msg_t status = RDY_OK;
+	msg_t status = MSG_OK;
 
 	/* Get ID */
 	i2cAcquireBus(cfg->i2cp);

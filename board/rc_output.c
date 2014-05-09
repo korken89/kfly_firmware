@@ -23,7 +23,7 @@
  */
 msg_t RCOutputInit(const RCOutput_Configuration *cfg)
 {
-	msg_t status = RDY_OK;
+	msg_t status = MSG_OK;
 
 	pwmStart(cfg->pwmp_lowbank, cfg->pwmcfg);
 	pwmStart(cfg->pwmp_highbank, cfg->pwmcfg);
@@ -58,7 +58,7 @@ msg_t RCOutputSetChannelWidthUs(const RCOutput_Configuration *cfg,
 	static const uint32_t pwmchannellut[8] = {3, 2, 1, 0, 3, 2, 1, 0};
 
 	if (sel > RCOUTPUT_CHANNEL_8)
-		return !RDY_OK;
+		return MSG_RESET;
 
 	if (sel <= RCOUTPUT_CHANNEL_4)
 		pwmEnableChannel(cfg->pwmp_lowbank,
@@ -69,7 +69,7 @@ msg_t RCOutputSetChannelWidthUs(const RCOutput_Configuration *cfg,
 						 pwmchannellut[sel], 
 						 width_us);
 
-	return RDY_OK;
+	return MSG_OK;
 }
 
 /**
@@ -86,7 +86,7 @@ msg_t RCOutputSetChannelWidthRelativePositive(const RCOutput_Configuration *cfg,
 							 		 		  float width)
 {
 	if (sel > RCOUTPUT_CHANNEL_8)
-		return !RDY_OK;
+		return MSG_RESET;
 
 	/* Bound the width from 0 % to 100 % */
 	if (width < 0.0f)
@@ -114,7 +114,7 @@ msg_t RCOutputSetChannelWidthRelative(const RCOutput_Configuration *cfg,
 							 		  float width)
 {
 	if (sel > RCOUTPUT_CHANNEL_8)
-		return !RDY_OK;
+		return MSG_RESET;
 
 	/* Bound the width from -100% to 100% */
 	if (width < -1.0f)
@@ -144,12 +144,12 @@ msg_t RCOutputSetChannelPeriod(const RCOutput_Configuration *cfg,
 	if ((sel > RCOUTPUT_BANK_5_8) ||
 		(rate != RCOUTPUT_400HZ) ||
 		(rate != RCOUTPUT_50HZ))
-		return !RDY_OK;
+		return MSG_RESET;
 
 	if (sel == RCOUTPUT_BANK_1_4)
 		pwmChangePeriod(cfg->pwmp_lowbank, (pwmcnt_t)rate);
 	else
 		pwmChangePeriod(cfg->pwmp_highbank, (pwmcnt_t)rate);
 
-	return RDY_OK;
+	return MSG_OK;
 }

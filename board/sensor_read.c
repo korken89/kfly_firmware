@@ -25,13 +25,13 @@ static Sensor_Calibration *prv_accelerometer_cal = NULL;
 static Sensor_Calibration *prv_magnetometer_cal = NULL;
 
 /* Private pointer to the Sensor Read Thread */
-static Thread *thread_sensor_read_p = NULL;
+static thread_t *thread_sensor_read_p = NULL;
 
 /* Temporary holder of sensor data */
 static uint8_t temp_data[14];
 
 /* Working area for the sensor read thread */
-static WORKING_AREA(waThreadSensorRead, 128);
+static THD_WORKING_AREA(waThreadSensorRead, 128);
 
 /* Private function defines */
 static void ApplyCalibration(	Sensor_Calibration *cal,
@@ -61,7 +61,7 @@ msg_t SensorReadInit(const MPU6050_Configuration *mpu6050cfg,
 {
 	/* Parameter checks */
 	if ((mpu6050cfg == NULL) || (hmc5983cfg == NULL))
-		return !RDY_OK; /* Error! */
+		return MSG_RESET; /* Error! */
 
 	prv_mpu6050cfg = mpu6050cfg;
 	prv_hmc5983cfg = hmc5983cfg;
@@ -71,10 +71,10 @@ msg_t SensorReadInit(const MPU6050_Configuration *mpu6050cfg,
 
 	/* If there are valid calibration pointers, initialize mutexes */
 	if (accelerometer_cal != NULL)
-		chMtxInit(&accelerometer_cal->lock);
+		chMtxObjectInit(&accelerometer_cal->lock);
 
 	if (magnetometer_cal != NULL)
-		chMtxInit(&magnetometer_cal->lock);
+		chMtxObjectInit(&magnetometer_cal->lock);
 
 	/* Initialize read thread */
 	chThdCreateStatic(	waThreadSensorRead,
@@ -83,7 +83,7 @@ msg_t SensorReadInit(const MPU6050_Configuration *mpu6050cfg,
 						ThreadSensorRead, 
 						NULL);
 
-	return RDY_OK;
+	return MSG_OK;
 }
 
 /**
@@ -100,9 +100,9 @@ void MPU6050cb(EXTDriver *extp, expchannel_t channel)
 	if (thread_sensor_read_p != NULL)
 	{
 		/* Wakes up the sensor read thread */
-		chSysLockFromIsr();
+		chSysLockFromISR();
 		chEvtSignalI(thread_sensor_read_p, MPU6050_DATA_AVAILABLE_EVENTMASK);
-		chSysUnlockFromIsr();
+		chSysUnlockFromISR();
 	}
 }
 
@@ -120,9 +120,9 @@ void HMC5983cb(EXTDriver *extp, expchannel_t channel)
 	if (thread_sensor_read_p != NULL)
 	{
 		/* Wakes up the sensor read thread */
-		chSysLockFromIsr();
+		chSysLockFromISR();
 		chEvtSignalI(thread_sensor_read_p, HMC5983_DATA_AVAILABLE_EVENTMASK);
-		chSysUnlockFromIsr();
+		chSysUnlockFromISR();
 	}
 }
 
@@ -153,7 +153,7 @@ static msg_t ThreadSensorRead(void *arg)
 	(void)arg;
 
 	eventmask_t events;
-	thread_sensor_read_p = chThdSelf();
+	thread_sensor_read_p = chThdGetSelfX();
 
 	chRegSetThreadName("Sensor Readout");
 
@@ -187,16 +187,16 @@ static msg_t ThreadSensorRead(void *arg)
 								MPU6050GetGyroGain(prv_mpu6050cfg));
 
 			/* Unlock the data structure */
-			chMtxUnlock();
+			chMtxUnlock(&prv_mpu6050cfg->data_holder->read_lock);
 
 
 
 			/* Broadcast new data available */
-			chSysLock();
+			osalSysLock();
 			if (chEvtIsListeningI(&prv_mpu6050cfg->data_holder->es))
 				chEvtBroadcastFlagsI(&prv_mpu6050cfg->data_holder->es,
-									 (flagsmask_t)MPU6050_DATA_AVAILABLE_EVENTMASK);
-			chSysUnlock();
+									 MPU6050_DATA_AVAILABLE_EVENTMASK);
+			osalSysUnlock();
 		}
 
 		if (events & HMC5983_DATA_AVAILABLE_EVENTMASK)
@@ -217,14 +217,14 @@ static msg_t ThreadSensorRead(void *arg)
 								1.0f);
 
 			/* Unlock the data structure */
-			chMtxUnlock();
+			chMtxUnlock(&prv_hmc5983cfg->data_holder->read_lock);
 
 			/* Broadcast new data available */
-			chSysLock();
+			osalSysLock();
 			if (chEvtIsListeningI(&prv_hmc5983cfg->data_holder->es))
 				chEvtBroadcastFlagsI(&prv_hmc5983cfg->data_holder->es,
-									 (flagsmask_t)HMC5983_DATA_AVAILABLE_EVENTMASK);
-			chSysUnlock();
+									 HMC5983_DATA_AVAILABLE_EVENTMASK);
+			osalSysUnlock();
 		}
 
 		if (events & MS5611_DATA_AVAILABLE_EVENTMASK)
@@ -233,7 +233,7 @@ static msg_t ThreadSensorRead(void *arg)
 		}
 	}
 
-	return RDY_OK;
+	return MSG_OK;
 }
 
 /**
@@ -261,7 +261,7 @@ static void ApplyCalibration(	Sensor_Calibration *cal,
 							 * sensor_gain;
 		calibrated_data[2] = ((float)raw_data[2] - cal->bias[2]) * cal->gain[2]
 							 * sensor_gain;
-		chMtxUnlock();
+		chMtxUnlock(&cal->lock);
 	}
 	else
 	{
