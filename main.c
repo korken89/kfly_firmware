@@ -141,7 +141,7 @@ static const EICUConfig rcinputcfg = {
 void panic(void);
 
 static THD_WORKING_AREA(waThreadTestEvents, 128);
-static msg_t ThreadTestEvents(void *arg)
+static THD_FUNCTION(ThreadTestEvents, arg)
 {
 	(void)arg;
 	event_listener_t el;
@@ -243,19 +243,19 @@ int main(void)
 	 *
 	 */
 	eicuInit();
-	eicuStart(&EICUD9, &rcinputcfg);
-	eicuEnable(&EICUD9);
+	//eicuStart(&EICUD9, &rcinputcfg);
+	//eicuEnable(&EICUD9);
 
 	/*
 	 *
 	 * Start test thread
 	 * 
 	 */
-	chThdCreateStatic(	waThreadTestEvents,
-						sizeof(waThreadTestEvents), 
-						HIGHPRIO, 
-						ThreadTestEvents, 
-						NULL);
+	//chThdCreateStatic(	waThreadTestEvents,
+	//					sizeof(waThreadTestEvents), 
+	//					HIGHPRIO, 
+	//					ThreadTestEvents, 
+	//					NULL);
 
 	while(1)
 	{

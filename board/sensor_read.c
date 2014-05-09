@@ -148,7 +148,7 @@ int16_t twoscomplement2signed(uint8_t msb, uint8_t lsb)
  * @param[in] arg Unused.
  * @return Never arrives at the return value.
  */
-static msg_t ThreadSensorRead(void *arg)
+static THD_FUNCTION(ThreadSensorRead, arg)
 {
 	(void)arg;
 
