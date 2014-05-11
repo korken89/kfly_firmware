@@ -367,8 +367,7 @@ struct EICUDriver
  * @notapi
  */
 #define eicu_lld_invert_polarity(eicup, channel)                               \
-  (eicup)->tim->CCER ^= ((uint16_t)(STM32_TIM_CCER_CC1P << ((channel) * 4)));
-
+(eicup)->tim->CCER ^= ((uint16_t)(STM32_TIM_CCER_CC1P << ((channel) * 4)))
 /*===========================================================================*/
 /* External declarations.                                                    */
 /*===========================================================================*/

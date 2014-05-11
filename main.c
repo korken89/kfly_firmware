@@ -9,6 +9,8 @@
 #include "eicu.h"
 #include "chprintf.h"
 
+volatile const char *kfly_error;
+
 /* I2C interface #2 Configuration */
 static const I2CConfig i2cfg2 = {
 	OPMODE_I2C,
@@ -133,7 +135,7 @@ static const EICUConfig rcinputcfg = {
 	{&ic1settings, NULL, NULL, NULL},
 	NULL,
 	NULL,
-	0,
+	EICU_PWM_CHANNEL_1,
 	0
 };
 
@@ -160,7 +162,7 @@ static THD_FUNCTION(ThreadTestEvents, arg)
 		{
 			if (i++ > 10)
 			{
-				//palTogglePad(GPIOC, GPIOC_LED_ERR);
+				palTogglePad(GPIOC, GPIOC_LED_USR);
 				i = 0;
 			}
 		}
@@ -213,7 +215,7 @@ int main(void)
 	/* Initialize Magnetometer */
 	if (HMC5983Init(&hmc5983cfg) != MSG_OK)
 		panic(); /* Initialization failed */
-	
+
 	/* Initialize Barometer */
 	/* TODO: Add barometer code */
 
@@ -225,14 +227,14 @@ int main(void)
 	/*
 	 *
 	 * Start the external interrupts
-	 * 
+	 *
 	 */
 	extStart(&EXTD1, &extcfg);
 
 	/*
 	 *
 	 * Initialize the RC Outputs
-	 * 
+	 *
 	 */
 	if (RCOutputInit(&rcoutputcfg) != MSG_OK)
 		panic(); /* Initialization failed */
@@ -243,26 +245,23 @@ int main(void)
 	 *
 	 */
 	eicuInit();
-	//eicuStart(&EICUD9, &rcinputcfg);
-	//eicuEnable(&EICUD9);
+	eicuStart(&EICUD9, &rcinputcfg);
+	eicuEnable(&EICUD9);
 
 	/*
 	 *
 	 * Start test thread
 	 * 
 	 */
-	//chThdCreateStatic(	waThreadTestEvents,
-	//					sizeof(waThreadTestEvents), 
-	//					HIGHPRIO, 
-	//					ThreadTestEvents, 
-	//					NULL);
+	chThdCreateStatic(	waThreadTestEvents,
+						sizeof(waThreadTestEvents),
+						HIGHPRIO,
+						ThreadTestEvents,
+						NULL);
 
 	while(1)
 	{
-		palClearPad(GPIOC, GPIOC_LED_USR);
-		chThdSleepMilliseconds(500);
-		palSetPad(GPIOC, GPIOC_LED_USR);
-		chThdSleepMilliseconds(500);
+		chThdSleepMilliseconds(100);
 		if (isUSBActive() == TRUE)
 			chprintf((BaseSequentialStream *)&SDU1, "Input width: %u\r\n", ic_test);
 	}
