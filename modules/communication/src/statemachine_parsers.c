@@ -24,149 +24,150 @@
 #include "statemachine_parsers.h"
 
 /* Private functions */
-void ParseGenericSetControllerData(const uint32_t pi_offset, const uint32_t limit_offset, const uint32_t limit_count, uint8_t *data);
+void ParseGenericSetControllerData( const uint32_t pi_offset,
+                                    const uint32_t limit_offset, 
+                                    const uint32_t limit_count, 
+                                    uint8_t *data);
 
 /**
  * Lookup table for all the serial parsers.
  */
 static const Parser_Type parser_lookup[128] = {
-    NULL,                               /* 0:   Cmd_None                        */
-    NULL,                               /* 1:   Cmd_ACK                         */
-    ParsePing,                          /* 2:   Cmd_Ping                        */
-    NULL,                               /* 3:   Cmd_DebugMessage                */
-    ParseGetRunningMode,                /* 4:   Cmd_GetRunningMode              */
-    NULL,                               /* 5 */
-    NULL,                               /* 6 */
-    NULL,                               /* 7 */
-    NULL,                               /* 8 */
-    NULL,                               /* 9 */
-    NULL,                               /* 10:  Cmd_PrepareWriteFirmware        */
-    NULL,                               /* 11:  Cmd_WriteFirmwarePackage        */
-    NULL,                               /* 12:  Cmd_WriteLastFirmwarePackage    */
-    NULL,                               /* 13:  Cmd_ReadFirmwarePackage         */
-    NULL,                               /* 14:  Cmd_ReadLastFirmwarePackage     */
-    NULL,                               /* 15:  Cmd_NextPackage                 */
-    NULL,                               /* 16:  Cmd_ExitBootloader              */
-    ParseGetDeviceInfo,                 /* 17:  Cmd_GetBootloaderVersion        */
-    ParseSetDeviceID,                   /* 18:  Cmd_SetDeviceID                 */
-    ParseSaveToFlash,                   /* 19:  Cmd_SaveToFlash                 */
-    NULL,                               /* 20 */
-    NULL,                               /* 21 */
-    NULL,                               /* 22 */
-    NULL,                               /* 23 */
-    NULL,                               /* 24 */
-    NULL,                               /* 25 */
-    NULL,                               /* 26 */
-    NULL,                               /* 27 */
-    NULL,                               /* 28 */
-    NULL,                               /* 29 */
-    ParseGetRateControllerData,         /* 30:  Cmd_GetRateControllerData       */
-    ParseSetRateControllerData,         /* 31:  Cmd_SetRateControllerData       */
-    ParseGetAttitudeControllerData,     /* 32:  Cmd_GetAttitudeControllerData   */
-    ParseSetAttitudeControllerData,     /* 33:  Cmd_SetAttitudeControllerData   */
-    ParseGetVelocityControllerData,     /* 34:  Cmd_GetVelocityControllerData   */
-    ParseSetVelocityControllerData,     /* 35:  Cmd_SetVelocityControllerData   */
-    ParseGetPositionControllerData,     /* 36:  Cmd_GetPositionControllerData   */
-    ParseSetPositionControllerData,     /* 37:  Cmd_SetPositionControllerData   */
-    NULL,                               /* 38:  RESERVED                        */
-    ParseGetChannelMix,                 /* 39:  Cmd_GetChannelMix               */
-    ParseSetChannelMix,                 /* 40:  Cmd_SetChannelMix               */
-    ParseGetRCCalibration,              /* 41:  Cmd_GetRCCalibration            */
-    ParseSetRCCalibration,              /* 42:  Cmd_SetRCCalibration            */
-    ParseGetRCValues,                   /* 43:  Cmd_GetRCValues                 */
-    ParseGetSensorData,                 /* 44:  Cmd_GetSensorData               */
-    ParseGetRawSensorData,              /* 45:  Cmd_GetRarSensorData            */
-    ParseGetSensorCalibration,          /* 46:  Cmd_GetSensorCalibration        */
-    ParseSetSensorCalibration,          /* 47:  Cmd_SetSensorCalibration        */
-    ParseGetEstimationRate,             /* 48:  Cmd_GetEstimationRate           */
-    ParseGetEstimationAttitude,         /* 49:  Cmd_GetEstimationAttitude       */
-    ParseGetEstimationVelocity,         /* 50:  Cmd_GetEstimationVelocity       */
-    ParseGetEstimationPosition,         /* 51:  Cmd_GetEstimationPosition       */
-    ParseGetEstimationAllStates,        /* 52:  Cmd_GetEstimationAllStates      */
-    ParseResetEstimation,               /* 53:  Cmd_ResetEstimation             */
-    NULL,                               /* 54 */
-    NULL,                               /* 55 */
-    NULL,                               /* 56 */
-    NULL,                               /* 57 */
-    NULL,                               /* 58 */
-    NULL,                               /* 59 */
-    NULL,                               /* 60 */
-    NULL,                               /* 61 */
-    NULL,                               /* 62 */
-    NULL,                               /* 63 */
-    NULL,                               /* 64 */
-    NULL,                               /* 65 */
-    NULL,                               /* 66 */
-    NULL,                               /* 67 */
-    NULL,                               /* 68 */
-    NULL,                               /* 69 */
-    NULL,                               /* 70 */
-    NULL,                               /* 71 */
-    NULL,                               /* 72 */
-    NULL,                               /* 73 */
-    NULL,                               /* 74 */
-    NULL,                               /* 75 */
-    NULL,                               /* 76 */
-    NULL,                               /* 77 */
-    NULL,                               /* 78 */
-    NULL,                               /* 79 */
-    NULL,                               /* 80 */
-    NULL,                               /* 81 */
-    NULL,                               /* 82 */
-    NULL,                               /* 83 */
-    NULL,                               /* 84 */
-    NULL,                               /* 85 */
-    NULL,                               /* 86 */
-    NULL,                               /* 87 */
-    NULL,                               /* 88 */
-    NULL,                               /* 89 */
-    NULL,                               /* 90 */
-    NULL,                               /* 91 */
-    NULL,                               /* 92 */
-    NULL,                               /* 93 */
-    NULL,                               /* 94 */
-    NULL,                               /* 95 */
-    NULL,                               /* 96 */
-    NULL,                               /* 97 */
-    NULL,                               /* 98 */
-    NULL,                               /* 99 */
-    NULL,                               /* 100 */
-    NULL,                               /* 101 */
-    NULL,                               /* 102 */
-    NULL,                               /* 103 */
-    NULL,                               /* 104 */
-    NULL,                               /* 105 */
-    NULL,                               /* 106 */
-    NULL,                               /* 107 */
-    NULL,                               /* 108 */
-    NULL,                               /* 109 */
-    NULL,                               /* 110 */
-    NULL,                               /* 111 */
-    NULL,                               /* 112 */
-    NULL,                               /* 113 */
-    NULL,                               /* 114 */
-    NULL,                               /* 115 */
-    NULL,                               /* 116 */
-    NULL,                               /* 117 */
-    NULL,                               /* 118 */
-    NULL,                               /* 119 */
-    NULL,                               /* 120 */
-    NULL,                               /* 121 */
-    NULL,                               /* 122 */
-    NULL,                               /* 123 */
-    NULL,                               /* 124 */
-    NULL,                               /* 125 */
-    NULL,                               /* 126 */
-    NULL                                /* 127 */
+    NULL,                             /* 0:   Cmd_None                        */
+    NULL,                             /* 1:   Cmd_ACK                         */
+    ParsePing,                        /* 2:   Cmd_Ping                        */
+    NULL,                             /* 3:   Cmd_DebugMessage                */
+    ParseGetRunningMode,              /* 4:   Cmd_GetRunningMode              */
+    NULL,                             /* 5 */
+    NULL,                             /* 6 */
+    NULL,                             /* 7 */
+    NULL,                             /* 8 */
+    NULL,                             /* 9 */
+    NULL,                             /* 10:  Cmd_PrepareWriteFirmware        */
+    NULL,                             /* 11:  Cmd_WriteFirmwarePackage        */
+    NULL,                             /* 12:  Cmd_WriteLastFirmwarePackage    */
+    NULL,                             /* 13:  Cmd_ReadFirmwarePackage         */
+    NULL,                             /* 14:  Cmd_ReadLastFirmwarePackage     */
+    NULL,                             /* 15:  Cmd_NextPackage                 */
+    NULL,                             /* 16:  Cmd_ExitBootloader              */
+    ParseGetDeviceInfo,               /* 17:  Cmd_GetBootloaderVersion        */
+    ParseSetDeviceID,                 /* 18:  Cmd_SetDeviceID                 */
+    ParseSaveToFlash,                 /* 19:  Cmd_SaveToFlash                 */
+    NULL,                             /* 20:                                  */
+    NULL,                             /* 21:                                  */
+    NULL,                             /* 22:                                  */
+    NULL,                             /* 23:                                  */
+    NULL,                             /* 24:                                  */
+    NULL,                             /* 25:                                  */
+    NULL,                             /* 26:                                  */
+    NULL,                             /* 27:                                  */
+    NULL,                             /* 28:                                  */
+    NULL,                             /* 29:                                  */
+    ParseGetRateControllerData,       /* 30:  Cmd_GetRateControllerData       */
+    ParseSetRateControllerData,       /* 31:  Cmd_SetRateControllerData       */
+    ParseGetAttitudeControllerData,   /* 32:  Cmd_GetAttitudeControllerData   */
+    ParseSetAttitudeControllerData,   /* 33:  Cmd_SetAttitudeControllerData   */
+    ParseGetVelocityControllerData,   /* 34:  Cmd_GetVelocityControllerData   */
+    ParseSetVelocityControllerData,   /* 35:  Cmd_SetVelocityControllerData   */
+    ParseGetPositionControllerData,   /* 36:  Cmd_GetPositionControllerData   */
+    ParseSetPositionControllerData,   /* 37:  Cmd_SetPositionControllerData   */
+    NULL,                             /* 38:  RESERVED                        */
+    ParseGetChannelMix,               /* 39:  Cmd_GetChannelMix               */
+    ParseSetChannelMix,               /* 40:  Cmd_SetChannelMix               */
+    ParseGetRCCalibration,            /* 41:  Cmd_GetRCCalibration            */
+    ParseSetRCCalibration,            /* 42:  Cmd_SetRCCalibration            */
+    ParseGetRCValues,                 /* 43:  Cmd_GetRCValues                 */
+    ParseGetSensorData,               /* 44:  Cmd_GetSensorData               */
+    ParseGetRawSensorData,            /* 45:  Cmd_GetRarSensorData            */
+    ParseGetSensorCalibration,        /* 46:  Cmd_GetSensorCalibration        */
+    ParseSetSensorCalibration,        /* 47:  Cmd_SetSensorCalibration        */
+    ParseGetEstimationRate,           /* 48:  Cmd_GetEstimationRate           */
+    ParseGetEstimationAttitude,       /* 49:  Cmd_GetEstimationAttitude       */
+    ParseGetEstimationVelocity,       /* 50:  Cmd_GetEstimationVelocity       */
+    ParseGetEstimationPosition,       /* 51:  Cmd_GetEstimationPosition       */
+    ParseGetEstimationAllStates,      /* 52:  Cmd_GetEstimationAllStates      */
+    ParseResetEstimation,             /* 53:  Cmd_ResetEstimation             */
+    NULL,                             /* 54:                                  */
+    NULL,                             /* 55:                                  */
+    NULL,                             /* 56:                                  */
+    NULL,                             /* 57:                                  */
+    NULL,                             /* 58:                                  */
+    NULL,                             /* 59:                                  */
+    NULL,                             /* 60:                                  */
+    NULL,                             /* 61:                                  */
+    NULL,                             /* 62:                                  */
+    NULL,                             /* 63:                                  */
+    NULL,                             /* 64:                                  */
+    NULL,                             /* 65:                                  */
+    NULL,                             /* 66:                                  */
+    NULL,                             /* 67:                                  */
+    NULL,                             /* 68:                                  */
+    NULL,                             /* 69:                                  */
+    NULL,                             /* 70:                                  */
+    NULL,                             /* 71:                                  */
+    NULL,                             /* 72:                                  */
+    NULL,                             /* 73:                                  */
+    NULL,                             /* 74:                                  */
+    NULL,                             /* 75:                                  */
+    NULL,                             /* 76:                                  */
+    NULL,                             /* 77:                                  */
+    NULL,                             /* 78:                                  */
+    NULL,                             /* 79:                                  */
+    NULL,                             /* 80:                                  */
+    NULL,                             /* 81:                                  */
+    NULL,                             /* 82:                                  */
+    NULL,                             /* 83:                                  */
+    NULL,                             /* 84:                                  */
+    NULL,                             /* 85:                                  */
+    NULL,                             /* 86:                                  */
+    NULL,                             /* 87:                                  */
+    NULL,                             /* 88:                                  */
+    NULL,                             /* 89:                                  */
+    NULL,                             /* 90:                                  */
+    NULL,                             /* 91:                                  */
+    NULL,                             /* 92:                                  */
+    NULL,                             /* 93:                                  */
+    NULL,                             /* 94:                                  */
+    NULL,                             /* 95:                                  */
+    NULL,                             /* 96:                                  */
+    NULL,                             /* 97:                                  */
+    NULL,                             /* 98:                                  */
+    NULL,                             /* 99:                                  */
+    NULL,                             /* 100:                                 */
+    NULL,                             /* 101:                                 */
+    NULL,                             /* 102:                                 */
+    NULL,                             /* 103:                                 */
+    NULL,                             /* 104:                                 */
+    NULL,                             /* 105:                                 */
+    NULL,                             /* 106:                                 */
+    NULL,                             /* 107:                                 */
+    NULL,                             /* 108:                                 */
+    NULL,                             /* 109:                                 */
+    NULL,                             /* 110:                                 */
+    NULL,                             /* 111:                                 */
+    NULL,                             /* 112:                                 */
+    NULL,                             /* 113:                                 */
+    NULL,                             /* 114:                                 */
+    NULL,                             /* 115:                                 */
+    NULL,                             /* 116:                                 */
+    NULL,                             /* 117:                                 */
+    NULL,                             /* 118:                                 */
+    NULL,                             /* 119:                                 */
+    NULL,                             /* 120:                                 */
+    NULL,                             /* 121:                                 */
+    NULL,                             /* 122:                                 */
+    NULL,                             /* 123:                                 */
+    NULL,                             /* 124:                                 */
+    NULL,                             /* 125:                                 */
+    NULL,                             /* 126:                                 */
+    NULL                              /* 127:                                 */
 };
 
 /**
- * @brief           Return the parser associated to the command.
- * @details 
+ * @brief               Return the parser associated to the command.
  * 
- * @param command   Command to get the parser for.
- * 
- * @return          Pointer to the associated parser.
+ * @param[in] command   Command to get the parser for.
+ * @return              Pointer to the associated parser.
  */
 Parser_Type GetParser(KFly_Command_Type command)
 {
@@ -174,13 +175,14 @@ Parser_Type GetParser(KFly_Command_Type command)
 }
 
 /**
- * @brief A generic function to save controller data and control limits.
- * @details
+ * @brief                   A generic function to save controller data and
+ *                          control limits.
  * 
- * @param pi_offset     The offset to the correct set of PI controllers.
- * @param limit_offset  The offset to the correct part of the limits structure.
- * @param limit_count   Number of bytes to write to the limits structure.
- * @param data          Input data so save.
+ * @param[in] pi_offset     The offset to the correct set of PI controllers.
+ * @param[in] limit_offset  The offset to the correct part of the limits
+ *                          structure.
+ * @param[in] limit_count   Number of bytes to write to the limits structure.
+ * @param[in] data          Input data so save.
  */
 void ParseGenericSetControllerData( const uint32_t pi_offset,
                                     const uint32_t limit_offset, 
@@ -191,7 +193,8 @@ void ParseGenericSetControllerData( const uint32_t pi_offset,
     uint8_t *save_location;
     uint32_t i, j;
 
-    /* Cast the control data to an array of PI_Data_Type to access each PI controller */
+    /* Cast the control data to an array of PI_Data_Type
+    to access each PI controller */
     PI_settings = (PI_Data_Type *)ptrGetControlData();
 
     /* Write only the PI coefficients */
@@ -212,10 +215,10 @@ void ParseGenericSetControllerData( const uint32_t pi_offset,
 }
 
 /**
- * @brief           Parses a Ping command.
- * @details
+ * @brief               Parses a Ping command.
  * 
- * @param pHolder   Message holder containing information about the transmission. 
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission. 
  */
 void ParsePing(Parser_Holder_Type *pHolder)
 {
@@ -226,10 +229,10 @@ void ParsePing(Parser_Holder_Type *pHolder)
 }
 
 /**
- * @brief           Parses a GetRunningMode command.
- * @details
+ * @brief               Parses a GetRunningMode command.
  * 
- * @param pHolder   Message holder containing information about the transmission. 
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
  */
 void ParseGetRunningMode(Parser_Holder_Type *pHolder)
 {
@@ -240,10 +243,10 @@ void ParseGetRunningMode(Parser_Holder_Type *pHolder)
 }
 
 /**
- * @brief           Parses a GetDeviceInfo command.
- * @details
+ * @brief               Parses a GetDeviceInfo command.
  * 
- * @param pHolder   Message holder containing information about the transmission. 
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
  */
 void ParseGetDeviceInfo(Parser_Holder_Type *pHolder)
 {
@@ -254,10 +257,10 @@ void ParseGetDeviceInfo(Parser_Holder_Type *pHolder)
 }
 
 /**
- * @brief           Parses a SetDeviceID command.
- * @details
+ * @brief               Parses a SetDeviceID command.
  * 
- * @param pHolder   Message holder containing information about the transmission. 
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
  */
 void ParseSetDeviceID(Parser_Holder_Type *pHolder)
 {
@@ -280,10 +283,10 @@ void ParseSetDeviceID(Parser_Holder_Type *pHolder)
 }
 
 /**
- * @brief           Parses a SaveToFlash command.
- * @details
+ * @brief               Parses a SaveToFlash command.
  * 
- * @param pHolder   Message holder containing information about the transmission. 
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
  */
 void ParseSaveToFlash(Parser_Holder_Type *pHolder)
 {
@@ -291,10 +294,10 @@ void ParseSaveToFlash(Parser_Holder_Type *pHolder)
 }
 
 /**
- * @brief           Parses a GetRateControllerData command.
- * @details
+ * @brief               Parses a GetRateControllerData command.
  * 
- * @param pHolder   Message holder containing information about the transmission. 
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
  */
 void ParseGetRateControllerData(Parser_Holder_Type *pHolder)
 {
@@ -305,10 +308,10 @@ void ParseGetRateControllerData(Parser_Holder_Type *pHolder)
 }
 
 /**
- * @brief           Parses a SetRateControllerData command.
- * @details
+ * @brief               Parses a SetRateControllerData command.
  * 
- * @param pHolder   Message holder containing information about the transmission. 
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
  */
 void ParseSetRateControllerData(Parser_Holder_Type *pHolder)
 {
@@ -317,10 +320,10 @@ void ParseSetRateControllerData(Parser_Holder_Type *pHolder)
 }
 
 /**
- * @brief           Parses a GetAttitudeControllerData command.
- * @details
+ * @brief               Parses a GetAttitudeControllerData command.
  * 
- * @param pHolder   Message holder containing information about the transmission. 
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
  */
 void ParseGetAttitudeControllerData(Parser_Holder_Type *pHolder)
 {
@@ -331,10 +334,10 @@ void ParseGetAttitudeControllerData(Parser_Holder_Type *pHolder)
 }
 
 /**
- * @brief           Parses a SetAttitudeControllerData command.
- * @details
+ * @brief               Parses a SetAttitudeControllerData command.
  * 
- * @param pHolder   Message holder containing information about the transmission. 
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
  */
 void ParseSetAttitudeControllerData(Parser_Holder_Type *pHolder)
 {
@@ -343,10 +346,10 @@ void ParseSetAttitudeControllerData(Parser_Holder_Type *pHolder)
 }
 
 /**
- * @brief           Parses a GetVelocityControllerData command.
- * @details
+ * @brief               Parses a GetVelocityControllerData command.
  * 
- * @param pHolder   Message holder containing information about the transmission. 
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
  */
 void ParseGetVelocityControllerData(Parser_Holder_Type *pHolder)
 {
@@ -357,10 +360,10 @@ void ParseGetVelocityControllerData(Parser_Holder_Type *pHolder)
 }
 
 /**
- * @brief           Parses a SetVelocityControllerData command.
- * @details
+ * @brief               Parses a SetVelocityControllerData command.
  * 
- * @param pHolder   Message holder containing information about the transmission. 
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
  */
 void ParseSetVelocityControllerData(Parser_Holder_Type *pHolder)
 {
@@ -369,10 +372,10 @@ void ParseSetVelocityControllerData(Parser_Holder_Type *pHolder)
 }
 
 /**
- * @brief           Parses a GetPositionControllerData command.
- * @details
+ * @brief               Parses a GetPositionControllerData command.
  * 
- * @param pHolder   Message holder containing information about the transmission. 
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
  */
 void ParseGetPositionControllerData(Parser_Holder_Type *pHolder)
 {
@@ -383,10 +386,10 @@ void ParseGetPositionControllerData(Parser_Holder_Type *pHolder)
 }
 
 /**
- * @brief           Parses a SetPositionControllerData command.
- * @details
+ * @brief               Parses a SetPositionControllerData command.
  * 
- * @param pHolder   Message holder containing information about the transmission. 
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
  */
 void ParseSetPositionControllerData(Parser_Holder_Type *pHolder)
 {
@@ -395,10 +398,10 @@ void ParseSetPositionControllerData(Parser_Holder_Type *pHolder)
 }
 
 /**
- * @brief           Parses a GetChannelMix command.
- * @details
+ * @brief               Parses a GetChannelMix command.
  * 
- * @param pHolder   Message holder containing information about the transmission. 
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
  */
 void ParseGetChannelMix(Parser_Holder_Type *pHolder)
 {
@@ -409,10 +412,10 @@ void ParseGetChannelMix(Parser_Holder_Type *pHolder)
 }
 
 /**
- * @brief           Parses a SetChannelMix command.
- * @details
+ * @brief               Parses a SetChannelMix command.
  * 
- * @param pHolder   Message holder containing information about the transmission. 
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
  */
 void ParseSetChannelMix(Parser_Holder_Type *pHolder)
 {
@@ -429,10 +432,10 @@ void ParseSetChannelMix(Parser_Holder_Type *pHolder)
 }
 
 /**
- * @brief           Parses a GetRCCalibration command.
- * @details
+ * @brief               Parses a GetRCCalibration command.
  * 
- * @param pHolder   Message holder containing information about the transmission. 
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
  */
 void ParseGetRCCalibration(Parser_Holder_Type *pHolder)
 {
@@ -443,10 +446,10 @@ void ParseGetRCCalibration(Parser_Holder_Type *pHolder)
 }
 
 /**
- * @brief           Parses a SetRCCalibration command.
- * @details
+ * @brief               Parses a SetRCCalibration command.
  * 
- * @param pHolder   Message holder containing information about the transmission. 
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
  */
 void ParseSetRCCalibration(Parser_Holder_Type *pHolder)
 {
@@ -465,10 +468,10 @@ void ParseSetRCCalibration(Parser_Holder_Type *pHolder)
 }
 
 /**
- * @brief           Parses a GetRCValues command.
- * @details
+ * @brief               Parses a GetRCValues command.
  * 
- * @param pHolder   Message holder containing information about the transmission. 
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
  */
 void ParseGetRCValues(Parser_Holder_Type *pHolder)
 {
@@ -479,10 +482,10 @@ void ParseGetRCValues(Parser_Holder_Type *pHolder)
 }
 
 /**
- * @brief           Parses a GetSensorData command.
- * @details
+ * @brief               Parses a GetSensorData command.
  * 
- * @param pHolder   Message holder containing information about the transmission. 
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
  */
 void ParseGetSensorData(Parser_Holder_Type *pHolder)
 {
@@ -493,10 +496,10 @@ void ParseGetSensorData(Parser_Holder_Type *pHolder)
 }
 
 /**
- * @brief           Parses a GetRawSensorData command.
- * @details
+ * @brief               Parses a GetRawSensorData command.
  * 
- * @param pHolder   Message holder containing information about the transmission. 
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
  */
 void ParseGetRawSensorData(Parser_Holder_Type *pHolder)
 {
@@ -507,10 +510,10 @@ void ParseGetRawSensorData(Parser_Holder_Type *pHolder)
 }
 
 /**
- * @brief           Parses a GetSensorCalibration command.
- * @details
+ * @brief               Parses a GetSensorCalibration command.
  * 
- * @param pHolder   Message holder containing information about the transmission. 
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
  */
 void ParseGetSensorCalibration(Parser_Holder_Type *pHolder)
 {
@@ -521,10 +524,10 @@ void ParseGetSensorCalibration(Parser_Holder_Type *pHolder)
 }
 
 /**
- * @brief           Parses a SetSensorCalibration command.
- * @details
+ * @brief               Parses a SetSensorCalibration command.
  * 
- * @param pHolder   Message holder containing information about the transmission. 
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
  */
 void ParseSetSensorCalibration(Parser_Holder_Type *pHolder)
 {
@@ -544,10 +547,10 @@ void ParseSetSensorCalibration(Parser_Holder_Type *pHolder)
 }
 
 /**
- * @brief           Parses a GetEstimationRate command.
- * @details
+ * @brief               Parses a GetEstimationRate command.
  * 
- * @param pHolder   Message holder containing information about the transmission. 
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
  */
 void ParseGetEstimationRate(Parser_Holder_Type *pHolder)
 {
@@ -558,10 +561,10 @@ void ParseGetEstimationRate(Parser_Holder_Type *pHolder)
 }
 
 /**
- * @brief           Parses a GetEstimationAttitude command.
- * @details
+ * @brief               Parses a GetEstimationAttitude command.
  * 
- * @param pHolder   Message holder containing information about the transmission. 
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
  */
 void ParseGetEstimationAttitude(Parser_Holder_Type *pHolder)
 {
@@ -572,10 +575,10 @@ void ParseGetEstimationAttitude(Parser_Holder_Type *pHolder)
 }
 
 /**
- * @brief           Parses a GetEstimationVeocity command.
- * @details
+ * @brief               Parses a GetEstimationVeocity command.
  * 
- * @param pHolder   Message holder containing information about the transmission. 
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
  */
 void ParseGetEstimationVelocity(Parser_Holder_Type *pHolder)
 {
@@ -586,10 +589,10 @@ void ParseGetEstimationVelocity(Parser_Holder_Type *pHolder)
 }
 
 /**
- * @brief           Parses a GetEstimationPosition command.
- * @details
+ * @brief               Parses a GetEstimationPosition command.
  * 
- * @param pHolder   Message holder containing information about the transmission. 
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
  */
 void ParseGetEstimationPosition(Parser_Holder_Type *pHolder)
 {
@@ -600,10 +603,10 @@ void ParseGetEstimationPosition(Parser_Holder_Type *pHolder)
 }
 
 /**
- * @brief           Parses a GetEstimationAllStates command.
- * @details
+ * @brief               Parses a GetEstimationAllStates command.
  * 
- * @param pHolder   Message holder containing information about the transmission. 
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
  */
 void ParseGetEstimationAllStates(Parser_Holder_Type *pHolder)
 {
@@ -613,8 +616,13 @@ void ParseGetEstimationAllStates(Parser_Holder_Type *pHolder)
         GenerateAUXMessage(Cmd_GetEstimationAllStates, pHolder->Port);
 }
 
+/**
+ * @brief               Parses a ResetEstimation command.
+ * 
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
+ */
 void ParseResetEstimation(Parser_Holder_Type *pHolder)
 {
-    if (SemphrEstimationReset != NULL)
-        xSemaphoreGive(SemphrEstimationReset);
+    (void)pHolder;
 }

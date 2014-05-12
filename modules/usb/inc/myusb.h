@@ -16,6 +16,17 @@ extern SerialUSBDriver SDU1;
 extern const USBConfig usbcfg;
 extern const SerialUSBConfig serusbcfg;
 
+/* Inline functions */
+static inline void ClaimUSB(void)
+{
+  chMtxLock(&USB_write_lock);
+}
+
+static inline void ReleaseUSB(void)
+{
+  chMtxUnlock(&USB_write_lock);
+}
+
 /* Global functions */
 bool isUSBActive(void);
 void vUSBMutexInit(void);

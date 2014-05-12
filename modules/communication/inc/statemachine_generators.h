@@ -10,11 +10,17 @@
 /* Global function defines */
 bool GenerateAUXMessage(KFly_Command_Type command, Port_Type port);
 bool GenerateUSBMessage(KFly_Command_Type command);
-bool GenerateHeaderOnlyCommand(KFly_Command_Type command, Circular_Buffer_Type *Cbuff);
-bool GenerateGenericCommand(KFly_Command_Type command, uint8_t *data, const uint32_t data_count, Circular_Buffer_Type *Cbuff);
+bool GenerateHeaderOnlyCommand(KFly_Command_Type command,
+							   Circular_Buffer_Type *Cbuff);
+bool GenerateGenericCommand(KFly_Command_Type command, 
+							uint8_t *data, 
+							const uint32_t data_count, 
+							Circular_Buffer_Type *Cbuff);
 bool GenerateACK(Circular_Buffer_Type *Cbuff);
 bool GeneratePing(Circular_Buffer_Type *Cbuff);
-bool GenerateDebugMessage(uint8_t *data, uint32_t size, Circular_Buffer_Type *Cbuff);
+bool GenerateDebugMessage(uint8_t *data, 
+						  uint32_t size, 
+						  Circular_Buffer_Type *Cbuff);
 bool GenerateGetRunningMode(Circular_Buffer_Type *Cbuff);
 bool GenerateGetDeviceInfo(Circular_Buffer_Type *Cbuff);
 bool GenerateGetRateControllerData(Circular_Buffer_Type *Cbuff);

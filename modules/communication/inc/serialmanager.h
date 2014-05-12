@@ -3,6 +3,7 @@
 
 /* Defines */
 #define tskSerialManagerPRIORITY        (tskIDLE_PRIORITY + 1)
+#define SERIAL_BUFFER_SIZE				256
 
 /* Typedefs */
 

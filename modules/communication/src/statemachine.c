@@ -40,8 +40,8 @@
  *
  *
  * -------------------- OBSERVE! --------------------
- * A command is build up by 8 bits (1 byte) and the 8-th bit (MSB) is the ACK Request bit.
- * So all command must not use the ACK bit unless they need an ACK.
+ * A command is build up by 8 bits (1 byte) and the 8-th bit (MSB) is the ACK
+ * request bit. So all command must not use the ACK bit unless they need an ACK.
  * Command 0bAxxx xxxx <- A is ACK-bit.
  * Also the value 0xa6/166d/0b10100110 is reserved as the SYNC-byte.
  *
@@ -110,7 +110,8 @@ void vWaitingForSYNC(uint8_t data, Parser_Holder_Type *pHolder)
  * */
 void vWaitingForSYNCorCMD(uint8_t data, Parser_Holder_Type *pHolder)
 {
-    if (data == SYNC_BYTE) /* Byte with value of SYNC received, send it to the function waiting for a byte */
+    if (data == SYNC_BYTE) /* Byte with value of SYNC received,
+                              send it to the function waiting for a byte */
         pHolder->current_state(data, pHolder);
     else /* If not SYNC, reset transfer and check if byte is command */
     {
@@ -161,7 +162,8 @@ void vRxSize(uint8_t data, Parser_Holder_Type *pHolder)
 
     pHolder->crc8 = CRC8_step(data, pHolder->crc8);
     pHolder->crc16 = CRC16_step(data, pHolder->crc16);
-    pHolder->data_length = data; /* Set the length of the message to that of the header. */
+    pHolder->data_length = data; /* Set the length of the message to that of
+                                    the header. */
 }
 
 /* *

@@ -11,7 +11,9 @@
 /* Private external functions */
 
 
-void CircularBuffer_Init(Circular_Buffer_Type *Cbuff, uint8_t *buffer, uint32_t buffer_size)
+void CircularBuffer_Init(Circular_Buffer_Type *Cbuff,
+                         uint8_t *buffer, 
+                         uint32_t buffer_size)
 {
     Cbuff->head = 0;
     Cbuff->tail = 0;
@@ -50,7 +52,9 @@ void CircularBuffer_WriteSingle(Circular_Buffer_Type *Cbuff, uint8_t data)
  * This algorithm assumes you have checked that the data will fit inside the buffer.
  *
  * */
-void CircularBuffer_WriteChunk(Circular_Buffer_Type *Cbuff, uint8_t *data, const uint32_t count)
+void CircularBuffer_WriteChunk(Circular_Buffer_Type *Cbuff, 
+                               uint8_t *data, 
+                               const uint32_t count)
 {
     uint32_t i, head, from_bot, to_top;
 
@@ -81,7 +85,10 @@ void CircularBuffer_WriteChunk(Circular_Buffer_Type *Cbuff, uint8_t *data, const
     }
 }
 
-void CircularBuffer_WriteSYNCNoIncrement(Circular_Buffer_Type *Cbuff, int32_t *count, uint8_t *crc8, uint16_t *crc16)
+void CircularBuffer_WriteSYNCNoIncrement(Circular_Buffer_Type *Cbuff, 
+                                         int32_t *count, 
+                                         uint8_t *crc8, 
+                                         uint16_t *crc16)
 {
     /* Check if we have 4 byte free for SYNC + Header */
     if (CircularBuffer_SpaceLeft(Cbuff) >= 4)
@@ -99,7 +106,11 @@ void CircularBuffer_WriteSYNCNoIncrement(Circular_Buffer_Type *Cbuff, int32_t *c
         *count = -1;
 }
 
-void CircularBuffer_WriteNoIncrement(uint8_t data, Circular_Buffer_Type *Cbuff, int32_t *count, uint8_t *crc8, uint16_t *crc16)
+void CircularBuffer_WriteNoIncrement(uint8_t data, 
+                                     Circular_Buffer_Type *Cbuff, 
+                                     int32_t *count, 
+                                     uint8_t *crc8, 
+                                     uint16_t *crc16)
 {
     /* Check if we have an error from previous write */
     if (count >= 0)
@@ -131,7 +142,7 @@ void CircularBuffer_WriteNoIncrement(uint8_t data, Circular_Buffer_Type *Cbuff, 
 bool CircularBuffer_Increment(uint32_t count, Circular_Buffer_Type *Cbuff)
 {
     if (count == -1) /* Error! */
-        return HAL_ERROR;
+        return HAL_FAILED;
 
     else
     {
@@ -146,7 +157,9 @@ void CircularBuffer_ReadSingle(Circular_Buffer_Type *Cbuff, uint8_t *data)
     Cbuff->tail = ((Cbuff->tail + 1) % Cbuff->size);
 }
 
-void CircularBuffer_ReadChunk(Circular_Buffer_Type *Cbuff, uint8_t *data, uint32_t count)
+void CircularBuffer_ReadChunk(Circular_Buffer_Type *Cbuff, 
+                              uint8_t *data, 
+                              uint32_t count)
 {
 
 }

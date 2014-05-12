@@ -11,6 +11,7 @@
 #include "statemachine.h"
 #include "crc.h"
 #include "circularbuffer.h"
+#include "serialmanager.h"
 
 /* *
  *

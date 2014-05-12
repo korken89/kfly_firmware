@@ -179,14 +179,14 @@ bool bUSBSendData(uint8_t *data, uint32_t size)
 {
     /*  If USB is not available, signal with error. */
     if (isUSBActive() == true)
-        return HAL_ERROR;
+        return HAL_FAILED;
     else
     {
-        chMtxLock(&USB_write_lock);
+        ClaimUSB();
         {
             //cdc_DataTx(data, size);
         }
-        chMtxUnlock(&USB_write_lock);
+        ReleaseUSB();
 
         return HAL_SUCCESS;
     }
