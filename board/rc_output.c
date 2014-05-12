@@ -22,23 +22,23 @@
  */
 msg_t RCOutputInit(const RCOutput_Configuration *cfg)
 {
-	msg_t status = MSG_OK;
+    msg_t status = MSG_OK;
 
-	pwmStart(cfg->pwmp_lowbank, cfg->pwmcfg);
-	pwmStart(cfg->pwmp_highbank, cfg->pwmcfg);
+    pwmStart(cfg->pwmp_lowbank, cfg->pwmcfg);
+    pwmStart(cfg->pwmp_highbank, cfg->pwmcfg);
 
-	/* Initialize with lowest output width */
-	pwmEnableChannel(cfg->pwmp_lowbank, 0, 1000);
-	pwmEnableChannel(cfg->pwmp_lowbank, 1, 1000);
-	pwmEnableChannel(cfg->pwmp_lowbank, 2, 1000);
-	pwmEnableChannel(cfg->pwmp_lowbank, 3, 1000);
+    /* Initialize with lowest output width */
+    pwmEnableChannel(cfg->pwmp_lowbank, 0, 1000);
+    pwmEnableChannel(cfg->pwmp_lowbank, 1, 1000);
+    pwmEnableChannel(cfg->pwmp_lowbank, 2, 1000);
+    pwmEnableChannel(cfg->pwmp_lowbank, 3, 1000);
 
-	pwmEnableChannel(cfg->pwmp_highbank, 0, 1000);
-	pwmEnableChannel(cfg->pwmp_highbank, 1, 1000);
-	pwmEnableChannel(cfg->pwmp_highbank, 2, 1000);
-	pwmEnableChannel(cfg->pwmp_highbank, 3, 1000);
+    pwmEnableChannel(cfg->pwmp_highbank, 0, 1000);
+    pwmEnableChannel(cfg->pwmp_highbank, 1, 1000);
+    pwmEnableChannel(cfg->pwmp_highbank, 2, 1000);
+    pwmEnableChannel(cfg->pwmp_highbank, 3, 1000);
 
-	return status;
+    return status;
 }
 
 
@@ -51,24 +51,24 @@ msg_t RCOutputInit(const RCOutput_Configuration *cfg)
  * @return RDY_OK if the change was successful
  */
 msg_t RCOutputSetChannelWidthUs(const RCOutput_Configuration *cfg,
-								RCOutput_Channel_Selector sel, 
-								pwmcnt_t width_us)
+                                RCOutput_Channel_Selector sel, 
+                                pwmcnt_t width_us)
 {
-	static const uint32_t pwmchannellut[8] = {3, 2, 1, 0, 3, 2, 1, 0};
+    static const uint32_t pwmchannellut[8] = {3, 2, 1, 0, 3, 2, 1, 0};
 
-	if (sel > RCOUTPUT_CHANNEL_8)
-		return MSG_RESET;
+    if (sel > RCOUTPUT_CHANNEL_8)
+        return MSG_RESET;
 
-	if (sel <= RCOUTPUT_CHANNEL_4)
-		pwmEnableChannel(cfg->pwmp_lowbank,
-						 pwmchannellut[sel],
-						 width_us);
-	else
-		pwmEnableChannel(cfg->pwmp_highbank, 
-						 pwmchannellut[sel], 
-						 width_us);
+    if (sel <= RCOUTPUT_CHANNEL_4)
+        pwmEnableChannel(cfg->pwmp_lowbank,
+                         pwmchannellut[sel],
+                         width_us);
+    else
+        pwmEnableChannel(cfg->pwmp_highbank, 
+                         pwmchannellut[sel], 
+                         width_us);
 
-	return MSG_OK;
+    return MSG_OK;
 }
 
 /**
@@ -81,22 +81,22 @@ msg_t RCOutputSetChannelWidthUs(const RCOutput_Configuration *cfg,
  * @return RDY_OK if the change was successful
  */
 msg_t RCOutputSetChannelWidthRelativePositive(const RCOutput_Configuration *cfg,
-							 		 		  RCOutput_Channel_Selector sel, 
-							 		 		  float width)
+                                              RCOutput_Channel_Selector sel, 
+                                              float width)
 {
-	if (sel > RCOUTPUT_CHANNEL_8)
-		return MSG_RESET;
+    if (sel > RCOUTPUT_CHANNEL_8)
+        return MSG_RESET;
 
-	/* Bound the width from 0 % to 100 % */
-	if (width < 0.0f)
-		width = 0.0f;
-	else if (width > 1.0f)
-		width = 1.0f;
+    /* Bound the width from 0 % to 100 % */
+    if (width < 0.0f)
+        width = 0.0f;
+    else if (width > 1.0f)
+        width = 1.0f;
 
-	/* Convert to us and send */
-	return RCOutputSetChannelWidthUs(cfg,
-							  		 sel, 
-							  		 (pwmcnt_t)(width * 1000.0f + 1000.0f));
+    /* Convert to us and send */
+    return RCOutputSetChannelWidthUs(cfg,
+                                     sel, 
+                                     (pwmcnt_t)(width * 1000.0f + 1000.0f));
 }
 
 /**
@@ -109,22 +109,22 @@ msg_t RCOutputSetChannelWidthRelativePositive(const RCOutput_Configuration *cfg,
  * @return RDY_OK if the change was successful
  */
 msg_t RCOutputSetChannelWidthRelative(const RCOutput_Configuration *cfg,
-							 		  RCOutput_Channel_Selector sel, 
-							 		  float width)
+                                      RCOutput_Channel_Selector sel, 
+                                      float width)
 {
-	if (sel > RCOUTPUT_CHANNEL_8)
-		return MSG_RESET;
+    if (sel > RCOUTPUT_CHANNEL_8)
+        return MSG_RESET;
 
-	/* Bound the width from -100% to 100% */
-	if (width < -1.0f)
-		width = -1.0f;
-	else if (width > 1.0f)
-		width = 1.0f;
+    /* Bound the width from -100% to 100% */
+    if (width < -1.0f)
+        width = -1.0f;
+    else if (width > 1.0f)
+        width = 1.0f;
 
-	/* Convert to us and send */
-	return RCOutputSetChannelWidthUs(cfg,
-							  		 sel, 
-							  		 (pwmcnt_t)(width * 500.0f + 1500.0f));
+    /* Convert to us and send */
+    return RCOutputSetChannelWidthUs(cfg,
+                                     sel, 
+                                     (pwmcnt_t)(width * 500.0f + 1500.0f));
 }
 
 /**
@@ -137,18 +137,18 @@ msg_t RCOutputSetChannelWidthRelative(const RCOutput_Configuration *cfg,
  * @return RDY_OK if the change was successful
  */
 msg_t RCOutputSetChannelPeriod(const RCOutput_Configuration *cfg,
-							   RCOutput_Bank_Selector sel,
-							   RCOutput_Rate_Selector rate)
+                               RCOutput_Bank_Selector sel,
+                               RCOutput_Rate_Selector rate)
 {
-	if ((sel > RCOUTPUT_BANK_5_8) ||
-		(rate != RCOUTPUT_400HZ) ||
-		(rate != RCOUTPUT_50HZ))
-		return MSG_RESET;
+    if ((sel > RCOUTPUT_BANK_5_8) ||
+        (rate != RCOUTPUT_400HZ) ||
+        (rate != RCOUTPUT_50HZ))
+        return MSG_RESET;
 
-	if (sel == RCOUTPUT_BANK_1_4)
-		pwmChangePeriod(cfg->pwmp_lowbank, (pwmcnt_t)rate);
-	else
-		pwmChangePeriod(cfg->pwmp_highbank, (pwmcnt_t)rate);
+    if (sel == RCOUTPUT_BANK_1_4)
+        pwmChangePeriod(cfg->pwmp_lowbank, (pwmcnt_t)rate);
+    else
+        pwmChangePeriod(cfg->pwmp_highbank, (pwmcnt_t)rate);
 
-	return MSG_OK;
+    return MSG_OK;
 }
