@@ -370,6 +370,11 @@ OSAL_IRQ_HANDLER(STM32_TIM12_HANDLER) {
 /* Driver exported functions.                                                */
 /*===========================================================================*/
 
+/**
+ * @brief   Low level EICU driver initialization.
+ *
+ * @notapi
+ */
 void eicu_lld_init(void) {
 #if STM32_EICU_USE_TIM1
   /* Driver initialization.*/
@@ -420,6 +425,13 @@ void eicu_lld_init(void) {
 #endif
 }
 
+/**
+ * @brief   Configures and activates the EICU peripheral.
+ *
+ * @param[in] eicup     Pointer to the @p EICUDriver object
+ *
+ * @notapi
+ */
 void eicu_lld_start(EICUDriver *eicup) {
   uint32_t psc;
 
@@ -668,6 +680,13 @@ void eicu_lld_start(EICUDriver *eicup) {
   }
 }
 
+/**
+ * @brief   Deactivates the EICU peripheral.
+ *
+ * @param[in] eicup     Pointer to the @p EICUDriver object
+ *
+ * @notapi
+ */
 void eicu_lld_stop(EICUDriver *eicup) {
   if (eicup->state == EICU_READY) {
     /* Clock deactivation.*/
@@ -728,6 +747,13 @@ void eicu_lld_stop(EICUDriver *eicup) {
   }
 }
 
+/**
+ * @brief   Enables the EICU.
+ *
+ * @param[in] eicup     Pointer to the @p EICUDriver object
+ *
+ * @notapi
+ */
 void eicu_lld_enable(EICUDriver *eicup) {
   eicup->tim->EGR = STM32_TIM_EGR_UG;
   eicup->tim->SR = 0;                         /* Clear pending IRQs (if any). */
@@ -766,6 +792,13 @@ void eicu_lld_enable(EICUDriver *eicup) {
   eicup->tim->CR1 = STM32_TIM_CR1_URS | STM32_TIM_CR1_CEN;
 }
 
+/**
+ * @brief   Disables the EICU.
+ *
+ * @param[in] eicup     Pointer to the @p EICUDriver object
+ *
+ * @notapi
+ */
 void eicu_lld_disable(EICUDriver *eicup) {
   eicup->tim->CR1   = 0;                      /* Initially stopped.           */
   eicup->tim->SR    = 0;                      /* Clear pending IRQs (if any). */
