@@ -199,8 +199,7 @@ void CircularBuffer_WriteNoIncrement(Circular_Buffer_Type *Cbuff,
  *                      number of bytes written.
  *  
  * @param[in/out] Cbuff Pointer to the circular buffer.
- * @param[in/out] count Pointer to tracking variable for the size of the
- *                      data being written to the circular buffer.
+ * @param[in] count     Number of bytes to increment the pointer.
  */
 bool CircularBuffer_Increment(Circular_Buffer_Type *Cbuff, uint32_t count)
 {
