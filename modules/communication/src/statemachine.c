@@ -65,9 +65,12 @@
  *
  * */
 
-/* *
- * The entry point of serial data.
- * */
+/**
+ * @brief              The entry point of serial data.
+ * 
+ * @param[in] data     Input data to be parsed.
+ * @param[in] pHolder  Pointer to Parser_Holder_Type structure.
+ */
 void vStatemachineDataEntry(uint8_t data, Parser_Holder_Type *pHolder)
 {
     if (data == SYNC_BYTE)
@@ -86,10 +89,13 @@ void vStatemachineDataEntry(uint8_t data, Parser_Holder_Type *pHolder)
         pHolder->next_state(data, pHolder);
 }
 
-
-/* *
- * Waiting for SYNC function. Will run this until a valid SYNC has occurred.
- * */
+/**
+ * @brief              Waiting for SYNC function. Will run this until a
+ *                     valid SYNC has occurred.
+ * 
+ * @param[in] data     Input data to be parsed.
+ * @param[in] pHolder  Pointer to Parser_Holder_Type structure.
+ */
 void vWaitingForSYNC(uint8_t data, Parser_Holder_Type *pHolder)
 {
     if (data == SYNC_BYTE)
@@ -102,12 +108,13 @@ void vWaitingForSYNC(uint8_t data, Parser_Holder_Type *pHolder)
     }
 }
 
-/* *
- * A SYNC appeared in data stream.
- * When a SYNC is detected in the data stream the program will
- * look and see if it is an SYNC byte or if it's a new SYNC.
- *
- * */
+/**
+ * @brief              A SYNC appeared in data stream, checks if it is data
+ *                     or a new SYNC.
+ * 
+ * @param[in] data     Input data to be parsed.
+ * @param[in] pHolder  Pointer to Parser_Holder_Type structure.
+ */
 void vWaitingForSYNCorCMD(uint8_t data, Parser_Holder_Type *pHolder)
 {
     if (data == SYNC_BYTE) /* Byte with value of SYNC received,
@@ -123,9 +130,12 @@ void vWaitingForSYNCorCMD(uint8_t data, Parser_Holder_Type *pHolder)
     }
 }
 
-/* *
- * Command parser. Checks if a valid command was received.
- * */
+/**
+ * @brief              Command parser, checks if a valid command was received.
+ * 
+ * @param[in] data     Input data to be parsed.
+ * @param[in] pHolder  Pointer to Parser_Holder_Type structure.
+ */
 void vRxCmd(uint8_t data, Parser_Holder_Type *pHolder)
 {
     /* 0 is not an allowed command (Cmd_None) */
@@ -153,9 +163,12 @@ void vRxCmd(uint8_t data, Parser_Holder_Type *pHolder)
     }
 }
 
-/* *
- * Checks the length of a message.
- * */
+/**
+ * @brief              Checks the length of a message.
+ * 
+ * @param[in] data     Input data to be parsed.
+ * @param[in] pHolder  Pointer to Parser_Holder_Type structure.
+ */
 void vRxSize(uint8_t data, Parser_Holder_Type *pHolder)
 {
     pHolder->next_state = vRxCRC8;
@@ -166,9 +179,12 @@ void vRxSize(uint8_t data, Parser_Holder_Type *pHolder)
                                     the header. */
 }
 
-/* *
- * Checks the Header CRC8.
- * */
+/**
+ * @brief              Checks the Header CRC8.
+ * 
+ * @param[in] data     Input data to be parsed.
+ * @param[in] pHolder  Pointer to Parser_Holder_Type structure.
+ */
 void vRxCRC8(uint8_t data, Parser_Holder_Type *pHolder)
 {
     if (pHolder->crc8 == data)
@@ -204,10 +220,13 @@ void vRxCRC8(uint8_t data, Parser_Holder_Type *pHolder)
     }
 }
 
-/* *
- * Data receiver function. Keeps track of the number of received bytes
- * and decides when to check for CRC.
- * */
+/**
+ * @brief              Data receiver function. Keeps track of the number of
+ *                     received bytes and decides when to check for CRC.
+ * 
+ * @param[in] data     Input data to be parsed.
+ * @param[in] pHolder  Pointer to Parser_Holder_Type structure.
+ */
 void vRxData(uint8_t data, Parser_Holder_Type *pHolder)
 {
     if (pHolder->buffer_count < (pHolder->data_length - 1))
@@ -219,9 +238,12 @@ void vRxData(uint8_t data, Parser_Holder_Type *pHolder)
     pHolder->buffer[pHolder->buffer_count++] = data;
 }
 
-/* *
- * Checks the first CRC16 byte.
- * */
+/**
+ * @brief              Checks the first CRC16 byte.
+ * 
+ * @param[in] data     Input data to be parsed.
+ * @param[in] pHolder  Pointer to Parser_Holder_Type structure.
+ */
 void vRxCRC16_1(uint8_t data, Parser_Holder_Type *pHolder)
 {
     if (data == (uint8_t)(pHolder->crc16 >> 8))
@@ -236,9 +258,12 @@ void vRxCRC16_1(uint8_t data, Parser_Holder_Type *pHolder)
     }
 }
 
-/* *
- * Checks the second CRC16 byte. If OK: run parser.
- * */
+/**
+ * @brief              Checks the second CRC16 byte. If OK: run parser.
+ * 
+ * @param[in] data     Input data to be parsed.
+ * @param[in] pHolder  Pointer to Parser_Holder_Type structure.
+ */
 void vRxCRC16_2(uint8_t data, Parser_Holder_Type *pHolder)
 {
     pHolder->next_state = vWaitingForSYNC;
