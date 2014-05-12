@@ -262,7 +262,7 @@ int main(void)
     while(1)
     {
         chThdSleepMilliseconds(100);
-        if (isUSBActive() == TRUE)
+        if (isUSBActive() == true)
             chprintf((BaseSequentialStream *)&SDU1, "Input width: %u\r\n", ic_test);
     }
 }

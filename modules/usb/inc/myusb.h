@@ -11,11 +11,14 @@
 /* Macros */
 
 /* Global variables */
+extern mutex_t USB_write_lock;
 extern SerialUSBDriver SDU1;
 extern const USBConfig usbcfg;
 extern const SerialUSBConfig serusbcfg;
 
 /* Global functions */
-bool_t isUSBActive(void);
+bool isUSBActive(void);
+void vUSBMutexInit(void);
+bool bUSBSendData(uint8_t *data, uint32_t size);
 
 #endif

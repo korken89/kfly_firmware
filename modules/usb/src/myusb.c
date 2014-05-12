@@ -17,6 +17,7 @@
 
 /* Private external functions */
 
+mutex_t USB_write_lock;
 
 /*
  * Serial over USB Driver structure.
@@ -147,10 +148,46 @@ const SerialUSBConfig serusbcfg = {
   USBD1_INTERRUPT_REQUEST_EP
 };
 
-bool_t isUSBActive(void)
+bool isUSBActive(void)
 {
 	if (serusbcfg.usbp->state == USB_ACTIVE)
-		return TRUE;
+		return true;
 	else
-		return FALSE;
+		return false;
+}
+
+void vUSBMutexInit(void)
+{
+    chMtxObjectInit(&USB_write_lock);
+}
+
+/* *
+ *
+ * Function for sending data over USB.
+ * Theoretical max speed is 1.6M baud however a much slower rate is
+ * recommended because the in and out end points uses the same buffer.
+ * 115200 Baud is normal operating conditions. (Higher can be used)
+ *
+ * It's also important to send an entire message at a time, else
+ * someone might send a message in between, corrupting the data stream.
+ *
+ * Please observe that this function is NOT ISR-safe for the RTOS.
+ * If called from ISR it can break packages sent via the RTOS.
+ *
+ * */
+bool bUSBSendData(uint8_t *data, uint32_t size)
+{
+    /*  If USB is not available, signal with error. */
+    if (isUSBActive() == true)
+        return HAL_ERROR;
+    else
+    {
+        chMtxLock(&USB_write_lock);
+        {
+            //cdc_DataTx(data, size);
+        }
+        chMtxUnlock(&USB_write_lock);
+
+        return HAL_SUCCESS;
+    }
 }
