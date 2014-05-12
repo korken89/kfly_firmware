@@ -140,7 +140,7 @@ static const EICUConfig rcinputcfg = {
 };
 
 
-void panic(void);
+void panic(const char *err);
 
 static THD_WORKING_AREA(waThreadTestEvents, 128);
 static THD_FUNCTION(ThreadTestEvents, arg)
@@ -210,11 +210,11 @@ int main(void)
 
 	/* Initialize Accelerometer and Gyroscope */
 	if (MPU6050Init(&mpu6050cfg) != MSG_OK)
-		panic(); /* Initialization failed */
+		panic("MPU6050 init failed"); /* Initialization failed */
 
 	/* Initialize Magnetometer */
 	if (HMC5983Init(&hmc5983cfg) != MSG_OK)
-		panic(); /* Initialization failed */
+		panic("HMC5983 init failed"); /* Initialization failed */
 
 	/* Initialize Barometer */
 	/* TODO: Add barometer code */
@@ -222,7 +222,7 @@ int main(void)
 	/* Initialize sensor readout */
 	if (SensorReadInit(&mpu6050cfg, &hmc5983cfg,
 					   &mpu6050cal, &hmc5983cal) != MSG_OK)
-		panic(); /* Initialization failed */
+		panic("Sensor Read init failed"); /* Initialization failed */
 
 	/*
 	 *
@@ -237,7 +237,7 @@ int main(void)
 	 *
 	 */
 	if (RCOutputInit(&rcoutputcfg) != MSG_OK)
-		panic(); /* Initialization failed */
+		panic("RC output init failed"); /* Initialization failed */
 
 	/*
 	 *
@@ -267,8 +267,10 @@ int main(void)
 	}
 }
 
-void panic(void)
+void panic(const char *err)
 {
+	kfly_error = err;
+
 	while (1)
 	{
 		palClearPad(GPIOC, GPIOC_LED_ERR);
