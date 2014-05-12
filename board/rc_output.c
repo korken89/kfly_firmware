@@ -6,7 +6,6 @@
 
 #include "ch.h"
 #include "hal.h"
-#include "board.h"
 #include "rc_output.h"
 
 /* Global variable defines */
@@ -52,8 +51,8 @@ msg_t RCOutputInit(const RCOutput_Configuration *cfg)
  * @return RDY_OK if the change was successful
  */
 msg_t RCOutputSetChannelWidthUs(const RCOutput_Configuration *cfg,
-							   RCOutput_Channel_Selector sel, 
-							   pwmcnt_t width_us)
+								RCOutput_Channel_Selector sel, 
+								pwmcnt_t width_us)
 {
 	static const uint32_t pwmchannellut[8] = {3, 2, 1, 0, 3, 2, 1, 0};
 

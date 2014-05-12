@@ -6,7 +6,6 @@
 
 #include "ch.h"
 #include "hal.h"
-#include "board.h"
 #include "mpu6050.h"
 #include "hmc5983.h"
 #include "sensor_calibration.h"

@@ -6,7 +6,6 @@
 
 #include "ch.h"
 #include "hal.h"
-#include "board.h"
 #include "rc_input.h"
 
 /* Global variable defines */

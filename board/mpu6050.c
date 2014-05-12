@@ -6,7 +6,6 @@
 
 #include "ch.h"
 #include "hal.h"
-#include "board.h"
 #include "mpu6050.h"
 
 /* Global variable defines */
