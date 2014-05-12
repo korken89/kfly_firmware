@@ -13,22 +13,17 @@
 #include "circularbuffer.h"
 #include "serialmanager.h"
 
-/* *
- *
- * Initializes all communication.
- *
- * */
+/**
+ * @brief              Initializes communication.
+ */
 void vSerialManagerInit(void)
 {
 }
 
-
-/* *
- *
- * The Serial Manager task will handle incoming
- * data and direct it for decode and processing.
- *
- * */
+/**
+ * @brief              The Serial Manager task will handle incoming
+ *                     data and direct it for decode and processing.
+ */
 void vTaskUSBSerialManager(void *pvParameters)
 {
     uint8_t in_data;

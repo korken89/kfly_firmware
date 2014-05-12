@@ -32,13 +32,13 @@ void CircularBuffer_WriteSYNCNoIncrement(Circular_Buffer_Type *Cbuff,
 										 int32_t *count, 
 										 uint8_t *crc8, 
 										 uint16_t *crc16);
-void CircularBuffer_WriteNoIncrement(uint8_t data, 
-									 Circular_Buffer_Type *Cbuff, 
-									 int32_t *count, 
-									 uint8_t *crc8, 
-									 uint16_t *crc16);
-bool CircularBuffer_Increment(uint32_t count, Circular_Buffer_Type *Cbuff);
-void CircularBuffer_ReadSingle(Circular_Buffer_Type *Cbuff, uint8_t *data);
+void CircularBuffer_WriteNoIncrement(Circular_Buffer_Type *Cbuff,
+                                     uint8_t data, 
+                                     int32_t *count, 
+                                     uint8_t *crc8, 
+                                     uint16_t *crc16);
+bool CircularBuffer_Increment(Circular_Buffer_Type *Cbuff, uint32_t count);
+uint8_t CircularBuffer_ReadSingle(Circular_Buffer_Type *Cbuff);
 void CircularBuffer_ReadChunk(Circular_Buffer_Type *Cbuff, 
 							  uint8_t *data, 
 							  uint32_t count);
