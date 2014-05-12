@@ -102,8 +102,8 @@ uint8_t CRC8(uint8_t *data, uint32_t data_len)
 }
 
 /**
- * @brief                   Calculates a CRC8 base of a byte that can have an
- *                          old CRC8 value to continue with.
+ * @brief                   Calculates a CRC8 base of an old CRC8 to continue
+ *                          with.
  *  
  * @param[in] data          Input data byte.
  * @param[in] crc           Old CRC8.
@@ -143,12 +143,12 @@ uint16_t CRC16(uint8_t *data, uint32_t data_len) /* CRC-CCITT */
 }
 
 /**
- * @brief                   Calculates a CRC16-CCITT base of a byte that can
- *                          have an old CRC16 value to continue with.
+ * @brief                   Calculates a CRC16-CCITT base of an old CRC16
+ *                          to continue with.
  *  
  * @param[in] data          Input data byte.
  * @param[in] crc           Old CRC16.
- * @return                  CRC16 byte.
+ * @return                  CRC16 halfword.
  */
 uint16_t CRC16_step(uint8_t data, uint16_t crc) /* CRC-CCITT */
 {
