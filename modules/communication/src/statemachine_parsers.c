@@ -36,11 +36,11 @@ static const Parser_Type parser_lookup[128] = {
     ParsePing,                        /* 2:   Cmd_Ping                        */
     NULL,                             /* 3:   Cmd_DebugMessage                */
     ParseGetRunningMode,              /* 4:   Cmd_GetRunningMode              */
-    NULL,                             /* 5 */
-    NULL,                             /* 6 */
-    NULL,                             /* 7 */
-    NULL,                             /* 8 */
-    NULL,                             /* 9 */
+    NULL,                             /* 5:                                   */
+    NULL,                             /* 6:                                   */
+    NULL,                             /* 7:                                   */
+    NULL,                             /* 8:                                   */
+    NULL,                             /* 9:                                   */
     NULL,                             /* 10:  Cmd_PrepareWriteFirmware        */
     NULL,                             /* 11:  Cmd_WriteFirmwarePackage        */
     NULL,                             /* 12:  Cmd_WriteLastFirmwarePackage    */
