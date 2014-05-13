@@ -29,7 +29,8 @@ static inline void ReleaseUSB(void)
 
 /* Global functions */
 bool isUSBActive(void);
-void vUSBMutexInit(void);
-bool bUSBSendData(uint8_t *data, uint32_t size);
+void USBMutexInit(void);
+uint32_t USBSendData(uint8_t *data, uint32_t size);
+uint8_t USBReadByte(void);
 
 #endif

@@ -14,37 +14,40 @@
 #include "crc.h"
 #include "serialmanager.h"
 
-/**
- * @brief              Initializes communication.
- */
-void vSerialManagerInit(void)
-{
-}
+static THD_WORKING_AREA(waUSBSerialManagerTask, 128);
 
 /**
  * @brief              The Serial Manager task will handle incoming
  *                     data and direct it for decode and processing.
  */
-void vTaskUSBSerialManager(void *p)
+static THD_FUNCTION(USBSerialManagerTask, arg)
 {
-    (void)p;
+    (void)arg;
 
-    uint8_t in_data = 0;
-    Parser_Holder_Type data_holder;
+    static Parser_Holder_Type data_holder;
     static uint8_t buffer[SERIAL_BUFFER_SIZE]; /* Buffer for serial USB commands */
 
     /* Initialize data structure */
-    data_holder.Port = PORT_USB;
-    data_holder.buffer = buffer;
-    data_holder.current_state = NULL;
-    data_holder.next_state = vWaitingForSYNC;
-    data_holder.parser = NULL;
-    data_holder.rx_error = 0;
+    vInitStatemachineDataHolder(&data_holder, PORT_USB, buffer);
 
     while(1)
     {
-        //xQueueReceive(xUSBQueue.xUSBQueueHandle, &in_data, portMAX_DELAY);
-
-        vStatemachineDataEntry(in_data, &data_holder);
+        vStatemachineDataEntry(USBReadByte(), &data_holder);
     }
+
+    return MSG_OK;
+}
+
+/**
+ * @brief              Initializes communication.
+ */
+void vSerialManagerInit(void)
+{
+    USBMutexInit();
+
+    chThdCreateStatic(waUSBSerialManagerTask,
+                      sizeof(waUSBSerialManagerTask),
+                      NORMALPRIO,
+                      USBSerialManagerTask,
+                      NULL);
 }

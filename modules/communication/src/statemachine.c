@@ -56,6 +56,25 @@
 #include "statemachine_generators.h"
 #include "statemachine.h"
 
+/**
+ * @brief                   Initializes the data holder structure
+ * 
+ * @param[in/out] pHolder   Pointer to Parser_Holder_Type structure.
+ * @param[in]     port      Port used for data transfers.
+ * @param[in]     buffer    Buffer used for intermediate data.
+ */
+void vInitStatemachineDataHolder(Parser_Holder_Type *pHolder,
+                                 Port_Type port,
+                                 uint8_t *buffer)
+{
+    pHolder->Port = port;
+    pHolder->buffer = buffer;
+    pHolder->current_state = NULL;
+    pHolder->next_state = vWaitingForSYNC;
+    pHolder->parser = NULL;
+    pHolder->rx_error = 0;
+}
+
 /* *
  *
  * ---------------- State machine functions ----------------

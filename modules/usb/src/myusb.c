@@ -156,38 +156,25 @@ bool isUSBActive(void)
 		return false;
 }
 
-void vUSBMutexInit(void)
+void USBMutexInit(void)
 {
     chMtxObjectInit(&USB_write_lock);
 }
 
-/* *
- *
- * Function for sending data over USB.
- * Theoretical max speed is 1.6M baud however a much slower rate is
- * recommended because the in and out end points uses the same buffer.
- * 115200 Baud is normal operating conditions. (Higher can be used)
- *
- * It's also important to send an entire message at a time, else
- * someone might send a message in between, corrupting the data stream.
- *
- * Please observe that this function is NOT ISR-safe for the RTOS.
- * If called from ISR it can break packages sent via the RTOS.
- *
- * */
-bool bUSBSendData(uint8_t *data, uint32_t size)
+uint32_t USBSendData(uint8_t *data, uint32_t size)
 {
-    /*  If USB is not available, signal with error. */
-    if (isUSBActive() == true)
-        return HAL_FAILED;
-    else
-    {
-        ClaimUSB();
-        {
-            //cdc_DataTx(data, size);
-        }
-        ReleaseUSB();
+  uint32_t sent;
 
-        return HAL_SUCCESS;
-    }
+  ClaimUSB();
+  {
+    sent = chSequentialStreamWrite((BaseSequentialStream *)&SDU1, data, size);
+  }
+  ReleaseUSB();
+
+  return sent;
+}
+
+uint8_t USBReadByte(void)
+{
+  return chSequentialStreamGet((BaseSequentialStream *)&SDU1);
 }

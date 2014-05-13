@@ -10,6 +10,9 @@
 /* Global variable defines */
 
 /* Global function defines */
+void vInitStatemachineDataHolder(Parser_Holder_Type *pHolder,
+                                 Port_Type port,
+                                 uint8_t *buffer);
 void vStatemachineDataEntry(uint8_t, Parser_Holder_Type *);
 void vWaitingForSYNC(uint8_t, Parser_Holder_Type *);
 void vWaitingForSYNCorCMD(uint8_t, Parser_Holder_Type *);
