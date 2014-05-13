@@ -7,7 +7,7 @@
 #include "ch.h"
 #include "hal.h"
 #include "myusb.h"
-//#include "version_information.h"
+#include "version_information.h"
 #include "serialmanager_types.h"
 #include "serialmanager.h"
 #include "crc.h"
@@ -459,82 +459,80 @@ bool GenerateGetRunningMode(Circular_Buffer_Type *Cbuff)
  */
 bool GenerateGetDeviceInfo(Circular_Buffer_Type *Cbuff)
 {
-    (void)Cbuff;
-    return HAL_FAILED;
-//    uint8_t *device_id, *text_fw, *text_bl, *text_usr;
-//    uint32_t length_fw, length_bl, length_usr, data_count;
-//    uint8_t crc8;
-//    uint16_t crc16;
-//    int32_t i, count = 0;
-//
-//    /* The strings are at know location */
-//    device_id = ptrGetUniqueID();
-//    text_bl = ptrGetBootloaderVersion();
-//    text_fw = ptrGetFirmwareVersion();
-//    text_usr = ptrGetUserIDString();
-//
-//    /* Find the length of the string */
-//    length_bl = myStrlen(text_bl, VERSION_MAX_SIZE);
-//    length_fw = myStrlen(text_fw, VERSION_MAX_SIZE);
-//    length_usr = myStrlen(text_usr, USER_ID_MAX_SIZE);
-//
-//    /* The 3 comes from the 3 null bytes */
-//    data_count = UNIQUE_ID_SIZE + length_bl + length_fw + length_usr + 3;
-//
-//    /* Check if the "best case" won't fit in the buffer */
-//    if (CircularBuffer_SpaceLeft(Cbuff) < (data_count + 6))
-//        return HAL_FAILED;
-//
-//    /* Add the header */
-//    /* Write the starting SYNC (without doubling it) */
-//    CircularBuffer_WriteSYNCNoIncrement(                Cbuff, &count, &crc8, 
-//                                                                       &crc16); 
-//
-//    /* Add all of the header to the message */
-//    CircularBuffer_WriteNoIncrement(Cbuff, Cmd_GetDeviceInfo, &count, &crc8, 
-//                                                                       &crc16); 
-//    CircularBuffer_WriteNoIncrement(Cbuff, data_count,        &count, &crc8,
-//                                                                       &crc16); 
-//    CircularBuffer_WriteNoIncrement(Cbuff, crc8,              &count, NULL,  
-//                                                                       &crc16);
-//
-//    /* Get the Device ID */
-//    for (i = 0; i < UNIQUE_ID_SIZE; i++) 
-//        CircularBuffer_WriteNoIncrement(Cbuff, device_id[i], &count, NULL, 
-//                                                                       &crc16);
-//
-//    /* Get the Bootloader Version string */
-//    for (i = 0; i < length_bl; i++) 
-//        CircularBuffer_WriteNoIncrement(Cbuff, text_bl[i], &count, NULL, 
-//                                                                       &crc16);
-//
-//    CircularBuffer_WriteNoIncrement(Cbuff, 0x00, &count, NULL, 
-//                                                                       &crc16);
-//
-//    /* Get the Firmware Version string */
-//    for (i = 0; i < length_fw; i++) 
-//        CircularBuffer_WriteNoIncrement(Cbuff, text_fw[i], &count, NULL, 
-//                                                                       &crc16);
-//
-//    CircularBuffer_WriteNoIncrement(Cbuff, 0x00, &count, NULL, 
-//                                                                       &crc16);
-//
-//    /* Get the User string */
-//    for (i = 0; i < length_usr; i++) 
-//        CircularBuffer_WriteNoIncrement(Cbuff, text_usr[i], &count, NULL, 
-//                                                                       &crc16);
-//
-//    CircularBuffer_WriteNoIncrement(Cbuff, 0x00, &count, NULL, 
-//                                                                       &crc16);
-//
-//    /* Add the CRC16 */
-//    CircularBuffer_WriteNoIncrement(Cbuff, (uint8_t)(crc16 >> 8), &count, NULL, 
-//                                                                          NULL);
-//    CircularBuffer_WriteNoIncrement(Cbuff, (uint8_t)(crc16),      &count, NULL, 
-//                                                                          NULL);
-//
-//    /* Check if the message fit inside the buffer */
-//    return CircularBuffer_Increment(Cbuff, count);
+    uint8_t *device_id, *text_fw, *text_bl, *text_usr;
+    uint32_t length_fw, length_bl, length_usr, data_count, i = 0;
+    uint8_t crc8;
+    uint16_t crc16;
+    int32_t count = 0;
+
+    /* The strings are at know location */
+    device_id = ptrGetUniqueID();
+    text_bl = ptrGetBootloaderVersion();
+    text_fw = ptrGetFirmwareVersion();
+    text_usr = ptrGetUserIDString();
+
+    /* Find the length of the string */
+    length_bl = myStrlen(text_bl, VERSION_MAX_SIZE);
+    length_fw = myStrlen(text_fw, VERSION_MAX_SIZE);
+    length_usr = myStrlen(text_usr, USER_ID_MAX_SIZE);
+
+    /* The 3 comes from the 3 null bytes */
+    data_count = UNIQUE_ID_SIZE + length_bl + length_fw + length_usr + 3;
+
+    /* Check if the "best case" won't fit in the buffer */
+    if (CircularBuffer_SpaceLeft(Cbuff) < (data_count + 6))
+        return HAL_FAILED;
+
+    /* Add the header */
+    /* Write the starting SYNC (without doubling it) */
+    CircularBuffer_WriteSYNCNoIncrement(                Cbuff, &count, &crc8, 
+                                                                       &crc16); 
+
+    /* Add all of the header to the message */
+    CircularBuffer_WriteNoIncrement(Cbuff, Cmd_GetDeviceInfo, &count, &crc8, 
+                                                                       &crc16); 
+    CircularBuffer_WriteNoIncrement(Cbuff, data_count,        &count, &crc8,
+                                                                       &crc16); 
+    CircularBuffer_WriteNoIncrement(Cbuff, crc8,              &count, NULL,  
+                                                                       &crc16);
+
+    /* Get the Device ID */
+    for (i = 0; i < UNIQUE_ID_SIZE; i++) 
+        CircularBuffer_WriteNoIncrement(Cbuff, device_id[i], &count, NULL, 
+                                                                       &crc16);
+
+    /* Get the Bootloader Version string */
+    for (i = 0; i < length_bl; i++) 
+        CircularBuffer_WriteNoIncrement(Cbuff, text_bl[i], &count, NULL, 
+                                                                       &crc16);
+
+    CircularBuffer_WriteNoIncrement(Cbuff, 0x00, &count, NULL, 
+                                                                       &crc16);
+
+    /* Get the Firmware Version string */
+    for (i = 0; i < length_fw; i++) 
+        CircularBuffer_WriteNoIncrement(Cbuff, text_fw[i], &count, NULL, 
+                                                                       &crc16);
+
+    CircularBuffer_WriteNoIncrement(Cbuff, 0x00, &count, NULL, 
+                                                                       &crc16);
+
+    /* Get the User string */
+    for (i = 0; i < length_usr; i++) 
+        CircularBuffer_WriteNoIncrement(Cbuff, text_usr[i], &count, NULL, 
+                                                                       &crc16);
+
+    CircularBuffer_WriteNoIncrement(Cbuff, 0x00, &count, NULL, 
+                                                                       &crc16);
+
+    /* Add the CRC16 */
+    CircularBuffer_WriteNoIncrement(Cbuff, (uint8_t)(crc16 >> 8), &count, NULL, 
+                                                                          NULL);
+    CircularBuffer_WriteNoIncrement(Cbuff, (uint8_t)(crc16),      &count, NULL, 
+                                                                          NULL);
+
+    /* Check if the message fit inside the buffer */
+    return CircularBuffer_Increment(Cbuff, count);
 }
 
 /**
