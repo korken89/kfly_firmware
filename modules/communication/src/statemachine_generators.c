@@ -7,20 +7,19 @@
 #include "ch.h"
 #include "hal.h"
 #include "myusb.h"
-#include "version_information.h"
+//#include "version_information.h"
 #include "serialmanager_types.h"
 #include "serialmanager.h"
-#include "statemachine_types.h"
-#include "comlink.h"
 #include "crc.h"
-#include "pid.h"
-#include "sensor_read.h"
-#include "sensor_calibration.h"
-#include "control.h"
+//#include "pid.h"
+//#include "sensor_read.h"
+//#include "sensor_calibration.h"
+//#include "control.h"
 #include "circularbuffer.h"
-#include "estimation.h"
-#include "ext_input.h"
+//#include "estimation.h"
+//#include "ext_input.h"
 #include "statemachine_parsers.h"
+#include "statemachine_generators.h"
 
 /* Private functions */
 bool GenerateGenericGetControllerData(KFly_Command_Type command,
@@ -174,10 +173,12 @@ static const Generator_Type generator_lookup[128] = {
   */
 bool GenerateAUXMessage(KFly_Command_Type command, Port_Type port)
 {
-    bool status;
-    Circular_Buffer_Type *Cbuff;
+    (void)port;
 
-    Cbuff = GetCircularBufferFromAUXPort(port);
+    bool status;
+    Circular_Buffer_Type *Cbuff = NULL;
+
+    //Cbuff = GetCircularBufferFromAUXPort(port);
 
     /* Check so the circular buffer address is valid */
     if (Cbuff == NULL)
@@ -217,7 +218,7 @@ bool GenerateUSBMessage(KFly_Command_Type command)
     Circular_Buffer_Type temp;
 
     /* TODO: Check if the USB is available */
-    if (xUSBQueue.bUSBAvalible == FALSE)
+    if (isUSBActive() == false)
         return HAL_FAILED;
 
     /* Check so there is an available Generator function for this command */
@@ -254,15 +255,15 @@ bool GenerateHeaderOnlyCommand(KFly_Command_Type command,
     uint8_t crc8;
 
     /* Write the stating SYNC (without doubling it) */
-    CircularBuffer_WriteSYNCNoIncrement(        Cbuff, &count, &crc8, NULL); 
+    CircularBuffer_WriteSYNCNoIncrement(Cbuff, &count, &crc8, NULL); 
 
     /* Add all the data to the message */
-    CircularBuffer_WriteNoIncrement(command,    Cbuff, &count, &crc8, NULL); 
-    CircularBuffer_WriteNoIncrement(0,          Cbuff, &count, &crc8, NULL); 
-    CircularBuffer_WriteNoIncrement(crc8,       Cbuff, &count, NULL,  NULL);
+    CircularBuffer_WriteNoIncrement(Cbuff, command, &count, &crc8, NULL); 
+    CircularBuffer_WriteNoIncrement(Cbuff, 0,       &count, &crc8, NULL); 
+    CircularBuffer_WriteNoIncrement(Cbuff, crc8,    &count, NULL,  NULL);
 
     /* Check if the message fit inside the buffer */
-    return CircularBuffer_Increment(count,      Cbuff); 
+    return CircularBuffer_Increment(Cbuff, count); 
 }
 
 /**
@@ -281,6 +282,7 @@ bool GenerateGenericCommand(KFly_Command_Type command,
                             Circular_Buffer_Type *Cbuff)
 {
     int32_t count = 0;
+    uint32_t i;
     uint8_t crc8;
     uint16_t crc16;
 
@@ -291,25 +293,23 @@ bool GenerateGenericCommand(KFly_Command_Type command,
 
     /* Add the header */
     /* Write the starting SYNC (without doubling it) */
-    CircularBuffer_WriteSYNCNoIncrement(        Cbuff, &count, &crc8, &crc16); 
+    CircularBuffer_WriteSYNCNoIncrement(Cbuff, &count, &crc8, &crc16); 
 
     /* Add all of the header to the message */
-    CircularBuffer_WriteNoIncrement(command,    Cbuff, &count, &crc8, &crc16); 
-    CircularBuffer_WriteNoIncrement(data_count, Cbuff, &count, &crc8, &crc16); 
-    CircularBuffer_WriteNoIncrement(crc8,       Cbuff, &count, NULL,  &crc16);
+    CircularBuffer_WriteNoIncrement(Cbuff, command,    &count, &crc8, &crc16); 
+    CircularBuffer_WriteNoIncrement(Cbuff, data_count, &count, &crc8, &crc16); 
+    CircularBuffer_WriteNoIncrement(Cbuff, crc8,       &count, NULL,  &crc16);
 
     /* Add the data to the message */
-    for (int i = 0; i < data_count; i++)
-        CircularBuffer_WriteNoIncrement(data[i], Cbuff, &count, NULL, &crc16); 
+    for (i = 0; i < data_count; i++)
+        CircularBuffer_WriteNoIncrement(Cbuff, data[i], &count, NULL, &crc16); 
 
     /* Add the CRC16 */
-    CircularBuffer_WriteNoIncrement((uint8_t)(crc16 >> 8),  Cbuff, 
-                                                            &count, NULL, NULL);
-    CircularBuffer_WriteNoIncrement((uint8_t)(crc16),       Cbuff, 
-                                                            &count, NULL, NULL);
+    CircularBuffer_WriteNoIncrement(Cbuff, (uint8_t)(crc16 >> 8), &count, NULL, NULL);
+    CircularBuffer_WriteNoIncrement(Cbuff, (uint8_t)(crc16),      &count, NULL, NULL);
 
     /* Check if the message fit inside the buffer */
-    return CircularBuffer_Increment(count,      Cbuff);
+    return CircularBuffer_Increment(Cbuff, count);
 }
 
 /**
@@ -324,67 +324,75 @@ bool GenerateGenericCommand(KFly_Command_Type command,
  * @return                  HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                          if it did fit.
  */
-bool GenerateGenericGetControllerData(   KFly_Command_Type command, 
-                                                const uint32_t pi_offset, 
-                                                const uint32_t limit_offset, 
-                                                const uint32_t limit_count, 
-                                                Circular_Buffer_Type *Cbuff)
+bool GenerateGenericGetControllerData(KFly_Command_Type command, 
+                                      const uint32_t pi_offset, 
+                                      const uint32_t limit_offset, 
+                                      const uint32_t limit_count, 
+                                      Circular_Buffer_Type *Cbuff)
 {
-    PI_Data_Type *PI_settings;
-    uint8_t *CL_settings;
-    uint8_t *data;
-    uint8_t crc8;
-    uint16_t crc16;
-    int32_t i, j;
+    (void)command;
+    (void)pi_offset;
+    (void)limit_offset;
+    (void)limit_count;
+    (void)Cbuff;
 
-    /* The PI data is always 3 Controllers, with 3 gains plus
-       the limit structure */
-    const int32_t data_count = (3*3*4) + limit_count;
-    int32_t count = 0;
+    return HAL_FAILED;
 
-    /* Check if the "best case" won't fit in the buffer */
-    if (CircularBuffer_SpaceLeft(Cbuff) < (data_count + 6))
-        return HAL_FAILED;
-
-    /* Add the header */
-    /* Write the starting SYNC (without doubling it) */
-    CircularBuffer_WriteSYNCNoIncrement(        Cbuff, &count, &crc8, &crc16); 
-
-    /* Add all of the header to the message */
-    CircularBuffer_WriteNoIncrement(command,    Cbuff, &count, &crc8, &crc16); 
-    CircularBuffer_WriteNoIncrement(data_count, Cbuff, &count, &crc8, &crc16); 
-    CircularBuffer_WriteNoIncrement(crc8,       Cbuff, &count, NULL,  &crc16);
-
-    /* Cast the control data to an array of PI_Data_Type to access each
-       PI controller */
-    PI_settings = (PI_Data_Type *)ptrGetControlData();
-
-    /* Cast the settings into bytes for read out */
-    CL_settings = (uint8_t *)ptrGetControlLimits();
-
-    /* Get only the PI coefficients */
-    for (i = 0; i < 3; i++) 
-    {
-        data = (uint8_t *)&PI_settings[pi_offset + i];
-
-        for (j = 0; j < 12; j++)
-            CircularBuffer_WriteNoIncrement(data[j], Cbuff, &count, NULL, 
-                                                                    &crc16);
-    }
-
-    /* Get only the controller constraints */
-    for (i = 0; i < limit_count; i++) 
-        CircularBuffer_WriteNoIncrement(CL_settings[limit_offset + i],  Cbuff, 
-                                        &count, NULL,  &crc16);
-
-    /* Add the CRC16 */
-    CircularBuffer_WriteNoIncrement((uint8_t)(crc16 >> 8),  Cbuff, &count, NULL,
-                                                                          NULL);
-    CircularBuffer_WriteNoIncrement((uint8_t)(crc16),       Cbuff, &count, NULL, 
-                                                                          NULL);
-
-    /* Check if the message fit inside the buffer */
-    return CircularBuffer_Increment(count, Cbuff);
+//    PI_Data_Type *PI_settings;
+//    uint8_t *CL_settings;
+//    uint8_t *data;
+//    uint8_t crc8;
+//    uint16_t crc16;
+//    int32_t i, j;
+//
+//    /* The PI data is always 3 Controllers, with 3 gains plus
+//       the limit structure */
+//    const int32_t data_count = (3*3*4) + limit_count;
+//    int32_t count = 0;
+//
+//    /* Check if the "best case" won't fit in the buffer */
+//    if (CircularBuffer_SpaceLeft(Cbuff) < (data_count + 6))
+//        return HAL_FAILED;
+//
+//    /* Add the header */
+//    /* Write the starting SYNC (without doubling it) */
+//    CircularBuffer_WriteSYNCNoIncrement(Cbuff, &count, &crc8, &crc16); 
+//
+//    /* Add all of the header to the message */
+//    CircularBuffer_WriteNoIncrement(Cbuff, command,    &count, &crc8, &crc16); 
+//    CircularBuffer_WriteNoIncrement(Cbuff, data_count, &count, &crc8, &crc16); 
+//    CircularBuffer_WriteNoIncrement(Cbuff, crc8,       &count, NULL,  &crc16);
+//
+//    /* Cast the control data to an array of PI_Data_Type to access each
+//       PI controller */
+//    PI_settings = (PI_Data_Type *)ptrGetControlData();
+//
+//    /* Cast the settings into bytes for read out */
+//    CL_settings = (uint8_t *)ptrGetControlLimits();
+//
+//    /* Get only the PI coefficients */
+//    for (i = 0; i < 3; i++) 
+//    {
+//        data = (uint8_t *)&PI_settings[pi_offset + i];
+//
+//        for (j = 0; j < 12; j++)
+//            CircularBuffer_WriteNoIncrement(Cbuff, data[j], &count, NULL, 
+//                                                                    &crc16);
+//    }
+//
+//    /* Get only the controller constraints */
+//    for (i = 0; i < limit_count; i++) 
+//        CircularBuffer_WriteNoIncrement(Cbuff, CL_settings[limit_offset + i],
+//                                        &count, NULL,  &crc16);
+//
+//    /* Add the CRC16 */
+//    CircularBuffer_WriteNoIncrement(Cbuff, (uint8_t)(crc16 >> 8), &count, NULL,
+//                                                                          NULL);
+//    CircularBuffer_WriteNoIncrement(Cbuff, (uint8_t)(crc16),      &count, NULL, 
+//                                                                          NULL);
+//
+//    /* Check if the message fit inside the buffer */
+//    return CircularBuffer_Increment(Cbuff, count);
 }
 
 /**
@@ -451,80 +459,82 @@ bool GenerateGetRunningMode(Circular_Buffer_Type *Cbuff)
  */
 bool GenerateGetDeviceInfo(Circular_Buffer_Type *Cbuff)
 {
-    uint8_t *device_id, *text_fw, *text_bl, *text_usr;
-    uint32_t length_fw, length_bl, length_usr, data_count;
-    uint8_t crc8;
-    uint16_t crc16;
-    int32_t i, count = 0;
-
-    /* The strings are at know location */
-    device_id = ptrGetUniqueID();
-    text_bl = ptrGetBootloaderVersion();
-    text_fw = ptrGetFirmwareVersion();
-    text_usr = ptrGetUserIDString();
-
-    /* Find the length of the string */
-    length_bl = myStrlen(text_bl, VERSION_MAX_SIZE);
-    length_fw = myStrlen(text_fw, VERSION_MAX_SIZE);
-    length_usr = myStrlen(text_usr, USER_ID_MAX_SIZE);
-
-    /* The 3 comes from the 3 null bytes */
-    data_count = UNIQUE_ID_SIZE + length_bl + length_fw + length_usr + 3;
-
-    /* Check if the "best case" won't fit in the buffer */
-    if (CircularBuffer_SpaceLeft(Cbuff) < (data_count + 6))
-        return HAL_FAILED;
-
-    /* Add the header */
-    /* Write the starting SYNC (without doubling it) */
-    CircularBuffer_WriteSYNCNoIncrement(                Cbuff, &count, &crc8, 
-                                                                       &crc16); 
-
-    /* Add all of the header to the message */
-    CircularBuffer_WriteNoIncrement(Cmd_GetDeviceInfo,  Cbuff, &count, &crc8, 
-                                                                       &crc16); 
-    CircularBuffer_WriteNoIncrement(data_count,         Cbuff, &count, &crc8,
-                                                                       &crc16); 
-    CircularBuffer_WriteNoIncrement(crc8,               Cbuff, &count, NULL,  
-                                                                       &crc16);
-
-    /* Get the Device ID */
-    for (i = 0; i < UNIQUE_ID_SIZE; i++) 
-        CircularBuffer_WriteNoIncrement(device_id[i],   Cbuff, &count, NULL, 
-                                                                       &crc16);
-
-    /* Get the Bootloader Version string */
-    for (i = 0; i < length_bl; i++) 
-        CircularBuffer_WriteNoIncrement(text_bl[i],     Cbuff, &count, NULL, 
-                                                                       &crc16);
-
-    CircularBuffer_WriteNoIncrement(0x00,               Cbuff, &count, NULL, 
-                                                                       &crc16);
-
-    /* Get the Firmware Version string */
-    for (i = 0; i < length_fw; i++) 
-        CircularBuffer_WriteNoIncrement(text_fw[i],     Cbuff, &count, NULL, 
-                                                                       &crc16);
-
-    CircularBuffer_WriteNoIncrement(0x00,               Cbuff, &count, NULL, 
-                                                                       &crc16);
-
-    /* Get the User string */
-    for (i = 0; i < length_usr; i++) 
-        CircularBuffer_WriteNoIncrement(text_usr[i],    Cbuff, &count, NULL, 
-                                                                       &crc16);
-
-    CircularBuffer_WriteNoIncrement(0x00,               Cbuff, &count, NULL, 
-                                                                       &crc16);
-
-    /* Add the CRC16 */
-    CircularBuffer_WriteNoIncrement((uint8_t)(crc16 >> 8),  Cbuff, &count, NULL, 
-                                                                          NULL);
-    CircularBuffer_WriteNoIncrement((uint8_t)(crc16),       Cbuff, &count, NULL, 
-                                                                          NULL);
-
-    /* Check if the message fit inside the buffer */
-    return CircularBuffer_Increment(count, Cbuff);
+    (void)Cbuff;
+    return HAL_FAILED;
+//    uint8_t *device_id, *text_fw, *text_bl, *text_usr;
+//    uint32_t length_fw, length_bl, length_usr, data_count;
+//    uint8_t crc8;
+//    uint16_t crc16;
+//    int32_t i, count = 0;
+//
+//    /* The strings are at know location */
+//    device_id = ptrGetUniqueID();
+//    text_bl = ptrGetBootloaderVersion();
+//    text_fw = ptrGetFirmwareVersion();
+//    text_usr = ptrGetUserIDString();
+//
+//    /* Find the length of the string */
+//    length_bl = myStrlen(text_bl, VERSION_MAX_SIZE);
+//    length_fw = myStrlen(text_fw, VERSION_MAX_SIZE);
+//    length_usr = myStrlen(text_usr, USER_ID_MAX_SIZE);
+//
+//    /* The 3 comes from the 3 null bytes */
+//    data_count = UNIQUE_ID_SIZE + length_bl + length_fw + length_usr + 3;
+//
+//    /* Check if the "best case" won't fit in the buffer */
+//    if (CircularBuffer_SpaceLeft(Cbuff) < (data_count + 6))
+//        return HAL_FAILED;
+//
+//    /* Add the header */
+//    /* Write the starting SYNC (without doubling it) */
+//    CircularBuffer_WriteSYNCNoIncrement(                Cbuff, &count, &crc8, 
+//                                                                       &crc16); 
+//
+//    /* Add all of the header to the message */
+//    CircularBuffer_WriteNoIncrement(Cbuff, Cmd_GetDeviceInfo, &count, &crc8, 
+//                                                                       &crc16); 
+//    CircularBuffer_WriteNoIncrement(Cbuff, data_count,        &count, &crc8,
+//                                                                       &crc16); 
+//    CircularBuffer_WriteNoIncrement(Cbuff, crc8,              &count, NULL,  
+//                                                                       &crc16);
+//
+//    /* Get the Device ID */
+//    for (i = 0; i < UNIQUE_ID_SIZE; i++) 
+//        CircularBuffer_WriteNoIncrement(Cbuff, device_id[i], &count, NULL, 
+//                                                                       &crc16);
+//
+//    /* Get the Bootloader Version string */
+//    for (i = 0; i < length_bl; i++) 
+//        CircularBuffer_WriteNoIncrement(Cbuff, text_bl[i], &count, NULL, 
+//                                                                       &crc16);
+//
+//    CircularBuffer_WriteNoIncrement(Cbuff, 0x00, &count, NULL, 
+//                                                                       &crc16);
+//
+//    /* Get the Firmware Version string */
+//    for (i = 0; i < length_fw; i++) 
+//        CircularBuffer_WriteNoIncrement(Cbuff, text_fw[i], &count, NULL, 
+//                                                                       &crc16);
+//
+//    CircularBuffer_WriteNoIncrement(Cbuff, 0x00, &count, NULL, 
+//                                                                       &crc16);
+//
+//    /* Get the User string */
+//    for (i = 0; i < length_usr; i++) 
+//        CircularBuffer_WriteNoIncrement(Cbuff, text_usr[i], &count, NULL, 
+//                                                                       &crc16);
+//
+//    CircularBuffer_WriteNoIncrement(Cbuff, 0x00, &count, NULL, 
+//                                                                       &crc16);
+//
+//    /* Add the CRC16 */
+//    CircularBuffer_WriteNoIncrement(Cbuff, (uint8_t)(crc16 >> 8), &count, NULL, 
+//                                                                          NULL);
+//    CircularBuffer_WriteNoIncrement(Cbuff, (uint8_t)(crc16),      &count, NULL, 
+//                                                                          NULL);
+//
+//    /* Check if the message fit inside the buffer */
+//    return CircularBuffer_Increment(Cbuff, count);
 }
 
 /**
@@ -536,11 +546,13 @@ bool GenerateGetDeviceInfo(Circular_Buffer_Type *Cbuff)
  */
 bool GenerateGetRateControllerData(Circular_Buffer_Type *Cbuff)
 {
-    return GenerateGenericGetControllerData(Cmd_GetRateControllerData,
-                                            RATE_PI_OFFSET,
-                                            RATE_LIMIT_OFFSET,
-                                            RATE_LIMIT_COUNT,
-                                            Cbuff);
+    (void)Cbuff;
+    return HAL_FAILED;
+//    return GenerateGenericGetControllerData(Cmd_GetRateControllerData,
+//                                            RATE_PI_OFFSET,
+//                                            RATE_LIMIT_OFFSET,
+//                                            RATE_LIMIT_COUNT,
+//                                            Cbuff);
 }
 
 /**
@@ -553,11 +565,13 @@ bool GenerateGetRateControllerData(Circular_Buffer_Type *Cbuff)
  */
 bool GenerateGetAttitudeControllerData(Circular_Buffer_Type *Cbuff)
 {
-    return GenerateGenericGetControllerData(Cmd_GetAttitudeControllerData,
-                                            ATTITUDE_PI_OFFSET,
-                                            ATTITUDE_LIMIT_OFFSET,
-                                            ATTITUDE_LIMIT_COUNT,
-                                            Cbuff);
+    (void)Cbuff;
+    return HAL_FAILED;
+//    return GenerateGenericGetControllerData(Cmd_GetAttitudeControllerData,
+//                                            ATTITUDE_PI_OFFSET,
+//                                            ATTITUDE_LIMIT_OFFSET,
+//                                            ATTITUDE_LIMIT_COUNT,
+//                                            Cbuff);
 }
 
 /**
@@ -569,11 +583,13 @@ bool GenerateGetAttitudeControllerData(Circular_Buffer_Type *Cbuff)
  */
 bool GenerateGetVelocityControllerData(Circular_Buffer_Type *Cbuff)
 {
-    return GenerateGenericGetControllerData(Cmd_GetVelocityControllerData,
-                                            VELOCITY_PI_OFFSET,
-                                            VELOCITY_LIMIT_OFFSET,
-                                            VELOCITY_LIMIT_COUNT,
-                                            Cbuff);
+    (void)Cbuff;
+    return HAL_FAILED;
+//    return GenerateGenericGetControllerData(Cmd_GetVelocityControllerData,
+//                                            VELOCITY_PI_OFFSET,
+//                                            VELOCITY_LIMIT_OFFSET,
+//                                            VELOCITY_LIMIT_COUNT,
+//                                            Cbuff);
 }
 
 /**
@@ -585,11 +601,13 @@ bool GenerateGetVelocityControllerData(Circular_Buffer_Type *Cbuff)
  */
 bool GenerateGetPositionControllerData(Circular_Buffer_Type *Cbuff)
 {
-    return GenerateGenericGetControllerData(Cmd_GetPositionControllerData,
-                                            POSITION_PI_OFFSET,
-                                            POSITION_LIMIT_OFFSET,
-                                            POSITION_LIMIT_COUNT,
-                                            Cbuff);
+    (void)Cbuff;
+    return HAL_FAILED;
+//    return GenerateGenericGetControllerData(Cmd_GetPositionControllerData,
+//                                            POSITION_PI_OFFSET,
+//                                            POSITION_LIMIT_OFFSET,
+//                                            POSITION_LIMIT_COUNT,
+//                                            Cbuff);
 }
 
 /**
@@ -601,10 +619,12 @@ bool GenerateGetPositionControllerData(Circular_Buffer_Type *Cbuff)
  */
 bool GenerateGetChannelMix(Circular_Buffer_Type *Cbuff)
 {
-    return GenerateGenericCommand(Cmd_GetChannelMix, 
-                                  (uint8_t *)ptrGetOutputMixer(), 
-                                  OUTPUT_MIXER_SIZE, 
-                                  Cbuff);
+    (void)Cbuff;
+    return HAL_FAILED;
+//    return GenerateGenericCommand(Cmd_GetChannelMix, 
+//                                  (uint8_t *)ptrGetOutputMixer(), 
+//                                  OUTPUT_MIXER_SIZE, 
+//                                  Cbuff);
 }
 
 /**
@@ -616,10 +636,12 @@ bool GenerateGetChannelMix(Circular_Buffer_Type *Cbuff)
  */
 bool GenerateGetRCCalibration(Circular_Buffer_Type *Cbuff)
 {
-    return GenerateGenericCommand(Cmd_GetRCCalibration, 
-                                  (uint8_t *)ptrGetRCInputSettings(), 
-                                  RC_INPUT_SETTINGS_SIZE, 
-                                  Cbuff);
+    (void)Cbuff;
+    return HAL_FAILED;
+//    return GenerateGenericCommand(Cmd_GetRCCalibration, 
+//                                  (uint8_t *)ptrGetRCInputSettings(), 
+//                                  RC_INPUT_SETTINGS_SIZE, 
+//                                  Cbuff);
 }
 
 /**
@@ -631,10 +653,12 @@ bool GenerateGetRCCalibration(Circular_Buffer_Type *Cbuff)
  */
 bool GenerateGetRCValues(Circular_Buffer_Type *Cbuff)
 {
-    return GenerateGenericCommand(Cmd_GetRCCalibration, 
-                                  (uint8_t *)ptrGetRCRawInput(), 
-                                  RC_RAW_INPUT_SIZE, 
-                                  Cbuff);
+    (void)Cbuff;
+    return HAL_FAILED;
+//    return GenerateGenericCommand(Cmd_GetRCCalibration, 
+//                                  (uint8_t *)ptrGetRCRawInput(), 
+//                                  RC_RAW_INPUT_SIZE, 
+//                                  Cbuff);
 }
 
 /**
@@ -646,10 +670,12 @@ bool GenerateGetRCValues(Circular_Buffer_Type *Cbuff)
  */
 bool GenerateGetSensorData(Circular_Buffer_Type *Cbuff)
 {
-    return GenerateGenericCommand(Cmd_GetSensorData, 
-                                  (uint8_t *)ptrGetSensorDataPointer(), 
-                                  (10*4), 
-                                  Cbuff);
+    (void)Cbuff;
+    return HAL_FAILED;
+//    return GenerateGenericCommand(Cmd_GetSensorData, 
+//                                  (uint8_t *)ptrGetSensorDataPointer(), 
+//                                  (10*4), 
+//                                  Cbuff);
 }
 
 /**
@@ -661,10 +687,12 @@ bool GenerateGetSensorData(Circular_Buffer_Type *Cbuff)
  */
 bool GenerateGetRawSensorData(Circular_Buffer_Type *Cbuff)
 {
-    return GenerateGenericCommand(Cmd_GetRawSensorData, 
-                                  (uint8_t *)ptrGetRawSensorDataPointer(), 
-                                  (22), 
-                                  Cbuff);
+    (void)Cbuff;
+    return HAL_FAILED;
+//    return GenerateGenericCommand(Cmd_GetRawSensorData, 
+//                                  (uint8_t *)ptrGetRawSensorDataPointer(), 
+//                                  (22), 
+//                                  Cbuff);
 }
 
 /**
@@ -677,10 +705,12 @@ bool GenerateGetRawSensorData(Circular_Buffer_Type *Cbuff)
  */
 bool GenerateGetSensorCalibration(Circular_Buffer_Type *Cbuff)
 {
-    return GenerateGenericCommand(Cmd_GetSensorCalibration, 
-                                  (uint8_t *)ptrGetSensorCalibration(), 
-                                  SENSOR_CALIBERATION_SIZE, 
-                                  Cbuff);
+    (void)Cbuff;
+    return HAL_FAILED;
+//    return GenerateGenericCommand(Cmd_GetSensorCalibration, 
+//                                  (uint8_t *)ptrGetSensorCalibration(), 
+//                                  SENSOR_CALIBERATION_SIZE, 
+//                                  Cbuff);
 }
 
 /**
@@ -693,6 +723,7 @@ bool GenerateGetSensorCalibration(Circular_Buffer_Type *Cbuff)
  */
 bool GenerateGetEstimationRate(Circular_Buffer_Type *Cbuff)
 {
+    (void)Cbuff;
     return HAL_FAILED;
 }
 
@@ -706,10 +737,12 @@ bool GenerateGetEstimationRate(Circular_Buffer_Type *Cbuff)
  */
 bool GenerateGetEstimationAttitude(Circular_Buffer_Type *Cbuff)
 {
-    return GenerateGenericCommand(Cmd_GetEstimationAttitude,
-                                  (uint8_t *)ptrGetAttitudeEstimationStates(), 
-                                  ATTITUDE_ESTIMATION_STATES_SIZE, 
-                                  Cbuff);
+    (void)Cbuff;
+    return HAL_FAILED;
+//    return GenerateGenericCommand(Cmd_GetEstimationAttitude,
+//                                  (uint8_t *)ptrGetAttitudeEstimationStates(), 
+//                                  ATTITUDE_ESTIMATION_STATES_SIZE, 
+//                                  Cbuff);
 }
 
 /**
@@ -722,6 +755,7 @@ bool GenerateGetEstimationAttitude(Circular_Buffer_Type *Cbuff)
  */
 bool GenerateGetEstimationVelocity(Circular_Buffer_Type *Cbuff)
 {
+    (void)Cbuff;
     return HAL_FAILED;
 }
 
@@ -735,6 +769,7 @@ bool GenerateGetEstimationVelocity(Circular_Buffer_Type *Cbuff)
  */
 bool GenerateGetEstimationPosition(Circular_Buffer_Type *Cbuff)
 {
+    (void)Cbuff;
     return HAL_FAILED;
 }
 
@@ -748,6 +783,7 @@ bool GenerateGetEstimationPosition(Circular_Buffer_Type *Cbuff)
  */
 bool GenerateGetEstimationAllStates(Circular_Buffer_Type *Cbuff)
 {
+    (void)Cbuff;
     return HAL_FAILED;
 }
 
@@ -764,7 +800,7 @@ uint32_t myStrlen(const uint8_t *str, const uint32_t max_length)
     const uint8_t *s;
     s = str;
 
-    while ((*s != '\0') && ((s - str) < max_length))
+    while ((*s != '\0') && ((uint32_t)(s - str) < max_length))
         s++;
 
     return (s - str);

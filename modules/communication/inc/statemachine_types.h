@@ -5,6 +5,9 @@
 #define ACK_BIT                 (0x80)
 #define SERIAL_BUFFER_SIZE      (256)
 
+#include "serialmanager_types.h"
+#include "circularbuffer.h"
+
 /* These are all the commands for the serial protocol. */
 typedef enum
 {
@@ -63,7 +66,7 @@ typedef struct _parser_holder
 {
     Port_Type Port;                                         /* Which port the
                                                                data came from */
-    Bool AckRequested;                                      /* If an ACK was
+    bool AckRequested;                                      /* If an ACK was
                                                                requested      */
     uint8_t data_length;                                    /* The length of 
                                                                the data       */
@@ -95,7 +98,7 @@ typedef struct _parser_holder
 typedef void (*Parser_Type)(struct _parser_holder *);
 
 /* Function pointer definition for the Message Generator lookup table */
-typedef ErrorStatus (*Generator_Type)(Circular_Buffer_Type *);
+typedef bool (*Generator_Type)(Circular_Buffer_Type *);
 
 
 #endif

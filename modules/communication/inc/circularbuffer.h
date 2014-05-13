@@ -23,7 +23,7 @@ void CircularBuffer_Init(Circular_Buffer_Type *Cbuff,
 void CircularBuffer_InitMutex(Circular_Buffer_Type *Cbuff);
 void CircularBuffer_Claim(Circular_Buffer_Type *Cbuff);
 void CircularBuffer_Release(Circular_Buffer_Type *Cbuff);
-int32_t CircularBuffer_SpaceLeft(Circular_Buffer_Type *Cbuff);
+uint32_t CircularBuffer_SpaceLeft(Circular_Buffer_Type *Cbuff);
 void CircularBuffer_WriteSingle(Circular_Buffer_Type *Cbuff, uint8_t data);
 void CircularBuffer_WriteChunk(Circular_Buffer_Type *Cbuff, 
 							   uint8_t *data, 

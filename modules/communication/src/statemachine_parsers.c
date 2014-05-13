@@ -9,18 +9,16 @@
 #include "ch.h"
 #include "hal.h"
 #include "myusb.h"
-#include "version_information.h"
+//#include "version_information.h"
 #include "serialmanager_types.h"
-#include "statemachine_types.h"
 #include "statemachine_generators.h"
-#include "comlink.h"
 #include "crc.h"
-#include "pid.h"
-#include "control.h"
-#include "sensor_calibration.h"
-#include "sensor_read.h"
+//#include "pid.h"
+//#include "control.h"
+//#include "sensor_calibration.h"
+//#include "sensor_read.h"
 #include "circularbuffer.h"
-#include "estimation.h"
+//#include "estimation.h"
 #include "statemachine_parsers.h"
 
 /* Private functions */
@@ -189,29 +187,33 @@ void ParseGenericSetControllerData( const uint32_t pi_offset,
                                     const uint32_t limit_count, 
                                     uint8_t *data)
 {
-    PI_Data_Type *PI_settings;
-    uint8_t *save_location;
-    uint32_t i, j;
-
-    /* Cast the control data to an array of PI_Data_Type
-    to access each PI controller */
-    PI_settings = (PI_Data_Type *)ptrGetControlData();
-
-    /* Write only the PI coefficients */
-    for (i = 0; i < 3; i++) 
-    {
-        save_location = (uint8_t *)&PI_settings[pi_offset + i];
-
-        for (j = 0; j < 12; j++)
-            save_location[j] = data[(i*12) + j];
-    }
-
-    /* Cast the settings into bytes for saving */
-    save_location = (uint8_t *)ptrGetControlLimits();
-
-    /* Write only the controller constraints */
-    for (i = 0; i < limit_count; i++) 
-        save_location[limit_offset + i] = data[(3*3*4) + i];
+    (void)pi_offset;
+    (void)limit_offset;
+    (void)limit_count;
+    (void)data;
+//    PI_Data_Type *PI_settings;
+//    uint8_t *save_location;
+//    uint32_t i, j;
+//
+//    /* Cast the control data to an array of PI_Data_Type
+//    to access each PI controller */
+//    PI_settings = (PI_Data_Type *)ptrGetControlData();
+//
+//    /* Write only the PI coefficients */
+//    for (i = 0; i < 3; i++) 
+//    {
+//        save_location = (uint8_t *)&PI_settings[pi_offset + i];
+//
+//        for (j = 0; j < 12; j++)
+//            save_location[j] = data[(i*12) + j];
+//    }
+//
+//    /* Cast the settings into bytes for saving */
+//    save_location = (uint8_t *)ptrGetControlLimits();
+//
+//    /* Write only the controller constraints */
+//    for (i = 0; i < limit_count; i++) 
+//        save_location[limit_offset + i] = data[(3*3*4) + i];
 }
 
 /**
@@ -264,22 +266,23 @@ void ParseGetDeviceInfo(Parser_Holder_Type *pHolder)
  */
 void ParseSetDeviceID(Parser_Holder_Type *pHolder)
 {
-    uint8_t *save_location;
-    uint32_t i;
-
-    /* Get the address where to save the User ID string */
-    save_location = ptrGetUserIDString();
-
-    /* Check so the wasn't to big a string received */
-    if (pHolder->data_length > USER_ID_MAX_SIZE)
-        return;
-
-    /* Save the string */
-    for (i = 0; i < pHolder->data_length; i++) 
-            save_location[i] = pHolder->buffer[i];
-
-    /* Add a trailing zero to end the string */
-    save_location[i] = 0x00;
+    (void)pHolder;
+//    uint8_t *save_location;
+//    uint32_t i;
+//
+//    /* Get the address where to save the User ID string */
+//    save_location = ptrGetUserIDString();
+//
+//    /* Check so the wasn't to big a string received */
+//    if (pHolder->data_length > USER_ID_MAX_SIZE)
+//        return;
+//
+//    /* Save the string */
+//    for (i = 0; i < pHolder->data_length; i++) 
+//            save_location[i] = pHolder->buffer[i];
+//
+//    /* Add a trailing zero to end the string */
+//    save_location[i] = 0x00;
 }
 
 /**
@@ -290,7 +293,7 @@ void ParseSetDeviceID(Parser_Holder_Type *pHolder)
  */
 void ParseSaveToFlash(Parser_Holder_Type *pHolder)
 {
-
+    (void)pHolder;
 }
 
 /**
@@ -315,8 +318,9 @@ void ParseGetRateControllerData(Parser_Holder_Type *pHolder)
  */
 void ParseSetRateControllerData(Parser_Holder_Type *pHolder)
 {
-    if (pHolder->buffer_count == (36 + RATE_LIMIT_COUNT))
-        ParseGenericSetControllerData(RATE_PI_OFFSET, RATE_LIMIT_OFFSET, RATE_LIMIT_COUNT, pHolder->buffer);
+    (void)pHolder;
+//    if (pHolder->buffer_count == (36 + RATE_LIMIT_COUNT))
+//        ParseGenericSetControllerData(RATE_PI_OFFSET, RATE_LIMIT_OFFSET, RATE_LIMIT_COUNT, pHolder->buffer);
 }
 
 /**
@@ -341,8 +345,9 @@ void ParseGetAttitudeControllerData(Parser_Holder_Type *pHolder)
  */
 void ParseSetAttitudeControllerData(Parser_Holder_Type *pHolder)
 {
-    if (pHolder->buffer_count == (36 + ATTITUDE_LIMIT_COUNT))
-        ParseGenericSetControllerData(ATTITUDE_PI_OFFSET, ATTITUDE_LIMIT_OFFSET, ATTITUDE_LIMIT_COUNT, pHolder->buffer);
+    (void)pHolder;
+//    if (pHolder->buffer_count == (36 + ATTITUDE_LIMIT_COUNT))
+//        ParseGenericSetControllerData(ATTITUDE_PI_OFFSET, ATTITUDE_LIMIT_OFFSET, ATTITUDE_LIMIT_COUNT, pHolder->buffer);
 }
 
 /**
@@ -367,8 +372,9 @@ void ParseGetVelocityControllerData(Parser_Holder_Type *pHolder)
  */
 void ParseSetVelocityControllerData(Parser_Holder_Type *pHolder)
 {
-    if (pHolder->buffer_count == (36 + VELOCITY_LIMIT_COUNT))
-        ParseGenericSetControllerData(VELOCITY_PI_OFFSET, VELOCITY_LIMIT_OFFSET, VELOCITY_LIMIT_COUNT, pHolder->buffer);    
+    (void)pHolder;
+//    if (pHolder->buffer_count == (36 + VELOCITY_LIMIT_COUNT))
+//        ParseGenericSetControllerData(VELOCITY_PI_OFFSET, VELOCITY_LIMIT_OFFSET, VELOCITY_LIMIT_COUNT, pHolder->buffer);    
 }
 
 /**
@@ -393,8 +399,9 @@ void ParseGetPositionControllerData(Parser_Holder_Type *pHolder)
  */
 void ParseSetPositionControllerData(Parser_Holder_Type *pHolder)
 {
-    if (pHolder->buffer_count == (36 + POSITION_LIMIT_COUNT))
-        ParseGenericSetControllerData(POSITION_PI_OFFSET, POSITION_LIMIT_OFFSET, POSITION_LIMIT_COUNT, pHolder->buffer);
+    (void)pHolder;
+//    if (pHolder->buffer_count == (36 + POSITION_LIMIT_COUNT))
+//        ParseGenericSetControllerData(POSITION_PI_OFFSET, POSITION_LIMIT_OFFSET, POSITION_LIMIT_COUNT, pHolder->buffer);
 }
 
 /**
@@ -419,16 +426,17 @@ void ParseGetChannelMix(Parser_Holder_Type *pHolder)
  */
 void ParseSetChannelMix(Parser_Holder_Type *pHolder)
 {
-    uint32_t i;
-    uint8_t *save_location;
-
-    if (pHolder->buffer_count == (4*8*4))
-    {
-        save_location = (uint8_t *)ptrGetOutputMixer();
-
-        for (i = 0; i < (4*8*4); i++)
-            save_location[i] = pHolder->buffer[i];
-    }
+    (void)pHolder;
+//    uint32_t i;
+//    uint8_t *save_location;
+//
+//    if (pHolder->buffer_count == (4*8*4))
+//    {
+//        save_location = (uint8_t *)ptrGetOutputMixer();
+//
+//        for (i = 0; i < (4*8*4); i++)
+//            save_location[i] = pHolder->buffer[i];
+//    }
 }
 
 /**
@@ -453,18 +461,19 @@ void ParseGetRCCalibration(Parser_Holder_Type *pHolder)
  */
 void ParseSetRCCalibration(Parser_Holder_Type *pHolder)
 {
-    uint32_t i;
-    uint8_t *save_location;
-
-    if (pHolder->buffer_count == RC_INPUT_SETTINGS_SIZE)
-    {
-        save_location = (uint8_t *)ptrGetRCInputSettings();
-
-        for (i = 0; i < RC_INPUT_SETTINGS_SIZE; i++)
-            save_location[i] = pHolder->buffer[i];
-    }
-
-    InputUpdateSettings();
+    (void)pHolder;
+//    uint32_t i;
+//    uint8_t *save_location;
+//
+//    if (pHolder->buffer_count == RC_INPUT_SETTINGS_SIZE)
+//    {
+//        save_location = (uint8_t *)ptrGetRCInputSettings();
+//
+//        for (i = 0; i < RC_INPUT_SETTINGS_SIZE; i++)
+//            save_location[i] = pHolder->buffer[i];
+//    }
+//
+//    InputUpdateSettings();
 }
 
 /**
@@ -531,19 +540,20 @@ void ParseGetSensorCalibration(Parser_Holder_Type *pHolder)
  */
 void ParseSetSensorCalibration(Parser_Holder_Type *pHolder)
 {
-    uint32_t i;
-    uint8_t *save_location;
-
-    if (pHolder->buffer_count == SENSOR_CALIBERATION_SIZE)
-    {
-        save_location = (uint8_t *)ptrGetSensorCalibration();
-
-        for (i = 0; i < SENSOR_CALIBERATION_SIZE; i++)
-            save_location[i] = pHolder->buffer[i];
-    }
-
-    if (SemphrEstimationReset != NULL)
-        xSemaphoreGive(SemphrEstimationReset);
+    (void)pHolder;
+//    uint32_t i;
+//    uint8_t *save_location;
+//
+//    if (pHolder->buffer_count == SENSOR_CALIBERATION_SIZE)
+//    {
+//        save_location = (uint8_t *)ptrGetSensorCalibration();
+//
+//        for (i = 0; i < SENSOR_CALIBERATION_SIZE; i++)
+//            save_location[i] = pHolder->buffer[i];
+//    }
+//
+//    if (SemphrEstimationReset != NULL)
+//        xSemaphoreGive(SemphrEstimationReset);
 }
 
 /**

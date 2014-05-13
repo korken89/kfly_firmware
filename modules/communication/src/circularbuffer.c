@@ -1,6 +1,7 @@
 #include "ch.h"
 #include "hal.h"
 #include "crc.h"
+#include "serialmanager_types.h"
 #include "statemachine_types.h"
 #include "circularbuffer.h"
 
@@ -62,7 +63,7 @@ void CircularBuffer_Release(Circular_Buffer_Type *Cbuff)
  * 
  * @param[in] Cbuff     Pointer to the circular buffer.
  */
-int32_t CircularBuffer_SpaceLeft(Circular_Buffer_Type *Cbuff)
+uint32_t CircularBuffer_SpaceLeft(Circular_Buffer_Type *Cbuff)
 {
     return (Cbuff->tail + Cbuff->size - Cbuff->head - 1) % Cbuff->size;
 }

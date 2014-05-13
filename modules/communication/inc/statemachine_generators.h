@@ -1,6 +1,8 @@
 #ifndef __STATEMACHINE_GENERATORS_H
 #define __STATEMACHINE_GENERATORS_H
 
+#include "statemachine_types.h"
+
 /* Defines */
 
 /* Typedefs */

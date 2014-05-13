@@ -1,6 +1,8 @@
 #ifndef __STATEMACHINE_PARSERS_H
 #define __STATEMACHINE_PARSERS_H
 
+#include "statemachine_types.h"
+
 /* Defines */
 
 /* Typedefs */

@@ -8,9 +8,10 @@
 #include "ch.h"
 #include "hal.h"
 #include "myusb.h"
+#include "circularbuffer.h"
+#include "serialmanager_types.h"
 #include "statemachine.h"
 #include "crc.h"
-#include "circularbuffer.h"
 #include "serialmanager.h"
 
 /**

@@ -53,8 +53,6 @@
 #include "hal.h"
 #include "crc.h"
 #include "statemachine_parsers.h"
-#include "statemachine_types.h"
-#include "serialmanager_types.h"
 #include "statemachine.h"
 
 /* *
@@ -152,9 +150,9 @@ void vRxCmd(uint8_t data, Parser_Holder_Type *pHolder)
 
         /* If ACK is requested */
         if (data & ACK_BIT)
-            pHolder->AckRequested = TRUE;
+            pHolder->AckRequested = true;
         else
-            pHolder->AckRequested = FALSE;
+            pHolder->AckRequested = false;
     }
     else
     {
@@ -198,7 +196,7 @@ void vRxCRC8(uint8_t data, Parser_Holder_Type *pHolder)
                 pHolder->parser(pHolder);
 
             /* If an ACK was requested, send it after the parser finished */
-            if (pHolder->AckRequested == TRUE)
+            if (pHolder->AckRequested == true)
             {
                 if (pHolder->Port == PORT_USB)
                     GenerateUSBMessage(Cmd_ACK);
@@ -276,7 +274,7 @@ void vRxCRC16_2(uint8_t data, Parser_Holder_Type *pHolder)
             pHolder->parser(pHolder);
 
         /* If an ACK was requested, send it after the parser finished */
-        if (pHolder->AckRequested == TRUE)
+        if (pHolder->AckRequested == true)
         {
             if (pHolder->Port == PORT_USB)
                 GenerateUSBMessage(Cmd_ACK);

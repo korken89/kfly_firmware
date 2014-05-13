@@ -6,6 +6,8 @@
  *
  * */
 
+#include "ch.h"
+#include "hal.h"
 #include "crc.h"
 
 static const uint16_t crc16_table[256] = {

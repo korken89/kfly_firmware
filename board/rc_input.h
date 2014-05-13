@@ -2,12 +2,12 @@
 #define __RC_INPUT_H
 
 /* Defines */
-#define RCINPUT_1MHZ_CLOCK_FREQUENCY        1000000
-#define MAX_NUMBER_OF_INPUTS        12
-#define CPPM_SYNC_LIMIT_MIN         3000    /* 3 ms */
-#define CPPM_SYNC_LIMIT_MAX         30000   /* 30 ms */
-#define RSSI_THRESHOLD_PERCENT      5       /* RSSI threshold in percent */
-#define RSSI_TIMEOUT                100     /* Number of bad RSSI measurements
+#define RCINPUT_1MHZ_CLOCK_FREQUENCY    1000000
+#define MAX_NUMBER_OF_INPUTS            12
+#define CPPM_SYNC_LIMIT_MIN             3000    /* 3 ms */
+#define CPPM_SYNC_LIMIT_MAX             30000   /* 30 ms */
+#define RSSI_THRESHOLD_PERCENT          5       /* RSSI threshold in percent */
+#define RSSI_TIMEOUT                    100     /* Number of bad RSSI measurements
                                                to disable connection */
 
 /* Global variable defines */
@@ -19,7 +19,9 @@ typedef enum {
     INPUT_CH3 = 2,
     INPUT_CH4 = 3,
     INPUT_CH5 = 4,
-    INPUT_CH6 = 5
+    INPUT_CH6 = 5,
+    INPUT_CPPM = 6,
+    INPUT_RSSI = 7
 } RCInput_Capture_Channel;
 
 typedef enum {
