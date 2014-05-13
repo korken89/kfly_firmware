@@ -53,6 +53,7 @@
 #include "hal.h"
 #include "crc.h"
 #include "statemachine_parsers.h"
+#include "statemachine_generators.h"
 #include "statemachine.h"
 
 /* *

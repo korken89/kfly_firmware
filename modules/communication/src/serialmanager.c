@@ -25,9 +25,11 @@ void vSerialManagerInit(void)
  * @brief              The Serial Manager task will handle incoming
  *                     data and direct it for decode and processing.
  */
-void vTaskUSBSerialManager(void *pvParameters)
+void vTaskUSBSerialManager(void *p)
 {
-    uint8_t in_data;
+    (void)p;
+
+    uint8_t in_data = 0;
     Parser_Holder_Type data_holder;
     static uint8_t buffer[SERIAL_BUFFER_SIZE]; /* Buffer for serial USB commands */
 

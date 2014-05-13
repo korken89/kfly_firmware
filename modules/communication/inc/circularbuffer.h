@@ -37,7 +37,7 @@ void CircularBuffer_WriteNoIncrement(Circular_Buffer_Type *Cbuff,
                                      int32_t *count, 
                                      uint8_t *crc8, 
                                      uint16_t *crc16);
-bool CircularBuffer_Increment(Circular_Buffer_Type *Cbuff, uint32_t count);
+bool CircularBuffer_Increment(Circular_Buffer_Type *Cbuff, int32_t count);
 uint8_t CircularBuffer_ReadSingle(Circular_Buffer_Type *Cbuff);
 void CircularBuffer_ReadChunk(Circular_Buffer_Type *Cbuff, 
 							  uint8_t *data, 

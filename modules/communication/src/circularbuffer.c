@@ -169,7 +169,7 @@ void CircularBuffer_WriteNoIncrement(Circular_Buffer_Type *Cbuff,
                                      uint16_t *crc16)
 {
     /* Check if we have an error from previous write */
-    if (count >= 0)
+    if (*count >= 0)
     {
         /* Check if we have 2 bytes free, in case of data = SYNC */
         if ((CircularBuffer_SpaceLeft(Cbuff) - *count) >= 2)
@@ -202,7 +202,7 @@ void CircularBuffer_WriteNoIncrement(Circular_Buffer_Type *Cbuff,
  * @param[in/out] Cbuff Pointer to the circular buffer.
  * @param[in] count     Number of bytes to increment the pointer.
  */
-bool CircularBuffer_Increment(Circular_Buffer_Type *Cbuff, uint32_t count)
+bool CircularBuffer_Increment(Circular_Buffer_Type *Cbuff, int32_t count)
 {
     if (count == -1) /* Error! */
         return HAL_FAILED;
@@ -240,5 +240,7 @@ void CircularBuffer_ReadChunk(Circular_Buffer_Type *Cbuff,
                               uint8_t *data, 
                               uint32_t count)
 {
-
+    (void)Cbuff;
+    (void)data;
+    (void)count;
 }
