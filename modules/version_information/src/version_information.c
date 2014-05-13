@@ -9,7 +9,7 @@
 #include "version_information.h"
 
 /* Global variable defines */
-__attribute__ ((used, section("vectors"))) const char build_version[] = KFLY_VERSION;
+__attribute__ ((used, section(".sw_version"))) const char build_version[] = KFLY_VERSION;
 
 /* Private variable defines */
 static uint8_t UserIDString[USER_ID_MAX_SIZE + 1] = "Test ID string!";
