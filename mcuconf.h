@@ -28,7 +28,16 @@
  * 0...3        Lowest...Highest.
  */
 
+/*
+ *
+ *  Emil Fresk 1/5 - 2014: Added EICU settings.
+ *  Emil Fresk 14/5 - 2014: Added CCM memory define.
+ *
+ */
+
 #define STM32F4xx_MCUCONF
+
+#define CCM_MEMORY                          __attribute__ ((section(".ccm")))
 
 /*
  * HAL driver system settings.
