@@ -25,4 +25,4 @@ MEMORY
     ccmram : org = 0x10000000, len = 64k
 }
 
-INCLUDE rules.ld
+INCLUDE linker/rules_ccm.ld

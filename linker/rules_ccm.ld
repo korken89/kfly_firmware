@@ -33,6 +33,11 @@ SECTIONS
         KEEP(*(vectors))
     } > flash
 
+    version_information : ALIGN(4) SUBALIGN(4)
+    {
+        KEEP(*(.sw_version))
+    } > flash
+
     constructors : ALIGN(4) SUBALIGN(4)
     {
         PROVIDE(__init_array_start = .);
@@ -106,7 +111,7 @@ SECTIONS
         __main_thread_stack_end__ = .;
     } > ccmram
 
-    .ccm :
+    .ccm (NOLOAD) :
     {
         PROVIDE(_cmm_start = .);
         . = ALIGN(4);
