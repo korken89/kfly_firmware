@@ -15,6 +15,9 @@
 */
 /*
     Emil Fresk 13/5 - 2014: Converted the CCM linker script from 2.6.4 to 3.0.0
+    Emil Fresk 14/5 - 2014: Added version information location and made change
+                            to the CCM holder so it wouldn't be exported to the
+                            generated .bin file.
 */
 
 __ram_start__           = ORIGIN(ram);
