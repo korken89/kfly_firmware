@@ -51,7 +51,8 @@ static THD_FUNCTION(USBSerialManagerTask, arg)
 }
 
 /**
- * @brief               Reads a chunk of data from a circular buffer.
+ * @brief               Transmits the content of the USB circular buffer
+ *                      over USB.
  *  
  * @param[in] arg       Input argument (unused).
  */
@@ -74,7 +75,7 @@ static THD_FUNCTION(USBDataPumpTask, arg)
     while(1)
     {
         /* Wait for a start transmission event */
-        chEvtWaitAny(ALL_EVENTS);
+        chEvtWaitAny(START_TRANSMISSION_EVENT);
 
         /* We will only get here is a request to send data has been received */
         SerialManager_USBTransmitCircularBuffer(&data_pumps.USBTransmitBuffer);
@@ -139,19 +140,19 @@ Circular_Buffer_Type *SerialManager_GetCircularBufferFromPort(Port_Type port)
 void SerialManager_StartTransmission(Port_Type port)
 {
     if ((port == PORT_USB) && (data_pumps.ptrUSBDataPump != NULL))
-        chEvtSignal(data_pumps.ptrUSBDataPump, 1);
+        chEvtSignal(data_pumps.ptrUSBDataPump, START_TRANSMISSION_EVENT);
 
     else if ((port == PORT_AUX1) && (data_pumps.ptrAUX1DataPump != NULL))
-        chEvtSignal(data_pumps.ptrAUX1DataPump, 1);
+        chEvtSignal(data_pumps.ptrAUX1DataPump, START_TRANSMISSION_EVENT);
 
     else if ((port == PORT_AUX2) && (data_pumps.ptrAUX2DataPump != NULL))
-        chEvtSignal(data_pumps.ptrAUX2DataPump, 1);
+        chEvtSignal(data_pumps.ptrAUX2DataPump, START_TRANSMISSION_EVENT);
 
     else if ((port == PORT_AUX3) && (data_pumps.ptrAUX3DataPump != NULL))
-        chEvtSignal(data_pumps.ptrAUX3DataPump, 1);
+        chEvtSignal(data_pumps.ptrAUX3DataPump, START_TRANSMISSION_EVENT);
 
     else if ((port == PORT_AUX4) && (data_pumps.ptrAUX4DataPump != NULL))
-        chEvtSignal(data_pumps.ptrAUX4DataPump, 1);
+        chEvtSignal(data_pumps.ptrAUX4DataPump, START_TRANSMISSION_EVENT);
 }
 
 /**

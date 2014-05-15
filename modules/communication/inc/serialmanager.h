@@ -3,6 +3,7 @@
 
 /* Defines */
 #define tskSerialManagerPRIORITY        (tskIDLE_PRIORITY + 1)
+#define START_TRANSMISSION_EVENT		((eventmask_t)1)
 
 /* Typedefs */
 
