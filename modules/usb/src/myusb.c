@@ -161,20 +161,16 @@ void USBMutexInit(void)
     chMtxObjectInit(&USB_write_lock);
 }
 
-uint32_t USBSendData(uint8_t *data, uint32_t size)
+uint32_t USBSendData(uint8_t *data, uint32_t size, systime_t timeout)
 {
   uint32_t sent;
 
-  ClaimUSB();
-  {
-    sent = chSequentialStreamWrite((BaseSequentialStream *)&SDU1, data, size);
-  }
-  ReleaseUSB();
+  sent = chnWriteTimeout(&SDU1, data, size, timeout);
 
   return sent;
 }
 
-uint8_t USBReadByte(void)
+uint32_t USBReadByte(systime_t timeout)
 {
-  return chSequentialStreamGet((BaseSequentialStream *)&SDU1);
+  return chnGetTimeout(&SDU1, timeout);
 }

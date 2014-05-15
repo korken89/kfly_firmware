@@ -8,6 +8,8 @@
 #include "rc_output.h"
 #include "eicu.h"
 #include "chprintf.h"
+#include "serialmanager_types.h"
+#include "serialmanager.h"
 
 volatile const char *kfly_error;
 
@@ -142,7 +144,7 @@ static const EICUConfig rcinputcfg = {
 
 void panic(const char *err);
 
-static THD_WORKING_AREA(waThreadTestEvents, 128);
+CCM_MEMORY static THD_WORKING_AREA(waThreadTestEvents, 128);
 static THD_FUNCTION(ThreadTestEvents, arg)
 {
     (void)arg;
@@ -162,7 +164,7 @@ static THD_FUNCTION(ThreadTestEvents, arg)
         {
             if (i++ > 10)
             {
-                palTogglePad(GPIOC, GPIOC_LED_USR);
+                //palTogglePad(GPIOC, GPIOC_LED_USR);
                 i = 0;
             }
         }
@@ -259,11 +261,32 @@ int main(void)
                         ThreadTestEvents,
                         NULL);
 
+
+    /*
+     *
+     * Start Serial Manager
+     *
+     */
+    vSerialManagerInit();
+
+    uint32_t b;
+
     while(1)
     {
-        chThdSleepMilliseconds(100);
         if (isUSBActive() == true)
-            chprintf((BaseSequentialStream *)&SDU1, "Input width: %u\r\n", ic_test);
+        {
+            b = chnGetTimeout(&SDU1, MS2ST(500));
+
+            palTogglePad(GPIOC, GPIOC_LED_ERR);
+
+            if (b == 'a')
+                palSetPad(GPIOC, GPIOC_LED_USR);
+            else if (b == 's')
+                palClearPad(GPIOC, GPIOC_LED_USR);
+        }
+        else
+            chThdSleepMilliseconds(1000);
+
     }
 }
 

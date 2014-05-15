@@ -232,7 +232,7 @@ uint8_t CircularBuffer_ReadSingle(Circular_Buffer_Type *Cbuff)
 /**
  * @brief               Reads a chunk of data from a circular buffer.
  *  
- * @param[in/out] Cbuff Pointer to the circular buffer.from
+ * @param[in/out] Cbuff Pointer to the circular buffer.
  * @param[out] data     Pointer to write the data.
  * @param[in] count     Number of bytes to read.
  */
@@ -243,4 +243,33 @@ void CircularBuffer_ReadChunk(Circular_Buffer_Type *Cbuff,
     (void)Cbuff;
     (void)data;
     (void)count;
+}
+
+/**
+ * @brief               Generates a pointer to the tail byte and returns a size
+ *                      which for how many bytes can be read from the circular
+ *                      buffer.
+ *  
+ * @param[in/out] Cbuff Pointer to the circular buffer.
+ * @param[out] p        Pointer to the tail byte.
+ * @return              Number of bytes that can be read.
+ */
+uint32_t CircularBuffer_GetReadPointer(Circular_Buffer_Type *Cbuff, uint8_t *p)
+{
+    uint32_t size;
+
+    p = &Cbuff->buffer[Cbuff->tail];
+    (void)p;
+
+    if (Cbuff->head < Cbuff->tail)
+        size = Cbuff->size - Cbuff->tail;
+    else
+        size = Cbuff->head - Cbuff->tail;
+
+    return size;
+}
+
+void CircularBuffer_IncrementTail(Circular_Buffer_Type *Cbuff, int32_t count)
+{
+    Cbuff->tail = ((Cbuff->tail + count) % Cbuff->size);
 }

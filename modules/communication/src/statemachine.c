@@ -217,12 +217,7 @@ void vRxCRC8(uint8_t data, Parser_Holder_Type *pHolder)
 
             /* If an ACK was requested, send it after the parser finished */
             if (pHolder->AckRequested == true)
-            {
-                if (pHolder->Port == PORT_USB)
-                    GenerateUSBMessage(Cmd_ACK);
-                else
-                    GenerateAUXMessage(Cmd_ACK, pHolder->Port);
-            }
+                GenerateMessage(Cmd_ACK, pHolder->Port);
         }
         else
         {
@@ -295,12 +290,7 @@ void vRxCRC16_2(uint8_t data, Parser_Holder_Type *pHolder)
 
         /* If an ACK was requested, send it after the parser finished */
         if (pHolder->AckRequested == true)
-        {
-            if (pHolder->Port == PORT_USB)
-                GenerateUSBMessage(Cmd_ACK);
-            else
-                GenerateAUXMessage(Cmd_ACK, pHolder->Port);
-        }
+            GenerateMessage(Cmd_ACK, pHolder->Port);
     }
     else /* CRC error! Discard data. */
     {

@@ -10,8 +10,7 @@
 /* Global variable defines */
 
 /* Global function defines */
-bool GenerateAUXMessage(KFly_Command_Type command, Port_Type port);
-bool GenerateUSBMessage(KFly_Command_Type command);
+bool GenerateMessage(KFly_Command_Type command, Port_Type port);
 bool GenerateHeaderOnlyCommand(KFly_Command_Type command,
 							   Circular_Buffer_Type *Cbuff);
 bool GenerateGenericCommand(KFly_Command_Type command, 

@@ -17,7 +17,6 @@
 //#include "control.h"
 //#include "sensor_calibration.h"
 //#include "sensor_read.h"
-#include "circularbuffer.h"
 //#include "estimation.h"
 #include "statemachine_parsers.h"
 
@@ -224,10 +223,7 @@ void ParseGenericSetControllerData( const uint32_t pi_offset,
  */
 void ParsePing(Parser_Holder_Type *pHolder)
 {
-    if (pHolder->Port == PORT_USB)
-        GenerateUSBMessage(Cmd_Ping);
-    else
-        GenerateAUXMessage(Cmd_Ping, pHolder->Port);
+    GenerateMessage(Cmd_Ping, pHolder->Port);
 }
 
 /**
@@ -238,10 +234,7 @@ void ParsePing(Parser_Holder_Type *pHolder)
  */
 void ParseGetRunningMode(Parser_Holder_Type *pHolder)
 {
-    if (pHolder->Port == PORT_USB)
-        GenerateUSBMessage(Cmd_GetRunningMode);
-    else
-        GenerateAUXMessage(Cmd_GetRunningMode, pHolder->Port);
+    GenerateMessage(Cmd_GetRunningMode, pHolder->Port);
 }
 
 /**
@@ -252,10 +245,7 @@ void ParseGetRunningMode(Parser_Holder_Type *pHolder)
  */
 void ParseGetDeviceInfo(Parser_Holder_Type *pHolder)
 {
-    if (pHolder->Port == PORT_USB)
-        GenerateUSBMessage(Cmd_GetDeviceInfo);
-    else
-        GenerateAUXMessage(Cmd_GetDeviceInfo, pHolder->Port);
+    GenerateMessage(Cmd_GetDeviceInfo, pHolder->Port);
 }
 
 /**
@@ -304,10 +294,7 @@ void ParseSaveToFlash(Parser_Holder_Type *pHolder)
  */
 void ParseGetRateControllerData(Parser_Holder_Type *pHolder)
 {
-    if (pHolder->Port == PORT_USB)
-        GenerateUSBMessage(Cmd_GetRateControllerData);
-    else
-        GenerateAUXMessage(Cmd_GetRateControllerData, pHolder->Port);
+    GenerateMessage(Cmd_GetRateControllerData, pHolder->Port);
 }
 
 /**
@@ -331,10 +318,7 @@ void ParseSetRateControllerData(Parser_Holder_Type *pHolder)
  */
 void ParseGetAttitudeControllerData(Parser_Holder_Type *pHolder)
 {
-    if (pHolder->Port == PORT_USB)
-        GenerateUSBMessage(Cmd_GetAttitudeControllerData);
-    else
-        GenerateAUXMessage(Cmd_GetAttitudeControllerData, pHolder->Port);
+    GenerateMessage(Cmd_GetAttitudeControllerData, pHolder->Port);
 }
 
 /**
@@ -358,10 +342,7 @@ void ParseSetAttitudeControllerData(Parser_Holder_Type *pHolder)
  */
 void ParseGetVelocityControllerData(Parser_Holder_Type *pHolder)
 {
-    if (pHolder->Port == PORT_USB)
-        GenerateUSBMessage(Cmd_GetVelocityControllerData);
-    else
-        GenerateAUXMessage(Cmd_GetVelocityControllerData, pHolder->Port);
+    GenerateMessage(Cmd_GetVelocityControllerData, pHolder->Port);
 }
 
 /**
@@ -385,10 +366,7 @@ void ParseSetVelocityControllerData(Parser_Holder_Type *pHolder)
  */
 void ParseGetPositionControllerData(Parser_Holder_Type *pHolder)
 {
-    if (pHolder->Port == PORT_USB)
-        GenerateUSBMessage(Cmd_GetPositionControllerData);
-    else
-        GenerateAUXMessage(Cmd_GetPositionControllerData, pHolder->Port);
+    GenerateMessage(Cmd_GetPositionControllerData, pHolder->Port);
 }
 
 /**
@@ -412,10 +390,7 @@ void ParseSetPositionControllerData(Parser_Holder_Type *pHolder)
  */
 void ParseGetChannelMix(Parser_Holder_Type *pHolder)
 {
-    if (pHolder->Port == PORT_USB)
-        GenerateUSBMessage(Cmd_GetChannelMix);
-    else
-        GenerateAUXMessage(Cmd_GetChannelMix, pHolder->Port);
+    GenerateMessage(Cmd_GetChannelMix, pHolder->Port);
 }
 
 /**
@@ -447,10 +422,7 @@ void ParseSetChannelMix(Parser_Holder_Type *pHolder)
  */
 void ParseGetRCCalibration(Parser_Holder_Type *pHolder)
 {
-    if (pHolder->Port == PORT_USB)
-        GenerateUSBMessage(Cmd_GetRCCalibration);
-    else
-        GenerateAUXMessage(Cmd_GetRCCalibration, pHolder->Port);
+    GenerateMessage(Cmd_GetRCCalibration, pHolder->Port);
 }
 
 /**
@@ -484,10 +456,7 @@ void ParseSetRCCalibration(Parser_Holder_Type *pHolder)
  */
 void ParseGetRCValues(Parser_Holder_Type *pHolder)
 {
-    if (pHolder->Port == PORT_USB)
-        GenerateUSBMessage(Cmd_GetRCValues);
-    else
-        GenerateAUXMessage(Cmd_GetRCValues, pHolder->Port);
+    GenerateMessage(Cmd_GetRCValues, pHolder->Port);
 }
 
 /**
@@ -498,10 +467,7 @@ void ParseGetRCValues(Parser_Holder_Type *pHolder)
  */
 void ParseGetSensorData(Parser_Holder_Type *pHolder)
 {
-    if (pHolder->Port == PORT_USB)
-        GenerateUSBMessage(Cmd_GetSensorData);
-    else
-        GenerateAUXMessage(Cmd_GetSensorData, pHolder->Port);
+    GenerateMessage(Cmd_GetSensorData, pHolder->Port);
 }
 
 /**
@@ -512,10 +478,7 @@ void ParseGetSensorData(Parser_Holder_Type *pHolder)
  */
 void ParseGetRawSensorData(Parser_Holder_Type *pHolder)
 {
-    if (pHolder->Port == PORT_USB)
-        GenerateUSBMessage(Cmd_GetRawSensorData);
-    else
-        GenerateAUXMessage(Cmd_GetRawSensorData, pHolder->Port);
+    GenerateMessage(Cmd_GetRawSensorData, pHolder->Port);
 }
 
 /**
@@ -526,10 +489,7 @@ void ParseGetRawSensorData(Parser_Holder_Type *pHolder)
  */
 void ParseGetSensorCalibration(Parser_Holder_Type *pHolder)
 {
-    if (pHolder->Port == PORT_USB)
-        GenerateUSBMessage(Cmd_GetSensorCalibration);
-    else
-        GenerateAUXMessage(Cmd_GetSensorCalibration, pHolder->Port);
+    GenerateMessage(Cmd_GetSensorCalibration, pHolder->Port);
 }
 
 /**
@@ -564,10 +524,7 @@ void ParseSetSensorCalibration(Parser_Holder_Type *pHolder)
  */
 void ParseGetEstimationRate(Parser_Holder_Type *pHolder)
 {
-    if (pHolder->Port == PORT_USB)
-        GenerateUSBMessage(Cmd_GetEstimationRate);
-    else
-        GenerateAUXMessage(Cmd_GetEstimationRate, pHolder->Port);
+    GenerateMessage(Cmd_GetEstimationRate, pHolder->Port);
 }
 
 /**
@@ -578,10 +535,7 @@ void ParseGetEstimationRate(Parser_Holder_Type *pHolder)
  */
 void ParseGetEstimationAttitude(Parser_Holder_Type *pHolder)
 {
-    if (pHolder->Port == PORT_USB)
-        GenerateUSBMessage(Cmd_GetEstimationAttitude);
-    else
-        GenerateAUXMessage(Cmd_GetEstimationAttitude, pHolder->Port);
+    GenerateMessage(Cmd_GetEstimationAttitude, pHolder->Port);
 }
 
 /**
@@ -592,10 +546,7 @@ void ParseGetEstimationAttitude(Parser_Holder_Type *pHolder)
  */
 void ParseGetEstimationVelocity(Parser_Holder_Type *pHolder)
 {
-    if (pHolder->Port == PORT_USB)
-        GenerateUSBMessage(Cmd_GetEstimationVelocity);
-    else
-        GenerateAUXMessage(Cmd_GetEstimationVelocity, pHolder->Port);
+    GenerateMessage(Cmd_GetEstimationVelocity, pHolder->Port);
 }
 
 /**
@@ -606,10 +557,7 @@ void ParseGetEstimationVelocity(Parser_Holder_Type *pHolder)
  */
 void ParseGetEstimationPosition(Parser_Holder_Type *pHolder)
 {
-    if (pHolder->Port == PORT_USB)
-        GenerateUSBMessage(Cmd_GetEstimationPosition);
-    else
-        GenerateAUXMessage(Cmd_GetEstimationPosition, pHolder->Port);
+    GenerateMessage(Cmd_GetEstimationPosition, pHolder->Port);
 }
 
 /**
@@ -620,10 +568,7 @@ void ParseGetEstimationPosition(Parser_Holder_Type *pHolder)
  */
 void ParseGetEstimationAllStates(Parser_Holder_Type *pHolder)
 {
-    if (pHolder->Port == PORT_USB)
-        GenerateUSBMessage(Cmd_GetEstimationAllStates);
-    else
-        GenerateAUXMessage(Cmd_GetEstimationAllStates, pHolder->Port);
+    GenerateMessage(Cmd_GetEstimationAllStates, pHolder->Port);
 }
 
 /**

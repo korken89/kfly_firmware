@@ -15,7 +15,6 @@
 //#include "sensor_read.h"
 //#include "sensor_calibration.h"
 //#include "control.h"
-#include "circularbuffer.h"
 //#include "estimation.h"
 //#include "ext_input.h"
 #include "statemachine_parsers.h"
@@ -163,22 +162,22 @@ static const Generator_Type generator_lookup[128] = {
 };
 
  /**
-  * @brief              Generate a message for the AUX ports based on the
+  * @brief              Generate a message for the ports based on the
   *                     generators in the lookup table.
   * 
   * @param[in] command  The command to generate a message for.
-  * @param[in] port     Port to which send the data.
+  * @param[in] port     Which port to send the data.
   * @return             HAL_FAILED if the message didn't fit or HAL_SUCCESS
   *                     if it did fit.
   */
-bool GenerateAUXMessage(KFly_Command_Type command, Port_Type port)
+bool GenerateMessage(KFly_Command_Type command, Port_Type port)
 {
     (void)port;
 
     bool status;
     Circular_Buffer_Type *Cbuff = NULL;
 
-    //Cbuff = GetCircularBufferFromAUXPort(port);
+    Cbuff = SerialManager_GetCircularBufferFromPort(port);
 
     /* Check so the circular buffer address is valid */
     if (Cbuff == NULL)
@@ -192,47 +191,12 @@ bool GenerateAUXMessage(KFly_Command_Type command, Port_Type port)
         {
             status = generator_lookup[command](Cbuff);
         }
+        /* Release the circular buffer */
         CircularBuffer_Release(Cbuff);
-        /* Release the circular buffer and return the status */
-    }
-    else
-        status = HAL_FAILED;
-    
-    return status;
-}
 
-
- /**
-  * @brief              Generate a message for the USB port based on the
-  *                     generators in the lookup table.
-  * @details            This function tricks the circular buffer code into
-  *                     using the USB as a circular buffer.
-  * 
-  * @param[in] command  The command to generate a message for.
-  * @return             HAL_FAILED if the message didn't fit or HAL_SUCCESS
-  *                     if it did fit.
-  */
-bool GenerateUSBMessage(KFly_Command_Type command)
-{
-    bool status;
-    Circular_Buffer_Type temp;
-
-    /* TODO: Check if the USB is available */
-    if (isUSBActive() == false)
-        return HAL_FAILED;
-
-    /* Check so there is an available Generator function for this command */
-    if (generator_lookup[command] != NULL)
-    {
-        /* Claim the USB for writing */
-        ClaimUSB();
-        {
-            /* Call the generator from the lookup table */
-            status = generator_lookup[command](&temp);
-        }
-        ReleaseUSB();
-
-        /* Release the USB and return the status */
+        /* If it was successful then start the transmission */
+        if (status == HAL_SUCCESS)
+            SerialManager_StartTramsmission(port);
     }
     else
         status = HAL_FAILED;

@@ -42,5 +42,6 @@ uint8_t CircularBuffer_ReadSingle(Circular_Buffer_Type *Cbuff);
 void CircularBuffer_ReadChunk(Circular_Buffer_Type *Cbuff, 
 							  uint8_t *data, 
 							  uint32_t count);
-
+uint32_t CircularBuffer_GetReadPointer(Circular_Buffer_Type *Cbuff, uint8_t *p);
+void CircularBuffer_IncrementTail(Circular_Buffer_Type *Cbuff, int32_t count);
 #endif

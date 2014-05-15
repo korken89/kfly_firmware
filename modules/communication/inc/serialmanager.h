@@ -11,5 +11,7 @@
 /* Global function defines */
 void vSerialManagerInit(void);
 void vTaskUSBSerialManager(void *);
+Circular_Buffer_Type *SerialManager_GetCircularBufferFromPort(Port_Type port);
+void SerialManager_StartTramsmission(Port_Type port);
 
 #endif

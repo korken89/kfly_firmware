@@ -8,29 +8,22 @@
 
 /* Typedefs */
 
-/* Macros */
-
 /* Global variables */
 extern mutex_t USB_write_lock;
 extern SerialUSBDriver SDU1;
 extern const USBConfig usbcfg;
 extern const SerialUSBConfig serusbcfg;
 
-/* Inline functions */
-static inline void ClaimUSB(void)
-{
-  chMtxLock(&USB_write_lock);
-}
+/* Macros */
+#define USBClaim() 		chMtxLock(&USB_write_lock)
+#define USBRelease() 	chMtxUnlock(&USB_write_lock)
 
-static inline void ReleaseUSB(void)
-{
-  chMtxUnlock(&USB_write_lock);
-}
+/* Inline functions */
 
 /* Global functions */
 bool isUSBActive(void);
 void USBMutexInit(void);
-uint32_t USBSendData(uint8_t *data, uint32_t size);
-uint8_t USBReadByte(void);
+uint32_t USBSendData(uint8_t *data, uint32_t size, systime_t timeout);
+uint32_t USBReadByte(systime_t timeout);
 
 #endif
