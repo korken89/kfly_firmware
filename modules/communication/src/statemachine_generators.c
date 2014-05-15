@@ -196,7 +196,7 @@ bool GenerateMessage(KFly_Command_Type command, Port_Type port)
 
         /* If it was successful then start the transmission */
         if (status == HAL_SUCCESS)
-            SerialManager_StartTramsmission(port);
+            SerialManager_StartTransmission(port);
     }
     else
         status = HAL_FAILED;

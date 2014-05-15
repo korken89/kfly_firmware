@@ -36,7 +36,7 @@ static THD_FUNCTION(USBSerialManagerTask, arg)
     static Parser_Holder_Type data_holder;
 
     /* Buffer for parsing serial USB commands */
-    CCM_MEMORY static uint8_t buffer[SERIAL_BUFFER_SIZE]; 
+    CCM_MEMORY static uint8_t buffer[SERIAL_RECIEVE_BUFFER_SIZE]; 
 
     /* Initialize data structure */
     vInitStatemachineDataHolder(&data_holder, PORT_USB, buffer);
@@ -61,12 +61,12 @@ static THD_FUNCTION(USBDataPumpTask, arg)
     uint32_t read_size;
 
     /* Buffer for transmitting serial USB commands */
-    CCM_MEMORY static uint8_t buffer[SERIAL_BUFFER_SIZE*2]; 
+    CCM_MEMORY static uint8_t buffer[SERIAL_TRANSMIT_BUFFER_SIZE]; 
 
     /* Initialize the USB transmit circular buffer */
     CircularBuffer_Init(&data_pumps.USBTransmitBuffer,
                         buffer,
-                        SERIAL_BUFFER_SIZE*2);
+                        SERIAL_TRANSMIT_BUFFER_SIZE);
     CircularBuffer_InitMutex(&data_pumps.USBTransmitBuffer);
 
     /* Put the USB dapa pump thread into the list of avilable data pumps */
@@ -157,7 +157,7 @@ Circular_Buffer_Type *SerialManager_GetCircularBufferFromPort(Port_Type port)
         return NULL;
 }
 
-void SerialManager_StartTramsmission(Port_Type port)
+void SerialManager_StartTransmission(Port_Type port)
 {
     if ((port == PORT_USB) && (data_pumps.ptrUSBDataPump != NULL))
         chEvtSignal(data_pumps.ptrUSBDataPump, 1);

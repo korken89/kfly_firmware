@@ -1,9 +1,10 @@
 #ifndef __STATEMACHINE_TYPES_H
 #define __STATEMACHINE_TYPES_H
 
-#define SYNC_BYTE               (0xa6)
-#define ACK_BIT                 (0x80)
-#define SERIAL_BUFFER_SIZE      (256)
+#define SYNC_BYTE                     (0xa6)
+#define ACK_BIT                       (0x80)
+#define SERIAL_RECIEVE_BUFFER_SIZE    (256)
+#define SERIAL_TRANSMIT_BUFFER_SIZE   (512)
 
 #include "serialmanager_types.h"
 #include "circularbuffer.h"
