@@ -13,5 +13,6 @@ void vSerialManagerInit(void);
 void vTaskUSBSerialManager(void *);
 Circular_Buffer_Type *SerialManager_GetCircularBufferFromPort(Port_Type port);
 void SerialManager_StartTransmission(Port_Type port);
+bool SerialManager_USBTransmitCircularBuffer(Circular_Buffer_Type *Cbuff);
 
 #endif

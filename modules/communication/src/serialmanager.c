@@ -25,8 +25,10 @@ static THD_WORKING_AREA(waUSBSerialManagerTask, 128);
 static THD_WORKING_AREA(waUSBDataPumpTask, 128);
 
 /**
- * @brief      The Serial Manager task will handle incoming
- *             data and direct it for decode and processing.
+ * @brief               The Serial Manager task will handle incoming
+ *                      data and direct it for decode and processing.
+ *             
+ * @param[in] arg       Input argument (unused).
  */
 static THD_FUNCTION(USBSerialManagerTask, arg)
 {
@@ -51,14 +53,11 @@ static THD_FUNCTION(USBSerialManagerTask, arg)
 /**
  * @brief               Reads a chunk of data from a circular buffer.
  *  
- * @param[in] arg       Number of bytes to read.
+ * @param[in] arg       Input argument (unused).
  */
 static THD_FUNCTION(USBDataPumpTask, arg)
 {
     (void)arg;
-
-    uint8_t *read_pointer = NULL;
-    uint32_t read_size;
 
     /* Buffer for transmitting serial USB commands */
     CCM_MEMORY static uint8_t buffer[SERIAL_TRANSMIT_BUFFER_SIZE]; 
@@ -69,7 +68,7 @@ static THD_FUNCTION(USBDataPumpTask, arg)
                         SERIAL_TRANSMIT_BUFFER_SIZE);
     CircularBuffer_InitMutex(&data_pumps.USBTransmitBuffer);
 
-    /* Put the USB dapa pump thread into the list of avilable data pumps */
+    /* Put the USB data pump thread into the list of available data pumps */
     data_pumps.ptrUSBDataPump = chThdGetSelfX();
 
     while(1)
@@ -77,41 +76,8 @@ static THD_FUNCTION(USBDataPumpTask, arg)
         /* Wait for a start transmission event */
         chEvtWaitAny(ALL_EVENTS);
 
-        /* We will only get here is a request to send data has been recieved */
-
-        if (isUSBActive() == true)
-        {
-            /* Read out the number of bytes to send and the pointer to the
-               first byte */
-            read_size = CircularBuffer_GetReadPointer(
-                                                &data_pumps.USBTransmitBuffer,
-                                                read_pointer);
-
-            /* Claim the USB bus during the entire transfer */
-            USBClaim();
-            while (read_size > 0)
-            {
-                /* Send the data from the circular buffer */
-                USBSendData(read_pointer, read_size, TIME_INFINITE);
-
-                /* Increment the circular buffer tail */
-                CircularBuffer_IncrementTail(&data_pumps.USBTransmitBuffer,
-                                             read_size);
-
-                /* Get the read size again in case new data is avaiable or if
-                   we reached the end of the buffer (to make sure the entire
-                   buffer is sent) */
-                read_size = CircularBuffer_GetReadPointer(
-                                                &data_pumps.USBTransmitBuffer,
-                                                read_pointer);
-
-                /* If the USB has been removed during the transfer: abort */
-                if (isUSBActive() == false)
-                    break;
-            }
-            /* Release the USB bus */
-            USBRelease();
-        }
+        /* We will only get here is a request to send data has been received */
+        SerialManager_USBTransmitCircularBuffer(&data_pumps.USBTransmitBuffer);
     }
 
     return MSG_OK;
@@ -137,6 +103,14 @@ void vSerialManagerInit(void)
                       NULL);
 }
 
+/**
+ * @brief               Return the circular buffer of corresponding 
+ *                      communication port.
+ *             
+ * @param[in] port      Port parameter.
+ * @return              Returns the pointer to the corresponding port's 
+ *                      circular buffer.
+ */
 Circular_Buffer_Type *SerialManager_GetCircularBufferFromPort(Port_Type port)
 {
     if (port == PORT_USB)
@@ -157,6 +131,11 @@ Circular_Buffer_Type *SerialManager_GetCircularBufferFromPort(Port_Type port)
         return NULL;
 }
 
+/**
+ * @brief               Signal the data pump thread to start transmission.
+ *             
+ * @param[in] port      Port parameter.
+ */
 void SerialManager_StartTransmission(Port_Type port)
 {
     if ((port == PORT_USB) && (data_pumps.ptrUSBDataPump != NULL))
@@ -173,4 +152,51 @@ void SerialManager_StartTransmission(Port_Type port)
 
     else if ((port == PORT_AUX4) && (data_pumps.ptrAUX4DataPump != NULL))
         chEvtSignal(data_pumps.ptrAUX4DataPump, 1);
+}
+
+/**
+ * @brief               Transmits a circular buffer over the USB interface.
+ *             
+ * @param[in] Cbuff     Circular buffer to transmit.
+ * @return              Returns HAL_FAILED if it did not succeed to transmit
+ *                      the buffer, else HAL_SUCCESS is returned.
+ */
+bool SerialManager_USBTransmitCircularBuffer(Circular_Buffer_Type *Cbuff)
+{
+    uint8_t *read_pointer = NULL;
+    uint32_t read_size;
+
+    if ((isUSBActive() == true) && (Cbuff != NULL))
+    {
+        /* Read out the number of bytes to send and the pointer to the
+           first byte */
+        read_size = CircularBuffer_GetReadPointer(Cbuff, read_pointer);
+
+        /* Claim the USB bus during the entire transfer */
+        USBClaim();
+        while (read_size > 0)
+        {
+            /* Send the data from the circular buffer */
+            USBSendData(read_pointer, read_size, TIME_INFINITE);
+
+            /* Increment the circular buffer tail */
+            CircularBuffer_IncrementTail(Cbuff, read_size);
+
+            /* Get the read size again in case new data is available or if
+               we reached the end of the buffer (to make sure the entire
+               buffer is sent) */
+            read_size = CircularBuffer_GetReadPointer(Cbuff, read_pointer);
+
+            /* If the USB has been removed during the transfer: abort */
+            if (isUSBActive() == false)
+                return HAL_FAILED;
+        }
+        /* Release the USB bus */
+        USBRelease();
+
+        /* Transfer finished successfully */
+        return HAL_SUCCESS;
+    }
+    else
+        return HAL_FAILED;
 }
