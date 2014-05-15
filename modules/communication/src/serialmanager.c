@@ -51,7 +51,7 @@ static THD_FUNCTION(USBSerialManagerTask, arg)
 /**
  * @brief               Reads a chunk of data from a circular buffer.
  *  
- * @param[in] arg     Number of bytes to read.
+ * @param[in] arg       Number of bytes to read.
  */
 static THD_FUNCTION(USBDataPumpTask, arg)
 {
