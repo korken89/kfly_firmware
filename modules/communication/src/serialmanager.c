@@ -164,14 +164,14 @@ void SerialManager_StartTransmission(Port_Type port)
  */
 bool SerialManager_USBTransmitCircularBuffer(Circular_Buffer_Type *Cbuff)
 {
-    uint8_t *read_pointer = NULL;
+    uint8_t *read_pointer;
     uint32_t read_size;
 
     if ((isUSBActive() == true) && (Cbuff != NULL))
     {
         /* Read out the number of bytes to send and the pointer to the
            first byte */
-        read_size = CircularBuffer_GetReadPointer(Cbuff, read_pointer);
+        read_pointer = CircularBuffer_GetReadPointer(Cbuff, &read_size);
 
         /* Claim the USB bus during the entire transfer */
         USBClaim();
@@ -186,7 +186,7 @@ bool SerialManager_USBTransmitCircularBuffer(Circular_Buffer_Type *Cbuff)
             /* Get the read size again in case new data is available or if
                we reached the end of the buffer (to make sure the entire
                buffer is sent) */
-            read_size = CircularBuffer_GetReadPointer(Cbuff, read_pointer);
+            read_pointer = CircularBuffer_GetReadPointer(Cbuff, &read_size);
 
             /* If the USB has been removed during the transfer: abort */
             if (isUSBActive() == false)

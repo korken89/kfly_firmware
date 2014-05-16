@@ -251,22 +251,21 @@ void CircularBuffer_ReadChunk(Circular_Buffer_Type *Cbuff,
  *                      buffer.
  *  
  * @param[in/out] Cbuff Pointer to the circular buffer.
- * @param[out] p        Pointer to the tail byte.
- * @return              Number of bytes that can be read.
+ * @param[out] size     Pointer to the size holder.
+ * @return              Pointer to the buffer with offset.
  */
-uint32_t CircularBuffer_GetReadPointer(Circular_Buffer_Type *Cbuff, uint8_t *p)
+uint8_t *CircularBuffer_GetReadPointer(Circular_Buffer_Type *Cbuff, uint32_t *size)
 {
-    uint32_t size;
+    uint8_t *p;
 
-    p = &Cbuff->buffer[Cbuff->tail];
-    (void)p;
+    p = (Cbuff->buffer + Cbuff->tail);
 
     if (Cbuff->head < Cbuff->tail)
-        size = Cbuff->size - Cbuff->tail;
+        *size = Cbuff->size - Cbuff->tail;
     else
-        size = Cbuff->head - Cbuff->tail;
+        *size = Cbuff->head - Cbuff->tail;
 
-    return size;
+    return p;
 }
 
 void CircularBuffer_IncrementTail(Circular_Buffer_Type *Cbuff, int32_t count)
