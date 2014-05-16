@@ -5,6 +5,7 @@
 
 /* Includes */
 #include "pid.h"
+#include "trigonometry.h"
 
 /* Private Defines */
 
@@ -16,17 +17,17 @@
 
 void vInitPIController(PI_Data_Type *pi_settings, float P_gain, float I_gain, float I_limit)
 {
-	pi_settings->P_gain = P_gain;
-	pi_settings->I_gain = I_gain;
-	pi_settings->I_limit = I_limit;
-	pi_settings->I_state = 0.0f;
+    pi_settings->P_gain = P_gain;
+    pi_settings->I_gain = I_gain;
+    pi_settings->I_limit = I_limit;
+    pi_settings->I_state = 0.0f;
 }
 
 void vUpdatePISettings(PI_Data_Type *pi_settings, float P_gain, float I_gain, float I_limit)
 {
-	pi_settings->P_gain = P_gain;
-	pi_settings->I_gain = I_gain;
-	pi_settings->I_limit = I_limit;
+    pi_settings->P_gain = P_gain;
+    pi_settings->I_gain = I_gain;
+    pi_settings->I_limit = I_limit;
 }
 
 float fPIUpdate(PI_Data_Type *pi, float error, float dt)
