@@ -10,10 +10,10 @@
 #include "version_information.h"
 #include "serialmanager.h"
 #include "crc.h"
-//#include "pid.h"
+#include "pid.h"
 //#include "sensor_read.h"
 //#include "sensor_calibration.h"
-//#include "control.h"
+#include "control.h"
 //#include "estimation.h"
 //#include "ext_input.h"
 #include "statemachine_parsers.h"
@@ -293,69 +293,61 @@ bool GenerateGenericGetControllerData(KFly_Command_Type command,
                                       const uint32_t limit_count, 
                                       Circular_Buffer_Type *Cbuff)
 {
-    (void)command;
-    (void)pi_offset;
-    (void)limit_offset;
-    (void)limit_count;
-    (void)Cbuff;
+    PI_Data_Type *PI_settings;
+    uint8_t *CL_settings;
+    uint8_t *data;
+    uint8_t crc8;
+    uint16_t crc16;
+    int32_t i, j;
 
-    return HAL_FAILED;
+    /* The PI data is always 3 Controllers, with 3 gains plus
+       the limit structure */
+    const int32_t data_count = (3*3*4) + limit_count;
+    int32_t count = 0;
 
-//    PI_Data_Type *PI_settings;
-//    uint8_t *CL_settings;
-//    uint8_t *data;
-//    uint8_t crc8;
-//    uint16_t crc16;
-//    int32_t i, j;
-//
-//    /* The PI data is always 3 Controllers, with 3 gains plus
-//       the limit structure */
-//    const int32_t data_count = (3*3*4) + limit_count;
-//    int32_t count = 0;
-//
-//    /* Check if the "best case" won't fit in the buffer */
-//    if (CircularBuffer_SpaceLeft(Cbuff) < (data_count + 6))
-//        return HAL_FAILED;
-//
-//    /* Add the header */
-//    /* Write the starting SYNC (without doubling it) */
-//    CircularBuffer_WriteSYNCNoIncrement(Cbuff, &count, &crc8, &crc16); 
-//
-//    /* Add all of the header to the message */
-//    CircularBuffer_WriteNoIncrement(Cbuff, command,    &count, &crc8, &crc16); 
-//    CircularBuffer_WriteNoIncrement(Cbuff, data_count, &count, &crc8, &crc16); 
-//    CircularBuffer_WriteNoIncrement(Cbuff, crc8,       &count, NULL,  &crc16);
-//
-//    /* Cast the control data to an array of PI_Data_Type to access each
-//       PI controller */
-//    PI_settings = (PI_Data_Type *)ptrGetControlData();
-//
-//    /* Cast the settings into bytes for read out */
-//    CL_settings = (uint8_t *)ptrGetControlLimits();
-//
-//    /* Get only the PI coefficients */
-//    for (i = 0; i < 3; i++) 
-//    {
-//        data = (uint8_t *)&PI_settings[pi_offset + i];
-//
-//        for (j = 0; j < 12; j++)
-//            CircularBuffer_WriteNoIncrement(Cbuff, data[j], &count, NULL, 
-//                                                                    &crc16);
-//    }
-//
-//    /* Get only the controller constraints */
-//    for (i = 0; i < limit_count; i++) 
-//        CircularBuffer_WriteNoIncrement(Cbuff, CL_settings[limit_offset + i],
-//                                        &count, NULL,  &crc16);
-//
-//    /* Add the CRC16 */
-//    CircularBuffer_WriteNoIncrement(Cbuff, (uint8_t)(crc16 >> 8), &count, NULL,
-//                                                                          NULL);
-//    CircularBuffer_WriteNoIncrement(Cbuff, (uint8_t)(crc16),      &count, NULL, 
-//                                                                          NULL);
-//
-//    /* Check if the message fit inside the buffer */
-//    return CircularBuffer_Increment(Cbuff, count);
+    /* Check if the "best case" won't fit in the buffer */
+    if (CircularBuffer_SpaceLeft(Cbuff) < (uint32_t)(data_count + 6))
+        return HAL_FAILED;
+
+    /* Add the header */
+    /* Write the starting SYNC (without doubling it) */
+    CircularBuffer_WriteSYNCNoIncrement(Cbuff, &count, &crc8, &crc16); 
+
+    /* Add all of the header to the message */
+    CircularBuffer_WriteNoIncrement(Cbuff, command,    &count, &crc8, &crc16); 
+    CircularBuffer_WriteNoIncrement(Cbuff, data_count, &count, &crc8, &crc16); 
+    CircularBuffer_WriteNoIncrement(Cbuff, crc8,       &count, NULL,  &crc16);
+
+    /* Cast the control data to an array of PI_Data_Type to access each
+       PI controller */
+    PI_settings = (PI_Data_Type *)ptrGetControlData();
+
+    /* Cast the settings into bytes for read out */
+    CL_settings = (uint8_t *)ptrGetControlLimits();
+
+    /* Get only the PI coefficients */
+    for (i = 0; i < 3; i++) 
+    {
+        data = (uint8_t *)&PI_settings[pi_offset + i];
+
+        for (j = 0; j < 12; j++)
+            CircularBuffer_WriteNoIncrement(Cbuff, data[j], &count, NULL, 
+                                                                    &crc16);
+    }
+
+    /* Get only the controller constraints */
+    for (i = 0; i < (int32_t)limit_count; i++) 
+        CircularBuffer_WriteNoIncrement(Cbuff, CL_settings[limit_offset + i],
+                                        &count, NULL,  &crc16);
+
+    /* Add the CRC16 */
+    CircularBuffer_WriteNoIncrement(Cbuff, (uint8_t)(crc16 >> 8), &count, NULL,
+                                                                          NULL);
+    CircularBuffer_WriteNoIncrement(Cbuff, (uint8_t)(crc16),      &count, NULL, 
+                                                                          NULL);
+
+    /* Check if the message fit inside the buffer */
+    return CircularBuffer_Increment(Cbuff, count);
 }
 
 /**
@@ -507,13 +499,11 @@ bool GenerateGetDeviceInfo(Circular_Buffer_Type *Cbuff)
  */
 bool GenerateGetRateControllerData(Circular_Buffer_Type *Cbuff)
 {
-    (void)Cbuff;
-    return HAL_FAILED;
-//    return GenerateGenericGetControllerData(Cmd_GetRateControllerData,
-//                                            RATE_PI_OFFSET,
-//                                            RATE_LIMIT_OFFSET,
-//                                            RATE_LIMIT_COUNT,
-//                                            Cbuff);
+    return GenerateGenericGetControllerData(Cmd_GetRateControllerData,
+                                            RATE_PI_OFFSET,
+                                            RATE_LIMIT_OFFSET,
+                                            RATE_LIMIT_COUNT,
+                                            Cbuff);
 }
 
 /**
@@ -526,13 +516,11 @@ bool GenerateGetRateControllerData(Circular_Buffer_Type *Cbuff)
  */
 bool GenerateGetAttitudeControllerData(Circular_Buffer_Type *Cbuff)
 {
-    (void)Cbuff;
-    return HAL_FAILED;
-//    return GenerateGenericGetControllerData(Cmd_GetAttitudeControllerData,
-//                                            ATTITUDE_PI_OFFSET,
-//                                            ATTITUDE_LIMIT_OFFSET,
-//                                            ATTITUDE_LIMIT_COUNT,
-//                                            Cbuff);
+    return GenerateGenericGetControllerData(Cmd_GetAttitudeControllerData,
+                                            ATTITUDE_PI_OFFSET,
+                                            ATTITUDE_LIMIT_OFFSET,
+                                            ATTITUDE_LIMIT_COUNT,
+                                            Cbuff);
 }
 
 /**
@@ -544,13 +532,11 @@ bool GenerateGetAttitudeControllerData(Circular_Buffer_Type *Cbuff)
  */
 bool GenerateGetVelocityControllerData(Circular_Buffer_Type *Cbuff)
 {
-    (void)Cbuff;
-    return HAL_FAILED;
-//    return GenerateGenericGetControllerData(Cmd_GetVelocityControllerData,
-//                                            VELOCITY_PI_OFFSET,
-//                                            VELOCITY_LIMIT_OFFSET,
-//                                            VELOCITY_LIMIT_COUNT,
-//                                            Cbuff);
+    return GenerateGenericGetControllerData(Cmd_GetVelocityControllerData,
+                                            VELOCITY_PI_OFFSET,
+                                            VELOCITY_LIMIT_OFFSET,
+                                            VELOCITY_LIMIT_COUNT,
+                                            Cbuff);
 }
 
 /**
@@ -562,13 +548,11 @@ bool GenerateGetVelocityControllerData(Circular_Buffer_Type *Cbuff)
  */
 bool GenerateGetPositionControllerData(Circular_Buffer_Type *Cbuff)
 {
-    (void)Cbuff;
-    return HAL_FAILED;
-//    return GenerateGenericGetControllerData(Cmd_GetPositionControllerData,
-//                                            POSITION_PI_OFFSET,
-//                                            POSITION_LIMIT_OFFSET,
-//                                            POSITION_LIMIT_COUNT,
-//                                            Cbuff);
+    return GenerateGenericGetControllerData(Cmd_GetPositionControllerData,
+                                            POSITION_PI_OFFSET,
+                                            POSITION_LIMIT_OFFSET,
+                                            POSITION_LIMIT_COUNT,
+                                            Cbuff);
 }
 
 /**
@@ -580,12 +564,10 @@ bool GenerateGetPositionControllerData(Circular_Buffer_Type *Cbuff)
  */
 bool GenerateGetChannelMix(Circular_Buffer_Type *Cbuff)
 {
-    (void)Cbuff;
-    return HAL_FAILED;
-//    return GenerateGenericCommand(Cmd_GetChannelMix, 
-//                                  (uint8_t *)ptrGetOutputMixer(), 
-//                                  OUTPUT_MIXER_SIZE, 
-//                                  Cbuff);
+    return GenerateGenericCommand(Cmd_GetChannelMix, 
+                                  (uint8_t *)ptrGetOutputMixer(), 
+                                  OUTPUT_MIXER_SIZE, 
+                                  Cbuff);
 }
 
 /**
