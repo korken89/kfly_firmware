@@ -8,7 +8,6 @@
 #include "ch.h"
 #include "hal.h"
 #include "myusb.h"
-#include "serialmanager_types.h"
 #include "statemachine.h"
 #include "crc.h"
 #include "serialmanager.h"

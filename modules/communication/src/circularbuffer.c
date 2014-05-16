@@ -1,7 +1,6 @@
 #include "ch.h"
 #include "hal.h"
 #include "crc.h"
-#include "serialmanager_types.h"
 #include "statemachine_types.h"
 #include "circularbuffer.h"
 

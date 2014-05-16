@@ -10,7 +10,6 @@
 #include "hal.h"
 #include "myusb.h"
 #include "version_information.h"
-#include "serialmanager_types.h"
 #include "statemachine_generators.h"
 #include "crc.h"
 //#include "pid.h"

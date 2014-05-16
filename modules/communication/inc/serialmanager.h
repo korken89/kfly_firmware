@@ -1,6 +1,8 @@
 #ifndef __SERIALMANAGER_H
 #define __SERIALMANAGER_H
 
+#include "serialmanager_types.h"
+
 /* Defines */
 #define tskSerialManagerPRIORITY        (tskIDLE_PRIORITY + 1)
 #define START_TRANSMISSION_EVENT		((eventmask_t)1)
