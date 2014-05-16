@@ -8,8 +8,8 @@
 #include "rc_output.h"
 #include "eicu.h"
 #include "chprintf.h"
-#include "serialmanager_types.h"
 #include "serialmanager.h"
+#include "control.h"
 
 volatile const char *kfly_error;
 
@@ -95,26 +95,6 @@ static const EXTConfig extcfg = {
         {EXT_CH_MODE_DISABLED, NULL},
         {EXT_CH_MODE_DISABLED, NULL}
     }
-};
-
-/* RC Output Configuration */
-static const PWMConfig pwmcfg = {
-    RCOUTPUT_1MHZ_CLOCK_FREQUENCY,      /* 1 MHz PWM clock frequency    */
-    RCOUTPUT_400HZ,                     /* Initial PWM period: 400 Hz   */
-    NULL,                               /* No callback */
-    {
-        {PWM_OUTPUT_ACTIVE_HIGH, NULL}, /* Active high, no callback     */
-        {PWM_OUTPUT_ACTIVE_HIGH, NULL}, /* Active high, no callback     */
-        {PWM_OUTPUT_ACTIVE_HIGH, NULL}, /* Active high, no callback     */
-        {PWM_OUTPUT_ACTIVE_HIGH, NULL}  /* Active high, no callback     */
-    },
-    0,
-    0
-};
-static const RCOutput_Configuration rcoutputcfg = {
-    &PWMD4,
-    &PWMD8,
-    &pwmcfg
 };
 
 /* EICU Configuration */
@@ -208,38 +188,30 @@ int main(void)
      * Start I2C and set up sensors
      * 
      */
-    i2cStart(&I2CD2, &i2cfg2);
+//    i2cStart(&I2CD2, &i2cfg2);
 
     /* Initialize Accelerometer and Gyroscope */
-    if (MPU6050Init(&mpu6050cfg) != MSG_OK)
-        panic("MPU6050 init failed"); /* Initialization failed */
+//    if (MPU6050Init(&mpu6050cfg) != MSG_OK)
+//        panic("MPU6050 init failed"); /* Initialization failed */
 
     /* Initialize Magnetometer */
-    if (HMC5983Init(&hmc5983cfg) != MSG_OK)
-        panic("HMC5983 init failed"); /* Initialization failed */
+//    if (HMC5983Init(&hmc5983cfg) != MSG_OK)
+//        panic("HMC5983 init failed"); /* Initialization failed */
 
     /* Initialize Barometer */
     /* TODO: Add barometer code */
 
     /* Initialize sensor readout */
-    if (SensorReadInit(&mpu6050cfg, &hmc5983cfg,
-                       &mpu6050cal, &hmc5983cal) != MSG_OK)
-        panic("Sensor Read init failed"); /* Initialization failed */
+//    if (SensorReadInit(&mpu6050cfg, &hmc5983cfg,
+//                       &mpu6050cal, &hmc5983cal) != MSG_OK)
+//        panic("Sensor Read init failed"); /* Initialization failed */
 
     /*
      *
      * Start the external interrupts
      *
      */
-    extStart(&EXTD1, &extcfg);
-
-    /*
-     *
-     * Initialize the RC Outputs
-     *
-     */
-    if (RCOutputInit(&rcoutputcfg) != MSG_OK)
-        panic("RC output init failed"); /* Initialization failed */
+//    extStart(&EXTD1, &extcfg);
 
     /*
      *
@@ -255,11 +227,11 @@ int main(void)
      * Start test thread
      * 
      */
-    chThdCreateStatic(  waThreadTestEvents,
-                        sizeof(waThreadTestEvents),
-                        HIGHPRIO,
-                        ThreadTestEvents,
-                        NULL);
+    chThdCreateStatic(waThreadTestEvents,
+                      sizeof(waThreadTestEvents),
+                      HIGHPRIO,
+                      ThreadTestEvents,
+                      NULL);
 
 
     /*
@@ -269,24 +241,18 @@ int main(void)
      */
     vSerialManagerInit();
 
-    uint32_t b;
+    /*
+     *
+     * Initialize the controllers
+     *
+     */
+    vInitControl();
+
 
     while(1)
     {
-        if (isUSBActive() == true)
-        {
-            b = chnGetTimeout(&SDU1, MS2ST(500));
-
-            palTogglePad(GPIOC, GPIOC_LED_ERR);
-
-            if (b == 'a')
-                palSetPad(GPIOC, GPIOC_LED_USR);
-            else if (b == 's')
-                palClearPad(GPIOC, GPIOC_LED_USR);
-        }
-        else
-            chThdSleepMilliseconds(1000);
-
+        palTogglePad(GPIOC, GPIOC_LED_USR);
+        chThdSleepMilliseconds(200);
     }
 }
 
