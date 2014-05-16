@@ -18,12 +18,6 @@ static uint8_t UserIDString[USER_ID_MAX_SIZE + 1] = "Test ID string!";
 
 /* Private external functions */
 
-
-void VersionInformationInit(void)
-{
-
-}
-
 uint8_t *ptrGetUniqueID(void)
 {
     return (uint8_t *)(UNIQUE_ID_BASE);

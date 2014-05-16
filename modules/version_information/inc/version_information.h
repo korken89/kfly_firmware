@@ -26,7 +26,6 @@
 /* Macros */
 
 /* Global functions */
-void VersionInformationInit(void);
 uint8_t *ptrGetUniqueID(void);
 uint8_t *ptrGetBootloaderVersion(void);
 uint8_t *ptrGetFirmwareVersion(void);
