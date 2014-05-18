@@ -97,7 +97,7 @@ include $(CHIBIOS)/os/rt/ports/ARMCMx/compilers/GCC/mk/port_stm32f4xx.mk
 #include $(CHIBIOS)/test/rt/test.mk
 
 # Define linker script file here
-LDSCRIPT= linker/STM32F405xG.ld
+LDSCRIPT= make/STM32F405xG.ld
 #LDSCRIPT= $(PORTLD)/STM32F407xG_CCM.ld
 
 # C sources that can be compiled in ARM or THUMB mode depending on the global
@@ -191,8 +191,26 @@ CPPWARN = -Wall -Wextra
 # Start of default section
 #
 
+# Get Date
+ifeq ($(OS),Windows_NT)
+  GIT_DATE = $(shell $(subst /,\\,make/date.bat))
+else
+  GIT_DATE = 20$(shell date +'%y%m%d-%H:%M')
+endif
+
+# Get Git Tags
+GIT_TAGS = $(shell git describe --tags HEAD)
+GIT_SHORTSTAT = $(shell git diff --name-only)
+
+ifeq ($(GIT_SHORTSTAT),$(EMPTY))
+	GIT_DIRTY :=
+else
+	GIT_DIRTY := ~dirty
+endif
+GIT_VERSION := $(GIT_TAGS)$(GIT_DIRTY)
+
 # List all default C defines here, like -D_DEBUG=1
-DDEFS =
+DDEFS = -DGIT_VERSION=$(GIT_VERSION) -DDATE=$(GIT_DATE)
 
 # List all default ASM defines here, like -D_DEBUG=1
 DADEFS =
