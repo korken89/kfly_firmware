@@ -172,6 +172,26 @@ void HMC5983cb(EXTDriver *extp, expchannel_t channel)
 }
 
 /**
+ * @brief   Get the new data event source for the MPU6050
+ * 
+ * @return  Pointer to the envent source
+ */
+event_source_t *ptrGetMPU6050EventSource(void)
+{
+    return &sensorcfg.hmc5983cfg->data_holder->es;
+}
+
+/**
+ * @brief   Get the new data event source for the HMC5983
+ * 
+ * @return  Pointer to the envent source
+ */
+event_source_t *ptrGetHMC5983EventSource(void)
+{
+    return &sensorcfg.hmc5983cfg->data_holder->es;
+}
+
+/**
  * @brief Converts two bytes in 2's complement form to a signed 16-bit value
  * 
  * @param[in] msb Most significant byte
