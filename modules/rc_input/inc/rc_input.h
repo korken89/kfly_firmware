@@ -38,6 +38,6 @@ typedef struct {
 } RCInput_Data;
 
 /* Global function defines */
-msg_t RCInputInit();
+msg_t RCInputInit(void);
 
 #endif

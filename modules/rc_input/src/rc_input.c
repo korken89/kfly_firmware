@@ -18,11 +18,11 @@
  * @brief Initializes RC inputs
  * 
  * @param[in] cfg Pointer to configuration structure
- * @return RDY_OK if the initialization was successful
+ * @return MSG_OK if the initialization was successful
  */
-msg_t RCInputInit()
+msg_t RCInputInit(void)
 {
-	msg_t status = RDY_OK;
+	msg_t status = MSG_OK;
 
 	return status;
 }
