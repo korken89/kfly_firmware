@@ -188,30 +188,30 @@ int main(void)
      * Start I2C and set up sensors
      * 
      */
-//    i2cStart(&I2CD2, &i2cfg2);
+    i2cStart(&I2CD2, &i2cfg2);
 
     /* Initialize Accelerometer and Gyroscope */
-//    if (MPU6050Init(&mpu6050cfg) != MSG_OK)
-//        panic("MPU6050 init failed"); /* Initialization failed */
+    if (MPU6050Init(&mpu6050cfg) != MSG_OK)
+        chSysHalt("MPU6050 init failed"); /* Initialization failed */
 
     /* Initialize Magnetometer */
-//    if (HMC5983Init(&hmc5983cfg) != MSG_OK)
-//        panic("HMC5983 init failed"); /* Initialization failed */
+    if (HMC5983Init(&hmc5983cfg) != MSG_OK)
+        chSysHalt("HMC5983 init failed"); /* Initialization failed */
 
     /* Initialize Barometer */
     /* TODO: Add barometer code */
 
     /* Initialize sensor readout */
-//    if (SensorReadInit(&mpu6050cfg, &hmc5983cfg,
-//                       &mpu6050cal, &hmc5983cal) != MSG_OK)
-//        panic("Sensor Read init failed"); /* Initialization failed */
+    if (SensorReadInit(&mpu6050cfg, &hmc5983cfg,
+                       &mpu6050cal, &hmc5983cal) != MSG_OK)
+        chSysHalt("Sensor Read init failed"); /* Initialization failed */
 
     /*
      *
      * Start the external interrupts
      *
      */
-//    extStart(&EXTD1, &extcfg);
+    extStart(&EXTD1, &extcfg);
 
     /*
      *
