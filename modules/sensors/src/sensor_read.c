@@ -15,13 +15,56 @@
 
 /* Private variable defines */
 
-/* Private pointers to sensor configurations */
-static const MPU6050_Configuration *prv_mpu6050cfg;
-static const HMC5983_Configuration *prv_hmc5983cfg;
+/* MPU6050 calibration, data holder and configurationr */
+static Sensor_Calibration mpu6050cal = {
+    .bias = {0.0f, 0.0f, 0.0f},
+    .gain = {1.0f, 1.0f, 1.0f}
+};
+static MPU6050_Data mpu6050data;
+static const MPU6050_Configuration mpu6050cfg = {
+    MPU6050_DLPF_BW_42,             /* Digital low-pass filter config     */
+    MPU6050_EXT_SYNC_DISABLED,      /* External sync config               */
+    MPU6050_GYRO_FS_2000,           /* Gyro range config                  */
+    MPU6050_ACCEL_FS_16,            /* Accel range config                 */
+    MPU6050_FIFO_DISABLED,          /* FIFO config                        */
+    MPU6050_INTMODE_ACTIVEHIGH |
+    MPU6050_INTDRIVE_PUSHPULL  |
+    MPU6050_INTLATCH_50USPULSE |
+    MPU6050_INTCLEAR_ANYREAD,       /* Interrupt config                   */
+    MPU6050_INTDRDY_ENABLE,         /* Interrupt enable config            */
+    MPU6050_ADDRESS_AD0_HIGH,       /* MPU6050 address                    */
+    MPU6050_CLK_X_REFERENCE,        /* Clock reference                    */
+    4,                              /* Sample rate divider                */
+    &mpu6050data,                   /* Pointer to data holder             */
+    &I2CD2                          /* Pointer to I2C Driver              */
+};
 
-/* Private pointers to sensor calibrations */
-static Sensor_Calibration *prv_accelerometer_cal = NULL;
-static Sensor_Calibration *prv_magnetometer_cal = NULL;
+/* HMC5983 calibration, data holder and configuration */
+static Sensor_Calibration hmc5983cal = {
+    .bias = {0.0f, 0.0f, 0.0f},
+    .gain = {1.0f, 1.0f, 1.0f}
+};
+static HMC5983_Data hmc5983data;
+static const HMC5983_Configuration hmc5983cfg = {
+    HMC5983_TEMPERATURE_ENABLE,     /* Enable/disable temperature sensor  */
+    HMC5983_AVERAGE_8_SAMPLES,      /* Sample averaging config            */
+    HMC5983_DATA_RATE_75D0_HZ,      /* Output data rate config            */
+    HMC5983_MEAS_MODE_NORMAL,       /* Measurement mode config            */
+    HMC5983_GAIN_1D3_GA,            /* Gain config                        */
+    HMC5983_OP_MODE_CONTINOUS,      /* Operating mode config              */
+    HMC5983_I2C_FAST_DISABLE,       /* Enable/disable 3.4 MHz I2C         */
+    HMC5983_LOW_POWER_DISABLE,      /* Enable/disable low power mode      */
+    HMC5983_ADDRESS,                /* HMC5983 address                    */
+    &hmc5983data,                   /* Pointer to data holder             */
+    &I2CD2                          /* Pointer to I2C Driver              */
+};
+/* Private pointers to sensor configurations */
+static const Sensor_Read_Configuration sensorcfg = {
+    &mpu6050cfg,
+    &hmc5983cfg,
+    &mpu6050cal,
+    &hmc5983cal
+};
 
 /* Private pointer to the Sensor Read Thread */
 static thread_t *thread_sensor_read_p = NULL;
@@ -30,17 +73,17 @@ static thread_t *thread_sensor_read_p = NULL;
 static uint8_t temp_data[14];
 
 /* Working area for the sensor read thread */
-static THD_WORKING_AREA(waThreadSensorRead, 128);
+CCM_MEMORY static THD_WORKING_AREA(waThreadSensorRead, 128);
 
 /* Private function defines */
-static void ApplyCalibration(   Sensor_Calibration *cal,
-                                int16_t raw_data[3], 
-                                float calibrated_data[3],
-                                float sensor_gain);
-static void MPU6050ConvertAndSave(  MPU6050_Data *dh,
-                                    uint8_t data[14]);
-static void HMC5983ConvertAndSave(  HMC5983_Data *dh, 
-                                    uint8_t data[6]);
+static void ApplyCalibration(Sensor_Calibration *cal,
+                             int16_t raw_data[3], 
+                             float calibrated_data[3],
+                             float sensor_gain);
+static void MPU6050ConvertAndSave(MPU6050_Data *dh,
+                                  uint8_t data[14]);
+static void HMC5983ConvertAndSave(HMC5983_Data *dh, 
+                                  uint8_t data[6]);
 static msg_t ThreadSensorRead(void *arg);
 
 /* Private external functions */
@@ -53,34 +96,36 @@ static msg_t ThreadSensorRead(void *arg);
  * 
  * @return RDY_OK if the initialization was successful
  */
-msg_t SensorReadInit(const MPU6050_Configuration *mpu6050cfg,
-                     const HMC5983_Configuration *hmc5983cfg,
-                     Sensor_Calibration *accelerometer_cal,
-                     Sensor_Calibration *magnetometer_cal)
+msg_t SensorReadInit(void)
 {
     /* Parameter checks */
-    if ((mpu6050cfg == NULL) || (hmc5983cfg == NULL))
+    if ((sensorcfg.mpu6050cfg == NULL) || (sensorcfg.hmc5983cfg == NULL))
         return MSG_RESET; /* Error! */
 
-    prv_mpu6050cfg = mpu6050cfg;
-    prv_hmc5983cfg = hmc5983cfg;
+    /* Initialize Accelerometer and Gyroscope */
+    if (MPU6050Init(sensorcfg.mpu6050cfg) != MSG_OK)
+        return MSG_RESET; /* Initialization failed */
 
-    prv_accelerometer_cal = accelerometer_cal;
-    prv_magnetometer_cal = magnetometer_cal;
+    /* Initialize Magnetometer */
+    if (HMC5983Init(sensorcfg.hmc5983cfg) != MSG_OK)
+        return MSG_RESET; /* Initialization failed */
+
+    /* Initialize Barometer */
+    /* TODO: Add barometer code */
 
     /* If there are valid calibration pointers, initialize mutexes */
-    if (accelerometer_cal != NULL)
-        chMtxObjectInit(&accelerometer_cal->lock);
+    if (sensorcfg.mpu6050cal != NULL)
+        chMtxObjectInit(&sensorcfg.mpu6050cal->lock);
 
-    if (magnetometer_cal != NULL)
-        chMtxObjectInit(&magnetometer_cal->lock);
+    if (sensorcfg.hmc5983cal != NULL)
+        chMtxObjectInit(&sensorcfg.hmc5983cal->lock);
 
     /* Initialize read thread */
-    chThdCreateStatic(  waThreadSensorRead,
-                        sizeof(waThreadSensorRead), 
-                        HIGHPRIO, 
-                        ThreadSensorRead, 
-                        NULL);
+    chThdCreateStatic(waThreadSensorRead,
+                      sizeof(waThreadSensorRead), 
+                      HIGHPRIO, 
+                      ThreadSensorRead, 
+                      NULL);
 
     return MSG_OK;
 }
@@ -166,34 +211,34 @@ static THD_FUNCTION(ThreadSensorRead, arg)
         if (events & MPU6050_DATA_AVAILABLE_EVENTMASK)
         {
             /* Read the data */
-            MPU6050ReadData(prv_mpu6050cfg, temp_data);
+            MPU6050ReadData(sensorcfg.mpu6050cfg, temp_data);
 
             /* Lock the data structure while changing it */
-            chMtxLock(&prv_mpu6050cfg->data_holder->read_lock);
+            chMtxLock(&sensorcfg.mpu6050cfg->data_holder->read_lock);
 
             /* Convert and save the raw data */
-            MPU6050ConvertAndSave(prv_mpu6050cfg->data_holder, temp_data);
+            MPU6050ConvertAndSave(sensorcfg.mpu6050cfg->data_holder, temp_data);
 
             /* Apply calibration and save calibrated data */
-            ApplyCalibration(   prv_accelerometer_cal,
-                                prv_mpu6050cfg->data_holder->raw_accel_data,
-                                prv_mpu6050cfg->data_holder->accel_data,
-                                9.81f);
+            ApplyCalibration(sensorcfg.mpu6050cal,
+                             sensorcfg.mpu6050cfg->data_holder->raw_accel_data,
+                             sensorcfg.mpu6050cfg->data_holder->accel_data,
+                             9.81f);
 
-            ApplyCalibration(   NULL,
-                                prv_mpu6050cfg->data_holder->raw_gyro_data,
-                                prv_mpu6050cfg->data_holder->gyro_data,
-                                MPU6050GetGyroGain(prv_mpu6050cfg));
+            ApplyCalibration(NULL,
+                             sensorcfg.mpu6050cfg->data_holder->raw_gyro_data,
+                             sensorcfg.mpu6050cfg->data_holder->gyro_data,
+                             MPU6050GetGyroGain(sensorcfg.mpu6050cfg));
 
             /* Unlock the data structure */
-            chMtxUnlock(&prv_mpu6050cfg->data_holder->read_lock);
+            chMtxUnlock(&sensorcfg.mpu6050cfg->data_holder->read_lock);
 
 
 
             /* Broadcast new data available */
             osalSysLock();
-            if (chEvtIsListeningI(&prv_mpu6050cfg->data_holder->es))
-                chEvtBroadcastFlagsI(&prv_mpu6050cfg->data_holder->es,
+            if (chEvtIsListeningI(&sensorcfg.mpu6050cfg->data_holder->es))
+                chEvtBroadcastFlagsI(&sensorcfg.mpu6050cfg->data_holder->es,
                                      MPU6050_DATA_AVAILABLE_EVENTMASK);
             osalSysUnlock();
         }
@@ -201,27 +246,27 @@ static THD_FUNCTION(ThreadSensorRead, arg)
         if (events & HMC5983_DATA_AVAILABLE_EVENTMASK)
         {
             /* Read the data */
-            HMC5983ReadData(prv_hmc5983cfg, temp_data);
+            HMC5983ReadData(sensorcfg.hmc5983cfg, temp_data);
 
             /* Lock the data structure while changing it */
-            chMtxLock(&prv_hmc5983cfg->data_holder->read_lock);
+            chMtxLock(&sensorcfg.hmc5983cfg->data_holder->read_lock);
 
             /* Convert and save the raw data */
-            HMC5983ConvertAndSave(prv_hmc5983cfg->data_holder, temp_data);
+            HMC5983ConvertAndSave(sensorcfg.hmc5983cfg->data_holder, temp_data);
 
             /* Apply calibration and save calibrated data */
-            ApplyCalibration(   prv_magnetometer_cal,
-                                prv_hmc5983cfg->data_holder->raw_mag_data,
-                                prv_hmc5983cfg->data_holder->mag_data,
-                                1.0f);
+            ApplyCalibration(sensorcfg.hmc5983cal,
+                             sensorcfg.hmc5983cfg->data_holder->raw_mag_data,
+                             sensorcfg.hmc5983cfg->data_holder->mag_data,
+                             1.0f);
 
             /* Unlock the data structure */
-            chMtxUnlock(&prv_hmc5983cfg->data_holder->read_lock);
+            chMtxUnlock(&sensorcfg.hmc5983cfg->data_holder->read_lock);
 
             /* Broadcast new data available */
             osalSysLock();
-            if (chEvtIsListeningI(&prv_hmc5983cfg->data_holder->es))
-                chEvtBroadcastFlagsI(&prv_hmc5983cfg->data_holder->es,
+            if (chEvtIsListeningI(&sensorcfg.hmc5983cfg->data_holder->es))
+                chEvtBroadcastFlagsI(&sensorcfg.hmc5983cfg->data_holder->es,
                                      HMC5983_DATA_AVAILABLE_EVENTMASK);
             osalSysUnlock();
         }

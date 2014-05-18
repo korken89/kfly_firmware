@@ -20,50 +20,6 @@ static const I2CConfig i2cfg2 = {
     FAST_DUTY_CYCLE_2,
 };
 
-/* MPU6050 Configuration */
-static Sensor_Calibration mpu6050cal = {
-    .bias = {0.0f, 0.0f, 0.0f},
-    .gain = {1.0f, 1.0f, 1.0f}
-};
-static MPU6050_Data mpu6050data;
-static const MPU6050_Configuration mpu6050cfg = {
-    MPU6050_DLPF_BW_42,             /* Digital low-pass filter config   */
-    MPU6050_EXT_SYNC_DISABLED,      /* External sync config             */
-    MPU6050_GYRO_FS_2000,           /* Gyro range config                */
-    MPU6050_ACCEL_FS_16,            /* Accel range config               */
-    MPU6050_FIFO_DISABLED,          /* FIFO config                      */
-    MPU6050_INTMODE_ACTIVEHIGH |
-    MPU6050_INTDRIVE_PUSHPULL  |
-    MPU6050_INTLATCH_50USPULSE |
-    MPU6050_INTCLEAR_ANYREAD,       /* Interrupt config                 */
-    MPU6050_INTDRDY_ENABLE,         /* Interrupt enable config          */
-    MPU6050_ADDRESS_AD0_HIGH,       /* MPU6050 address                  */
-    MPU6050_CLK_X_REFERENCE,        /* Clock reference                  */
-    4,                              /* Sample rate divider              */
-    &mpu6050data,                   /* Pointer to data holder           */
-    &I2CD2                          /* Pointer to I2C Driver            */
-};
-
-/* HMC5983 Configuration */
-static Sensor_Calibration hmc5983cal = {
-    .bias = {0.0f, 0.0f, 0.0f},
-    .gain = {1.0f, 1.0f, 1.0f}
-};
-static HMC5983_Data hmc5983data;
-static const HMC5983_Configuration hmc5983cfg = {
-    HMC5983_TEMPERATURE_ENABLE,     /* Enable/disable temperature sensor */
-    HMC5983_AVERAGE_8_SAMPLES,      /* Sample averaging config           */
-    HMC5983_DATA_RATE_75D0_HZ,      /* Output data rate config           */
-    HMC5983_MEAS_MODE_NORMAL,       /* Measurement mode config           */
-    HMC5983_GAIN_1D3_GA,            /* Gain config                       */
-    HMC5983_OP_MODE_CONTINOUS,      /* Operating mode config             */
-    HMC5983_I2C_FAST_DISABLE,       /* Enable/disable 3.4 MHz I2C        */
-    HMC5983_LOW_POWER_DISABLE,      /* Enable/disable low power mode     */
-    HMC5983_ADDRESS,                /* HMC5983 address                   */
-    &hmc5983data,                   /* Pointer to data holder            */
-    &I2CD2                          /* Pointer to I2C Driver             */
-};
-
 /* External interrupt configuration */
 static const EXTConfig extcfg = {
     {
@@ -121,38 +77,6 @@ static const EICUConfig rcinputcfg = {
     0
 };
 
-
-void panic(const char *err);
-
-CCM_MEMORY static THD_WORKING_AREA(waThreadTestEvents, 128);
-static THD_FUNCTION(ThreadTestEvents, arg)
-{
-    (void)arg;
-    event_listener_t el;
-    eventmask_t events;
-    int i = 0;
-
-    chEvtRegisterMask(  &hmc5983cfg.data_holder->es,
-                        &el,
-                        HMC5983_DATA_AVAILABLE_EVENTMASK);  
-    
-    while(1)
-    {
-        events = chEvtWaitOne(HMC5983_DATA_AVAILABLE_EVENTMASK);
-
-        if (events == HMC5983_DATA_AVAILABLE_EVENTMASK)
-        {
-            if (i++ > 10)
-            {
-                //palTogglePad(GPIOC, GPIOC_LED_USR);
-                i = 0;
-            }
-        }
-    }
-
-    return MSG_OK;
-}
-
 int main(void)
 {
     /*
@@ -190,22 +114,6 @@ int main(void)
      */
     i2cStart(&I2CD2, &i2cfg2);
 
-    /* Initialize Accelerometer and Gyroscope */
-    if (MPU6050Init(&mpu6050cfg) != MSG_OK)
-        chSysHalt("MPU6050 init failed"); /* Initialization failed */
-
-    /* Initialize Magnetometer */
-    if (HMC5983Init(&hmc5983cfg) != MSG_OK)
-        chSysHalt("HMC5983 init failed"); /* Initialization failed */
-
-    /* Initialize Barometer */
-    /* TODO: Add barometer code */
-
-    /* Initialize sensor readout */
-    if (SensorReadInit(&mpu6050cfg, &hmc5983cfg,
-                       &mpu6050cal, &hmc5983cal) != MSG_OK)
-        chSysHalt("Sensor Read init failed"); /* Initialization failed */
-
     /*
      *
      * Start the external interrupts
@@ -224,15 +132,10 @@ int main(void)
 
     /*
      *
-     * Start test thread
-     * 
+     * Initialize sensors and read out threads
+     *
      */
-    chThdCreateStatic(waThreadTestEvents,
-                      sizeof(waThreadTestEvents),
-                      HIGHPRIO,
-                      ThreadTestEvents,
-                      NULL);
-
+    SensorReadInit();
 
     /*
      *
@@ -252,19 +155,6 @@ int main(void)
     while(1)
     {
         palTogglePad(GPIOC, GPIOC_LED_USR);
-        chThdSleepMilliseconds(200);
-    }
-}
-
-void panic(const char *err)
-{
-    kfly_error = err;
-
-    while (1)
-    {
-        palClearPad(GPIOC, GPIOC_LED_ERR);
-        chThdSleepMilliseconds(200);
-        palSetPad(GPIOC, GPIOC_LED_ERR);
         chThdSleepMilliseconds(200);
     }
 }
