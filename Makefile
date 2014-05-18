@@ -191,6 +191,8 @@ CPPWARN = -Wall -Wextra
 # Start of default section
 #
 
+EMPTY:=
+
 # Get Date
 ifeq ($(OS),Windows_NT)
   GIT_DATE = $(shell $(subst /,\\,make/date.bat))
@@ -203,7 +205,7 @@ GIT_TAGS = $(shell git describe --tags HEAD)
 GIT_SHORTSTAT = $(shell git diff --name-only)
 
 ifeq ($(GIT_SHORTSTAT),$(EMPTY))
-	GIT_DIRTY :=
+	GIT_DIRTY := $(EMPTY)
 else
 	GIT_DIRTY := ~dirty
 endif
