@@ -19,12 +19,13 @@
     #define GIT_VERSION         "no version"
 #endif
 
-#define FUNCTION_NAME(name) #name
-#define STR(macro) FUNCTION_NAME(macro)
-#define GIT_DATE_NAME STR(DATE)
-#define GIT_VERSION_NAME STR(GIT_VERSION)
+#define FUNCTION_NAME(name)     #name
+#define STR(macro)              FUNCTION_NAME(macro)
+#define GIT_DATE_NAME           STR(DATE)
+#define GIT_VERSION_NAME        STR(GIT_VERSION)
 
-#define KFLY_VERSION    GIT_VERSION_NAME ", Build date: " GIT_DATE_NAME "\0"
+#define KFLY_VERSION            GIT_VERSION_NAME ", Build date: " \
+                                GIT_DATE_NAME "\0"
 
 /* Typedefs */
 
