@@ -20,10 +20,10 @@
 #include "statemachine_parsers.h"
 
 /* Private functions */
-void ParseGenericSetControllerData( const uint32_t pi_offset,
-                                    const uint32_t limit_offset, 
-                                    const uint32_t limit_count, 
-                                    uint8_t *data);
+static void ParseGenericSetControllerData(const uint32_t pi_offset,
+                                          const uint32_t limit_offset, 
+                                          const uint32_t limit_count, 
+                                          uint8_t *data);
 
 /**
  * Lookup table for all the serial parsers.
@@ -180,15 +180,11 @@ Parser_Type GetParser(KFly_Command_Type command)
  * @param[in] limit_count   Number of bytes to write to the limits structure.
  * @param[in] data          Input data so save.
  */
-void ParseGenericSetControllerData( const uint32_t pi_offset,
-                                    const uint32_t limit_offset, 
-                                    const uint32_t limit_count, 
-                                    uint8_t *data)
+static void ParseGenericSetControllerData(const uint32_t pi_offset,
+                                          const uint32_t limit_offset, 
+                                          const uint32_t limit_count, 
+                                          uint8_t *data)
 {
-    (void)pi_offset;
-    (void)limit_offset;
-    (void)limit_count;
-    (void)data;
     PI_Data_Type *PI_settings;
     uint8_t *save_location;
     uint32_t i, j;
