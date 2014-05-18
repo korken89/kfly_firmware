@@ -54,7 +54,7 @@ msg_t MPU6050Init(const MPU6050_Configuration *cfg)
                                         2, 
                                         NULL, 
                                         0, 
-                                        MS2ST(20));
+                                        OSAL_MS2ST(20));
     i2cReleaseBus(cfg->i2cp);
 
     /* Error check */
@@ -71,7 +71,7 @@ msg_t MPU6050Init(const MPU6050_Configuration *cfg)
                                         2, 
                                         NULL, 
                                         0, 
-                                        MS2ST(20));
+                                        OSAL_MS2ST(20));
     i2cReleaseBus(cfg->i2cp);
 
     /* Error check */
@@ -88,7 +88,7 @@ msg_t MPU6050Init(const MPU6050_Configuration *cfg)
                                         2, 
                                         NULL, 
                                         0, 
-                                        MS2ST(20));
+                                        OSAL_MS2ST(20));
     i2cReleaseBus(cfg->i2cp);
 
     /* Error check */
@@ -105,7 +105,7 @@ msg_t MPU6050Init(const MPU6050_Configuration *cfg)
                                         2, 
                                         NULL, 
                                         0, 
-                                        MS2ST(20));
+                                        OSAL_MS2ST(20));
     i2cReleaseBus(cfg->i2cp);
 
     /* Error check */
@@ -122,7 +122,7 @@ msg_t MPU6050Init(const MPU6050_Configuration *cfg)
                                         2, 
                                         NULL, 
                                         0, 
-                                        MS2ST(20));
+                                        OSAL_MS2ST(20));
     i2cReleaseBus(cfg->i2cp);
 
     /* Error check */
@@ -139,7 +139,7 @@ msg_t MPU6050Init(const MPU6050_Configuration *cfg)
                                         2, 
                                         NULL, 
                                         0, 
-                                        MS2ST(20));
+                                        OSAL_MS2ST(20));
     i2cReleaseBus(cfg->i2cp);
 
     /* Error check */
@@ -156,7 +156,7 @@ msg_t MPU6050Init(const MPU6050_Configuration *cfg)
                                         2, 
                                         NULL, 
                                         0, 
-                                        MS2ST(20));
+                                        OSAL_MS2ST(20));
     i2cReleaseBus(cfg->i2cp);
 
     /* Error check */
@@ -173,7 +173,7 @@ msg_t MPU6050Init(const MPU6050_Configuration *cfg)
                                         2, 
                                         NULL, 
                                         0, 
-                                        MS2ST(20));
+                                        OSAL_MS2ST(20));
     i2cReleaseBus(cfg->i2cp);
 
     return status;
@@ -198,7 +198,7 @@ msg_t MPU6050DeviceReset(const MPU6050_Configuration *cfg)
                                         2, 
                                         NULL, 
                                         0, 
-                                        MS2ST(20));
+                                        OSAL_MS2ST(20));
     i2cReleaseBus(cfg->i2cp);
 
     /* Error check */
@@ -218,7 +218,7 @@ msg_t MPU6050DeviceReset(const MPU6050_Configuration *cfg)
                                         2, 
                                         NULL, 
                                         0, 
-                                        MS2ST(20));
+                                        OSAL_MS2ST(20));
     i2cReleaseBus(cfg->i2cp);
 
     /* Error check */
@@ -252,7 +252,7 @@ msg_t MPU6050GetID(const MPU6050_Configuration *cfg, uint8_t id[1])
                                         1, 
                                         id, 
                                         1, 
-                                        MS2ST(20));
+                                        OSAL_MS2ST(20));
     i2cReleaseBus(cfg->i2cp);
 
     /* Get the six middle bits */
@@ -282,7 +282,7 @@ msg_t MPU6050ReadData(const MPU6050_Configuration *cfg, uint8_t data[14])
                                         1, 
                                         data, 
                                         14, 
-                                        MS2ST(20));
+                                        OSAL_MS2ST(20));
     i2cReleaseBus(cfg->i2cp);
 
     return status;

@@ -49,7 +49,7 @@ msg_t HMC5983Init(const HMC5983_Configuration *cfg)
                                         2, 
                                         NULL, 
                                         0, 
-                                        MS2ST(20));
+                                        OSAL_MS2ST(20));
     i2cReleaseBus(cfg->i2cp);
 
     /* Error check */
@@ -66,7 +66,7 @@ msg_t HMC5983Init(const HMC5983_Configuration *cfg)
                                         2, 
                                         NULL, 
                                         0, 
-                                        MS2ST(20));
+                                        OSAL_MS2ST(20));
     i2cReleaseBus(cfg->i2cp);
 
     /* Error check */
@@ -83,7 +83,7 @@ msg_t HMC5983Init(const HMC5983_Configuration *cfg)
                                         2, 
                                         NULL, 
                                         0, 
-                                        MS2ST(20));
+                                        OSAL_MS2ST(20));
     i2cReleaseBus(cfg->i2cp);
 
     return status;
@@ -110,7 +110,7 @@ msg_t HMC5983GetID(const HMC5983_Configuration *cfg, uint8_t id[3])
                                         1, 
                                         id, 
                                         3, 
-                                        MS2ST(20));
+                                        OSAL_MS2ST(20));
     i2cReleaseBus(cfg->i2cp);
 
     return status;
@@ -137,7 +137,7 @@ msg_t HMC5983ReadData(const HMC5983_Configuration *cfg, uint8_t data[6])
                                         1, 
                                         data, 
                                         6, 
-                                        MS2ST(20));
+                                        OSAL_MS2ST(20));
     i2cReleaseBus(cfg->i2cp);
 
     return status;
