@@ -11,15 +11,20 @@
 #define BOOTLOADER_BASE         0x08000000
 #define SW_VERSION_OFFSET       0x1c0
 
-#ifndef GIT_DATE
-    #define GIT_DATE            "no timestamp"
+#ifndef DATE
+    #define DATE            	"no timestamp"
 #endif
 
 #ifndef GIT_VERSION
     #define GIT_VERSION         "no version"
 #endif
 
-#define KFLY_VERSION    GIT_VERSION ", Build date: " GIT_DATE "\0"
+#define FUNCTION_NAME(name) #name
+#define STR(macro) FUNCTION_NAME(macro)
+#define GIT_DATE_NAME STR(DATE)
+#define GIT_VERSION_NAME STR(GIT_VERSION)
+
+#define KFLY_VERSION    GIT_VERSION_NAME ", Build date: " GIT_DATE_NAME "\0"
 
 /* Typedefs */
 
