@@ -191,7 +191,7 @@ CPPWARN = -Wall -Wextra
 # Start of default section
 #
 
-EMPTY:=
+EMPTY :=
 
 # Get Date
 ifeq ($(OS),Windows_NT)
