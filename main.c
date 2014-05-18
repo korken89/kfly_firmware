@@ -135,7 +135,8 @@ int main(void)
      * Initialize sensors and read out threads
      *
      */
-    SensorReadInit();
+    if (SensorReadInit() != MSG_OK)
+        chSysHalt("Sensor initialization failed.");
 
     /*
      *

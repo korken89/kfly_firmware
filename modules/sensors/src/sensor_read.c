@@ -76,6 +76,8 @@ static uint8_t temp_data[14];
 CCM_MEMORY static THD_WORKING_AREA(waThreadSensorRead, 128);
 
 /* Private function defines */
+static int16_t twoscomplement2signed(uint8_t msb, uint8_t lsb);
+static THD_FUNCTION(ThreadSensorRead, arg);
 static void ApplyCalibration(Sensor_Calibration *cal,
                              int16_t raw_data[3], 
                              float calibrated_data[3],
@@ -84,7 +86,6 @@ static void MPU6050ConvertAndSave(MPU6050_Data *dh,
                                   uint8_t data[14]);
 static void HMC5983ConvertAndSave(HMC5983_Data *dh, 
                                   uint8_t data[6]);
-static msg_t ThreadSensorRead(void *arg);
 
 /* Private external functions */
 
@@ -178,7 +179,7 @@ void HMC5983cb(EXTDriver *extp, expchannel_t channel)
  * 
  * @return Signed 16-bit value
  */
-int16_t twoscomplement2signed(uint8_t msb, uint8_t lsb)
+static int16_t twoscomplement2signed(uint8_t msb, uint8_t lsb)
 {
     return (int16_t)((((uint16_t)msb) << 8) | ((uint16_t)lsb));
 }
@@ -291,10 +292,10 @@ static THD_FUNCTION(ThreadSensorRead, arg)
  * @param[out] calibrated_data Pointer to the calibrated data array
  * @param[in] sensor_gain The gain of the sensor after calibration
  */
-static void ApplyCalibration(   Sensor_Calibration *cal,
-                                int16_t raw_data[3], 
-                                float calibrated_data[3],
-                                float sensor_gain)
+static void ApplyCalibration(Sensor_Calibration *cal,
+                             int16_t raw_data[3], 
+                             float calibrated_data[3],
+                             float sensor_gain)
 {
     if (cal != NULL)
     {

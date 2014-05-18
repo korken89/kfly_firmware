@@ -19,6 +19,5 @@ typedef struct
 msg_t SensorReadInit(void);
 void MPU6050cb(EXTDriver *extp, expchannel_t channel);
 void HMC5983cb(EXTDriver *extp, expchannel_t channel);
-int16_t twoscomplement2signed(uint8_t msb, uint8_t lsb);
 
 #endif
