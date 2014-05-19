@@ -281,8 +281,17 @@ static void ParseRSSIInput(RCInput_Data *data,
  */
 static void cppm_callback(EICUDriver *eicup, eicuchannel_t channel)
 {
+    uint32_t capture = eicuGetWidth(eicup, channel);
+    uint32_t last_count = eicup->last_count[0];
+    eicup->last_count[0] = capture;
+
+    if (capture > last_count)       /* No overflow */
+        capture = capture - last_count;
+    else if (capture < last_count)  /* Timer overflow */
+        capture = ((0xFFFF - last_count) + capture); 
+
     ParseCPPMInput(&rcinputdata,
-                   eicuGetWidth(eicup, channel));
+                   capture);
 }
 
 /**
