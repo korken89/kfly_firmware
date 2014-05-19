@@ -114,7 +114,7 @@ msg_t RCInputInit(RCInput_Mode_Selector mode)
     int i;
     msg_t status = MSG_OK;
 
-    /* Initialize the connection status event source */
+    /* Initialize the RC Input event source */
     osalEventObjectInit(&rcinput_es);
 
     /* Initialize data structure */
@@ -180,6 +180,12 @@ static void ParseCPPMInput(RCInput_Data *data,
 
             /* Reset CPPM counter */
             cppm_count = 0;
+
+            /* Broadcast new input */
+             osalSysLockFromISR();
+             if (chEvtIsListeningI(&rcinput_es))
+                 chEvtBroadcastFlagsI(&rcinput_es, RCINPUT_NEWINPUT_EVENTMASK);
+             osalSysUnlockFromISR();
         }
         else
         {

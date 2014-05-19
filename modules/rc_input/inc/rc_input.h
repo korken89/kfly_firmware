@@ -11,6 +11,7 @@
                                                to disable connection */
 #define RCINPUT_LOST_EVENTMASK      EVENT_MASK(0)
 #define RCINPUT_ACTIVE_EVENTMASK    EVENT_MASK(1)
+#define RCINPUT_NEWINPUT_EVENTMASK  EVENT_MASK(2)
 /* Global variable defines */
 
 /* Typedefs */
