@@ -25,7 +25,7 @@ static void pwm_callback(EICUDriver *eicup, eicuchannel_t channel);
 
 /* Private variable defines */
 
-static RCInput_Data rcinputdata;
+CCM_MEMORY static RCInput_Data rcinputdata;
 static event_source_t rcinput_es;
 static virtual_timer_t rcinput_timeout_vt;
 
