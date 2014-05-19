@@ -1,5 +1,6 @@
 #include "ch.h"
 #include "hal.h"
+#include "eicu.h"
 #include "myusb.h"
 #include "mpu6050.h"
 #include "hmc5983.h"
@@ -102,6 +103,8 @@ int main(void)
      * Start RC Inputs
      *
      */
+    eicuInit();
+
     if (RCInputInit(MODE_CPPM_INPUT) != MSG_OK)
         chSysHalt("RC input initialization failed.");
 

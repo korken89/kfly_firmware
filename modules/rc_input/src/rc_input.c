@@ -122,10 +122,13 @@ msg_t RCInputInit(RCInput_Mode_Selector mode)
     /* Initialize data structure */
     RCInput_data_reset(&rcinputdata);
 
-    /* Start the input capture unit */
-    eicuInit();
+    /* Configure the input capture unit */
     if (mode == MODE_CPPM_INPUT)
     {
+        if (EICUD9.state != EICU_STOP)
+            eicuDisable(&EICUD9);
+        if (EICUD12.state != EICU_STOP)
+            eicuDisable(&EICUD12);
         eicuStart(&EICUD9, &cppm_rcinputcfg);
         eicuStart(&EICUD12, &rssi_rcinputcfg);
         eicuEnable(&EICUD9);
@@ -133,6 +136,12 @@ msg_t RCInputInit(RCInput_Mode_Selector mode)
     }
     else /* PWM input */
     {
+        if (EICUD3.state != EICU_STOP)
+            eicuDisable(&EICUD3);
+        if (EICUD9.state != EICU_STOP)
+            eicuDisable(&EICUD9);
+        if (EICUD12.state != EICU_STOP)
+            eicuDisable(&EICUD12);
         eicuStart(&EICUD3, &pwm_rcinputcfg_2);
         eicuStart(&EICUD9, &pwm_rcinputcfg_1);
         eicuStart(&EICUD12, &pwm_rcinputcfg_1);
@@ -246,6 +255,7 @@ static void ParseCPPMInput(RCInput_Data *data,
 
         if (chEvtIsListeningI(&rcinput_es))
             chEvtBroadcastFlagsI(&rcinput_es, RCINPUT_ACTIVE_EVENTMASK);
+        
         osalSysUnlockFromISR();
     }
 }
