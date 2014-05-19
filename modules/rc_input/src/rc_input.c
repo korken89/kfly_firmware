@@ -17,6 +17,8 @@ static void ParseCPPMInput(RCInput_Data *data,
 static void ParseRSSIInput(RCInput_Data *data,
                            uint32_t width,
                            uint32_t period);
+static void RCInput_data_reset(RCInput_Data *data);
+static void vt_no_connection_timeout_callback(void *p);
 static void cppm_callback(EICUDriver *eicup, eicuchannel_t channel);
 static void rssi_callback(EICUDriver *eicup, eicuchannel_t channel);
 static void pwm_callback(EICUDriver *eicup, eicuchannel_t channel);
@@ -25,6 +27,7 @@ static void pwm_callback(EICUDriver *eicup, eicuchannel_t channel);
 
 static RCInput_Data rcinputdata;
 static event_source_t rcinput_es;
+static virtual_timer_t rcinput_timeout_vt;
 
 /* EICU Configuration for CPPM, RSSI and PWM inputs */
 static const EICU_IC_Settings cppmsettings = {
@@ -111,19 +114,13 @@ static const EICUConfig pwm_rcinputcfg_2 = {
  */
 msg_t RCInputInit(RCInput_Mode_Selector mode)
 {
-    int i;
     msg_t status = MSG_OK;
 
     /* Initialize the RC Input event source */
     osalEventObjectInit(&rcinput_es);
 
     /* Initialize data structure */
-    rcinputdata.active_connection = FALSE;
-    rcinputdata.number_active_connections = 0;
-    rcinputdata.rssi = 0;
-    rcinputdata.rssi_frequency = 0;
-    for (i = 0; i < MAX_NUMBER_OF_INPUTS; i++)
-        rcinputdata.value[i] = 0;
+    RCInput_data_reset(&rcinputdata);
 
     /* Start the input capture unit */
     eicuInit();
@@ -143,6 +140,14 @@ msg_t RCInputInit(RCInput_Mode_Selector mode)
         eicuEnable(&EICUD9);
         eicuEnable(&EICUD12);
     }
+
+    osalSysLock();
+    chVTResetI(&rcinput_timeout_vt);
+    chVTSetI(&rcinput_timeout_vt,
+             MS2ST(RCINPUT_NO_CON_TIMEOUT_MS),
+             vt_no_connection_timeout_callback,
+             NULL);
+    osalSysUnlock();
 
     return status;
 }
@@ -176,16 +181,24 @@ static void ParseCPPMInput(RCInput_Data *data,
         if (capture > CPPM_SYNC_LIMIT_MIN)
         {
             /* Save the current number of active channels */
-            data->number_active_connections = cppm_count + 1;
+            data->number_active_connections = cppm_count;
 
             /* Reset CPPM counter */
             cppm_count = 0;
 
-            /* Broadcast new input */
-             osalSysLockFromISR();
-             if (chEvtIsListeningI(&rcinput_es))
-                 chEvtBroadcastFlagsI(&rcinput_es, RCINPUT_NEWINPUT_EVENTMASK);
-             osalSysUnlockFromISR();
+            /* Reset timeout and broadcast new input */
+            osalSysLockFromISR();
+
+            chVTResetI(&rcinput_timeout_vt);
+            chVTSetI(&rcinput_timeout_vt,
+                     MS2ST(RCINPUT_NO_CON_TIMEOUT_MS),
+                     vt_no_connection_timeout_callback,
+                     NULL);
+
+            if (chEvtIsListeningI(&rcinput_es))
+                chEvtBroadcastFlagsI(&rcinput_es, RCINPUT_NEWINPUT_EVENTMASK);
+
+            osalSysUnlockFromISR();
         }
         else
         {
@@ -195,19 +208,24 @@ static void ParseCPPMInput(RCInput_Data *data,
                 /* Reset connection */
                 data->active_connection = FALSE;
 
-                /* Broadcast connection lost */
+                /*Disable timeout timer and broadcast connection lost */
                 osalSysLockFromISR();
+
+                chVTResetI(&rcinput_timeout_vt);
+
                 if (chEvtIsListeningI(&rcinput_es))
                     chEvtBroadcastFlagsI(&rcinput_es, RCINPUT_LOST_EVENTMASK);
+
                 osalSysUnlockFromISR();
-
-                return;
             }
-            /* Write the capture value to the data structure */
-            data->value[cppm_count] = capture;
+            else
+            {
+                /* Write the capture value to the data structure */
+                data->value[cppm_count] = capture;
 
-            /* Increase the current CPPM channel */
-            cppm_count++;
+                /* Increase the current CPPM channel */
+                cppm_count++;
+            }
         }
     }
     else if ((capture > CPPM_SYNC_LIMIT_MIN) && \
@@ -218,8 +236,15 @@ static void ParseCPPMInput(RCInput_Data *data,
         cppm_count = 0;
         data->active_connection = TRUE;
 
-        /* Broadcast connection active */
+        /* Enable timeout timer and broadcast connection active */
         osalSysLockFromISR();
+
+        chVTResetI(&rcinput_timeout_vt);
+        chVTSetI(&rcinput_timeout_vt,
+                 MS2ST(RCINPUT_NO_CON_TIMEOUT_MS),
+                 vt_no_connection_timeout_callback,
+                 NULL);
+
         if (chEvtIsListeningI(&rcinput_es))
             chEvtBroadcastFlagsI(&rcinput_es, RCINPUT_ACTIVE_EVENTMASK);
         osalSysUnlockFromISR();
@@ -254,10 +279,14 @@ static void ParseRSSIInput(RCInput_Data *data,
             {
                 data->active_connection = FALSE;
 
-                /* Broadcast connection lost */
+                /* Disable timeout timer and broadcast connection lost */
                 osalSysLockFromISR();
+
+                chVTResetI(&rcinput_timeout_vt);
+
                 if (chEvtIsListeningI(&rcinput_es))
                     chEvtBroadcastFlagsI(&rcinput_es, RCINPUT_LOST_EVENTMASK);
+
                 osalSysUnlockFromISR();
             }
             else
@@ -271,6 +300,46 @@ static void ParseRSSIInput(RCInput_Data *data,
         data->rssi = 0;
         data->rssi_frequency = 0;
     }
+}
+
+/**
+ * @brief               Reset a RCInput data structure.
+ * 
+ * @param[out] data     Pointer to RC Input data structure.
+ */
+static void RCInput_data_reset(RCInput_Data *data)
+{
+    int i;
+
+    data->active_connection = FALSE;
+    data->number_active_connections = 0;
+    data->rssi = 0;
+    data->rssi_frequency = 0;
+    for (i = 0; i < MAX_NUMBER_OF_INPUTS; i++)
+        data->value[i] = 0;
+}
+
+/**
+ * @brief           Timeout callback for rc input connection.
+ * @details         This callback in invoked when neither the CPPM nor PWM
+ *                  input has been invoked for a certain amount of time. This
+ *                  is to detect if the cables have come loose.
+ * 
+ * @param[in] p     Input parameter (unused).
+ */
+static void vt_no_connection_timeout_callback(void *p)
+{
+    (void)p;
+
+    osalSysLockFromISR();
+
+    rcinputdata.active_connection = FALSE;
+    chVTResetI(&rcinput_timeout_vt);
+
+    if (chEvtIsListeningI(&rcinput_es))
+        chEvtBroadcastFlagsI(&rcinput_es, RCINPUT_LOST_EVENTMASK);
+
+    osalSysUnlockFromISR();
 }
 
 /**

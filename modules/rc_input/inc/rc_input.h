@@ -9,6 +9,7 @@
 #define RSSI_THRESHOLD_PERCENT      5       /* RSSI threshold in percent */
 #define RSSI_TIMEOUT                100     /* Number of bad RSSI measurements 
                                                to disable connection */
+#define RCINPUT_NO_CON_TIMEOUT_MS   500
 #define RCINPUT_LOST_EVENTMASK      EVENT_MASK(0)
 #define RCINPUT_ACTIVE_EVENTMASK    EVENT_MASK(1)
 #define RCINPUT_NEWINPUT_EVENTMASK  EVENT_MASK(2)
