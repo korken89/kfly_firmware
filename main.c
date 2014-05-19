@@ -6,7 +6,7 @@
 #include "sensor_calibration.h"
 #include "sensor_read.h"
 #include "rc_output.h"
-#include "eicu.h"
+#include "rc_input.h"
 #include "chprintf.h"
 #include "serialmanager.h"
 #include "control.h"
@@ -51,30 +51,6 @@ static const EXTConfig extcfg = {
         {EXT_CH_MODE_DISABLED, NULL},
         {EXT_CH_MODE_DISABLED, NULL}
     }
-};
-
-/* EICU Configuration */
-static uint16_t ic_test;
-static void testwidthcb(EICUDriver *eicup, eicuchannel_t channel)
-{
-    (void)eicup;
-    (void)channel;
-    ic_test = eicuGetWidth(eicup, channel);
-    palTogglePad(GPIOC, GPIOC_LED_ERR);
-}
-
-static const EICU_IC_Settings ic1settings = {
-    EICU_INPUT_ACTIVE_HIGH,
-    testwidthcb
-};
-static const EICUConfig rcinputcfg = {
-    EICU_INPUT_PULSE,
-    1000000,
-    {&ic1settings, NULL, NULL, NULL},
-    NULL,
-    NULL,
-    EICU_PWM_CHANNEL_1,
-    0
 };
 
 int main(void)
@@ -126,9 +102,8 @@ int main(void)
      * Start RC Inputs
      *
      */
-    eicuInit();
-    eicuStart(&EICUD9, &rcinputcfg);
-    eicuEnable(&EICUD9);
+    if (RCInputInit(MODE_CPPM_INPUT) != MSG_OK)
+        chSysHalt("RC input initialization failed.");
 
     /*
      *
