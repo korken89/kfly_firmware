@@ -13,6 +13,12 @@
 #define RCINPUT_LOST_EVENTMASK      EVENT_MASK(0)
 #define RCINPUT_ACTIVE_EVENTMASK    EVENT_MASK(1)
 #define RCINPUT_NEWINPUT_EVENTMASK  EVENT_MASK(2)
+#define RC_INPUT_ROLE_TO_INDEX_BITS 4
+#define RC_INPUT_ROLE_TO_INDEX_MASK 0x0f
+
+#define RC_INPUT_DATA_SIZE          (10 + 2 * MAX_NUMBER_OF_INPUTS)
+#define RC_INPUT_SETTINGS_SIZE      (4 + 8 * MAX_NUMBER_OF_INPUTS)
+
 /* Global variable defines */
 
 /* Typedefs */
@@ -32,6 +38,24 @@ typedef enum {
     MODE_PWM_INPUT = 2
 } RCInput_Mode_Selector;
 
+typedef enum PACKED_VAR {
+    ROLE_OFF = 0,
+    ROLE_THROTTLE = 1,
+    ROLE_PITCH = 2,
+    ROLE_ROLL = 3,
+    ROLE_YAW = 4,
+    ROLE_FLIGHT_MODE = 6,
+    ROLE_AUX1 = 7,
+    ROLE_AUX2 = 8,
+    ROLE_AUX3 = 9
+} Input_Role_Selector;
+
+typedef enum PACKED_VAR {
+    TYPE_ANALOG = 1,
+    TYPE_3_STATE = 2,
+    TYPE_ON_OFF = 3
+} Input_Type_Selector;
+
 typedef struct {
     uint32_t active_connection;
     uint16_t number_active_connections;
@@ -40,8 +64,20 @@ typedef struct {
     uint16_t rssi_frequency;
 } RCInput_Data;
 
+typedef struct {
+    uint32_t mode;
+    Input_Role_Selector role[MAX_NUMBER_OF_INPUTS];
+    Input_Type_Selector type[MAX_NUMBER_OF_INPUTS];
+    uint16_t ch_center[MAX_NUMBER_OF_INPUTS];
+    uint16_t ch_top[MAX_NUMBER_OF_INPUTS];
+    uint16_t ch_bottom[MAX_NUMBER_OF_INPUTS];
+} RCInput_Settings;
+
 /* Global function defines */
 msg_t RCInputInit(RCInput_Mode_Selector mode);
+float RCInputGetInputLevel(Input_Role_Selector role);
+RCInput_Data *ptrGetRCRawInput(void);
+RCInput_Settings *ptrGetRCInputSettings(void);
 event_source_t *ptrGetRCInputEventSource(void);
 
 #endif

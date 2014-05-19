@@ -8,6 +8,7 @@
 #include "hal.h"
 #include "eicu.h"
 #include "rc_input.h"
+#include "trigonometry.h"
 
 /* Global variable defines */
 
@@ -17,7 +18,9 @@ static void ParseCPPMInput(RCInput_Data *data,
 static void ParseRSSIInput(RCInput_Data *data,
                            uint32_t width,
                            uint32_t period);
-static void RCInput_data_reset(RCInput_Data *data);
+static void RCInputDataReset(RCInput_Data *data);
+static void RCInputSettingsReset(RCInput_Settings *data);
+static uint32_t RoleToIndex(Input_Role_Selector role);
 static void vt_no_connection_timeout_callback(void *p);
 static void cppm_callback(EICUDriver *eicup, eicuchannel_t channel);
 static void rssi_callback(EICUDriver *eicup, eicuchannel_t channel);
@@ -25,7 +28,9 @@ static void pwm_callback(EICUDriver *eicup, eicuchannel_t channel);
 
 /* Private variable defines */
 
-CCM_MEMORY static RCInput_Data rcinputdata;
+CCM_MEMORY static RCInput_Data rcinput_data;
+CCM_MEMORY static RCInput_Settings rcinput_settings;
+static uint64_t role_lookup;
 static event_source_t rcinput_es;
 static virtual_timer_t rcinput_timeout_vt;
 
@@ -115,16 +120,20 @@ static const EICUConfig pwm_rcinputcfg_2 = {
 msg_t RCInputInit(RCInput_Mode_Selector mode)
 {
     msg_t status = MSG_OK;
+    int i;
 
     /* Initialize the RC Input event source */
     osalEventObjectInit(&rcinput_es);
 
-    /* Initialize data structure */
-    RCInput_data_reset(&rcinputdata);
+    /* Initialize data structures */
+    RCInputDataReset(&rcinput_data);
+    RCInputSettingsReset(&rcinput_settings);
 
     /* Configure the input capture unit */
     if (mode == MODE_CPPM_INPUT)
     {
+        rcinput_settings.mode = MODE_CPPM_INPUT;
+
         if (EICUD9.state != EICU_STOP)
             eicuDisable(&EICUD9);
         if (EICUD12.state != EICU_STOP)
@@ -136,6 +145,8 @@ msg_t RCInputInit(RCInput_Mode_Selector mode)
     }
     else /* PWM input */
     {
+        rcinput_settings.mode = MODE_PWM_INPUT;
+
         if (EICUD3.state != EICU_STOP)
             eicuDisable(&EICUD3);
         if (EICUD9.state != EICU_STOP)
@@ -150,22 +161,99 @@ msg_t RCInputInit(RCInput_Mode_Selector mode)
         eicuEnable(&EICUD12);
     }
 
-    osalSysLock();
+    /* For each role associated with a channel, generate
+       the inverse lookup table */
+    role_lookup = 0;
 
-    chVTSetI(&rcinput_timeout_vt,
-             MS2ST(RCINPUT_NO_CON_TIMEOUT_MS),
-             vt_no_connection_timeout_callback,
-             NULL);
-
-    osalSysUnlock();
+    for (i = 0; i < MAX_NUMBER_OF_INPUTS; i++)
+        if (rcinput_settings.role[i] != ROLE_OFF)
+            role_lookup |= (i << ((rcinput_settings.role[i] - 1) *
+                                   RC_INPUT_ROLE_TO_INDEX_BITS));
 
     return status;
 }
 
 /**
- * @brief           Pointer to the RC Input event source.
+ * @brief           Get the input level of the corresponding role and returns
+ *                  it in the span of -1.0 to 1.0 or 0.0 to 1.0.
  * 
- * @return          returns the pointer to the RC input event source.
+ * @param[in] role  Input role for the RC input.
+ * @return          The curernt input value of the corresponding role.
+ */
+float RCInputGetInputLevel(Input_Role_Selector role)
+{
+    int32_t value, idx;
+    float level;
+
+    /* Get the position in the array for the requested role */
+    idx = RoleToIndex(role);
+
+    /* Check the validity of the index */
+    if (idx == RC_INPUT_ROLE_TO_INDEX_MASK)
+        return 0.0f;
+
+    /* Get the raw value from the raw data structure */
+    value = rcinput_data.value[idx];
+
+    /* Check so the data and input is valid */
+    if ((value == 0) ||
+        (role == ROLE_OFF) ||
+        (rcinput_data.active_connection == FALSE))
+        return 0.0f;
+
+    /* Remove the center offset */
+    level = (float)(value - rcinput_settings.ch_center[idx]);
+
+    /* If it is larger than zero */
+    if (level > 0.0f)
+    {
+        /* If the settings does not allow positive output */
+        if (rcinput_settings.ch_center[idx] == rcinput_settings.ch_top[idx])
+            return 0.0f;
+
+        /* Use the calibration to calculate the position */
+        level = level / (float)(rcinput_settings.ch_top[idx] - 
+                                rcinput_settings.ch_center[idx]);
+    }
+    /* If it is smaller than zero */
+    else if (level < 0.0f)
+    {
+        /* If the settings does not allow negative output */
+        if (rcinput_settings.ch_center[idx] == rcinput_settings.ch_bottom[idx])
+            return 0.0f;
+
+        /* Use the calibration to calculate the position */
+        level = level / (float)(rcinput_settings.ch_center[idx] - 
+                                rcinput_settings.ch_bottom[idx]);
+    }
+
+    return bound(1.0f, -1.0f, level);
+}
+
+/**
+ * @brief           Return the pointer to the RC Input data.
+ * 
+ * @return          Pointer to the RC input data.
+ */
+RCInput_Data *ptrGetRCInputData(void)
+{
+    return &rcinput_data;
+}
+
+/**
+ * @brief           Return the pointer to the RC Input settings.
+ * 
+ * @return          Pointer to the RC input settings.
+ */
+RCInput_Settings *ptrGetRCInputSettings(void)
+{
+    return &rcinput_settings;
+}
+
+/**
+ * @brief           Return the pointer to the RC Input event source.
+ * 
+ * @return          Pointer to the RC input event source.
  */
 event_source_t *ptrGetRCInputEventSource(void)
 {
@@ -316,7 +404,7 @@ static void ParseRSSIInput(RCInput_Data *data,
  * 
  * @param[out] data     Pointer to RC Input data structure.
  */
-static void RCInput_data_reset(RCInput_Data *data)
+static void RCInputDataReset(RCInput_Data *data)
 {
     int i;
 
@@ -326,6 +414,41 @@ static void RCInput_data_reset(RCInput_Data *data)
     data->rssi_frequency = 0;
     for (i = 0; i < MAX_NUMBER_OF_INPUTS; i++)
         data->value[i] = 0;
+}
+
+/**
+ * @brief               Reset a RCInput data structure.
+ * 
+ * @param[out] data     Pointer to RC Input data structure.
+ */
+static void RCInputSettingsReset(RCInput_Settings *data)
+{
+    int i;
+
+    for (i = 0; i < MAX_NUMBER_OF_INPUTS; i++)
+    {
+        data->role[i]      = ROLE_OFF;
+        data->type[i]      = TYPE_ANALOG;
+        data->ch_bottom[i] = 1000;
+        data->ch_center[i] = 1500;
+        data->ch_top[i]    = 2000;
+    }
+}
+
+/**
+ * @brief               Converts role to corresponding array index.
+ * 
+ * @param[in] role      Input role.
+ * @return              Corresponding array index.
+ */
+static uint32_t RoleToIndex(Input_Role_Selector role)
+{
+    /* Get the index of the associated role */
+    if (role != ROLE_OFF)
+        return ((role_lookup >> ((role - 1) * RC_INPUT_ROLE_TO_INDEX_BITS)) &
+                 RC_INPUT_ROLE_TO_INDEX_MASK);
+    else
+        return RC_INPUT_ROLE_TO_INDEX_MASK;
 }
 
 /**
@@ -342,7 +465,7 @@ static void vt_no_connection_timeout_callback(void *p)
 
     osalSysLockFromISR();
 
-    rcinputdata.active_connection = FALSE;
+    rcinput_data.active_connection = FALSE;
     chVTResetI(&rcinput_timeout_vt);
 
     if (chEvtIsListeningI(&rcinput_es))
@@ -368,7 +491,7 @@ static void cppm_callback(EICUDriver *eicup, eicuchannel_t channel)
     else if (capture < last_count)  /* Timer overflow */
         capture = ((0xFFFF - last_count) + capture); 
 
-    ParseCPPMInput(&rcinputdata,
+    ParseCPPMInput(&rcinput_data,
                    capture);
 }
 
@@ -381,7 +504,7 @@ static void cppm_callback(EICUDriver *eicup, eicuchannel_t channel)
 static void rssi_callback(EICUDriver *eicup, eicuchannel_t channel)
 {
     (void)channel;
-    ParseRSSIInput(&rcinputdata,
+    ParseRSSIInput(&rcinput_data,
                    eicuGetWidth(eicup, EICU_PWM_CHANNEL_2),
                    eicuGetPeriod(eicup));
 }
