@@ -142,11 +142,12 @@ msg_t RCInputInit(RCInput_Mode_Selector mode)
     }
 
     osalSysLock();
-    chVTResetI(&rcinput_timeout_vt);
+
     chVTSetI(&rcinput_timeout_vt,
              MS2ST(RCINPUT_NO_CON_TIMEOUT_MS),
              vt_no_connection_timeout_callback,
              NULL);
+
     osalSysUnlock();
 
     return status;
@@ -189,7 +190,6 @@ static void ParseCPPMInput(RCInput_Data *data,
             /* Reset timeout and broadcast new input */
             osalSysLockFromISR();
 
-            chVTResetI(&rcinput_timeout_vt);
             chVTSetI(&rcinput_timeout_vt,
                      MS2ST(RCINPUT_NO_CON_TIMEOUT_MS),
                      vt_no_connection_timeout_callback,
@@ -239,7 +239,6 @@ static void ParseCPPMInput(RCInput_Data *data,
         /* Enable timeout timer and broadcast connection active */
         osalSysLockFromISR();
 
-        chVTResetI(&rcinput_timeout_vt);
         chVTSetI(&rcinput_timeout_vt,
                  MS2ST(RCINPUT_NO_CON_TIMEOUT_MS),
                  vt_no_connection_timeout_callback,
@@ -320,7 +319,7 @@ static void RCInput_data_reset(RCInput_Data *data)
 }
 
 /**
- * @brief           Timeout callback for rc input connection.
+ * @brief           Timeout callback for RC Input connection.
  * @details         This callback in invoked when neither the CPPM nor PWM
  *                  input has been invoked for a certain amount of time. This
  *                  is to detect if the cables have come loose.
