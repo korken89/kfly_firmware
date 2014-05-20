@@ -193,16 +193,12 @@ CPPWARN = -Wall -Wextra
 
 EMPTY :=
 
-# Get Date
-ifeq ($(OS),Windows_NT)
-  GIT_DATE = $(shell $(subst /,\\,make/date.bat))
-else
-  GIT_DATE = 20$(shell date +'%y%m%d-%H:%M')
-endif
+# Get Date $(shell $(subst /,\\,make/date.bat))
+GIT_DATE := $(shell date +'%Y%m%d-%H:%M')
 
 # Get Git Tags
-GIT_TAGS = $(shell git describe --tags HEAD)
-GIT_SHORTSTAT = $(shell git diff --name-only)
+GIT_TAGS := $(shell git describe --tags HEAD)
+GIT_SHORTSTAT := $(shell git diff --name-only)
 
 ifeq ($(GIT_SHORTSTAT),$(EMPTY))
 	GIT_DIRTY := $(EMPTY)
@@ -255,3 +251,6 @@ ULIBS =
 
 RULESPATH = $(CHIBIOS)/os/common/ports/ARMCMx/compilers/GCC
 include $(RULESPATH)/rules.mk
+
+test:
+	echo $(GIT_DATE)
