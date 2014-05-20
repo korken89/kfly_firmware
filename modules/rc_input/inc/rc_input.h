@@ -69,8 +69,8 @@ typedef struct {
     uint32_t mode;
     Input_Role_Selector role[RCINPUT_MAX_NUMBER_OF_INPUTS];
     Input_Type_Selector type[RCINPUT_MAX_NUMBER_OF_INPUTS];
-    uint16_t ch_center[RCINPUT_MAX_NUMBER_OF_INPUTS];
     uint16_t ch_top[RCINPUT_MAX_NUMBER_OF_INPUTS];
+    uint16_t ch_center[RCINPUT_MAX_NUMBER_OF_INPUTS];
     uint16_t ch_bottom[RCINPUT_MAX_NUMBER_OF_INPUTS];
 } RCInput_Settings;
 
