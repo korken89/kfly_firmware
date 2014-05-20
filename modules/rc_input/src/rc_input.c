@@ -128,6 +128,14 @@ msg_t RCInputInit(RCInput_Mode_Selector mode)
         osalEventObjectInit(&rcinput_es);
     osalSysUnlock();
 
+    /* If the EICU driver was already in use, disable it */
+    if (EICUD3.state != EICU_STOP)
+        eicuDisable(&EICUD3);
+    if (EICUD9.state != EICU_STOP)
+        eicuDisable(&EICUD9);
+    if (EICUD12.state != EICU_STOP)
+        eicuDisable(&EICUD12);
+
     /* Reset data structures */
     RCInputDataReset(&rcinput_data);
     RCInputSettingsReset(&rcinput_settings);
@@ -135,12 +143,6 @@ msg_t RCInputInit(RCInput_Mode_Selector mode)
     /* Configure the input capture unit */
     if (mode == MODE_CPPM_INPUT)
     {
-        /* If the EICU driver was already in use, disable it */
-        if (EICUD9.state != EICU_STOP)
-            eicuDisable(&EICUD9);
-        if (EICUD12.state != EICU_STOP)
-            eicuDisable(&EICUD12);
-
         /* Start and enable the EICU driver */
         eicuStart(&EICUD9, &cppm_rcinputcfg);
         eicuStart(&EICUD12, &rssi_rcinputcfg);
@@ -149,14 +151,6 @@ msg_t RCInputInit(RCInput_Mode_Selector mode)
     }
     else if (mode == MODE_PWM_INPUT)
     {
-        /* If the EICU driver was already in use, disable it */
-        if (EICUD3.state != EICU_STOP)
-            eicuDisable(&EICUD3);
-        if (EICUD9.state != EICU_STOP)
-            eicuDisable(&EICUD9);
-        if (EICUD12.state != EICU_STOP)
-            eicuDisable(&EICUD12);
-
         /* Start and enable the EICU driver */
         eicuStart(&EICUD3, &pwm_rcinputcfg_2);
         eicuStart(&EICUD9, &pwm_rcinputcfg_1);
