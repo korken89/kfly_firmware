@@ -123,7 +123,7 @@ msg_t RCInputInit(RCInput_Mode_Selector mode)
 
     /* Initialize the RC Input event source */
     osalSysLock();
-    if (!chEvtIsListeningI(&rcinput_es))
+    if (rcinput_es.es_next == NULL)
         osalEventObjectInit(&rcinput_es);
     osalSysUnlock();
 
@@ -308,7 +308,7 @@ static void ParseCPPMInput(RCInput_Data *data,
                 /* Reset connection */
                 data->active_connection = FALSE;
 
-                /*Disable timeout timer and broadcast connection lost */
+                /* Disable timeout timer and broadcast connection lost */
                 osalSysLockFromISR();
 
                 chVTResetI(&rcinput_timeout_vt);
