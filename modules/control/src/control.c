@@ -35,10 +35,10 @@
 /* Private Typedefs */
 
 /* Private variable defines */
-static Control_Reference_Type Control_Reference;
-static Control_Data_Type Control_Data;
-static Control_Limits_Type Control_Limits;
-static Output_Mixer_Type Output_Mixer;
+CCM_MEMORY static Control_Reference_Type Control_Reference;
+CCM_MEMORY static Control_Data_Type Control_Data;
+CCM_MEMORY static Control_Limits_Type Control_Limits;
+CCM_MEMORY static Output_Mixer_Type Output_Mixer;
 
 /* RC Output Configuration */
 static const PWMConfig pwmcfg = {
