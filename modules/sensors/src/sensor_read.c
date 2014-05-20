@@ -255,8 +255,6 @@ static THD_FUNCTION(ThreadSensorRead, arg)
             /* Unlock the data structure */
             chMtxUnlock(&sensorcfg.mpu6050cfg->data_holder->read_lock);
 
-
-
             /* Broadcast new data available */
             osalSysLock();
             if (chEvtIsListeningI(&sensorcfg.mpu6050cfg->data_holder->es))
