@@ -123,18 +123,18 @@ msg_t RCInputInit(RCInput_Mode_Selector mode)
     int i;
 
     /* Initialize the RC Input event source */
-    osalEventObjectInit(&rcinput_es);
+    osalSysLock();
+    if (!chEvtIsListeningI(&rcinput_es))
+        osalEventObjectInit(&rcinput_es);
+    osalSysUnlock();
 
-    /* Initialize data structures */
+    /* Reset data structures */
     RCInputDataReset(&rcinput_data);
     RCInputSettingsReset(&rcinput_settings);
 
     /* Configure the input capture unit */
     if (mode == MODE_CPPM_INPUT)
     {
-        /* Set the settings to the corresponding mode */
-        rcinput_settings.mode = MODE_CPPM_INPUT;
-
         /* If the EICU driver was already in use, disable it */
         if (EICUD9.state != EICU_STOP)
             eicuDisable(&EICUD9);
@@ -147,11 +147,8 @@ msg_t RCInputInit(RCInput_Mode_Selector mode)
         eicuEnable(&EICUD9);
         eicuEnable(&EICUD12);
     }
-    else /* PWM input */
+    else if (mode == MODE_PWM_INPUT)
     {
-        /* Set the settings to the corresponding mode */
-        rcinput_settings.mode = MODE_PWM_INPUT;
-
         /* If the EICU driver was already in use, disable it */
         if (EICUD3.state != EICU_STOP)
             eicuDisable(&EICUD3);
@@ -168,6 +165,11 @@ msg_t RCInputInit(RCInput_Mode_Selector mode)
         eicuEnable(&EICUD9);
         eicuEnable(&EICUD12);
     }
+    else /* Invalid input, return error */
+        return MSG_RESET;
+
+    /* Set the settings to the corresponding mode */
+    rcinput_settings.mode = mode;
 
     /* For each role associated with a channel, generate
        the inverse lookup table */
@@ -176,7 +178,7 @@ msg_t RCInputInit(RCInput_Mode_Selector mode)
     for (i = 0; i < MAX_NUMBER_OF_INPUTS; i++)
         if (rcinput_settings.role[i] != ROLE_OFF)
             role_lookup |= (i << ((rcinput_settings.role[i] - 1) *
-                                   RC_INPUT_ROLE_TO_INDEX_BITS));
+                                   RCINPUT_ROLE_TO_INDEX_BITS));
 
     return status;
 }
@@ -197,7 +199,7 @@ float RCInputGetInputLevel(Input_Role_Selector role)
     idx = RoleToIndex(role);
 
     /* Check the validity of the index */
-    if (idx == RC_INPUT_ROLE_TO_INDEX_MASK)
+    if (idx == RCINPUT_ROLE_TO_INDEX_MASK)
         return 0.0f;
 
     /* Get the raw value from the raw data structure */
@@ -453,10 +455,10 @@ static uint32_t RoleToIndex(Input_Role_Selector role)
 {
     /* Get the index of the associated role */
     if (role != ROLE_OFF)
-        return ((role_lookup >> ((role - 1) * RC_INPUT_ROLE_TO_INDEX_BITS)) &
-                 RC_INPUT_ROLE_TO_INDEX_MASK);
+        return ((role_lookup >> ((role - 1) * RCINPUT_ROLE_TO_INDEX_BITS)) &
+                 RCINPUT_ROLE_TO_INDEX_MASK);
     else
-        return RC_INPUT_ROLE_TO_INDEX_MASK;
+        return RCINPUT_ROLE_TO_INDEX_MASK;
 }
 
 /**
