@@ -2,22 +2,23 @@
 #define __RC_INPUT_H
 
 /* Defines */
-#define CAPTURE_TIMER_RATE          1000000
-#define MAX_NUMBER_OF_INPUTS        12
-#define CPPM_SYNC_LIMIT_MIN         3000    /* 3 ms */
-#define CPPM_SYNC_LIMIT_MAX         30000   /* 30 ms */
-#define RSSI_THRESHOLD_PERCENT      5       /* RSSI threshold in percent */
-#define RSSI_TIMEOUT                100     /* Number of bad RSSI measurements 
-                                               to disable connection */
-#define RCINPUT_NO_CON_TIMEOUT_MS   500
-#define RCINPUT_LOST_EVENTMASK      EVENT_MASK(0)
-#define RCINPUT_ACTIVE_EVENTMASK    EVENT_MASK(1)
-#define RCINPUT_NEWINPUT_EVENTMASK  EVENT_MASK(2)
-#define RCINPUT_ROLE_TO_INDEX_BITS  4
-#define RCINPUT_ROLE_TO_INDEX_MASK  0x0f
+#define RCINPUT_CAPTURE_TIMER_RATE      1000000
+#define RCINPUT_MAX_NUMBER_OF_INPUTS    12
+#define RCINPUT_CPPM_SYNC_LIMIT_MIN     3000    /* 3 ms */
+#define RCINPUT_CPPM_SYNC_LIMIT_MAX     30000   /* 30 ms */
+#define RCINPUT_RSSI_THRESHOLD_PERCENT  5       /* RSSI threshold in percent */
+#define RCINPUT_RSSI_TIMEOUT            100     /* Number of bad RSSI
+                                                   measurements to disable the 
+                                                   connection */
+#define RCINPUT_NO_CON_TIMEOUT_MS       500
+#define RCINPUT_LOST_EVENTMASK          EVENT_MASK(0)
+#define RCINPUT_ACTIVE_EVENTMASK        EVENT_MASK(1)
+#define RCINPUT_NEWINPUT_EVENTMASK      EVENT_MASK(2)
+#define RCINPUT_ROLE_TO_INDEX_BITS      4
+#define RCINPUT_ROLE_TO_INDEX_MASK      0x0f
 
-#define RCINPUT_DATA_SIZE           (10 + 2 * MAX_NUMBER_OF_INPUTS)
-#define RCINPUT_SETTINGS_SIZE       (4 + 8 * MAX_NUMBER_OF_INPUTS)
+#define RCINPUT_DATA_SIZE               (10 + 2 * RCINPUT_MAX_NUMBER_OF_INPUTS)
+#define RCINPUT_SETTINGS_SIZE           (4 + 8 * RCINPUT_MAX_NUMBER_OF_INPUTS)
 
 /* Global variable defines */
 
@@ -59,18 +60,18 @@ typedef enum PACKED_VAR {
 typedef struct {
     uint32_t active_connection;
     uint16_t number_active_connections;
-    uint16_t value[MAX_NUMBER_OF_INPUTS];
+    uint16_t value[RCINPUT_MAX_NUMBER_OF_INPUTS];
     uint16_t rssi;
     uint16_t rssi_frequency;
 } RCInput_Data;
 
 typedef struct {
     uint32_t mode;
-    Input_Role_Selector role[MAX_NUMBER_OF_INPUTS];
-    Input_Type_Selector type[MAX_NUMBER_OF_INPUTS];
-    uint16_t ch_center[MAX_NUMBER_OF_INPUTS];
-    uint16_t ch_top[MAX_NUMBER_OF_INPUTS];
-    uint16_t ch_bottom[MAX_NUMBER_OF_INPUTS];
+    Input_Role_Selector role[RCINPUT_MAX_NUMBER_OF_INPUTS];
+    Input_Type_Selector type[RCINPUT_MAX_NUMBER_OF_INPUTS];
+    uint16_t ch_center[RCINPUT_MAX_NUMBER_OF_INPUTS];
+    uint16_t ch_top[RCINPUT_MAX_NUMBER_OF_INPUTS];
+    uint16_t ch_bottom[RCINPUT_MAX_NUMBER_OF_INPUTS];
 } RCInput_Settings;
 
 /* Global function defines */

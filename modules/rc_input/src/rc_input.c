@@ -41,7 +41,7 @@ static const EICU_IC_Settings cppmsettings = {
 };
 static const EICUConfig cppm_rcinputcfg = {
     EICU_INPUT_EDGE,
-    CAPTURE_TIMER_RATE,
+    RCINPUT_CAPTURE_TIMER_RATE,
     {
         &cppmsettings,
         NULL,
@@ -60,7 +60,7 @@ static const EICU_IC_Settings rssisettings = {
 };
 static const EICUConfig rssi_rcinputcfg = {
     EICU_INPUT_PWM,
-    CAPTURE_TIMER_RATE,
+    RCINPUT_CAPTURE_TIMER_RATE,
     {
         NULL,
         &rssisettings,
@@ -79,7 +79,7 @@ static const EICU_IC_Settings pwmsettings = {
 };
 static const EICUConfig pwm_rcinputcfg_1 = {
     EICU_INPUT_PULSE,
-    CAPTURE_TIMER_RATE,
+    RCINPUT_CAPTURE_TIMER_RATE,
     {
         &pwmsettings,
         &pwmsettings,
@@ -94,7 +94,7 @@ static const EICUConfig pwm_rcinputcfg_1 = {
 
 static const EICUConfig pwm_rcinputcfg_2 = {
     EICU_INPUT_PULSE,
-    CAPTURE_TIMER_RATE,
+    RCINPUT_CAPTURE_TIMER_RATE,
     {
         NULL,
         NULL,
@@ -169,7 +169,7 @@ msg_t RCInputInit(RCInput_Mode_Selector mode)
        the inverse lookup table */
     role_lookup = 0;
 
-    for (i = 0; i < MAX_NUMBER_OF_INPUTS; i++)
+    for (i = 0; i < RCINPUT_MAX_NUMBER_OF_INPUTS; i++)
         if (rcinput_settings.role[i] != ROLE_OFF)
             role_lookup |= (i << ((rcinput_settings.role[i] - 1) *
                                    RCINPUT_ROLE_TO_INDEX_BITS));
@@ -280,7 +280,7 @@ static void ParseCPPMInput(RCInput_Data *data,
     if (data->active_connection == TRUE)
     {   
         /* If the capture is larger than the time for the SYNC, reset counter */
-        if (capture > CPPM_SYNC_LIMIT_MIN)
+        if (capture > RCINPUT_CPPM_SYNC_LIMIT_MIN)
         {
             /* Save the current number of active channels */
             data->number_active_connections = cppm_count;
@@ -304,7 +304,7 @@ static void ParseCPPMInput(RCInput_Data *data,
         else
         {
             /* If no sync has been detected */
-            if (cppm_count >= MAX_NUMBER_OF_INPUTS)
+            if (cppm_count >= RCINPUT_MAX_NUMBER_OF_INPUTS)
             {
                 /* Reset connection */
                 data->active_connection = FALSE;
@@ -329,9 +329,9 @@ static void ParseCPPMInput(RCInput_Data *data,
             }
         }
     }
-    else if ((capture > CPPM_SYNC_LIMIT_MIN) && \
-             (capture < CPPM_SYNC_LIMIT_MAX) && \
-             (rssi_counter < RSSI_TIMEOUT))
+    else if ((capture > RCINPUT_CPPM_SYNC_LIMIT_MIN) && \
+             (capture < RCINPUT_CPPM_SYNC_LIMIT_MAX) && \
+             (rssi_counter < RCINPUT_RSSI_TIMEOUT))
     {
         /* Sync found, reset CPPM counter and activate connection */
         cppm_count = 0;
@@ -364,7 +364,7 @@ static void ParseRSSIInput(RCInput_Data *data,
                            uint32_t period)
 {
     /* Get the Input Capture value and calculate PWM frequency */
-    data->rssi_frequency = CAPTURE_TIMER_RATE / period;
+    data->rssi_frequency = RCINPUT_CAPTURE_TIMER_RATE / period;
 
     /* If there is valid data, save it else reset RSSI values */
     if (period != 0)
@@ -373,10 +373,10 @@ static void ParseRSSIInput(RCInput_Data *data,
         data->rssi = (width * 100) / period;
 
         /* Check so the RSSI is above the threshold */
-        if (data->rssi < RSSI_THRESHOLD_PERCENT)
+        if (data->rssi < RCINPUT_RSSI_THRESHOLD_PERCENT)
         {
             /* If the RSSI is below the threshold count until timeout */
-            if (rssi_counter > RSSI_TIMEOUT)
+            if (rssi_counter > RCINPUT_RSSI_TIMEOUT)
             {
                 data->active_connection = FALSE;
 
@@ -416,7 +416,7 @@ static void RCInputDataReset(RCInput_Data *data)
     data->number_active_connections = 0;
     data->rssi = 0;
     data->rssi_frequency = 0;
-    for (i = 0; i < MAX_NUMBER_OF_INPUTS; i++)
+    for (i = 0; i < RCINPUT_MAX_NUMBER_OF_INPUTS; i++)
         data->value[i] = 0;
 }
 
@@ -429,7 +429,7 @@ static void RCInputSettingsReset(RCInput_Settings *data)
 {
     int i;
 
-    for (i = 0; i < MAX_NUMBER_OF_INPUTS; i++)
+    for (i = 0; i < RCINPUT_MAX_NUMBER_OF_INPUTS; i++)
     {
         data->role[i]      = ROLE_OFF;
         data->type[i]      = TYPE_ANALOG;
@@ -523,6 +523,4 @@ static void pwm_callback(EICUDriver *eicup, eicuchannel_t channel)
 {
     (void)eicup;
     (void)channel;
-    //ic_test = eicuGetWidth(eicup, channel);
-    palTogglePad(GPIOC, GPIOC_LED_ERR);
 }
