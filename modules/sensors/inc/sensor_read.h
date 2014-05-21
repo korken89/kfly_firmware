@@ -29,5 +29,7 @@ int16_t GetRawGyroscopeTemperature(void);
 float GetGyroscopeTemperature(void);
 int16_t *ptrGetRawMagnetometerData(void);
 float *ptrGetMagnetometerData(void);
+Sensor_Calibration *ptrGetAccelerometerCalibration(void);
+Sensor_Calibration *ptrGetMagnetometerCalibration(void);
 
 #endif

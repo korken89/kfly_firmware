@@ -273,6 +273,26 @@ float *ptrGetMagnetometerData(void)
 }
 
 /**
+ * @brief   Get the accelerometer calibration
+ * 
+ * @return  Pointer to the accelerometer calibration
+ */
+Sensor_Calibration *ptrGetAccelerometerCalibration(void)
+{
+    return &mpu6050cal;
+}
+
+/**
+ * @brief   Get the magnetometer calibration
+ * 
+ * @return  Pointer to the magnetometer calibration
+ */
+Sensor_Calibration *ptrGetMagnetometerCalibration(void)
+{
+    return &hmc5983cal;
+}
+
+/**
  * @brief Converts two bytes in 2's complement form to a signed 16-bit value
  * 
  * @param[in] msb Most significant byte
