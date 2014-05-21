@@ -43,6 +43,9 @@ static THD_FUNCTION(USBSerialManagerTask, arg)
 {
     (void)arg;
 
+    /* Name for debug */
+    chRegSetThreadName("USB Serial Manager");
+
     /* Data structure for communication */
     static Parser_Holder_Type data_holder;
 
@@ -68,6 +71,9 @@ static THD_FUNCTION(USBSerialManagerTask, arg)
 static THD_FUNCTION(USBDataPumpTask, arg)
 {
     (void)arg;
+
+    /* Name for debug */
+    chRegSetThreadName("USB Data Pump");
 
     /* Buffer for transmitting serial USB commands */
     CCM_MEMORY static uint8_t buffer[SERIAL_TRANSMIT_BUFFER_SIZE]; 
