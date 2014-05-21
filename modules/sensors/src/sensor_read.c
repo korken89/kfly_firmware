@@ -193,6 +193,86 @@ event_source_t *ptrGetHMC5983EventSource(void)
 }
 
 /**
+ * @brief   Get the raw acceleromter data
+ * 
+ * @return  Pointer to the raw acceleromter data
+ */
+int16_t *ptrGetRawAccelerometerData(void)
+{
+    return sensorcfg.mpu6050cfg->data_holder->raw_accel_data;
+}
+
+/**
+ * @brief   Get the acceleromter data
+ * 
+ * @return  Pointer to the acceleromter data
+ */
+float *ptrGetAccelerometerData(void)
+{
+    return sensorcfg.mpu6050cfg->data_holder->accel_data;
+}
+
+/**
+ * @brief   Get the raw gyro data
+ * 
+ * @return  Pointer to the raw gyro data
+ */
+int16_t *ptrGetRawGyroscopeData(void)
+{
+    return sensorcfg.mpu6050cfg->data_holder->raw_gyro_data;
+}
+
+/**
+ * @brief   Get the gyro data
+ * 
+ * @return  Pointer to the gyro data
+ */
+float *ptrGetGyroscopeData(void)
+{
+    return sensorcfg.mpu6050cfg->data_holder->gyro_data;
+}
+
+/**
+ * @brief   Get the raw gyro temperature data
+ * 
+ * @return  Pointer to the raw gyro temperature data
+ */
+int16_t GetRawGyroscopeTemperature(void)
+{
+    return sensorcfg.mpu6050cfg->data_holder->raw_temperature;
+}
+
+/**
+ * @brief   Get the gyro temperature data
+ * 
+ * @return  Pointer to the gyro temperature data
+ */
+float GetGyroscopeTemperature(void)
+{
+    return sensorcfg.mpu6050cfg->data_holder->temperature;
+}
+
+/**
+ * @brief   Get the raw magnetometer data
+ * 
+ * @return  Pointer to the raw magnetometer data
+ */
+int16_t *ptrGetRawMagnetometerData(void)
+{
+    return sensorcfg.hmc5983cfg->data_holder->raw_mag_data;
+}
+
+/**
+ * @brief   Get the magnetometer data
+ * 
+ * @return  Pointer to the magnetometer data
+ */
+float *ptrGetMagnetometerData(void)
+{
+    return sensorcfg.hmc5983cfg->data_holder->mag_data;
+}
+
+/**
  * @brief Converts two bytes in 2's complement form to a signed 16-bit value
  * 
  * @param[in] msb Most significant byte

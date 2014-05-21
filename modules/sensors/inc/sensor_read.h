@@ -21,5 +21,13 @@ void MPU6050cb(EXTDriver *extp, expchannel_t channel);
 void HMC5983cb(EXTDriver *extp, expchannel_t channel);
 event_source_t *ptrGetMPU6050EventSource(void);
 event_source_t *ptrGetHMC5983EventSource(void);
+int16_t *ptrGetRawAccelerometerData(void);
+float *ptrGetAccelerometerData(void);
+int16_t *ptrGetRawGyroscopeData(void);
+float *ptrGetGyroscopeData(void);
+int16_t GetRawGyroscopeTemperature(void);
+float GetGyroscopeTemperature(void);
+int16_t *ptrGetRawMagnetometerData(void);
+float *ptrGetMagnetometerData(void);
 
 #endif
