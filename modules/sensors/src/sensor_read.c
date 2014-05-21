@@ -342,17 +342,25 @@ static void ApplyCalibration(Sensor_Calibration *cal,
  * @param[out] dh Pointer to data holder structure
  * @param[in] data Pointer to temporary raw data holder
  */
-static void MPU6050ConvertAndSave(  MPU6050_Data *dh, 
-                                    uint8_t data[14])
+static void MPU6050ConvertAndSave(MPU6050_Data *dh, uint8_t data[14])
 {
-    dh->raw_accel_data[0] = twoscomplement2signed(data[0], data[1]);
-    dh->raw_accel_data[1] = twoscomplement2signed(data[2], data[3]);
+    /*
+     * The accelerometer and gyro is rotated on the board and conversion
+     * is needed as for both sensors:
+     * - Board XYZ = Sensor XYZ -
+     *           x =  y
+     *           y = -x
+     *           z =  z
+     */
+
+    dh->raw_accel_data[0] = twoscomplement2signed(data[2], data[3]);
+    dh->raw_accel_data[1] = -twoscomplement2signed(data[0], data[1]);
     dh->raw_accel_data[2] = twoscomplement2signed(data[4], data[5]);
 
     dh->temperature = twoscomplement2signed(data[6], data[7]);
 
-    dh->raw_accel_data[0] = twoscomplement2signed(data[8], data[9]);
-    dh->raw_accel_data[1] = twoscomplement2signed(data[10], data[11]);
+    dh->raw_accel_data[0] = twoscomplement2signed(data[10], data[11]);
+    dh->raw_accel_data[1] = -twoscomplement2signed(data[8], data[9]);
     dh->raw_accel_data[2] = twoscomplement2signed(data[12], data[13]);
 }
 
@@ -362,11 +370,16 @@ static void MPU6050ConvertAndSave(  MPU6050_Data *dh,
  * @param[out] dh Pointer to data holder structure
  * @param[in] data Pointer to temporary raw data holder
  */
-static void HMC5983ConvertAndSave(  HMC5983_Data *dh, 
-                                    uint8_t data[6])
+static void HMC5983ConvertAndSave(HMC5983_Data *dh, uint8_t data[6])
 {
-    dh->raw_mag_data[0] = twoscomplement2signed(data[0], data[1]);
-    dh->raw_mag_data[2] = twoscomplement2signed(data[2], data[3]);
-    dh->raw_mag_data[1] = twoscomplement2signed(data[4], data[5]);
-
+    /*
+     * The magnetometer is rotated on the board and conversion is needed as:
+     * - Board XYZ = Sensor XYZ -
+     *           x = -y
+     *           y =  x
+     *           z = -z
+     */
+    dh->raw_mag_data[0] = -twoscomplement2signed(data[4], data[5]);
+    dh->raw_mag_data[1] = twoscomplement2signed(data[0], data[1]);
+    dh->raw_mag_data[2] = -twoscomplement2signed(data[2], data[3]);
 }
