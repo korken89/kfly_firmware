@@ -16,10 +16,7 @@
 /* Private variable defines */
 
 /* MPU6050 calibration, data holder and configurationr */
-CCM_MEMORY static Sensor_Calibration mpu6050cal = {
-    .bias = {0.0f, 0.0f, 0.0f},
-    .gain = {1.0f, 1.0f, 1.0f}
-};
+CCM_MEMORY static Sensor_Calibration mpu6050cal;
 CCM_MEMORY static MPU6050_Data mpu6050data;
 static const MPU6050_Configuration mpu6050cfg = {
     MPU6050_DLPF_BW_42,             /* Digital low-pass filter config     */
@@ -40,10 +37,7 @@ static const MPU6050_Configuration mpu6050cfg = {
 };
 
 /* HMC5983 calibration, data holder and configuration */
-CCM_MEMORY static Sensor_Calibration hmc5983cal = {
-    .bias = {0.0f, 0.0f, 0.0f},
-    .gain = {1.0f, 1.0f, 1.0f}
-};
+CCM_MEMORY static Sensor_Calibration hmc5983cal;
 CCM_MEMORY static HMC5983_Data hmc5983data;
 static const HMC5983_Configuration hmc5983cfg = {
     HMC5983_TEMPERATURE_ENABLE,     /* Enable/disable temperature sensor  */
@@ -121,6 +115,12 @@ msg_t SensorReadInit(void)
 
     if (sensorcfg.hmc5983cal != NULL)
         chMtxObjectInit(&sensorcfg.hmc5983cal->lock);
+
+    /* Initialize calibration */
+    mpu6050cal.gain[0] = mpu6050cal.gain[1] = mpu6050cal.gain[2] = 1.0f;
+    hmc5983cal.gain[0] = hmc5983cal.gain[1] = hmc5983cal.gain[2] = 1.0f;
+    mpu6050cal.bias[0] = mpu6050cal.bias[1] = mpu6050cal.bias[2] = 0.0f;
+    hmc5983cal.bias[0] = hmc5983cal.bias[1] = hmc5983cal.bias[2] = 0.0f;
 
     /* Initialize read thread */
     chThdCreateStatic(waThreadSensorRead,
@@ -446,7 +446,7 @@ static THD_FUNCTION(ThreadSensorRead, arg)
             ApplyCalibration(sensorcfg.mpu6050cal,
                              sensorcfg.mpu6050cfg->data_holder->raw_accel_data,
                              sensorcfg.mpu6050cfg->data_holder->accel_data,
-                             9.81f);
+                             1.0f);
 
             ApplyCalibration(NULL,
                              sensorcfg.mpu6050cfg->data_holder->raw_gyro_data,
@@ -476,7 +476,7 @@ static THD_FUNCTION(ThreadSensorRead, arg)
             HMC5983ConvertAndSave(sensorcfg.hmc5983cfg->data_holder, temp_data);
 
             /* Apply calibration and save calibrated data */
-            ApplyCalibration(sensorcfg.hmc5983cal,
+            ApplyCalibration(NULL,
                              sensorcfg.hmc5983cfg->data_holder->raw_mag_data,
                              sensorcfg.hmc5983cfg->data_holder->mag_data,
                              1.0f);
@@ -520,19 +520,19 @@ static void ApplyCalibration(Sensor_Calibration *cal,
     if (cal != NULL)
     {
         chMtxLock(&cal->lock);
-        calibrated_data[0] = ((float)raw_data[0] - cal->bias[0]) * cal->gain[0]
+        calibrated_data[0] = (((float)raw_data[0]) - cal->bias[0]) * cal->gain[0]
                              * sensor_gain;
-        calibrated_data[1] = ((float)raw_data[1] - cal->bias[1]) * cal->gain[1]
+        calibrated_data[1] = (((float)raw_data[1]) - cal->bias[1]) * cal->gain[1]
                              * sensor_gain;
-        calibrated_data[2] = ((float)raw_data[2] - cal->bias[2]) * cal->gain[2]
+        calibrated_data[2] = (((float)raw_data[2]) - cal->bias[2]) * cal->gain[2]
                              * sensor_gain;
         chMtxUnlock(&cal->lock);
     }
     else
     {
-        calibrated_data[0] = (float)raw_data[0] * sensor_gain;
-        calibrated_data[1] = (float)raw_data[1] * sensor_gain;
-        calibrated_data[2] = (float)raw_data[2] * sensor_gain;
+        calibrated_data[0] = ((float)raw_data[0]) * sensor_gain;
+        calibrated_data[1] = ((float)raw_data[1]) * sensor_gain;
+        calibrated_data[2] = ((float)raw_data[2]) * sensor_gain;
     }
     
 }
@@ -560,9 +560,9 @@ static void MPU6050ConvertAndSave(MPU6050_Data *dh, uint8_t data[14])
 
     dh->temperature = twoscomplement2signed(data[6], data[7]);
 
-    dh->raw_accel_data[0] = twoscomplement2signed(data[10], data[11]);
-    dh->raw_accel_data[1] = -twoscomplement2signed(data[8], data[9]);
-    dh->raw_accel_data[2] = twoscomplement2signed(data[12], data[13]);
+    dh->raw_gyro_data[0] = twoscomplement2signed(data[10], data[11]);
+    dh->raw_gyro_data[1] = -twoscomplement2signed(data[8], data[9]);
+    dh->raw_gyro_data[2] = twoscomplement2signed(data[12], data[13]);
 }
 
 /**
