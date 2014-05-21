@@ -13,10 +13,19 @@ typedef struct
     Sensor_Calibration *hmc5983cal;
 } Sensor_Read_Configuration;
 
+typedef struct
+{
+	float accelerometer[3];
+	float gyroscope[3];
+	float magnetometer[3];
+	float temperature;
+} IMU_Data;
+
 /* Global variable defines */
 
 /* Global function defines */
 msg_t SensorReadInit(void);
+void SetSensorCalibration(Sensor_Calibration *cal, float bias[3], float gain[3]);
 void MPU6050cb(EXTDriver *extp, expchannel_t channel);
 void HMC5983cb(EXTDriver *extp, expchannel_t channel);
 event_source_t *ptrGetMPU6050EventSource(void);
@@ -29,6 +38,9 @@ int16_t GetRawGyroscopeTemperature(void);
 float GetGyroscopeTemperature(void);
 int16_t *ptrGetRawMagnetometerData(void);
 float *ptrGetMagnetometerData(void);
+void GetIMUData(IMU_Data *data);
+void LockSensorStructuresForRead(void);
+void UnlockSensorStructuresForRead(void);
 Sensor_Calibration *ptrGetAccelerometerCalibration(void);
 Sensor_Calibration *ptrGetMagnetometerCalibration(void);
 

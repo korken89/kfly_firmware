@@ -91,12 +91,12 @@ static void HMC5983ConvertAndSave(HMC5983_Data *dh,
 /* Private external functions */
 
 /**
- * @brief Initializes the sensor read thread and config pointers
+ * @brief Initializes the sensor read thread and config pointers.
  * 
- * @param[in] mpu6050cfg Pointer to MPU6050 config
- * @param[in] hmc5983cfg Pointer to HMC5983 config
+ * @param[in] mpu6050cfg Pointer to MPU6050 config.
+ * @param[in] hmc5983cfg Pointer to HMC5983 config.
  * 
- * @return RDY_OK if the initialization was successful
+ * @return RDY_OK if the initialization was successful.
  */
 msg_t SensorReadInit(void)
 {
@@ -133,10 +133,32 @@ msg_t SensorReadInit(void)
 }
 
 /**
- * @brief MPU6050 external interrupt callback
+ * @brief Updates a sensor caibration with new values.
  * 
- * @param[in] extp      Pointer to EXT Driver
- * @param[in] channel   EXT Channel whom fired the interrupt
+ * @param[in] cal   Pointer to calibration structure.
+ * @param[in] bias  Pointer to new bias (3 values vector).
+ * @param[in] gain  Pointer to new gain (3 values vector).
+ */
+void SetSensorCalibration(Sensor_Calibration *cal, float bias[3], float gain[3])
+{
+    int i;
+
+    chMtxLock(&cal->lock);
+
+    for (i = 0; i < 3; i++)
+    {
+        cal->bias[i] = bias[i];
+        cal->gain[i] = gain[i];    
+    }
+    
+    chMtxUnlock(&cal->lock);
+}
+
+/**
+ * @brief MPU6050 external interrupt callback.
+ * 
+ * @param[in] extp      Pointer to EXT Driver.
+ * @param[in] channel   EXT Channel whom fired the interrupt.
  */
 void MPU6050cb(EXTDriver *extp, expchannel_t channel)
 {
@@ -153,10 +175,10 @@ void MPU6050cb(EXTDriver *extp, expchannel_t channel)
 }
 
 /**
- * @brief HMC5983 external interrupt callback
+ * @brief HMC5983 external interrupt callback.
  * 
- * @param[in] extp      Pointer to EXT Driver
- * @param[in] channel   EXT Channel whom fired the interrupt
+ * @param[in] extp      Pointer to EXT Driver.
+ * @param[in] channel   EXT Channel whom fired the interrupt.
  */
 void HMC5983cb(EXTDriver *extp, expchannel_t channel)
 {
@@ -173,9 +195,10 @@ void HMC5983cb(EXTDriver *extp, expchannel_t channel)
 }
 
 /**
- * @brief   Get the new data event source for the MPU6050
+ * @brief   Get the new data event source for the MPU6050.
  * 
- * @return  Pointer to the envent source
+ * @return  Pointer to the envent source.
+ *          
  */
 event_source_t *ptrGetMPU6050EventSource(void)
 {
@@ -183,9 +206,9 @@ event_source_t *ptrGetMPU6050EventSource(void)
 }
 
 /**
- * @brief   Get the new data event source for the HMC5983
+ * @brief   Get the new data event source for the HMC5983.
  * 
- * @return  Pointer to the envent source
+ * @return  Pointer to the envent source.
  */
 event_source_t *ptrGetHMC5983EventSource(void)
 {
@@ -193,9 +216,14 @@ event_source_t *ptrGetHMC5983EventSource(void)
 }
 
 /**
- * @brief   Get the raw acceleromter data
+ * @brief   Get the raw acceleromter data.
  * 
- * @return  Pointer to the raw acceleromter data
+ * @return  Pointer to the raw acceleromter data.
+ * 
+ * @note    This is an unsafe function as it does not lock the sensor
+ *          structures. This can cause erronous data to be read. A call to
+ *          LockSensorStructuresForRead and UnlockSensorStructuresForRead is 
+ *          recommended while copying the data.
  */
 int16_t *ptrGetRawAccelerometerData(void)
 {
@@ -203,9 +231,14 @@ int16_t *ptrGetRawAccelerometerData(void)
 }
 
 /**
- * @brief   Get the acceleromter data
+ * @brief   Get the acceleromter data.
  * 
- * @return  Pointer to the acceleromter data
+ * @return  Pointer to the acceleromter data.
+ * 
+ * @note    This is an unsafe function as it does not lock the sensor
+ *          structures. This can cause erronous data to be read. A call to
+ *          LockSensorStructuresForRead and UnlockSensorStructuresForRead is 
+ *          recommended while copying the data.
  */
 float *ptrGetAccelerometerData(void)
 {
@@ -213,9 +246,14 @@ float *ptrGetAccelerometerData(void)
 }
 
 /**
- * @brief   Get the raw gyro data
+ * @brief   Get the raw gyro data.
  * 
- * @return  Pointer to the raw gyro data
+ * @return  Pointer to the raw gyro data.
+ * 
+ * @note    This is an unsafe function as it does not lock the sensor
+ *          structures. This can cause erronous data to be read. A call to
+ *          LockSensorStructuresForRead and UnlockSensorStructuresForRead is 
+ *          recommended while copying the data.
  */
 int16_t *ptrGetRawGyroscopeData(void)
 {
@@ -223,9 +261,14 @@ int16_t *ptrGetRawGyroscopeData(void)
 }
 
 /**
- * @brief   Get the gyro data
+ * @brief   Get the gyro data.
  * 
- * @return  Pointer to the gyro data
+ * @return  Pointer to the gyro data.
+ * 
+ * @note    This is an unsafe function as it does not lock the sensor
+ *          structures. This can cause erronous data to be read. A call to
+ *          LockSensorStructuresForRead and UnlockSensorStructuresForRead is 
+ *          recommended while copying the data.
  */
 float *ptrGetGyroscopeData(void)
 {
@@ -233,9 +276,9 @@ float *ptrGetGyroscopeData(void)
 }
 
 /**
- * @brief   Get the raw gyro temperature data
+ * @brief   Get the raw gyro temperature data.
  * 
- * @return  Pointer to the raw gyro temperature data
+ * @return  Pointer to the raw gyro temperature data.
  */
 int16_t GetRawGyroscopeTemperature(void)
 {
@@ -243,9 +286,9 @@ int16_t GetRawGyroscopeTemperature(void)
 }
 
 /**
- * @brief   Get the gyro temperature data
+ * @brief   Get the gyro temperature data.
  * 
- * @return  Pointer to the gyro temperature data
+ * @return  Pointer to the gyro temperature data.
  */
 float GetGyroscopeTemperature(void)
 {
@@ -253,9 +296,14 @@ float GetGyroscopeTemperature(void)
 }
 
 /**
- * @brief   Get the raw magnetometer data
+ * @brief   Get the raw magnetometer data.
  * 
- * @return  Pointer to the raw magnetometer data
+ * @return  Pointer to the raw magnetometer data.
+ * 
+ * @note    This is an unsafe function as it does not lock the sensor
+ *          structures. This can cause erronous data to be read. A call to
+ *          LockSensorStructuresForRead and UnlockSensorStructuresForRead is 
+ *          recommended while copying the data.
  */
 int16_t *ptrGetRawMagnetometerData(void)
 {
@@ -263,9 +311,14 @@ int16_t *ptrGetRawMagnetometerData(void)
 }
 
 /**
- * @brief   Get the magnetometer data
+ * @brief   Get the magnetometer data.
  * 
- * @return  Pointer to the magnetometer data
+ * @return  Pointer to the magnetometer data.
+ * 
+ * @note    This is an unsafe function as it does not lock the sensor
+ *          structures. This can cause erronous data to be read. A call to
+ *          LockSensorStructuresForRead and UnlockSensorStructuresForRead is 
+ *          recommended while copying the data.
  */
 float *ptrGetMagnetometerData(void)
 {
@@ -273,9 +326,57 @@ float *ptrGetMagnetometerData(void)
 }
 
 /**
- * @brief   Get the accelerometer calibration
+ * @brief       Get all the IMU data.
+ * @param[out]  data  Pointer to IMU_data structure in which to save the data.
+ */
+void GetIMUData(IMU_Data *data)
+{
+    int i;
+
+    /* Lock data structures before reading */
+    LockSensorStructuresForRead();
+
+    /* Copy data to the requested IMU structure */
+    for (i = 0; i < 3; i++)
+    {
+        data->accelerometer[i] = sensorcfg.mpu6050cfg->data_holder->accel_data[i];
+        data->gyroscope[i] = sensorcfg.mpu6050cfg->data_holder->gyro_data[i];
+        data->magnetometer[i] = sensorcfg.hmc5983cfg->data_holder->mag_data[i];
+    }
+    
+    data->temperature = sensorcfg.mpu6050cfg->data_holder->temperature;
+
+    /* Unlock data structures after reading */
+    UnlockSensorStructuresForRead();
+}
+
+/**
+ * @brief Lock the sensor data register to safely read them.
+ * @note  An UnlockSensorStructuresForRead must be called as soon as read is
+ *        finished because this prohibits the sensor read thread to access the
+ *        sensor registers for saving data. hence it shall be locked as short
+ *        a time as possible while copying the data.
+ */
+void LockSensorStructuresForRead(void)
+{
+    chMtxLock(&sensorcfg.mpu6050cfg->data_holder->read_lock);
+    chMtxLock(&sensorcfg.hmc5983cfg->data_holder->read_lock);
+}
+
+/**
+ * @brief Unlock the sensor data register to safely read them.
+ */
+void UnlockSensorStructuresForRead(void)
+{
+    chMtxUnlock(&sensorcfg.hmc5983cfg->data_holder->read_lock);
+    chMtxUnlock(&sensorcfg.mpu6050cfg->data_holder->read_lock);
+}
+
+
+/**
+ * @brief   Get the accelerometer calibration.
  * 
- * @return  Pointer to the accelerometer calibration
+ * @return  Pointer to the accelerometer calibration.
  */
 Sensor_Calibration *ptrGetAccelerometerCalibration(void)
 {
@@ -283,9 +384,9 @@ Sensor_Calibration *ptrGetAccelerometerCalibration(void)
 }
 
 /**
- * @brief   Get the magnetometer calibration
+ * @brief   Get the magnetometer calibration.
  * 
- * @return  Pointer to the magnetometer calibration
+ * @return  Pointer to the magnetometer calibration.
  */
 Sensor_Calibration *ptrGetMagnetometerCalibration(void)
 {
@@ -293,12 +394,12 @@ Sensor_Calibration *ptrGetMagnetometerCalibration(void)
 }
 
 /**
- * @brief Converts two bytes in 2's complement form to a signed 16-bit value
+ * @brief Converts two bytes in 2's complement form to a signed 16-bit value.
  * 
- * @param[in] msb Most significant byte
- * @param[in] lsb Least significant byte
+ * @param[in] msb Most significant byte.
+ * @param[in] lsb Least significant byte.
  * 
- * @return Signed 16-bit value
+ * @return Signed 16-bit value.
  */
 static int16_t twoscomplement2signed(uint8_t msb, uint8_t lsb)
 {
@@ -309,7 +410,7 @@ static int16_t twoscomplement2signed(uint8_t msb, uint8_t lsb)
 /* Private functions */
 
 /**
- * @brief Reads data from the sensors whom have new data available
+ * @brief Reads data from the sensors whom have new data available.
  * 
  * @param[in] arg Unused.
  * @return Never arrives at the return value.
@@ -406,10 +507,10 @@ static THD_FUNCTION(ThreadSensorRead, arg)
  * @details The calibration will provide unity output to the reference
  *          vector. Use senor_gain to get correct output relative to reality.
  * 
- * @param[in] cal Pointer to calibration structure
- * @param[in] raw_data Pointer to the raw data array
- * @param[out] calibrated_data Pointer to the calibrated data array
- * @param[in] sensor_gain The gain of the sensor after calibration
+ * @param[in] cal Pointer to calibration structure.
+ * @param[in] raw_data Pointer to the raw data array.
+ * @param[out] calibrated_data Pointer to the calibrated data array.
+ * @param[in] sensor_gain The gain of the sensor after calibration.
  */
 static void ApplyCalibration(Sensor_Calibration *cal,
                              int16_t raw_data[3], 
@@ -437,10 +538,10 @@ static void ApplyCalibration(Sensor_Calibration *cal,
 }
 
 /**
- * @brief Converts raw MPU6050 sensor data to signed 16-bit values
+ * @brief Converts raw MPU6050 sensor data to signed 16-bit values.
  * 
- * @param[out] dh Pointer to data holder structure
- * @param[in] data Pointer to temporary raw data holder
+ * @param[out] dh Pointer to data holder structure.
+ * @param[in] data Pointer to temporary raw data holder.
  */
 static void MPU6050ConvertAndSave(MPU6050_Data *dh, uint8_t data[14])
 {
@@ -465,10 +566,10 @@ static void MPU6050ConvertAndSave(MPU6050_Data *dh, uint8_t data[14])
 }
 
 /**
- * @brief Converts raw HMC5983 sensor data to signed 16-bit values
+ * @brief Converts raw HMC5983 sensor data to signed 16-bit values.
  * 
- * @param[out] dh Pointer to data holder structure
- * @param[in] data Pointer to temporary raw data holder
+ * @param[out] dh Pointer to data holder structure.
+ * @param[in] data Pointer to temporary raw data holder.
  */
 static void HMC5983ConvertAndSave(HMC5983_Data *dh, uint8_t data[6])
 {
