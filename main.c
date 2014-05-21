@@ -37,10 +37,10 @@ static const EXTConfig extcfg = {
         {EXT_CH_MODE_DISABLED, NULL},
         {EXT_CH_MODE_DISABLED, NULL},
         {EXT_CH_MODE_DISABLED, NULL},
-        {EXT_CH_MODE_RISING_EDGE    |
+        {EXT_CH_MODE_FALLING_EDGE    |
          EXT_CH_MODE_AUTOSTART      |
          EXT_MODE_GPIOC, HMC5983cb},    /* 13: HMC5983 IRQ      */
-        {EXT_CH_MODE_FALLING_EDGE   |
+        {EXT_CH_MODE_RISING_EDGE   |
          EXT_CH_MODE_AUTOSTART      |
          EXT_MODE_GPIOC, MPU6050cb},    /* 14: MPU6050 IRQ      */
         {EXT_CH_MODE_DISABLED, NULL},   /* 15: RF Module IRQ    */
