@@ -195,33 +195,38 @@ void HMC5983cb(EXTDriver *extp, expchannel_t channel)
 }
 
 /**
- * @brief   Get the new data event source for the MPU6050.
+ * @brief       Get the new data event source for the MPU6050 and corresponding
+ *              event mask.
  * 
- * @return  Pointer to the envent source.
+ * @param[out]  Event mask save location.
+ * @return      Pointer to the event source.
  *          
  */
-event_source_t *ptrGetMPU6050EventSource(void)
+event_source_t *ptrGetAccelerometerAndGyroscopeEventSource(eventmask_t *mask)
 {
-    return &sensorcfg.hmc5983cfg->data_holder->es;
+    *mask = MPU6050_DATA_AVAILABLE_EVENTMASK;
+    return &sensorcfg.mpu6050cfg->data_holder->es;
 }
 
 /**
  * @brief   Get the new data event source for the HMC5983.
  * 
- * @return  Pointer to the envent source.
+ * @param[out]  Event mask save location.
+ * @return  Pointer to the event source.
  */
-event_source_t *ptrGetHMC5983EventSource(void)
+event_source_t *ptrGetMagnetometerEventSource(eventmask_t *mask)
 {
+    *mask = HMC5983_DATA_AVAILABLE_EVENTMASK;
     return &sensorcfg.hmc5983cfg->data_holder->es;
 }
 
 /**
- * @brief   Get the raw acceleromter data.
+ * @brief   Get the raw accelerometer data.
  * 
- * @return  Pointer to the raw acceleromter data.
+ * @return  Pointer to the raw accelerometer data.
  * 
  * @note    This is an unsafe function as it does not lock the sensor
- *          structures. This can cause erronous data to be read. A call to
+ *          structures. This can cause erroneous data to be read. A call to
  *          LockSensorStructuresForRead and UnlockSensorStructuresForRead is 
  *          recommended while copying the data.
  */
@@ -231,12 +236,12 @@ int16_t *ptrGetRawAccelerometerData(void)
 }
 
 /**
- * @brief   Get the acceleromter data.
+ * @brief   Get the accelerometer data.
  * 
- * @return  Pointer to the acceleromter data.
+ * @return  Pointer to the accelerometer data.
  * 
  * @note    This is an unsafe function as it does not lock the sensor
- *          structures. This can cause erronous data to be read. A call to
+ *          structures. This can cause erroneous data to be read. A call to
  *          LockSensorStructuresForRead and UnlockSensorStructuresForRead is 
  *          recommended while copying the data.
  */
@@ -251,7 +256,7 @@ float *ptrGetAccelerometerData(void)
  * @return  Pointer to the raw gyro data.
  * 
  * @note    This is an unsafe function as it does not lock the sensor
- *          structures. This can cause erronous data to be read. A call to
+ *          structures. This can cause erroneous data to be read. A call to
  *          LockSensorStructuresForRead and UnlockSensorStructuresForRead is 
  *          recommended while copying the data.
  */
@@ -266,7 +271,7 @@ int16_t *ptrGetRawGyroscopeData(void)
  * @return  Pointer to the gyro data.
  * 
  * @note    This is an unsafe function as it does not lock the sensor
- *          structures. This can cause erronous data to be read. A call to
+ *          structures. This can cause erroneous data to be read. A call to
  *          LockSensorStructuresForRead and UnlockSensorStructuresForRead is 
  *          recommended while copying the data.
  */
@@ -301,7 +306,7 @@ float GetGyroscopeTemperature(void)
  * @return  Pointer to the raw magnetometer data.
  * 
  * @note    This is an unsafe function as it does not lock the sensor
- *          structures. This can cause erronous data to be read. A call to
+ *          structures. This can cause erroneous data to be read. A call to
  *          LockSensorStructuresForRead and UnlockSensorStructuresForRead is 
  *          recommended while copying the data.
  */
@@ -316,7 +321,7 @@ int16_t *ptrGetRawMagnetometerData(void)
  * @return  Pointer to the magnetometer data.
  * 
  * @note    This is an unsafe function as it does not lock the sensor
- *          structures. This can cause erronous data to be read. A call to
+ *          structures. This can cause erroneous data to be read. A call to
  *          LockSensorStructuresForRead and UnlockSensorStructuresForRead is 
  *          recommended while copying the data.
  */
