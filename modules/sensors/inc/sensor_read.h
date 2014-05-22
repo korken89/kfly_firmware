@@ -1,6 +1,10 @@
 #ifndef __SENSOR_READ_H
 #define __SENSOR_READ_H
 
+#include "mpu6050.h"
+#include "hmc5983.h"
+#include "sensor_calibration.h"
+
 /* Defines */
 #define MS5611_DATA_AVAILABLE_EVENTMASK     0x04
 

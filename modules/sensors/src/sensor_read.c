@@ -6,9 +6,6 @@
 
 #include "ch.h"
 #include "hal.h"
-#include "mpu6050.h"
-#include "hmc5983.h"
-#include "sensor_calibration.h"
 #include "sensor_read.h"
 
 /* Global variable defines */
