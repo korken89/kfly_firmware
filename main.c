@@ -10,6 +10,7 @@
 #include "rc_input.h"
 #include "chprintf.h"
 #include "serialmanager.h"
+#include "estimation.h"
 #include "control.h"
 
 volatile const char *kfly_error;
@@ -125,10 +126,17 @@ int main(void)
 
     /*
      *
+     * Initialize the estimation
+     *
+     */
+    EstimationInit();
+
+    /*
+     *
      * Initialize the controllers
      *
      */
-    vInitControl();
+    ControlInit();
 
 
     while(1)
