@@ -77,7 +77,7 @@ typedef struct {
 /* Global function defines */
 msg_t RCInputInit(RCInput_Mode_Selector mode);
 float RCInputGetInputLevel(Input_Role_Selector role);
-RCInput_Data *ptrGetRCRawInput(void);
+RCInput_Data *ptrGetRCInputData(void);
 RCInput_Settings *ptrGetRCInputSettings(void);
 event_source_t *ptrGetRCInputEventSource(void);
 
