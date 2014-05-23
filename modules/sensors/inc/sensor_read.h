@@ -9,34 +9,45 @@
 #define ACCGYRO_DATA_AVAILABLE_EVENTMASK    EVENT_MASK(0)
 #define MAG_DATA_AVAILABLE_EVENTMASK        EVENT_MASK(1)
 #define BARO_DATA_AVAILABLE_EVENTMASK       EVENT_MASK(2)
-#define SENSOR_IMU_DATA_SIZE 				(10*4)
-#define SENSOR_RAW_IMU_DATA_SIZE 			(10*2)
+#define SENSOR_IMU_DATA_SIZE                (10*4)
+#define SENSOR_IMU_RAW_DATA_SIZE            (10*2)
+#define SENSOR_IMU_CALIBRATION_SIZE         (10*4 + 4)
 
 /* Typedefs */
 typedef struct
 {
-	const MPU6050_Configuration *mpu6050cfg;
-	const HMC5983_Configuration *hmc5983cfg;
-	Sensor_Calibration *mpu6050cal;
+    const MPU6050_Configuration *mpu6050cfg;
+    const HMC5983_Configuration *hmc5983cfg;
+    Sensor_Calibration *mpu6050cal;
     Sensor_Calibration *hmc5983cal;
+    uint32_t calibration_timestamp;
     event_source_t *new_data_es;
 } Sensor_Read_Configuration;
 
 typedef struct
 {
-	float accelerometer[3];
-	float gyroscope[3];
-	float magnetometer[3];
-	float temperature;
+    float accelerometer[3];
+    float gyroscope[3];
+    float magnetometer[3];
+    float temperature;
 } IMU_Data;
 
 typedef struct
 {
-	int16_t accelerometer[3];
-	int16_t gyroscope[3];
-	int16_t magnetometer[3];
-	int16_t temperature;
+    int16_t accelerometer[3];
+    int16_t gyroscope[3];
+    int16_t magnetometer[3];
+    int16_t temperature;
 } IMU_RawData;
+
+typedef struct
+{
+    float accelerometer_bias[3];
+    float accelerometer_gain[3];
+    float magnetometer_bias[3];
+    float magnetometer_gain[3];
+    uint32_t timestamp;
+} IMU_Calibration;
 
 /* Global variable defines */
 
@@ -56,8 +67,11 @@ int16_t *ptrGetRawMagnetometerData(void);
 float *ptrGetMagnetometerData(void);
 void GetIMUData(IMU_Data *data);
 void GetRawIMUData(IMU_RawData *data);
-void LockSensorStructuresForRead(void);
-void UnlockSensorStructuresForRead(void);
+void GetIMUCalibration(IMU_Calibration *cal);
+void LockSensorStructures(void);
+void UnlockSensorStructures(void);
+void LockSensorCalibration(void);
+void UnlockSensorCalibration(void);
 Sensor_Calibration *ptrGetAccelerometerCalibration(void);
 Sensor_Calibration *ptrGetMagnetometerCalibration(void);
 

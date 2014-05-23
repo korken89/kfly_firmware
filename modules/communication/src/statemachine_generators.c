@@ -20,6 +20,7 @@
 
 static IMU_Data imu_data;
 static IMU_RawData imu_rawdata;
+static IMU_Calibration imu_calibration;
 
 /* Private functions */
 bool GenerateGenericGetControllerData(KFly_Command_Type command,
@@ -627,11 +628,10 @@ bool GenerateGetSensorData(Circular_Buffer_Type *Cbuff)
  */
 bool GenerateGetRawSensorData(Circular_Buffer_Type *Cbuff)
 {
-
     GetRawIMUData(&imu_rawdata);
     return GenerateGenericCommand(Cmd_GetRawSensorData, 
                                   (uint8_t *)&imu_rawdata, 
-                                  SENSOR_RAW_IMU_DATA_SIZE, 
+                                  SENSOR_IMU_RAW_DATA_SIZE, 
                                   Cbuff);
 }
 
@@ -645,12 +645,12 @@ bool GenerateGetRawSensorData(Circular_Buffer_Type *Cbuff)
  */
 bool GenerateGetSensorCalibration(Circular_Buffer_Type *Cbuff)
 {
-    (void)Cbuff;
-    return HAL_FAILED;
-//    return GenerateGenericCommand(Cmd_GetSensorCalibration, 
-//                                  (uint8_t *)ptrGetSensorCalibration(), 
-//                                  SENSOR_CALIBERATION_SIZE, 
-//                                  Cbuff);
+    GetIMUCalibration(&imu_calibration);
+
+    return GenerateGenericCommand(Cmd_GetSensorCalibration, 
+                                  (uint8_t *)&imu_calibration, 
+                                  SENSOR_IMU_CALIBRATION_SIZE, 
+                                  Cbuff);
 }
 
 /**

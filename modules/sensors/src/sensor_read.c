@@ -56,6 +56,7 @@ static const Sensor_Read_Configuration sensorcfg = {
     &hmc5983cfg,
     &mpu6050cal,
     &hmc5983cal,
+    0,
     &new_data_es
 };
 
@@ -326,7 +327,7 @@ void GetIMUData(IMU_Data *data)
     int i;
 
     /* Lock data structures before reading */
-    LockSensorStructuresForRead();
+    LockSensorStructures();
 
     /* Copy data to the requested IMU structure */
     for (i = 0; i < 3; i++)
@@ -342,7 +343,7 @@ void GetIMUData(IMU_Data *data)
     data->temperature = sensorcfg.mpu6050cfg->data_holder->temperature;
 
     /* Unlock data structures after reading */
-    UnlockSensorStructuresForRead();
+    UnlockSensorStructures();
 }
 
 /**
@@ -355,7 +356,7 @@ void GetRawIMUData(IMU_RawData *data)
     int i;
 
     /* Lock data structures before reading */
-    LockSensorStructuresForRead();
+    LockSensorStructures();
 
     /* Copy data to the requested IMU structure */
     for (i = 0; i < 3; i++)
@@ -371,29 +372,80 @@ void GetRawIMUData(IMU_RawData *data)
     data->temperature = sensorcfg.mpu6050cfg->data_holder->raw_temperature;
 
     /* Unlock data structures after reading */
-    UnlockSensorStructuresForRead();
+    UnlockSensorStructures();
 }
 
 /**
- * @brief Lock the sensor data register to safely read them.
- * @note  An UnlockSensorStructuresForRead must be called as soon as read is
+ * @brief       Get the IMU calibration data.
+ * @param[out]  data  Pointer to IMU_Calibration structure in which to
+ *                    save the data.
+ */
+void GetIMUCalibration(IMU_Calibration *cal)
+{
+    int i;
+
+    /* Lock calibration structures before reading */
+    LockSensorCalibration();
+
+    /* Copy data to the requested IMU structure */
+    for (i = 0; i < 3; i++)
+    {
+        cal->accelerometer_bias[i] = sensorcfg.mpu6050cal->bias[i];
+        cal->accelerometer_gain[i] = sensorcfg.mpu6050cal->gain[i];
+        cal->magnetometer_bias[i]  = sensorcfg.hmc5983cal->bias[i];
+        cal->magnetometer_gain[i]  = sensorcfg.hmc5983cal->gain[i];
+    }
+    
+    cal->timestamp = sensorcfg.calibration_timestamp;
+
+    /* Unlock calibration structures after reading */
+    UnlockSensorCalibration();
+}
+
+/**
+ * @brief Lock the sensor data registers to safely read them.
+ * @note  An UnlockSensorStructures must be called as soon as read is
  *        finished because this prohibits the sensor read thread to access the
  *        sensor registers for saving data. hence it shall be locked as short
  *        a time as possible while copying the data.
  */
-void LockSensorStructuresForRead(void)
+void LockSensorStructures(void)
 {
     chMtxLock(&sensorcfg.mpu6050cfg->data_holder->read_lock);
     chMtxLock(&sensorcfg.hmc5983cfg->data_holder->read_lock);
 }
 
 /**
- * @brief Unlock the sensor data register to safely read them.
+ * @brief Unlock the sensor data registers.
  */
-void UnlockSensorStructuresForRead(void)
+void UnlockSensorStructures(void)
 {
     chMtxUnlock(&sensorcfg.hmc5983cfg->data_holder->read_lock);
     chMtxUnlock(&sensorcfg.mpu6050cfg->data_holder->read_lock);
+}
+
+
+/**
+ * @brief Lock the sensor calibration registers to safely read and write to
+ *        them.
+ * @note  An UnlockSensorCalibration must be called as soon as read is
+ *        finished because this prohibits the sensor read thread to access the
+ *        sensor registers for saving data. hence it shall be locked as short
+ *        a time as possible while copying the data.
+ */
+void LockSensorCalibration(void)
+{
+    chMtxLock(&sensorcfg.mpu6050cal->lock);
+    chMtxLock(&sensorcfg.hmc5983cal->lock);
+}
+
+/**
+ * @brief Unlock the sensor calibration registers.
+ */
+void UnlockSensorCalibration(void)
+{
+    chMtxUnlock(&sensorcfg.hmc5983cal->lock);
+    chMtxUnlock(&sensorcfg.mpu6050cal->lock);
 }
 
 
