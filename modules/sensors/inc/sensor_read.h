@@ -6,7 +6,10 @@
 #include "sensor_calibration.h"
 
 /* Defines */
-#define MS5611_DATA_AVAILABLE_EVENTMASK     0x04
+#define ACCGYRO_DATA_AVAILABLE_EVENTMASK    EVENT_MASK(0)
+#define MAG_DATA_AVAILABLE_EVENTMASK        EVENT_MASK(1)
+#define BARO_DATA_AVAILABLE_EVENTMASK       EVENT_MASK(2)
+
 
 /* Typedefs */
 typedef struct
@@ -15,6 +18,7 @@ typedef struct
 	const HMC5983_Configuration *hmc5983cfg;
 	Sensor_Calibration *mpu6050cal;
     Sensor_Calibration *hmc5983cal;
+    event_source_t *new_data_es;
 } Sensor_Read_Configuration;
 
 typedef struct
@@ -32,8 +36,7 @@ msg_t SensorReadInit(void);
 void SetSensorCalibration(Sensor_Calibration *cal, float bias[3], float gain[3]);
 void MPU6050cb(EXTDriver *extp, expchannel_t channel);
 void HMC5983cb(EXTDriver *extp, expchannel_t channel);
-event_source_t *ptrGetAccelerometerAndGyroscopeEventSource(eventmask_t *mask);
-event_source_t *ptrGetMagnetometerEventSource(eventmask_t *mask);
+event_source_t *ptrGetNewDataEventSource(void);
 int16_t *ptrGetRawAccelerometerData(void);
 float *ptrGetAccelerometerData(void);
 int16_t *ptrGetRawGyroscopeData(void);

@@ -33,9 +33,7 @@ msg_t MPU6050Init(const MPU6050_Configuration *cfg)
 
     /* Initialize the data event source and mutex */
     chMtxObjectInit(&cfg->data_holder->read_lock);
-    osalEventObjectInit(&cfg->data_holder->es);
-
-
+    
     /* Perform sensor reset */
     status = MPU6050DeviceReset(cfg);
 

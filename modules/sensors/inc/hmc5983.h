@@ -2,8 +2,6 @@
 #define __HMC5983_H
 
 /* Defines */
-#define HMC5983_DATA_AVAILABLE_EVENTMASK    ((eventmask_t)0x02)
-
 #define HMC5983_ADDRESS                     0x1E
 
 #define HMC5983_RA_CONFIG_A                 0x00
@@ -91,8 +89,6 @@ typedef struct
     float mag_data[3];          /* Magnetometer calibrated data holder  */
     mutex_t read_lock;          /* Keep listeners from reading if
                                    new data is being written            */
-    event_source_t es;          /* Event Source for new data and
-                                   error broadcasts                     */
 } HMC5983_Data;
 
 typedef struct

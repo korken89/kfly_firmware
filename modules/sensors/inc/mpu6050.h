@@ -2,7 +2,6 @@
 #define __MPU6050_H
 
 /* Defines */
-#define MPU6050_DATA_AVAILABLE_EVENTMASK    ((eventmask_t)0x01)
 
 /* Conversions */
 #define MPU6050_DPS250_TO_RADPS             (0.0174532925f / 131.0f)
@@ -240,8 +239,6 @@ typedef struct
     float temperature;          /* Temperature calibrated data holder   */
     mutex_t read_lock;          /* Keep listeners from reading if
                                    new data is being written            */
-    event_source_t es;          /* Event Source for new data and
-                                   error broadcasts                     */
 } MPU6050_Data;
 
 typedef struct

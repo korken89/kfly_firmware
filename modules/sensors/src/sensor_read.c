@@ -12,7 +12,8 @@
 
 /* Private variable defines */
 
-/* MPU6050 calibration, data holder and configurationr */
+/* MPU6050 calibration, data holder and configurations */
+static event_source_t new_data_es;
 CCM_MEMORY static Sensor_Calibration mpu6050cal;
 CCM_MEMORY static MPU6050_Data mpu6050data;
 static const MPU6050_Configuration mpu6050cfg = {
@@ -54,7 +55,8 @@ static const Sensor_Read_Configuration sensorcfg = {
     &mpu6050cfg,
     &hmc5983cfg,
     &mpu6050cal,
-    &hmc5983cal
+    &hmc5983cal,
+    &new_data_es
 };
 
 /* Private pointer to the Sensor Read Thread */
@@ -113,6 +115,9 @@ msg_t SensorReadInit(void)
     if (sensorcfg.hmc5983cal != NULL)
         chMtxObjectInit(&sensorcfg.hmc5983cal->lock);
 
+    /* Initialize new data event source */
+    osalEventObjectInit(sensorcfg.new_data_es);
+
     /* Initialize calibration */
     mpu6050cal.gain[0] = mpu6050cal.gain[1] = mpu6050cal.gain[2] = 1.0f;
     hmc5983cal.gain[0] = hmc5983cal.gain[1] = hmc5983cal.gain[2] = 1.0f;
@@ -166,7 +171,7 @@ void MPU6050cb(EXTDriver *extp, expchannel_t channel)
     {
         /* Wakes up the sensor read thread */
         chSysLockFromISR();
-        chEvtSignalI(thread_sensor_read_p, MPU6050_DATA_AVAILABLE_EVENTMASK);
+        chEvtSignalI(thread_sensor_read_p, ACCGYRO_DATA_AVAILABLE_EVENTMASK);
         chSysUnlockFromISR();
     }
 }
@@ -186,35 +191,20 @@ void HMC5983cb(EXTDriver *extp, expchannel_t channel)
     {
         /* Wakes up the sensor read thread */
         chSysLockFromISR();
-        chEvtSignalI(thread_sensor_read_p, HMC5983_DATA_AVAILABLE_EVENTMASK);
+        chEvtSignalI(thread_sensor_read_p, MAG_DATA_AVAILABLE_EVENTMASK);
         chSysUnlockFromISR();
     }
 }
 
 /**
- * @brief       Get the new data event source for the MPU6050 and corresponding
- *              event mask.
+ * @brief       Get the new data event source.
  * 
- * @param[out]  Event mask save location.
  * @return      Pointer to the event source.
  *          
  */
-event_source_t *ptrGetAccelerometerAndGyroscopeEventSource(eventmask_t *mask)
+event_source_t *ptrGetNewDataEventSource(void)
 {
-    *mask = MPU6050_DATA_AVAILABLE_EVENTMASK;
-    return &sensorcfg.mpu6050cfg->data_holder->es;
-}
-
-/**
- * @brief   Get the new data event source for the HMC5983.
- * 
- * @param[out]  Event mask save location.
- * @return  Pointer to the event source.
- */
-event_source_t *ptrGetMagnetometerEventSource(eventmask_t *mask)
-{
-    *mask = HMC5983_DATA_AVAILABLE_EVENTMASK;
-    return &sensorcfg.hmc5983cfg->data_holder->es;
+    return sensorcfg.new_data_es;
 }
 
 /**
@@ -429,11 +419,11 @@ static THD_FUNCTION(ThreadSensorRead, arg)
     while (1)
     {
         /* Waiting for an IRQ to happen.*/
-        events = chEvtWaitAny((eventmask_t)(MPU6050_DATA_AVAILABLE_EVENTMASK | 
-                                            HMC5983_DATA_AVAILABLE_EVENTMASK | 
-                                            MS5611_DATA_AVAILABLE_EVENTMASK));
+        events = chEvtWaitAny((eventmask_t)(ACCGYRO_DATA_AVAILABLE_EVENTMASK | 
+                                            MAG_DATA_AVAILABLE_EVENTMASK | 
+                                            BARO_DATA_AVAILABLE_EVENTMASK));
 
-        if (events & MPU6050_DATA_AVAILABLE_EVENTMASK)
+        if (events & ACCGYRO_DATA_AVAILABLE_EVENTMASK)
         {
             /* Read the data */
             MPU6050ReadData(sensorcfg.mpu6050cfg, temp_data);
@@ -460,13 +450,15 @@ static THD_FUNCTION(ThreadSensorRead, arg)
 
             /* Broadcast new data available */
             osalSysLock();
-            if (chEvtIsListeningI(&sensorcfg.mpu6050cfg->data_holder->es))
-                chEvtBroadcastFlagsI(&sensorcfg.mpu6050cfg->data_holder->es,
-                                     MPU6050_DATA_AVAILABLE_EVENTMASK);
+
+            if (chEvtIsListeningI(sensorcfg.new_data_es))
+                chEvtBroadcastFlagsI(sensorcfg.new_data_es,
+                                     ACCGYRO_DATA_AVAILABLE_EVENTMASK);
+
             osalSysUnlock();
         }
 
-        if (events & HMC5983_DATA_AVAILABLE_EVENTMASK)
+        if (events & MAG_DATA_AVAILABLE_EVENTMASK)
         {
             /* Read the data */
             HMC5983ReadData(sensorcfg.hmc5983cfg, temp_data);
@@ -488,13 +480,15 @@ static THD_FUNCTION(ThreadSensorRead, arg)
 
             /* Broadcast new data available */
             osalSysLock();
-            if (chEvtIsListeningI(&sensorcfg.hmc5983cfg->data_holder->es))
-                chEvtBroadcastFlagsI(&sensorcfg.hmc5983cfg->data_holder->es,
-                                     HMC5983_DATA_AVAILABLE_EVENTMASK);
+
+            if (chEvtIsListeningI(sensorcfg.new_data_es))
+                chEvtBroadcastFlagsI(sensorcfg.new_data_es,
+                                     MAG_DATA_AVAILABLE_EVENTMASK);
+
             osalSysUnlock();
         }
 
-        if (events & MS5611_DATA_AVAILABLE_EVENTMASK)
+        if (events & BARO_DATA_AVAILABLE_EVENTMASK)
         {
 
         }

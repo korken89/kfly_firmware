@@ -32,8 +32,6 @@ msg_t HMC5983Init(const HMC5983_Configuration *cfg)
 
     /* Initialize the data event source and mutex */
     chMtxObjectInit(&cfg->data_holder->read_lock);
-    osalEventObjectInit(&cfg->data_holder->es);
-
 
     /* Initialize the sensor */
     /* Set averaging, update rate and bias */
