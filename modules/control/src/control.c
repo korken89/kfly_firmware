@@ -69,7 +69,7 @@ static vector3f_t vAttitudeControl(vector3f_t, Control_Limits_Type *, float);
 static void vRateControl(vector3f_t, Control_Limits_Type *, float);
 static void vUpdateOutputs(float, float, float, float);
 
-void vInitControl(void)
+void ControlInit(void)
 {
     float *p;
     int i;

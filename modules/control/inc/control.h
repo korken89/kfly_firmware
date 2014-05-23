@@ -106,7 +106,7 @@ typedef struct
 /* Global variable defines */
 
 /* Global function defines */
-void vInitControl(void);
+void ControlInit(void);
 void vUpdateControlAction(Control_Reference_Type *, Control_Limits_Type *, float);
 Control_Data_Type *ptrGetControlData(void);
 Control_Limits_Type *ptrGetControlLimits(void);
