@@ -22,7 +22,7 @@ static THD_FUNCTION(ThreadEstimation, arg);
 CCM_MEMORY static THD_WORKING_AREA(waThreadEstimation, 512);
 CCM_MEMORY static Attitude_Estimation_States states;
 CCM_MEMORY static Attitude_Estimation_Data data;
-static IMU_Data imu_data;
+CCM_MEMORY static IMU_Data imu_data;
 
 static thread_t *tp;
 
