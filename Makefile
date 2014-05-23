@@ -193,8 +193,13 @@ CPPWARN = -Wall -Wextra
 
 EMPTY :=
 
-# Get Date $(shell $(subst /,\\,make/date.bat))
-GIT_DATE := $(shell date +'%Y%m%d-%H:%M')
+# Get Date
+ifeq ($(OS),Windows_NT)
+  GIT_DATE = $(shell $(subst /,\\,./make/date.bat))
+else
+  GIT_DATE = 20$(shell date +'%y%m%d-%H:%M')
+endif
+
 
 # Get Git Tags
 GIT_TAGS := $(shell git describe --tags HEAD)
