@@ -16,11 +16,7 @@
 /* Private variable defines */
 
 /* Area to hold the design of the external flash memory */
-const static Flash_Save_Template Flash_Save_Structure[] = {
-	{	
-		.ptr = (uint8_t *)&sensor_calibration,
-		.count = SENSOR_CALIBERATION_SIZE
-	},
+static const Flash_Save_Template Flash_Save_Structure[] = {
 	{	/* To indicate the end of the save structure */
 		.ptr = FLASH_END,
 		.count = FLASH_END
@@ -28,21 +24,25 @@ const static Flash_Save_Template Flash_Save_Structure[] = {
 };
 
 /* Private function defines */
-static uint32_t SaveStructure_NumberOfBytes(const Flash_Save_Template_Type *template);
-static uint32_t SaveStructure_WriteToMemory(const Flash_Save_Template_Type *template, uint32_t sector);
+static uint32_t SaveStructure_NumberOfBytes(const Flash_Save_Template *template);
+static void SaveStructure_WriteToMemory(const Flash_Save_Template *template,
+										uint32_t sector);
 
 /* Private external functions */
 
 
 void ExternalFlashInit(void)
 {
+	volatile uint32_t i;
+	int j;
+
 	if (ExternalFlash_ReadID() != FLASH_M25PE40_ID)
 	{
-		for (int j = 0; j < 10; j++)
+		for (j = 0; j < 10; j++)
 		{
-			for (volatile uint32_t i = 0; i < 0x1FFFFF; i++);
+			for (i = 0; i < 0x1FFFFF; i++);
 
-			LEDToggle(LED_RED);
+			palTogglePad(GPIOC, GPIOC_LED_ERR);
 		}
 	}
 }
@@ -56,7 +56,7 @@ void ExternalFlash_EraseBulk(void)
   	FLASH_CS_LOW();
 
 	/* Send Bulk Erase instruction  */
-	SPI_SendBytePolling(FLASH_CMD_BE, EXTERNAL_FLASH_SPI);
+	spiPolledExchange(EXTERNAL_FLASH_SPI, FLASH_CMD_BE);
 
 	/* Deselect the External Flash: Chip Select high */
   	FLASH_CS_HIGH();
@@ -74,12 +74,12 @@ void ExternalFlash_EraseSector(uint32_t sector)
   	FLASH_CS_LOW();
 
 	/* Send Bulk Erase instruction  */
-  	SPI_SendBytePolling(FLASH_CMD_SE, EXTERNAL_FLASH_SPI);
+  	spiPolledExchange(EXTERNAL_FLASH_SPI, FLASH_CMD_SE);
 	
 	/* Send address high nibbles */
-	SPI_SendBytePolling((sector & 0xFF0000) >> 16, EXTERNAL_FLASH_SPI);
-	SPI_SendBytePolling((sector & 0xFF00) >> 8, EXTERNAL_FLASH_SPI);
-	SPI_SendBytePolling(sector & 0xFF, EXTERNAL_FLASH_SPI);
+	spiPolledExchange(EXTERNAL_FLASH_SPI, (sector & 0xFF0000) >> 16);
+	spiPolledExchange(EXTERNAL_FLASH_SPI, (sector & 0xFF00) >> 8);
+	spiPolledExchange(EXTERNAL_FLASH_SPI, sector & 0xFF);
 	
 	/* Deselect the External Flash: Chip Select high */
   	FLASH_CS_HIGH();
@@ -101,12 +101,12 @@ uint32_t ExternalFlash_ReadID(void)
 	FLASH_CS_LOW();
 
 	/* Send "Read ID" instruction */
-	SPI_SendBytePolling(FLASH_CMD_RDID, EXTERNAL_FLASH_SPI);
+	spiPolledExchange(EXTERNAL_FLASH_SPI, FLASH_CMD_RDID);
 
 	/* Read the three ID bytes from the External Flash */
-	t1 = SPI_SendBytePolling(SPI_DUMMY_BYTE, EXTERNAL_FLASH_SPI);
-	t2 = SPI_SendBytePolling(SPI_DUMMY_BYTE, EXTERNAL_FLASH_SPI);
-	t3 = SPI_SendBytePolling(SPI_DUMMY_BYTE, EXTERNAL_FLASH_SPI);
+	t1 = spiPolledExchange(EXTERNAL_FLASH_SPI, FLASH_DUMMY_BYTE);
+	t2 = spiPolledExchange(EXTERNAL_FLASH_SPI, FLASH_DUMMY_BYTE);
+	t3 = spiPolledExchange(EXTERNAL_FLASH_SPI, FLASH_DUMMY_BYTE);
 
 	/* Deselect the External Flash: Chip Select high */
 	FLASH_CS_HIGH();
@@ -115,7 +115,8 @@ uint32_t ExternalFlash_ReadID(void)
 }
 
 
-ErrorStatus ExternalFlash_CheckIntegrity(const Flash_Save_Template_Type *template, uint32_t sector)
+ErrorStatus ExternalFlash_CheckIntegrity(const Flash_Save_Template *template,
+										 uint32_t sector)
 {
 	uint32_t i, page_address;
 	union
@@ -152,7 +153,8 @@ ErrorStatus ExternalFlash_CheckIntegrity(const Flash_Save_Template_Type *templat
 }
 
 
-ErrorStatus ExternalFlash_SaveSettings(const Flash_Save_Template_Type *template, uint32_t sector)
+ErrorStatus ExternalFlash_SaveSettings(const Flash_Save_Template *template,
+									   uint32_t sector)
 {
 	/* Check so we write to one of the sectors */
 	if (sector > FLASH_NUM_SECTORS)
@@ -168,7 +170,8 @@ ErrorStatus ExternalFlash_SaveSettings(const Flash_Save_Template_Type *template,
 }
 
 
-ErrorStatus ExternalFlash_LoadSettings(const Flash_Save_Template_Type *template, uint32_t sector)
+ErrorStatus ExternalFlash_LoadSettings(const Flash_Save_Template *template, 
+									   uint32_t sector)
 {
 	uint32_t i, page_address;
 
@@ -201,7 +204,9 @@ ErrorStatus ExternalFlash_LoadSettings(const Flash_Save_Template_Type *template,
  * @param address 	Where in the Flash to save the data.
  * @param count 	Number of bytes to write (max 256 bytes).
  */
-void ExternalFlash_WritePage(uint8_t *buffer, uint32_t address, uint16_t count)
+void ExternalFlash_WritePage(uint8_t *buffer,
+							 uint32_t address, 
+							 uint16_t count)
 {
 	/* Enable the write access to the External Flash */
 	ExternalFlash_WriteEnable();
@@ -210,16 +215,16 @@ void ExternalFlash_WritePage(uint8_t *buffer, uint32_t address, uint16_t count)
   	FLASH_CS_LOW();
 
   	/* Send "Write to Memory" instruction */
-  	SPI_SendBytePolling(FLASH_CMD_PAGE_PROGRAM, EXTERNAL_FLASH_SPI);
+  	spiPolledExchange(EXTERNAL_FLASH_SPI, FLASH_CMD_PAGE_PROGRAM);
 
 	/* Send address nibbles for address byte to write to */
-	SPI_SendBytePolling((address & 0xFF0000) >> 16, EXTERNAL_FLASH_SPI);	
-  	SPI_SendBytePolling((address & 0xFF00) >> 8, EXTERNAL_FLASH_SPI);
-  	SPI_SendBytePolling(address & 0xFF, EXTERNAL_FLASH_SPI);
+	spiPolledExchange(EXTERNAL_FLASH_SPI, (address & 0xFF0000) >> 16);	
+  	spiPolledExchange(EXTERNAL_FLASH_SPI, (address & 0xFF00) >> 8);
+  	spiPolledExchange(EXTERNAL_FLASH_SPI, address & 0xFF);
 
   	/* While there is data to be written on the External Flash */
   	while (count--)
-    	SPI_SendBytePolling(*(buffer++), EXTERNAL_FLASH_SPI);
+    	spiPolledExchange(EXTERNAL_FLASH_SPI, *(buffer++));
 
   	/* Deselect the External Flash: Chip Select high */
   	FLASH_CS_HIGH();
@@ -235,21 +240,23 @@ void ExternalFlash_WritePage(uint8_t *buffer, uint32_t address, uint16_t count)
  * @param address 	Where in the Flash to read the data.
  * @param count 	Number of bytes to read.
  */
-void ExternalFlash_ReadBuffer(uint8_t *buffer, uint32_t address, uint16_t count)
+void ExternalFlash_ReadBuffer(uint8_t *buffer, 
+							  uint32_t address, 
+							  uint16_t count)
 {
 	/* Select the External Flash: Chip Select low */
 	FLASH_CS_LOW();
 
 	/* Send "Read from Memory" instruction */
-	SPI_SendBytePolling(FLASH_CMD_READ, EXTERNAL_FLASH_SPI);
+	spiPolledExchange(EXTERNAL_FLASH_SPI, FLASH_CMD_READ);
 
  	/* Send address nibbles for address byte to read from */
-	SPI_SendBytePolling((address & 0xFF0000) >> 16, EXTERNAL_FLASH_SPI);
-	SPI_SendBytePolling((address& 0xFF00) >> 8, EXTERNAL_FLASH_SPI);
-	SPI_SendBytePolling(address & 0xFF, EXTERNAL_FLASH_SPI);
+	spiPolledExchange(EXTERNAL_FLASH_SPI, (address & 0xFF0000) >> 16);
+	spiPolledExchange(EXTERNAL_FLASH_SPI, (address& 0xFF00) >> 8);
+	spiPolledExchange(EXTERNAL_FLASH_SPI, address & 0xFF);
 
 	while (count--)
-		*(buffer++) = SPI_SendBytePolling(SPI_DUMMY_BYTE, EXTERNAL_FLASH_SPI);
+		*(buffer++) = spiPolledExchange(EXTERNAL_FLASH_SPI, FLASH_DUMMY_BYTE);
 
 	/* Deselect the External Flash: Chip Select high */
 	FLASH_CS_HIGH();
@@ -264,7 +271,7 @@ void ExternalFlash_WriteEnable(void)
   	FLASH_CS_LOW();
 
   	/* Send "Write Enable" instruction */
-  	SPI_SendBytePolling(FLASH_CMD_WREN, EXTERNAL_FLASH_SPI);
+  	spiPolledExchange(EXTERNAL_FLASH_SPI, FLASH_CMD_WREN);
 
   	/* Deselect the External Flash: Chip Select high */
   	FLASH_CS_HIGH();
@@ -276,23 +283,21 @@ void ExternalFlash_WriteEnable(void)
  */
 void ExternalFlash_WaitForWriteEnd(void)
 {
-  	uint8_t flashstatus = 0;
-
   	/* Select the External Flash: Chip Select low */
   	FLASH_CS_LOW();
 
   	/* Send "Read Status Register" instruction */
-  	SPI_SendBytePolling(FLASH_CMD_RDSR, EXTERNAL_FLASH_SPI);
+  	spiPolledExchange(EXTERNAL_FLASH_SPI, FLASH_CMD_RDSR);
 
   	/* Loop as long as the memory is busy with a write cycle */
-  	while (SPI_SendBytePolling(SPI_DUMMY_BYTE, EXTERNAL_FLASH_SPI) & FLASH_WIP_FLAG);
+  	while (spiPolledExchange(EXTERNAL_FLASH_SPI, FLASH_DUMMY_BYTE) & FLASH_WIP_FLAG);
 
   	/* Deselect the External Flash: Chip Select high */
   	FLASH_CS_HIGH();
 }
 
 
-static uint32_t SaveStructure_NumberOfBytes(const Flash_Save_Template_Type *template)
+static uint32_t SaveStructure_NumberOfBytes(const Flash_Save_Template *template)
 {
 	uint32_t i = 0, num_bytes = 0;
 
@@ -310,7 +315,7 @@ static uint32_t SaveStructure_NumberOfBytes(const Flash_Save_Template_Type *temp
  * @param template 	Pointer to the Flash_Save template.
  * @return 			Number of bytes to save.
  */
-static uint32_t SaveStructure_WriteToMemory(const Flash_Save_Template_Type *template, uint32_t sector)
+static void SaveStructure_WriteToMemory(const Flash_Save_Template *template, uint32_t sector)
 {
 	int32_t i, j, num_bytes_written_to_page, page_address;
 
@@ -325,12 +330,12 @@ static uint32_t SaveStructure_WriteToMemory(const Flash_Save_Template_Type *temp
 	FLASH_CS_LOW();
 
 	/* Send "Write to Memory" instruction */
-	SPI_SendBytePolling(FLASH_CMD_PAGE_PROGRAM, EXTERNAL_FLASH_SPI);
+	spiPolledExchange(EXTERNAL_FLASH_SPI, FLASH_CMD_PAGE_PROGRAM);
 
 	/* Send address nibbles for address byte to write to */
-	SPI_SendBytePolling((page_address & 0xFF0000) >> 16, EXTERNAL_FLASH_SPI);
-	SPI_SendBytePolling((page_address & 0xFF00) >> 8, EXTERNAL_FLASH_SPI);
-	SPI_SendBytePolling(page_address & 0xFF, EXTERNAL_FLASH_SPI);
+	spiPolledExchange(EXTERNAL_FLASH_SPI, (page_address & 0xFF0000) >> 16);
+	spiPolledExchange(EXTERNAL_FLASH_SPI, (page_address & 0xFF00) >> 8);
+	spiPolledExchange(EXTERNAL_FLASH_SPI, page_address & 0xFF);
 
 	while (template[i].ptr != FLASH_END)
 	{
@@ -356,12 +361,12 @@ static uint32_t SaveStructure_WriteToMemory(const Flash_Save_Template_Type *temp
 			  	FLASH_CS_LOW();
 
 			  	/* Send "Write to Memory" instruction */
-			  	SPI_SendBytePolling(FLASH_CMD_PAGE_PROGRAM, EXTERNAL_FLASH_SPI);
+			  	spiPolledExchange(EXTERNAL_FLASH_SPI, FLASH_CMD_PAGE_PROGRAM);
 
 				/* Send address nibbles for address byte to write to */
-				SPI_SendBytePolling((page_address & 0xFF0000) >> 16, EXTERNAL_FLASH_SPI);
-			  	SPI_SendBytePolling((page_address & 0xFF00) >> 8, EXTERNAL_FLASH_SPI);
-			  	SPI_SendBytePolling(page_address & 0xFF, EXTERNAL_FLASH_SPI);
+				spiPolledExchange(EXTERNAL_FLASH_SPI, (page_address & 0xFF0000) >> 16);
+			  	spiPolledExchange(EXTERNAL_FLASH_SPI, (page_address & 0xFF00) >> 8);
+			  	spiPolledExchange(EXTERNAL_FLASH_SPI, page_address & 0xFF);
 
 			  	/* Set to one for the byte to be written directly after */
 				num_bytes_written_to_page = 1;
@@ -371,9 +376,9 @@ static uint32_t SaveStructure_WriteToMemory(const Flash_Save_Template_Type *temp
 
 
 			if (j < 0)
-				SPI_SendBytePolling((FLASH_SYNC_WORD >> (-j - 1) * 8) & 0xff, EXTERNAL_FLASH_SPI);
+				spiPolledExchange(EXTERNAL_FLASH_SPI, (FLASH_SYNC_WORD >> (-j - 1) * 8) & 0xff);
 			else
-				SPI_SendBytePolling(template[i].ptr[j], EXTERNAL_FLASH_SPI);
+				spiPolledExchange(EXTERNAL_FLASH_SPI, template[i].ptr[j]);
 		}
 
 		i++;
@@ -385,4 +390,3 @@ static uint32_t SaveStructure_WriteToMemory(const Flash_Save_Template_Type *temp
 	/* Wait the end of Flash writing */
 	ExternalFlash_WaitForWriteEnd();
 }
-

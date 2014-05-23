@@ -50,7 +50,9 @@
 #define FLASH_SECTOR_6			0x00060000
 #define FLASH_SECTOR_7			0x00070000
 
-#define EXTERNAL_FLASH_SPI		SPI1
+#define EXTERNAL_FLASH_SPI		&SPID1
+
+#define FLASH_DUMMY_BYTE		0xFF
 
 #define FLASH_END 				0
 
@@ -62,19 +64,26 @@ typedef struct {
 
 
 /* Macros */
-#define FLASH_CS_LOW()       	SPI1_FLASH_CS_LOW()
-#define FLASH_CS_HIGH()      	SPI1_FLASH_CS_HIGH()
+#define FLASH_CS_LOW()       	palClearPad(GPIOC, GPIOC_FLASH_SEL)
+#define FLASH_CS_HIGH()      	palSetPad(GPIOC, GPIOC_FLASH_SEL)
 
 /* Global functions */
 void ExternalFlashInit(void);
 void ExternalFlash_EraseBulk(void);
 void ExternalFlash_EraseSector(uint32_t sector);
 uint32_t ExternalFlash_ReadID(void);
-ErrorStatus ExternalFlash_CheckIntegrity(const Flash_Save_Template_Type *template, uint32_t sector);
-ErrorStatus ExternalFlash_SaveSettings(const Flash_Save_Template_Type *template, uint32_t sector);
-ErrorStatus ExternalFlash_LoadSettings(const Flash_Save_Template_Type *template, uint32_t sector);
-void ExternalFlash_WritePage(uint8_t *buffer, uint32_t address, uint16_t count);
-void ExternalFlash_ReadBuffer(uint8_t *buffer, uint32_t address, uint16_t count);
+ErrorStatus ExternalFlash_CheckIntegrity(const Flash_Save_Template *template,
+										 uint32_t sector);
+ErrorStatus ExternalFlash_SaveSettings(const Flash_Save_Template *template,
+									   uint32_t sector);
+ErrorStatus ExternalFlash_LoadSettings(const Flash_Save_Template *template,
+									   uint32_t sector);
+void ExternalFlash_WritePage(uint8_t *buffer,
+							 uint32_t address, 
+							 uint16_t count);
+void ExternalFlash_ReadBuffer(uint8_t *buffer,
+							 uint32_t address, 
+							 uint16_t count);
 void ExternalFlash_WriteEnable(void);
 void ExternalFlash_WaitForWriteEnd(void);
 
