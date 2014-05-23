@@ -9,7 +9,8 @@
 #define ACCGYRO_DATA_AVAILABLE_EVENTMASK    EVENT_MASK(0)
 #define MAG_DATA_AVAILABLE_EVENTMASK        EVENT_MASK(1)
 #define BARO_DATA_AVAILABLE_EVENTMASK       EVENT_MASK(2)
-
+#define SENSOR_IMU_DATA_SIZE 				(10*4)
+#define SENSOR_RAW_IMU_DATA_SIZE 			(10*2)
 
 /* Typedefs */
 typedef struct
@@ -29,6 +30,14 @@ typedef struct
 	float temperature;
 } IMU_Data;
 
+typedef struct
+{
+	int16_t accelerometer[3];
+	int16_t gyroscope[3];
+	int16_t magnetometer[3];
+	int16_t temperature;
+} IMU_RawData;
+
 /* Global variable defines */
 
 /* Global function defines */
@@ -46,6 +55,7 @@ float GetGyroscopeTemperature(void);
 int16_t *ptrGetRawMagnetometerData(void);
 float *ptrGetMagnetometerData(void);
 void GetIMUData(IMU_Data *data);
+void GetRawIMUData(IMU_RawData *data);
 void LockSensorStructuresForRead(void);
 void UnlockSensorStructuresForRead(void);
 Sensor_Calibration *ptrGetAccelerometerCalibration(void);

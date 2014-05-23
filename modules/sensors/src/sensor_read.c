@@ -319,7 +319,7 @@ float *ptrGetMagnetometerData(void)
 
 /**
  * @brief       Get all the IMU data.
- * @param[out]  data  Pointer to IMU_data structure in which to save the data.
+ * @param[out]  data  Pointer to IMU_Data structure in which to save the data.
  */
 void GetIMUData(IMU_Data *data)
 {
@@ -331,12 +331,44 @@ void GetIMUData(IMU_Data *data)
     /* Copy data to the requested IMU structure */
     for (i = 0; i < 3; i++)
     {
-        data->accelerometer[i] = sensorcfg.mpu6050cfg->data_holder->accel_data[i];
-        data->gyroscope[i] = sensorcfg.mpu6050cfg->data_holder->gyro_data[i];
-        data->magnetometer[i] = sensorcfg.hmc5983cfg->data_holder->mag_data[i];
+        data->accelerometer[i] = 
+                        sensorcfg.mpu6050cfg->data_holder->accel_data[i];
+        data->gyroscope[i] = 
+                        sensorcfg.mpu6050cfg->data_holder->gyro_data[i];
+        data->magnetometer[i] = 
+                        sensorcfg.hmc5983cfg->data_holder->mag_data[i];
     }
     
     data->temperature = sensorcfg.mpu6050cfg->data_holder->temperature;
+
+    /* Unlock data structures after reading */
+    UnlockSensorStructuresForRead();
+}
+
+/**
+ * @brief       Get all the raw IMU data.
+ * @param[out]  data  Pointer to IMU_RawData structure in which to
+ *                    save the data.
+ */
+void GetRawIMUData(IMU_RawData *data)
+{
+    int i;
+
+    /* Lock data structures before reading */
+    LockSensorStructuresForRead();
+
+    /* Copy data to the requested IMU structure */
+    for (i = 0; i < 3; i++)
+    {
+        data->accelerometer[i] =
+                        sensorcfg.mpu6050cfg->data_holder->raw_accel_data[i];
+        data->gyroscope[i] = 
+                        sensorcfg.mpu6050cfg->data_holder->raw_gyro_data[i];
+        data->magnetometer[i] = 
+                        sensorcfg.hmc5983cfg->data_holder->raw_mag_data[i];
+    }
+    
+    data->temperature = sensorcfg.mpu6050cfg->data_holder->raw_temperature;
 
     /* Unlock data structures after reading */
     UnlockSensorStructuresForRead();
