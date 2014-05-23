@@ -15,6 +15,14 @@
 
 /* Private function defines */
 
+/**
+ * @brief   Used to initialize and zero the matrices and states of the EKF
+ * 
+ * @param[out] states           Pointer to the EKF states
+ * @param[out] data             Pointer to the EKF data holder
+ * @param[in] start_attitude    Pointer to the starting guess of attitude
+ * @param[in] start_bias        Pointer to the starting guess of gyro bias
+ */
 void AttitudeEstimationInit(Attitude_Estimation_States *states,
                             Attitude_Estimation_Data *data,
                             quaternion_t *start_attitude,
@@ -58,6 +66,15 @@ void AttitudeEstimationInit(Attitude_Estimation_States *states,
     Sp[5][5] = SP_1;
 }
 
+/**
+ * @brief   Generates a staring guess attitude quaternion for the EKF
+ * 
+ * @param[in] acc               Acceleration vector pointing approximating
+ *                              gravity
+ * @param[in] mag               Magnetic vector approximating the earth's 
+ *                              magnetic field
+ * @param[out] attitude_guess   Output quaternion
+ */
 void GenerateStartingGuess(vector3f_t *acc,
                            vector3f_t *mag, 
                            quaternion_t *attitude_guess)

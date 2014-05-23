@@ -34,7 +34,9 @@ static inline void vector_accumulate(vector3f_t *a, vector3f_t *b)
 	a->z += b->z;
 }
 
-
+/**
+ * @brief Initializes all estimation threads.
+ */
 void EstimationInit(void)
 {
 	chThdCreateStatic(waThreadEstimation,
@@ -45,12 +47,20 @@ void EstimationInit(void)
 
 }
 
+/**
+ * @brief Requests a reset of the estimation.
+ */
 void ResetEstimation(void)
 {
 	if (tp != NULL)
 		chEvtSignal(tp, ESTIMATION_RESET_EVENT);
 }
 
+/**
+ * @brief Main attitude estimation thread.
+ * 
+ * @param[in/out] arg 	Unused.
+ */
 static THD_FUNCTION(ThreadEstimation, arg)
 {
 	(void)arg;
