@@ -22,6 +22,14 @@ static const I2CConfig i2cfg2 = {
     FAST_DUTY_CYCLE_2,
 };
 
+/* SPI1 Configuration */
+static const SPIConfig spi1cfg = {
+  NULL,
+  GPIOA,
+  GPIOA_RF_SEL,
+  SPI_CR1_BR_1 | SPI_CR1_BR_0 | SPI_CR1_CPHA | SPI_CR1_CPOL
+};
+
 /* External interrupt configuration */
 static const EXTConfig extcfg = {
     {
@@ -87,10 +95,17 @@ int main(void)
 
     /*
      *
-     * Start I2C and set up sensors
+     * Start I2C for sensors
      * 
      */
     i2cStart(&I2CD2, &i2cfg2);
+
+    /*
+     *
+     * Start SPI for Flash and RF module
+     * 
+     */
+    spiStart(&SPID1, &spi1cfg);
 
     /*
      *
@@ -101,11 +116,16 @@ int main(void)
 
     /*
      *
-     * Start RC Inputs
+     * Start the extended input capture module for RC inputs
      *
      */
     eicuInit();
 
+    /*
+     *
+     * Initialize RC inputs
+     *
+     */
     if (RCInputInit(MODE_CPPM_INPUT) != MSG_OK)
         chSysHalt("RC input initialization failed.");
 
