@@ -11,13 +11,15 @@
 #include "serialmanager.h"
 #include "crc.h"
 #include "pid.h"
-//#include "sensor_read.h"
-//#include "sensor_calibration.h"
+#include "sensor_read.h"
 #include "control.h"
-//#include "estimation.h"
-//#include "ext_input.h"
+#include "estimation.h"
+#include "rc_input.h"
 #include "statemachine_parsers.h"
 #include "statemachine_generators.h"
+
+static IMU_Data imu_data;
+static IMU_RawData imu_rawdata;
 
 /* Private functions */
 bool GenerateGenericGetControllerData(KFly_Command_Type command,
@@ -579,12 +581,10 @@ bool GenerateGetChannelMix(Circular_Buffer_Type *Cbuff)
  */
 bool GenerateGetRCCalibration(Circular_Buffer_Type *Cbuff)
 {
-    (void)Cbuff;
-    return HAL_FAILED;
-//    return GenerateGenericCommand(Cmd_GetRCCalibration, 
-//                                  (uint8_t *)ptrGetRCInputSettings(), 
-//                                  RC_INPUT_SETTINGS_SIZE, 
-//                                  Cbuff);
+    return GenerateGenericCommand(Cmd_GetRCCalibration, 
+                                  (uint8_t *)ptrGetRCInputSettings(), 
+                                  RCINPUT_SETTINGS_SIZE, 
+                                  Cbuff);
 }
 
 /**
@@ -596,12 +596,10 @@ bool GenerateGetRCCalibration(Circular_Buffer_Type *Cbuff)
  */
 bool GenerateGetRCValues(Circular_Buffer_Type *Cbuff)
 {
-    (void)Cbuff;
-    return HAL_FAILED;
-//    return GenerateGenericCommand(Cmd_GetRCCalibration, 
-//                                  (uint8_t *)ptrGetRCRawInput(), 
-//                                  RC_RAW_INPUT_SIZE, 
-//                                  Cbuff);
+    return GenerateGenericCommand(Cmd_GetRCValues, 
+                                  (uint8_t *)ptrGetRCInputData(), 
+                                  RCINPUT_DATA_SIZE, 
+                                  Cbuff);
 }
 
 /**
@@ -613,12 +611,11 @@ bool GenerateGetRCValues(Circular_Buffer_Type *Cbuff)
  */
 bool GenerateGetSensorData(Circular_Buffer_Type *Cbuff)
 {
-    (void)Cbuff;
-    return HAL_FAILED;
-//    return GenerateGenericCommand(Cmd_GetSensorData, 
-//                                  (uint8_t *)ptrGetSensorDataPointer(), 
-//                                  (10*4), 
-//                                  Cbuff);
+    GetIMUData(&imu_data);
+    return GenerateGenericCommand(Cmd_GetSensorData, 
+                                  (uint8_t *)&imu_data, 
+                                  SENSOR_IMU_DATA_SIZE, 
+                                  Cbuff);
 }
 
 /**
@@ -630,12 +627,12 @@ bool GenerateGetSensorData(Circular_Buffer_Type *Cbuff)
  */
 bool GenerateGetRawSensorData(Circular_Buffer_Type *Cbuff)
 {
-    (void)Cbuff;
-    return HAL_FAILED;
-//    return GenerateGenericCommand(Cmd_GetRawSensorData, 
-//                                  (uint8_t *)ptrGetRawSensorDataPointer(), 
-//                                  (22), 
-//                                  Cbuff);
+
+    GetRawIMUData(&imu_rawdata);
+    return GenerateGenericCommand(Cmd_GetRawSensorData, 
+                                  (uint8_t *)&imu_rawdata, 
+                                  SENSOR_RAW_IMU_DATA_SIZE, 
+                                  Cbuff);
 }
 
 /**
