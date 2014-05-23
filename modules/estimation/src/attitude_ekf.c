@@ -4,6 +4,7 @@
  * */
 
 /* Includes */
+#include <math.h>
 #include "attitude_ekf.h"
 
 /* Private Defines */

@@ -1,10 +1,13 @@
 #ifndef __ESTIMATION_H
 #define __ESTIMATION_H
 
-
+#include "attitude_ekf.h"
 
 /* Defines */
-#define ATTITUDE_ESTIMATION_STATES_SIZE     28
+#define ESTIMATION_ATTITUDE_STATES_SIZE     (28)
+#define ESTIMATION_RESET_EVENT				EVENT_MASK(31) /* last event bit is 
+															  set as reset bit
+															*/
 
 /* Typedefs */
 
@@ -14,8 +17,7 @@
 void EstimationInit(void);
 void vTaskRunEstimation(void *);
 
-void ResetEstimation(Attitude_Estimation_States *states,
-                     Attitude_Estimation_Data *data);
+void ResetEstimation(void);
 Attitude_Estimation_States *ptrGetAttitudeEstimationStates(void);
 
 #endif
