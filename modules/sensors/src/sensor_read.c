@@ -16,6 +16,7 @@
 static event_source_t new_data_es;
 CCM_MEMORY static Sensor_Calibration mpu6050cal;
 CCM_MEMORY static MPU6050_Data mpu6050data;
+CCM_MEMORY static uint32_t calibration_timestamp;
 static const MPU6050_Configuration mpu6050cfg = {
     MPU6050_DLPF_BW_42,             /* Digital low-pass filter config     */
     MPU6050_EXT_SYNC_DISABLED,      /* External sync config               */
@@ -56,7 +57,7 @@ static const Sensor_Read_Configuration sensorcfg = {
     &hmc5983cfg,
     &mpu6050cal,
     &hmc5983cal,
-    0,
+    &calibration_timestamp,
     &new_data_es
 };
 
@@ -124,7 +125,8 @@ msg_t SensorReadInit(void)
     hmc5983cal.gain[0] = hmc5983cal.gain[1] = hmc5983cal.gain[2] = 1.0f;
     mpu6050cal.bias[0] = mpu6050cal.bias[1] = mpu6050cal.bias[2] = 0.0f;
     hmc5983cal.bias[0] = hmc5983cal.bias[1] = hmc5983cal.bias[2] = 0.0f;
-
+    calibration_timestamp = 0;
+    
     /* Initialize read thread */
     chThdCreateStatic(waThreadSensorRead,
                       sizeof(waThreadSensorRead), 
@@ -396,9 +398,36 @@ void GetIMUCalibration(IMU_Calibration *cal)
         cal->magnetometer_gain[i]  = sensorcfg.hmc5983cal->gain[i];
     }
     
-    cal->timestamp = sensorcfg.calibration_timestamp;
+    cal->timestamp = *sensorcfg.calibration_timestamp;
 
     /* Unlock calibration structures after reading */
+    UnlockSensorCalibration();
+}
+
+/**
+ * @brief       Set the IMU calibration data.
+ * @param[in]  data   Pointer to IMU_Calibration structure from which to
+ *                    read the data.
+ */
+void SetIMUCalibration(IMU_Calibration *cal)
+{
+    int i;
+
+    /* Lock calibration structures before writing */
+    LockSensorCalibration();
+
+    /* Copy data from the requested IMU structure */
+    for (i = 0; i < 3; i++)
+    {
+         sensorcfg.mpu6050cal->bias[i] = cal->accelerometer_bias[i];
+         sensorcfg.mpu6050cal->gain[i] = cal->accelerometer_gain[i];
+         sensorcfg.hmc5983cal->bias[i] = cal->magnetometer_bias[i];
+         sensorcfg.hmc5983cal->gain[i] = cal->magnetometer_gain[i];
+    }
+    
+    *sensorcfg.calibration_timestamp = cal->timestamp;
+
+    /* Unlock calibration structures after writing */
     UnlockSensorCalibration();
 }
 

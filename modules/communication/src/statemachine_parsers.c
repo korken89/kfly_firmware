@@ -13,11 +13,13 @@
 #include "statemachine_generators.h"
 #include "crc.h"
 #include "pid.h"
+#include "rc_input.h"
 #include "control.h"
-//#include "sensor_calibration.h"
-//#include "sensor_read.h"
-//#include "estimation.h"
+#include "sensor_read.h"
+#include "estimation.h"
 #include "statemachine_parsers.h"
+
+static IMU_Calibration imu_calibration;
 
 /* Private functions */
 static void ParseGenericSetControllerData(const uint32_t pi_offset,
@@ -407,11 +409,11 @@ void ParseSetChannelMix(Parser_Holder_Type *pHolder)
     uint32_t i;
     uint8_t *save_location;
 
-    if (pHolder->buffer_count == (4*8*4))
+    if (pHolder->buffer_count == OUTPUT_MIXER_SIZE)
     {
         save_location = (uint8_t *)ptrGetOutputMixer();
 
-        for (i = 0; i < (4*8*4); i++)
+        for (i = 0; i < OUTPUT_MIXER_SIZE; i++)
             save_location[i] = pHolder->buffer[i];
     }
 }
@@ -435,17 +437,16 @@ void ParseGetRCCalibration(Parser_Holder_Type *pHolder)
  */
 void ParseSetRCCalibration(Parser_Holder_Type *pHolder)
 {
-    (void)pHolder;
-//    uint32_t i;
-//    uint8_t *save_location;
-//
-//    if (pHolder->buffer_count == RC_INPUT_SETTINGS_SIZE)
-//    {
-//        save_location = (uint8_t *)ptrGetRCInputSettings();
-//
-//        for (i = 0; i < RC_INPUT_SETTINGS_SIZE; i++)
-//            save_location[i] = pHolder->buffer[i];
-//    }
+    uint32_t i;
+    uint8_t *save_location;
+
+    if (pHolder->buffer_count == RCINPUT_SETTINGS_SIZE)
+    {
+        save_location = (uint8_t *)ptrGetRCInputSettings();
+
+        for (i = 0; i < RCINPUT_SETTINGS_SIZE; i++)
+            save_location[i] = pHolder->buffer[i];
+    }
 }
 
 /**
@@ -500,20 +501,23 @@ void ParseGetSensorCalibration(Parser_Holder_Type *pHolder)
  */
 void ParseSetSensorCalibration(Parser_Holder_Type *pHolder)
 {
-    (void)pHolder;
-//    uint32_t i;
-//    uint8_t *save_location;
-//
-//    if (pHolder->buffer_count == SENSOR_CALIBERATION_SIZE)
-//    {
-//        save_location = (uint8_t *)ptrGetSensorCalibration();
-//
-//        for (i = 0; i < SENSOR_CALIBERATION_SIZE; i++)
-//            save_location[i] = pHolder->buffer[i];
-//    }
-//
-//    if (SemphrEstimationReset != NULL)
-//        xSemaphoreGive(SemphrEstimationReset);
+    uint32_t i;
+    uint8_t *save_location;
+
+    /* Save the data into the temporary calibration structure */
+    if (pHolder->buffer_count == SENSOR_IMU_CALIBRATION_SIZE)
+    {
+        save_location = (uint8_t *)&imu_calibration;
+
+        for (i = 0; i < SENSOR_IMU_CALIBRATION_SIZE; i++)
+            save_location[i] = pHolder->buffer[i];
+    }
+
+    /* Move the calibration data into the sensor structures */
+    SetIMUCalibration(&imu_calibration);
+
+    /* Reset estimation */
+    ResetEstimation();
 }
 
 /**

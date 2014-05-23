@@ -147,3 +147,8 @@ static THD_FUNCTION(ThreadEstimation, arg)
 
 	return MSG_OK;
 }
+
+Attitude_Estimation_States *ptrGetAttitudeEstimationStates(void)
+{
+	return &states;
+}

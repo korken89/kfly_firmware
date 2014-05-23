@@ -20,7 +20,7 @@ typedef struct
     const HMC5983_Configuration *hmc5983cfg;
     Sensor_Calibration *mpu6050cal;
     Sensor_Calibration *hmc5983cal;
-    uint32_t calibration_timestamp;
+    uint32_t *calibration_timestamp;
     event_source_t *new_data_es;
 } Sensor_Read_Configuration;
 
@@ -68,6 +68,7 @@ float *ptrGetMagnetometerData(void);
 void GetIMUData(IMU_Data *data);
 void GetRawIMUData(IMU_RawData *data);
 void GetIMUCalibration(IMU_Calibration *cal);
+void SetIMUCalibration(IMU_Calibration *cal);
 void LockSensorStructures(void);
 void UnlockSensorStructures(void);
 void LockSensorCalibration(void);

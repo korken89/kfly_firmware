@@ -677,12 +677,10 @@ bool GenerateGetEstimationRate(Circular_Buffer_Type *Cbuff)
  */
 bool GenerateGetEstimationAttitude(Circular_Buffer_Type *Cbuff)
 {
-    (void)Cbuff;
-    return HAL_FAILED;
-//    return GenerateGenericCommand(Cmd_GetEstimationAttitude,
-//                                  (uint8_t *)ptrGetAttitudeEstimationStates(), 
-//                                  ATTITUDE_ESTIMATION_STATES_SIZE, 
-//                                  Cbuff);
+    return GenerateGenericCommand(Cmd_GetEstimationAttitude,
+                                  (uint8_t *)ptrGetAttitudeEstimationStates(), 
+                                  ESTIMATION_ATTITUDE_STATES_SIZE, 
+                                  Cbuff);
 }
 
 /**
