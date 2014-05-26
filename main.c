@@ -4,6 +4,7 @@
 #include "myusb.h"
 #include "mpu6050.h"
 #include "hmc5983.h"
+#include "ext_flash.h"
 #include "sensor_calibration.h"
 #include "sensor_read.h"
 #include "rc_output.h"
@@ -95,14 +96,14 @@ int main(void)
 
     /*
      *
-     * Start I2C for sensors
+     * Start the I2C for the sensors
      * 
      */
     i2cStart(&I2CD2, &i2cfg2);
 
     /*
      *
-     * Start SPI for Flash and RF module
+     * Start the SPI for the external flash and the RF module
      * 
      */
     spiStart(&SPID1, &spi1cfg);
@@ -120,6 +121,13 @@ int main(void)
      *
      */
     eicuInit();
+
+    /*
+     *
+     * Initialize the external flash
+     *
+     */
+    ExternalFlashInit();
 
     /*
      *
