@@ -205,6 +205,9 @@ void ExternalFlash_WritePage(uint8_t *buffer,
     /* Enable the write access to the External Flash */
     ExternalFlash_WriteEnable();
 
+    /* Claim the SPI bus */
+    spiAcquireBus(EXTERNAL_FLASH_SPI);
+
     /* Select the External Flash: Chip Select low */
     FLASH_CS_LOW();
 
@@ -223,6 +226,9 @@ void ExternalFlash_WritePage(uint8_t *buffer,
     /* Deselect the External Flash: Chip Select high */
     FLASH_CS_HIGH();
 
+    /* Release the SPI bus */
+    spiReleaseBus(EXTERNAL_FLASH_SPI);
+
     /* Wait the end of Flash writing */
     ExternalFlash_WaitForWriteEnd();
 }
@@ -238,6 +244,9 @@ void ExternalFlash_ReadBuffer(uint8_t *buffer,
                               uint32_t address, 
                               uint16_t count)
 {
+    /* Claim the SPI bus */
+    spiAcquireBus(EXTERNAL_FLASH_SPI);
+
     /* Select the External Flash: Chip Select low */
     FLASH_CS_LOW();
 
@@ -254,6 +263,9 @@ void ExternalFlash_ReadBuffer(uint8_t *buffer,
 
     /* Deselect the External Flash: Chip Select high */
     FLASH_CS_HIGH();
+
+    /* Release the SPI bus */
+    spiReleaseBus(EXTERNAL_FLASH_SPI);
 }
 
 /**
@@ -261,6 +273,9 @@ void ExternalFlash_ReadBuffer(uint8_t *buffer,
  */
 void ExternalFlash_WriteEnable(void)
 {
+    /* Claim the SPI bus */
+    spiAcquireBus(EXTERNAL_FLASH_SPI);
+
     /* Select the External Flash: Chip Select low */
     FLASH_CS_LOW();
 
@@ -269,6 +284,9 @@ void ExternalFlash_WriteEnable(void)
 
     /* Deselect the External Flash: Chip Select high */
     FLASH_CS_HIGH();
+
+    /* Release the SPI bus */
+    spiReleaseBus(EXTERNAL_FLASH_SPI);
 }
 
 /**
@@ -277,6 +295,9 @@ void ExternalFlash_WriteEnable(void)
  */
 void ExternalFlash_WaitForWriteEnd(void)
 {
+    /* Claim the SPI bus */
+    spiAcquireBus(EXTERNAL_FLASH_SPI);
+
     /* Select the External Flash: Chip Select low */
     FLASH_CS_LOW();
 
@@ -288,6 +309,9 @@ void ExternalFlash_WaitForWriteEnd(void)
 
     /* Deselect the External Flash: Chip Select high */
     FLASH_CS_HIGH();
+
+    /* Release the SPI bus */
+    spiReleaseBus(EXTERNAL_FLASH_SPI);
 }
 
 
@@ -319,6 +343,9 @@ static void SaveStructure_WriteToMemory(const Flash_Save_Template *template, uin
 
     /* Enable the write access to the External Flash */
     ExternalFlash_WriteEnable();
+
+    /* Claim the SPI bus */
+    spiAcquireBus(EXTERNAL_FLASH_SPI);
 
     /* Select the External Flash: Chip Select low */
     FLASH_CS_LOW();
@@ -380,6 +407,9 @@ static void SaveStructure_WriteToMemory(const Flash_Save_Template *template, uin
 
     /* Deselect the External Flash: Chip Select high */
     FLASH_CS_HIGH();
+
+    /* Release the SPI bus */
+    spiReleaseBus(EXTERNAL_FLASH_SPI);
 
     /* Wait the end of Flash writing */
     ExternalFlash_WaitForWriteEnd();
