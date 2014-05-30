@@ -85,7 +85,5 @@ void ExternalFlash_WritePage(uint8_t *buffer,
 void ExternalFlash_ReadBuffer(uint8_t *buffer,
                              uint32_t address, 
                              uint16_t count);
-void ExternalFlash_WriteEnable(void);
-void ExternalFlash_WaitForWriteEnd(uint32_t delay_ms);
 
 #endif

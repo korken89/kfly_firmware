@@ -12,8 +12,8 @@
 #include "rc_input.h"
 
 /* Claim and release macros for external flash memory */
-#define ExternalFlashClaim()     chMtxLock(&ext_flash_lock)
-#define ExternalFlashRelease()   chMtxUnlock(&ext_flash_lock)
+#define ExternalFlash_Claim()    chMtxLock(&ext_flash_lock)
+#define ExternalFlash_Release()  chMtxUnlock(&ext_flash_lock)
 
 
 /* Global variable defines */
@@ -22,6 +22,8 @@
 static mutex_t ext_flash_lock;
 
 /* Private function defines */
+static void ExternalFlash_WaitForWriteEnd(uint32_t delay_ms);
+static void ExternalFlash_WriteEnable(void);
 
 /* Private external functions */
 
@@ -40,7 +42,8 @@ void ExternalFlashInit(void)
 
 void ExternalFlash_EraseBulk(void)
 {
-    ExternalFlashClaim();
+    /* Claim external flash */
+    ExternalFlash_Claim();
 
     /* Enable the write access to the External Flash */
     ExternalFlash_WriteEnable();
@@ -57,11 +60,15 @@ void ExternalFlash_EraseBulk(void)
     /* Wait the end of Flash writing */
     ExternalFlash_WaitForWriteEnd(100);
 
-    ExternalFlashRelease();
+    /* Release external flash */
+    ExternalFlash_Release();
 }
 
 void ExternalFlash_EraseSector(uint32_t sector)
 {
+    /* Claim external flash */
+    ExternalFlash_Claim();
+
     /* Enable the write access to the External Flash */
     ExternalFlash_WriteEnable();
 
@@ -81,6 +88,9 @@ void ExternalFlash_EraseSector(uint32_t sector)
 
     /* Wait the end of Flash writing */
     ExternalFlash_WaitForWriteEnd(100);
+
+    /* Release external flash */
+    ExternalFlash_Release();
 }
 
 /**
@@ -91,6 +101,12 @@ void ExternalFlash_EraseSector(uint32_t sector)
 uint32_t ExternalFlash_ReadID(void)
 {
     uint32_t t1, t2, t3;
+
+    /* Claim external flash */
+    ExternalFlash_Claim();
+
+    /* Claim the SPI bus */
+    spiAcquireBus(EXTERNAL_FLASH_SPI);
 
     /* Select the External Flash: Chip Select low */
     FLASH_CS_LOW();
@@ -106,6 +122,12 @@ uint32_t ExternalFlash_ReadID(void)
     /* Deselect the External Flash: Chip Select high */
     FLASH_CS_HIGH();
 
+    /* Release the SPI bus */
+    spiReleaseBus(EXTERNAL_FLASH_SPI);
+
+    /* Release external flash */
+    ExternalFlash_Release();
+
     return ((t1 << 16) | (t2 << 8) | t3);
 }
 
@@ -120,6 +142,9 @@ void ExternalFlash_WritePage(uint8_t *buffer,
                              uint32_t address, 
                              uint16_t count)
 {
+    /* Claim external flash */
+    ExternalFlash_Claim();
+
     /* Enable the write access to the External Flash */
     ExternalFlash_WriteEnable();
 
@@ -149,6 +174,9 @@ void ExternalFlash_WritePage(uint8_t *buffer,
 
     /* Wait the end of Flash writing */
     ExternalFlash_WaitForWriteEnd(1);
+
+    /* Release external flash */
+    ExternalFlash_Release();
 }
 
 /**
@@ -162,6 +190,9 @@ void ExternalFlash_ReadBuffer(uint8_t *buffer,
                               uint32_t address, 
                               uint16_t count)
 {
+    /* Claim external flash */
+    ExternalFlash_Claim();
+
     /* Claim the SPI bus */
     spiAcquireBus(EXTERNAL_FLASH_SPI);
 
@@ -184,34 +215,16 @@ void ExternalFlash_ReadBuffer(uint8_t *buffer,
 
     /* Release the SPI bus */
     spiReleaseBus(EXTERNAL_FLASH_SPI);
-}
 
-/**
- * @brief   Enables the write access to the External Flash.
- */
-void ExternalFlash_WriteEnable(void)
-{
-    /* Claim the SPI bus */
-    spiAcquireBus(EXTERNAL_FLASH_SPI);
-
-    /* Select the External Flash: Chip Select low */
-    FLASH_CS_LOW();
-
-    /* Send "Write Enable" instruction */
-    spiPolledExchange(EXTERNAL_FLASH_SPI, FLASH_CMD_WREN);
-
-    /* Deselect the External Flash: Chip Select high */
-    FLASH_CS_HIGH();
-
-    /* Release the SPI bus */
-    spiReleaseBus(EXTERNAL_FLASH_SPI);
+    /* Release external flash */
+    ExternalFlash_Release();
 }
 
 /**
  * @brief       Polls the status of the Write In Progress (WIP) flag in the External
  *              Flash's status register until write operation has completed.
  */
-void ExternalFlash_WaitForWriteEnd(uint32_t delay_ms)
+static void ExternalFlash_WaitForWriteEnd(uint32_t delay_ms)
 {
     uint8_t wip;
 
@@ -239,4 +252,25 @@ void ExternalFlash_WaitForWriteEnd(uint32_t delay_ms)
         /* Release the SPI bus */
         spiReleaseBus(EXTERNAL_FLASH_SPI); 
     } while (wip & FLASH_WIP_FLAG);
+}
+
+/**
+ * @brief   Enables the write access to the External Flash.
+ */
+static void ExternalFlash_WriteEnable(void)
+{
+    /* Claim the SPI bus */
+    spiAcquireBus(EXTERNAL_FLASH_SPI);
+
+    /* Select the External Flash: Chip Select low */
+    FLASH_CS_LOW();
+
+    /* Send "Write Enable" instruction */
+    spiPolledExchange(EXTERNAL_FLASH_SPI, FLASH_CMD_WREN);
+
+    /* Deselect the External Flash: Chip Select high */
+    FLASH_CS_HIGH();
+
+    /* Release the SPI bus */
+    spiReleaseBus(EXTERNAL_FLASH_SPI);
 }
