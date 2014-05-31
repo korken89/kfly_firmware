@@ -79,9 +79,15 @@ void ExternalFlashInit(void);
 void ExternalFlash_EraseBulk(void);
 void ExternalFlash_EraseSector(uint32_t sector);
 uint32_t ExternalFlash_ReadID(void);
+void ExternalFlash_WritePagePolling(uint8_t *buffer,
+                                    uint32_t address, 
+                                    uint16_t count);
 void ExternalFlash_WritePage(uint8_t *buffer,
                              uint32_t address, 
                              uint16_t count);
+void ExternalFlash_ReadBufferPolling(uint8_t *buffer,
+                                     uint32_t address, 
+                                     uint16_t count);
 void ExternalFlash_ReadBuffer(uint8_t *buffer,
                              uint32_t address, 
                              uint16_t count);

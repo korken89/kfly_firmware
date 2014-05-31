@@ -20,6 +20,7 @@
 
 /* Private variable defines */
 static mutex_t ext_flash_lock;
+static uint8_t extflash_tmp[4];
 
 /* Private function defines */
 static void ExternalFlash_WaitForWriteEnd(uint32_t delay_ms);
@@ -180,15 +181,15 @@ void ExternalFlash_WritePage(uint8_t *buffer,
 }
 
 /**
- * @brief           Read a block of data from the External Flash.
+ * @brief           Read a block of data from the External Flash using polling.
  * 
  * @param buffer    Pointer to the buffer saving the data.
  * @param address   Where in the Flash to read the data.
  * @param count     Number of bytes to read.
  */
-void ExternalFlash_ReadBuffer(uint8_t *buffer, 
-                              uint32_t address, 
-                              uint16_t count)
+void ExternalFlash_ReadBufferPolling(uint8_t *buffer, 
+                                     uint32_t address, 
+                                     uint16_t count)
 {
     /* Claim external flash */
     ExternalFlash_Claim();
@@ -204,11 +205,55 @@ void ExternalFlash_ReadBuffer(uint8_t *buffer,
 
     /* Send address nibbles for address byte to read from */
     spiPolledExchange(EXTERNAL_FLASH_SPI, (address & 0xFF0000) >> 16);
-    spiPolledExchange(EXTERNAL_FLASH_SPI, (address& 0xFF00) >> 8);
+    spiPolledExchange(EXTERNAL_FLASH_SPI, (address & 0xFF00) >> 8);
     spiPolledExchange(EXTERNAL_FLASH_SPI, address & 0xFF);
 
     while (count--)
         *(buffer++) = spiPolledExchange(EXTERNAL_FLASH_SPI, FLASH_DUMMY_BYTE);
+
+    /* Deselect the External Flash: Chip Select high */
+    FLASH_CS_HIGH();
+
+    /* Release the SPI bus */
+    spiReleaseBus(EXTERNAL_FLASH_SPI);
+
+    /* Release external flash */
+    ExternalFlash_Release();
+}
+
+/**
+ * @brief           Read a block of data from the External Flash using DMA.
+ * 
+ * @param buffer    Pointer to the buffer saving the data.
+ * @param address   Where in the Flash to read the data.
+ * @param count     Number of bytes to read.
+ */
+void ExternalFlash_ReadBuffer(uint8_t *buffer, 
+                              uint32_t address, 
+                              uint16_t count)
+{
+    
+    /* Claim external flash */
+    ExternalFlash_Claim();
+
+    /* Claim the SPI bus */
+    spiAcquireBus(EXTERNAL_FLASH_SPI);
+
+    /* Select the External Flash: Chip Select low */
+    FLASH_CS_LOW();
+
+    /* Load the data */
+    extflash_tmp[0] = FLASH_CMD_READ;
+    extflash_tmp[1] = (address & 0xFF0000) >> 16;
+    extflash_tmp[2] = (address & 0xFF00) >> 8;
+    extflash_tmp[3] = (address & 0xFF);
+
+    /* Send "Read from Memory" instruction and send address nibbles
+       from address to read from */
+    spiSend(EXTERNAL_FLASH_SPI, 4, extflash_tmp);
+
+    /* Read the requested data from memory */
+    spiReceive(EXTERNAL_FLASH_SPI, count, buffer);
 
     /* Deselect the External Flash: Chip Select high */
     FLASH_CS_HIGH();
