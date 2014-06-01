@@ -1,7 +1,9 @@
 #ifndef __EXT_FLASH_H
 #define __EXT_FLASH_H
 
-/* Defines */
+/*===========================================================================*/
+/* Driver global definitions.                                                */
+/*===========================================================================*/
 #define FLASH_CMD_WRSR          0x01        /* Write Status Register
                                                instruction */
 #define FLASH_CMD_PAGE_PROGRAM  0x02        /* Write to Memory instruction */
@@ -33,7 +35,9 @@
 
 #define FLASH_DUMMY_BYTE        0xFF
 
-/* Typedefs */
+/*===========================================================================*/
+/* Driver data structures and types.                                         */
+/*===========================================================================*/
 typedef struct
 {
     uint8_t flash_tmp[4];
@@ -50,7 +54,9 @@ typedef struct
     ExternalFlashData *data;
 } ExternalFlashConfig;
 
-/* Macros */
+/*===========================================================================*/
+/* Driver macros.                                                            */
+/*===========================================================================*/
 
 /* Claim and release macros for external flash memory */
 #define ExternalFlash_Claim(config)   chMtxLock(&(config)->data->flash_mutex)
@@ -70,7 +76,9 @@ typedef struct
                                         ((uint32_t)(c) << 16) | \
                                         ((uint32_t)(d) << 24))
 
-/* Global functions */
+/*===========================================================================*/
+/* External declarations.                                                    */
+/*===========================================================================*/
 void ExternalFlashInit(const ExternalFlashConfig *config);
 void ExternalFlash_EraseBulk(const ExternalFlashConfig *config);
 void ExternalFlash_EraseSector(const ExternalFlashConfig *config,

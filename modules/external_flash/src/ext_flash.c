@@ -11,16 +11,87 @@
 #include "control.h"
 #include "rc_input.h"
 
-/* Global variable defines */
+/*===========================================================================*/
+/* Driver local definitions.                                                 */
+/*===========================================================================*/
 
-/* Private variable defines */
+/*===========================================================================*/
+/* Driver exported variables.                                                */
+/*===========================================================================*/
 
-/* Private function defines */
+/*===========================================================================*/
+/* Driver local variables and types.                                         */
+/*===========================================================================*/
+
+/*===========================================================================*/
+/* Driver local functions.                                                   */
+/*===========================================================================*/
+ 
+/**
+ * @brief               Polls the status of the Write In Progress (WIP) flag in
+ *                      the External Flash's status register until write
+ *                      operation has completed.
+ * 
+ * @param[in] config    Pointer to External Flash config.
+ * @param[in] delay_ms  Delay between checks in ms. 0 for continous polling.
+ */
 static void ExternalFlash_WaitForWriteEnd(const ExternalFlashConfig *config,
-                                          uint32_t delay_ms);
-static void ExternalFlash_WriteEnable(const ExternalFlashConfig *config);
+                                          uint32_t delay_ms)
+{
+    uint8_t wip;
 
-/* Private external functions */
+    /* Loop as long as the memory is busy with a write cycle */
+    do
+    {
+        /* If a delay was specified: wait */
+        if (delay_ms != 0)
+            osalThreadSleepMilliseconds(delay_ms);
+
+        /* Claim the SPI bus */
+        spiAcquireBus(config->spip);
+
+        /* Select the External Flash: Chip Select low */
+        ExternalFlash_Select(config);
+
+        /* Send "Read Status Register" instruction */
+        spiPolledExchange(config->spip, FLASH_CMD_RDSR);
+
+        wip = spiPolledExchange(config->spip, FLASH_DUMMY_BYTE);
+
+        /* Deselect the External Flash: Chip Select high */
+        ExternalFlash_Unselect(config);
+
+        /* Release the SPI bus */
+        spiReleaseBus(config->spip); 
+    } while (wip & FLASH_WIP_FLAG);
+}
+
+/**
+ * @brief               Enables the write access to the External Flash.
+ * 
+ * @param[in] config    Pointer to External Flash config.
+ */
+static void ExternalFlash_WriteEnable(const ExternalFlashConfig *config)
+{
+    /* Claim the SPI bus */
+    spiAcquireBus(config->spip);
+
+    /* Select the External Flash: Chip Select low */
+    ExternalFlash_Select(config);
+
+    /* Send "Write Enable" instruction */
+    spiPolledExchange(config->spip, FLASH_CMD_WREN);
+
+    /* Deselect the External Flash: Chip Select high */
+    ExternalFlash_Unselect(config);
+
+    /* Release the SPI bus */
+    spiReleaseBus(config->spip);
+}
+
+/*===========================================================================*/
+/* Driver exported functions.                                                */
+/*===========================================================================*/
 
 /**
  * @brief               Initializes the External Flash and checks
@@ -398,66 +469,4 @@ void ExternalFlash_ReadBuffer(const ExternalFlashConfig *config,
 
     /* Release external flash */
     ExternalFlash_Release(config);
-}
-
-/**
- * @brief               Polls the status of the Write In Progress (WIP) flag in
- *                      the External Flash's status register until write
- *                      operation has completed.
- * 
- * @param[in] config    Pointer to External Flash config.
- * @param[in] delay_ms  Delay between checks in ms. 0 for continous polling.
- */
-static void ExternalFlash_WaitForWriteEnd(const ExternalFlashConfig *config,
-                                          uint32_t delay_ms)
-{
-    uint8_t wip;
-
-    /* Loop as long as the memory is busy with a write cycle */
-    do
-    {
-        /* If a delay was specified: wait */
-        if (delay_ms != 0)
-            osalThreadSleepMilliseconds(delay_ms);
-
-        /* Claim the SPI bus */
-        spiAcquireBus(config->spip);
-
-        /* Select the External Flash: Chip Select low */
-        ExternalFlash_Select(config);
-
-        /* Send "Read Status Register" instruction */
-        spiPolledExchange(config->spip, FLASH_CMD_RDSR);
-
-        wip = spiPolledExchange(config->spip, FLASH_DUMMY_BYTE);
-
-        /* Deselect the External Flash: Chip Select high */
-        ExternalFlash_Unselect(config);
-
-        /* Release the SPI bus */
-        spiReleaseBus(config->spip); 
-    } while (wip & FLASH_WIP_FLAG);
-}
-
-/**
- * @brief               Enables the write access to the External Flash.
- * 
- * @param[in] config    Pointer to External Flash config.
- */
-static void ExternalFlash_WriteEnable(const ExternalFlashConfig *config)
-{
-    /* Claim the SPI bus */
-    spiAcquireBus(config->spip);
-
-    /* Select the External Flash: Chip Select low */
-    ExternalFlash_Select(config);
-
-    /* Send "Write Enable" instruction */
-    spiPolledExchange(config->spip, FLASH_CMD_WREN);
-
-    /* Deselect the External Flash: Chip Select high */
-    ExternalFlash_Unselect(config);
-
-    /* Release the SPI bus */
-    spiReleaseBus(config->spip);
 }
