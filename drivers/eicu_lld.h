@@ -257,23 +257,36 @@
  * @brief   EICU driver mode.
  */
 typedef enum {
-  EICU_INPUT_ACTIVE_HIGH = 0,        /* Trigger on rising edge.             */
-  EICU_INPUT_ACTIVE_LOW = 1,         /* Trigger on falling edge.            */
+  /**
+   * @brief   Trigger on rising edge.
+   */
+  EICU_INPUT_ACTIVE_HIGH = 0,
+  /**
+   * @brief   Trigger on falling edge.
+   */
+  EICU_INPUT_ACTIVE_LOW = 1,
 } eicumode_t;
 
 /**
  * @brief   Input type selector.
  */
 typedef enum {
-  EICU_INPUT_EDGE = 0,          /* Triggers callback on input edge            */
-  EICU_INPUT_PULSE = 1,         /* Triggers callback on detected
-                                   pulse                                      */
-  EICU_INPUT_PWM = 2            /* Triggers callback on detected PWM
-                                   period and width                           */
+  /**
+   * @brief   Triggers on the edge of the input.
+   */
+  EICU_INPUT_EDGE = 0,
+  /**
+   * @brief   Triggers on detected pulse.
+   */
+  EICU_INPUT_PULSE = 1,
+  /**
+   * @brief   Triggers on detected PWM period and width.
+   */
+  EICU_INPUT_PWM = 2
 } eicuinput_t;
 
 /** 
- * @brief EICU PWM channel selection definition
+ * @brief EICU PWM channel selection definition.
  */
 typedef enum {
   EICU_PWM_CHANNEL_1 = 0,
@@ -291,42 +304,57 @@ typedef uint32_t eicufreq_t;
 typedef uint16_t eicucnt_t;
 
 /** 
- * @brief EICU Input Capture Settings structure definition  
+ * @brief EICU Input Capture Settings structure definition.  
  */
 typedef struct
 {
-  eicumode_t mode;                /* Specifies the active edge of the input
-                                     signal.                                  */
-
-  eicucallback_t width_cb;        /* Capture event callback. Used for PWM width,
-                                     Pulse width and normal capture event.    */
+  /**
+   * @brief   Specifies the active edge of the input signal.
+   */
+  eicumode_t mode;
+  /**
+   * @brief   Capture event callback. Used for PWM width, pulse width and
+   *          normal capture event.
+   */
+  eicucallback_t width_cb;
 } EICU_IC_Settings;
 
 /** 
- * @brief EICU Input Capture Config structure definition  
+ * @brief EICU Input Capture Config structure definition. 
  */
 typedef struct
 {
-  eicuinput_t input_type;         /* Select which input type the driver 
-                                     will be configured for                   */
-
-  eicufreq_t frequency;           /* Specifies the Timer clock in Hz.         */
-
-  const EICU_IC_Settings *iccfgp[4];/* Pointer to each Input Capture channel
-                                       configuration. A NULL parameter
-                                       indicates the channel as unused. 
-                                       Note: In PWM mode, only Channel 1 OR
-                                       Channel 2 may be used.                 */
-
-  eicucallback_t period_cb;       /* Period capture event callback. Only
-                                     used when in PWM measuremtent mode       */
-
-  eicucallback_t overflow_cb;     /* Timer overflow event callbackn.          */
-
-  eicupwmchannel_t pwm_channel;   /* Timer input channel to be used for
-                                     PWM input                                */
-
-  uint32_t                  dier; /* TIM DIER register initialization data.   */
+  /**
+   * @brief   Select which input type the driver will be configured for.
+   */
+  eicuinput_t input_type;
+  /**
+   * @brief   Specifies the Timer clock in Hz.
+   */
+  eicufreq_t frequency;
+  /**
+   * @brief   Pointer to each Input Capture channel configuration.
+   * @note    A NULL parameter indicates the channel as unused. 
+   * @note    In PWM mode, only Channel 1 OR Channel 2 may be used.
+   */
+  const EICU_IC_Settings *iccfgp[4];
+  /**
+   * @brief   Period capture event callback. 
+   * @note    Only used when in PWM measuremtent mode
+   */
+  eicucallback_t period_cb;
+  /**
+   * @brief   Timer overflow event callback.
+   */
+  eicucallback_t overflow_cb;
+  /**
+   * @brief   Timer input channel to be used for PWM input.
+   */
+  eicupwmchannel_t pwm_channel;
+  /**
+   * @brief   TIM DIER register initialization data.
+   */
+  uint32_t                  dier;
 } EICUConfig;
 
 /** 
@@ -334,21 +362,35 @@ typedef struct
  */
 struct EICUDriver
 {
-  stm32_tim_t *tim;               /* Timer peripheral for Input Capture.      */
-
-  eicustate_t state;              /* Driver state.                            */
-
-  eicucnt_t last_count[4];        /* Temporary holder during pulse measurement*/
-
-  uint32_t clock;                 /* Timer base clock.                        */
-
-  const EICUConfig *config;       /* Pointer to configuration for the driver. */
-
-  volatile uint32_t *wccrp[4];    /* CCR registers for width capture.         */
-
-  volatile uint32_t *pccrp;       /* CCR register for period capture.
-                                     Only one is needed since only one
-                                     PWM input per timer is allowed.          */
+  /**
+   * @brief   STM32 timer peripheral for Input Capture.
+   */
+  stm32_tim_t *tim;
+  /**
+   * @brief   Driver state for the interal state machine.
+   */
+  eicustate_t state;
+  /**
+   * @brief   Temporary width holder during pulse measurement.
+   */
+  eicucnt_t last_count[4];
+  /**
+   * @brief   Timer base clock.
+   */
+  uint32_t clock;
+  /**
+   * @brief   Pointer to configuration for the driver.
+   */
+  const EICUConfig *config;
+  /**
+   * @brief   CCR registers for width capture.
+   */
+  volatile uint32_t *wccrp[4];
+  /**
+   * @brief   CCR register for period capture.
+   * @note    Only one is needed since only one PWM input per timer is allowed.
+   */
+  volatile uint32_t *pccrp;
 };
 
 /*===========================================================================*/
