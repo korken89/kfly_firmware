@@ -310,7 +310,7 @@ void ExternalFlash_WritePagePolling(const ExternalFlashConfig *config,
 {
     /* Error check. */
     if (count > FLASH_PAGE_SIZE)
-        chSysHalt("Page write size too big");
+        osalSysHalt("Page write size too big");
 
     /* Claim external flash */
     ExternalFlash_Claim(config);
@@ -370,7 +370,7 @@ void ExternalFlash_WritePage(const ExternalFlashConfig *config,
 {
     /* Error check. */
     if (count > FLASH_PAGE_SIZE)
-        chSysHalt("Page write size too big");
+        osalSysHalt("Page write size too big");
 
     /* Claim external flash */
     ExternalFlash_Claim(config);

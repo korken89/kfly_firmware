@@ -80,7 +80,7 @@ void ControlInit(void)
      *
      */
     if (RCOutputInit(&rcoutputcfg) != MSG_OK)
-        chSysHalt("RC output init failed"); /* Initialization failed */
+        osalSysHalt("RC output init failed"); /* Initialization failed */
 
     /* Initialize the controllers to 0 */
     p = (float *)&Control_Data;

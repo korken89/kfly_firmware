@@ -93,11 +93,13 @@ typedef struct
 #define ExternalFlash_Claim(config)   chMtxLock(&(config)->data->flash_mutex)
 #define ExternalFlash_Release(config) chMtxUnlock(&(config)->data->flash_mutex)
 
-/* Flash CS select macros */
+/* Chip Select macros */
 #define ExternalFlash_Select(config)    palClearPad((config)->cs_port, \
                                                     (config)->cs_pad)
 #define ExternalFlash_Unselect(config)  palSetPad((config)->cs_port, \
                                                   (config)->cs_pad)
+
+/* Following macros are to be moved */
 #define FLASH_STR_TO_ID(str)    (((uint32_t)((str)[0]) << 0) | \
                                 ((uint32_t)((str)[1]) << 8) | \
                                 ((uint32_t)((str)[2]) << 16) | \

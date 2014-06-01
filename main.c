@@ -138,7 +138,7 @@ int main(void)
      *
      */
     if (ExternalFlashInit(&flashcfg) != MSG_OK)
-        chSysHalt("External Flash ID error.");
+        osalSysHalt("External Flash ID error.");
 
     /*
      *
@@ -146,7 +146,7 @@ int main(void)
      *
      */
     if (RCInputInit(MODE_CPPM_INPUT) != MSG_OK)
-        chSysHalt("RC input initialization failed.");
+        osalSysHalt("RC input initialization failed.");
 
     /*
      *
@@ -154,7 +154,7 @@ int main(void)
      *
      */
     if (SensorReadInit() != MSG_OK)
-        chSysHalt("Sensor initialization failed.");
+        osalSysHalt("Sensor initialization failed.");
 
     /*
      *
