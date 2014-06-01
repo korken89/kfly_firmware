@@ -134,7 +134,7 @@ static void eicu_lld_serve_interrupt(EICUDriver *eicup)
   eicup->tim->SR = ~sr;
 
   if (eicup->config->input_type == EICU_INPUT_PWM) {
-    if (eicup->config->pwm_channel == EICU_PWM_CHANNEL_1) {
+    if (eicup->config->iccfgp[0] != NULL) {
       if ((sr & STM32_TIM_SR_CC1IF) != 0)
         _eicu_isr_invoke_pwm_period_cb(eicup, EICU_CHANNEL_1);
       if ((sr & STM32_TIM_SR_CC2IF) != 0)
@@ -584,7 +584,7 @@ void eicu_lld_start(EICUDriver *eicup) {
 
   if (eicup->config->input_type == EICU_INPUT_PWM)
   {
-    if (eicup->config->pwm_channel == EICU_PWM_CHANNEL_1) {
+    if (eicup->config->iccfgp[0] != NULL) {
         /* Selected input 1.
            CCMR1_CC1S = 01 = CH1 Input on TI1.
            CCMR1_CC2S = 10 = CH2 Input on TI1.*/
@@ -598,8 +598,7 @@ void eicu_lld_start(EICUDriver *eicup) {
            EICU_INPUT_ACTIVE_HIGH: Active on rising edge, idle on falling edge.
            EICU_INPUT_ACTIVE_LOW:  Active on falling edge, idle on rising edge.
          */
-        if (eicup->config->iccfgp[EICU_PWM_CHANNEL_1]->mode == 
-                                                        EICU_INPUT_ACTIVE_HIGH)
+        if (eicup->config->iccfgp[0]->mode == EICU_INPUT_ACTIVE_HIGH)
           eicup->tim->CCER = STM32_TIM_CCER_CC1E |
                              STM32_TIM_CCER_CC2E | STM32_TIM_CCER_CC2P;
         else
@@ -608,7 +607,7 @@ void eicu_lld_start(EICUDriver *eicup) {
   
         /* Direct pointers to the capture registers in order to make reading
            data faster from within callbacks.*/
-        eicup->wccrp[EICU_PWM_CHANNEL_1] = &eicup->tim->CCR[1];
+        eicup->wccrp[0] = &eicup->tim->CCR[1];
         eicup->pccrp = &eicup->tim->CCR[0];
       } else {
         /* Selected input 2.
@@ -624,8 +623,7 @@ void eicu_lld_start(EICUDriver *eicup) {
            EICU_INPUT_ACTIVE_HIGH: Active on rising edge, idle on falling edge.
            EICU_INPUT_ACTIVE_LOW:  Active on falling edge, idle on rising edge.
          */
-        if (eicup->config->iccfgp[EICU_PWM_CHANNEL_2]->mode ==
-                                                        EICU_INPUT_ACTIVE_HIGH)
+        if (eicup->config->iccfgp[1]->mode == EICU_INPUT_ACTIVE_HIGH)
           eicup->tim->CCER = STM32_TIM_CCER_CC1E | STM32_TIM_CCER_CC1P |
                              STM32_TIM_CCER_CC2E;
         else
@@ -634,7 +632,7 @@ void eicu_lld_start(EICUDriver *eicup) {
   
       /* Direct pointers to the capture registers in order to make reading
          data faster from within callbacks.*/
-      eicup->wccrp[EICU_PWM_CHANNEL_2] = &eicup->tim->CCR[0];
+      eicup->wccrp[1] = &eicup->tim->CCR[0];
       eicup->pccrp = &eicup->tim->CCR[1];
     }
   } else { /* EICU_INPUT_EDGE & EICU_INPUT_PULSE */
@@ -783,15 +781,15 @@ void eicu_lld_enable(EICUDriver *eicup) {
   eicup->tim->SR = 0;                         /* Clear pending IRQs (if any). */
 
   if (eicup->config->input_type == EICU_INPUT_PWM) {
-    if (eicup->config->pwm_channel == EICU_PWM_CHANNEL_1) {
+    if (eicup->config->iccfgp[0] != NULL) {
       if (eicup->config->period_cb != NULL)
         eicup->tim->DIER |= STM32_TIM_DIER_CC1IE;
-      if ((eicup->config->iccfgp[EICU_PWM_CHANNEL_1] != NULL) &&
-          (eicup->config->iccfgp[EICU_PWM_CHANNEL_1]->width_cb != NULL))
+      if ((eicup->config->iccfgp[EICU_CHANNEL_1] != NULL) &&
+          (eicup->config->iccfgp[EICU_CHANNEL_1]->width_cb != NULL))
         eicup->tim->DIER |= STM32_TIM_DIER_CC2IE;
     } else {
-      if ((eicup->config->iccfgp[EICU_PWM_CHANNEL_2] != NULL) &&
-          (eicup->config->iccfgp[EICU_PWM_CHANNEL_2]->width_cb != NULL))
+      if ((eicup->config->iccfgp[EICU_CHANNEL_2] != NULL) &&
+          (eicup->config->iccfgp[EICU_CHANNEL_2]->width_cb != NULL))
         eicup->tim->DIER |= STM32_TIM_DIER_CC1IE;
       if (eicup->config->period_cb != NULL)
         eicup->tim->DIER |= STM32_TIM_DIER_CC2IE;

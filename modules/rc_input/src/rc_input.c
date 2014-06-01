@@ -49,7 +49,6 @@ static const EICUConfig cppm_rcinputcfg = {
     },
     NULL,
     NULL,
-    0,
     0
 };
 
@@ -68,7 +67,6 @@ static const EICUConfig rssi_rcinputcfg = {
     },
     rssi_callback,
     NULL,
-    EICU_PWM_CHANNEL_2,
     0
 };
 
@@ -87,7 +85,6 @@ static const EICUConfig pwm_rcinputcfg_1 = {
     },
     NULL,
     NULL,
-    0,
     0
 };
 
@@ -102,7 +99,6 @@ static const EICUConfig pwm_rcinputcfg_2 = {
     },
     NULL,
     NULL,
-    0,
     0
 };
 
@@ -508,7 +504,7 @@ static void rssi_callback(EICUDriver *eicup, eicuchannel_t channel)
 {
     (void)channel;
     ParseRSSIInput(&rcinput_data,
-                   eicuGetWidth(eicup, EICU_PWM_CHANNEL_2),
+                   eicuGetWidth(eicup, EICU_CHANNEL_2),
                    eicuGetPeriod(eicup));
 }
 

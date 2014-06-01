@@ -285,14 +285,6 @@ typedef enum {
   EICU_INPUT_PWM = 2
 } eicuinput_t;
 
-/** 
- * @brief EICU PWM channel selection definition.
- */
-typedef enum {
-  EICU_PWM_CHANNEL_1 = 0,
-  EICU_PWM_CHANNEL_2 = 1
-} eicupwmchannel_t;
-
 /**
  * @brief   EICU frequency type.
  */
@@ -347,10 +339,6 @@ typedef struct
    * @brief   Timer overflow event callback.
    */
   eicucallback_t overflow_cb;
-  /**
-   * @brief   Timer input channel to be used for PWM input.
-   */
-  eicupwmchannel_t pwm_channel;
   /**
    * @brief   TIM DIER register initialization data.
    */
