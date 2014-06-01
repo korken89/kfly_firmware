@@ -200,6 +200,8 @@ uint32_t ExternalFlash_ReadID(const ExternalFlashConfig *config)
 
 /**
  * @brief               Writes data to a Flash page using polling.
+ * @note                This assumes that the page to be written to has been
+ *                      erased prior to the call to this function.
  * 
  * @param[in] config    Pointer to External Flash config.
  * @param[in] buffer    Pointer to the buffer holding the data.
@@ -254,6 +256,8 @@ void ExternalFlash_WritePagePolling(const ExternalFlashConfig *config,
 
 /**
  * @brief               Writes data to a Flash page using DMA.
+ * @note                This assumes that the page to be written to has been
+ *                      erased prior to the call to this function.
  * 
  * @param[in] config    Pointer to External Flash config.
  * @param[in] buffer    Pointer to the buffer holding the data.
@@ -414,7 +418,7 @@ static void ExternalFlash_WaitForWriteEnd(const ExternalFlashConfig *config,
     {
         /* If a delay was specified: wait */
         if (delay_ms != 0)
-            chThdSleep(OSAL_MS2ST(delay_ms));
+            osalThreadSleepMilliseconds(delay_ms);
 
         /* Claim the SPI bus */
         spiAcquireBus(config->spip);
