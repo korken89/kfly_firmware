@@ -53,7 +53,7 @@ void ExternalFlash_EraseBulk(void)
     FLASH_CS_LOW();
 
     /* Send Bulk Erase instruction  */
-    spiPolledExchange(EXTERNAL_FLASH_SPI, FLASH_CMD_BE);
+    spiPolledExchange(FLASH_SPI_DRIVER, FLASH_CMD_BE);
 
     /* Deselect the External Flash: Chip Select high */
     FLASH_CS_HIGH();
@@ -77,12 +77,12 @@ void ExternalFlash_EraseSector(uint32_t sector)
     FLASH_CS_LOW();
 
     /* Send Bulk Erase instruction  */
-    spiPolledExchange(EXTERNAL_FLASH_SPI, FLASH_CMD_SE);
+    spiPolledExchange(FLASH_SPI_DRIVER, FLASH_CMD_SE);
     
     /* Send address high nibbles */
-    spiPolledExchange(EXTERNAL_FLASH_SPI, (sector & 0xFF0000) >> 16);
-    spiPolledExchange(EXTERNAL_FLASH_SPI, (sector & 0xFF00) >> 8);
-    spiPolledExchange(EXTERNAL_FLASH_SPI, sector & 0xFF);
+    spiPolledExchange(FLASH_SPI_DRIVER, (sector & 0xFF0000) >> 16);
+    spiPolledExchange(FLASH_SPI_DRIVER, (sector & 0xFF00) >> 8);
+    spiPolledExchange(FLASH_SPI_DRIVER, sector & 0xFF);
     
     /* Deselect the External Flash: Chip Select high */
     FLASH_CS_HIGH();
@@ -107,24 +107,24 @@ uint32_t ExternalFlash_ReadID(void)
     ExternalFlash_Claim();
 
     /* Claim the SPI bus */
-    spiAcquireBus(EXTERNAL_FLASH_SPI);
+    spiAcquireBus(FLASH_SPI_DRIVER);
 
     /* Select the External Flash: Chip Select low */
     FLASH_CS_LOW();
 
     /* Send "Read ID" instruction */
-    spiPolledExchange(EXTERNAL_FLASH_SPI, FLASH_CMD_RDID);
+    spiPolledExchange(FLASH_SPI_DRIVER, FLASH_CMD_RDID);
 
     /* Read the three ID bytes from the External Flash */
-    t1 = spiPolledExchange(EXTERNAL_FLASH_SPI, FLASH_DUMMY_BYTE);
-    t2 = spiPolledExchange(EXTERNAL_FLASH_SPI, FLASH_DUMMY_BYTE);
-    t3 = spiPolledExchange(EXTERNAL_FLASH_SPI, FLASH_DUMMY_BYTE);
+    t1 = spiPolledExchange(FLASH_SPI_DRIVER, FLASH_DUMMY_BYTE);
+    t2 = spiPolledExchange(FLASH_SPI_DRIVER, FLASH_DUMMY_BYTE);
+    t3 = spiPolledExchange(FLASH_SPI_DRIVER, FLASH_DUMMY_BYTE);
 
     /* Deselect the External Flash: Chip Select high */
     FLASH_CS_HIGH();
 
     /* Release the SPI bus */
-    spiReleaseBus(EXTERNAL_FLASH_SPI);
+    spiReleaseBus(FLASH_SPI_DRIVER);
 
     /* Release external flash */
     ExternalFlash_Release();
@@ -133,16 +133,20 @@ uint32_t ExternalFlash_ReadID(void)
 }
 
 /**
- * @brief           Writes data to a Flash page.
+ * @brief           Writes data to a Flash page using polling.
  * 
  * @param buffer    Pointer to the buffer holding the data.
  * @param address   Where in the Flash to save the data.
  * @param count     Number of bytes to write (max 256 bytes).
  */
-void ExternalFlash_WritePage(uint8_t *buffer,
-                             uint32_t address, 
-                             uint16_t count)
+void ExternalFlash_WritePagePolling(uint8_t *buffer,
+                                    uint32_t address, 
+                                    uint16_t count)
 {
+    /* Error check. */
+    if (count > FLASH_PAGE_SIZE)
+        chSysHalt("Page write size too big");
+
     /* Claim external flash */
     ExternalFlash_Claim();
 
@@ -150,28 +154,28 @@ void ExternalFlash_WritePage(uint8_t *buffer,
     ExternalFlash_WriteEnable();
 
     /* Claim the SPI bus */
-    spiAcquireBus(EXTERNAL_FLASH_SPI);
+    spiAcquireBus(FLASH_SPI_DRIVER);
 
     /* Select the External Flash: Chip Select low */
     FLASH_CS_LOW();
 
     /* Send "Write to Memory" instruction */
-    spiPolledExchange(EXTERNAL_FLASH_SPI, FLASH_CMD_PAGE_PROGRAM);
+    spiPolledExchange(FLASH_SPI_DRIVER, FLASH_CMD_PAGE_PROGRAM);
 
     /* Send address nibbles for address byte to write to */
-    spiPolledExchange(EXTERNAL_FLASH_SPI, (address & 0xFF0000) >> 16);  
-    spiPolledExchange(EXTERNAL_FLASH_SPI, (address & 0xFF00) >> 8);
-    spiPolledExchange(EXTERNAL_FLASH_SPI, address & 0xFF);
+    spiPolledExchange(FLASH_SPI_DRIVER, (address & 0xFF0000) >> 16);  
+    spiPolledExchange(FLASH_SPI_DRIVER, (address & 0xFF00) >> 8);
+    spiPolledExchange(FLASH_SPI_DRIVER, address & 0xFF);
 
     /* While there is data to be written on the External Flash */
     while (count--)
-        spiPolledExchange(EXTERNAL_FLASH_SPI, *(buffer++));
+        spiPolledExchange(FLASH_SPI_DRIVER, *(buffer++));
 
     /* Deselect the External Flash: Chip Select high */
     FLASH_CS_HIGH();
 
     /* Release the SPI bus */
-    spiReleaseBus(EXTERNAL_FLASH_SPI);
+    spiReleaseBus(FLASH_SPI_DRIVER);
 
     /* Wait the end of Flash writing */
     ExternalFlash_WaitForWriteEnd(1);
@@ -181,7 +185,60 @@ void ExternalFlash_WritePage(uint8_t *buffer,
 }
 
 /**
- * @brief           Read a block of data from the External Flash using polling.
+ * @brief           Writes data to a Flash page using DMA.
+ * 
+ * @param buffer    Pointer to the buffer holding the data.
+ * @param address   Where in the Flash to save the data.
+ * @param count     Number of bytes to write (max 256 bytes).
+ */
+void ExternalFlash_WritePage(uint8_t *buffer,
+                             uint32_t address, 
+                             uint16_t count)
+{
+    /* Error check. */
+    if (count > FLASH_PAGE_SIZE)
+        chSysHalt("Page write size too big");
+
+    /* Claim external flash */
+    ExternalFlash_Claim();
+
+    /* Enable the write access to the External Flash */
+    ExternalFlash_WriteEnable();
+
+    /* Claim the SPI bus */
+    spiAcquireBus(FLASH_SPI_DRIVER);
+
+    /* Select the External Flash: Chip Select low */
+    FLASH_CS_LOW();
+
+    /* Load the data */
+    extflash_tmp[0] = FLASH_CMD_PAGE_PROGRAM;
+    extflash_tmp[1] = (address & 0xFF0000) >> 16;
+    extflash_tmp[2] = (address & 0xFF00) >> 8;
+    extflash_tmp[3] = (address & 0xFF);
+
+    /* Send "Write to Memory" instruction and send address nibbles
+       from address to read from */
+    spiSend(FLASH_SPI_DRIVER, 4, extflash_tmp);
+
+    /* Send the data to memory */
+    spiSend(FLASH_SPI_DRIVER, count, buffer);
+
+    /* Deselect the External Flash: Chip Select high */
+    FLASH_CS_HIGH();
+
+    /* Release the SPI bus */
+    spiReleaseBus(FLASH_SPI_DRIVER);
+
+    /* Wait the end of Flash writing */
+    ExternalFlash_WaitForWriteEnd(1);
+
+    /* Release external flash */
+    ExternalFlash_Release();
+}
+
+/**
+ * @brief           Read a block of data from the External Flash using DMA.
  * 
  * @param buffer    Pointer to the buffer saving the data.
  * @param address   Where in the Flash to read the data.
@@ -195,27 +252,27 @@ void ExternalFlash_ReadBufferPolling(uint8_t *buffer,
     ExternalFlash_Claim();
 
     /* Claim the SPI bus */
-    spiAcquireBus(EXTERNAL_FLASH_SPI);
+    spiAcquireBus(FLASH_SPI_DRIVER);
 
     /* Select the External Flash: Chip Select low */
     FLASH_CS_LOW();
 
     /* Send "Read from Memory" instruction */
-    spiPolledExchange(EXTERNAL_FLASH_SPI, FLASH_CMD_READ);
+    spiPolledExchange(FLASH_SPI_DRIVER, FLASH_CMD_READ);
 
     /* Send address nibbles for address byte to read from */
-    spiPolledExchange(EXTERNAL_FLASH_SPI, (address & 0xFF0000) >> 16);
-    spiPolledExchange(EXTERNAL_FLASH_SPI, (address & 0xFF00) >> 8);
-    spiPolledExchange(EXTERNAL_FLASH_SPI, address & 0xFF);
+    spiPolledExchange(FLASH_SPI_DRIVER, (address & 0xFF0000) >> 16);
+    spiPolledExchange(FLASH_SPI_DRIVER, (address & 0xFF00) >> 8);
+    spiPolledExchange(FLASH_SPI_DRIVER, address & 0xFF);
 
     while (count--)
-        *(buffer++) = spiPolledExchange(EXTERNAL_FLASH_SPI, FLASH_DUMMY_BYTE);
+        *(buffer++) = spiPolledExchange(FLASH_SPI_DRIVER, FLASH_DUMMY_BYTE);
 
     /* Deselect the External Flash: Chip Select high */
     FLASH_CS_HIGH();
 
     /* Release the SPI bus */
-    spiReleaseBus(EXTERNAL_FLASH_SPI);
+    spiReleaseBus(FLASH_SPI_DRIVER);
 
     /* Release external flash */
     ExternalFlash_Release();
@@ -237,7 +294,7 @@ void ExternalFlash_ReadBuffer(uint8_t *buffer,
     ExternalFlash_Claim();
 
     /* Claim the SPI bus */
-    spiAcquireBus(EXTERNAL_FLASH_SPI);
+    spiAcquireBus(FLASH_SPI_DRIVER);
 
     /* Select the External Flash: Chip Select low */
     FLASH_CS_LOW();
@@ -250,16 +307,16 @@ void ExternalFlash_ReadBuffer(uint8_t *buffer,
 
     /* Send "Read from Memory" instruction and send address nibbles
        from address to read from */
-    spiSend(EXTERNAL_FLASH_SPI, 4, extflash_tmp);
+    spiSend(FLASH_SPI_DRIVER, 4, extflash_tmp);
 
     /* Read the requested data from memory */
-    spiReceive(EXTERNAL_FLASH_SPI, count, buffer);
+    spiReceive(FLASH_SPI_DRIVER, count, buffer);
 
     /* Deselect the External Flash: Chip Select high */
     FLASH_CS_HIGH();
 
     /* Release the SPI bus */
-    spiReleaseBus(EXTERNAL_FLASH_SPI);
+    spiReleaseBus(FLASH_SPI_DRIVER);
 
     /* Release external flash */
     ExternalFlash_Release();
@@ -281,21 +338,21 @@ static void ExternalFlash_WaitForWriteEnd(uint32_t delay_ms)
             chThdSleep(OSAL_MS2ST(delay_ms));
 
         /* Claim the SPI bus */
-        spiAcquireBus(EXTERNAL_FLASH_SPI);
+        spiAcquireBus(FLASH_SPI_DRIVER);
 
         /* Select the External Flash: Chip Select low */
         FLASH_CS_LOW();
 
         /* Send "Read Status Register" instruction */
-        spiPolledExchange(EXTERNAL_FLASH_SPI, FLASH_CMD_RDSR);
+        spiPolledExchange(FLASH_SPI_DRIVER, FLASH_CMD_RDSR);
 
-        wip = spiPolledExchange(EXTERNAL_FLASH_SPI, FLASH_DUMMY_BYTE);
+        wip = spiPolledExchange(FLASH_SPI_DRIVER, FLASH_DUMMY_BYTE);
 
         /* Deselect the External Flash: Chip Select high */
         FLASH_CS_HIGH();
 
         /* Release the SPI bus */
-        spiReleaseBus(EXTERNAL_FLASH_SPI); 
+        spiReleaseBus(FLASH_SPI_DRIVER); 
     } while (wip & FLASH_WIP_FLAG);
 }
 
@@ -305,17 +362,17 @@ static void ExternalFlash_WaitForWriteEnd(uint32_t delay_ms)
 static void ExternalFlash_WriteEnable(void)
 {
     /* Claim the SPI bus */
-    spiAcquireBus(EXTERNAL_FLASH_SPI);
+    spiAcquireBus(FLASH_SPI_DRIVER);
 
     /* Select the External Flash: Chip Select low */
     FLASH_CS_LOW();
 
     /* Send "Write Enable" instruction */
-    spiPolledExchange(EXTERNAL_FLASH_SPI, FLASH_CMD_WREN);
+    spiPolledExchange(FLASH_SPI_DRIVER, FLASH_CMD_WREN);
 
     /* Deselect the External Flash: Chip Select high */
     FLASH_CS_HIGH();
 
     /* Release the SPI bus */
-    spiReleaseBus(EXTERNAL_FLASH_SPI);
+    spiReleaseBus(FLASH_SPI_DRIVER);
 }

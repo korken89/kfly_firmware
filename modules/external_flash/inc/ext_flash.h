@@ -54,7 +54,7 @@
 #define FLASH_SECTOR_6          0x00060000
 #define FLASH_SECTOR_7          0x00070000
 
-#define EXTERNAL_FLASH_SPI      &SPID1
+#define FLASH_SPI_DRIVER       &SPID1
 
 #define FLASH_DUMMY_BYTE        0xFF
 
@@ -89,7 +89,7 @@ void ExternalFlash_ReadBufferPolling(uint8_t *buffer,
                                      uint32_t address, 
                                      uint16_t count);
 void ExternalFlash_ReadBuffer(uint8_t *buffer,
-                             uint32_t address, 
-                             uint16_t count);
+                              uint32_t address, 
+                              uint16_t count);
 
 #endif
