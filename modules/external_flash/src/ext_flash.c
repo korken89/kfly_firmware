@@ -26,7 +26,7 @@
 /*===========================================================================*/
 /* Driver local functions.                                                   */
 /*===========================================================================*/
- 
+
 /**
  * @brief               Polls the status of the Write In Progress (WIP) flag in
  *                      the External Flash's status register until write
@@ -47,9 +47,10 @@ static void ExternalFlash_WaitForWriteEnd(const ExternalFlashConfig *config,
         if (delay_ms != 0)
             osalThreadSleepMilliseconds(delay_ms);
 
+#if SPI_USE_MUTUAL_EXCLUSION
         /* Claim the SPI bus */
         spiAcquireBus(config->spip);
-
+#endif /* SPI_USE_MUTUAL_EXCLUSION */
         /* Select the External Flash: Chip Select low */
         ExternalFlash_Select(config);
 
@@ -61,8 +62,10 @@ static void ExternalFlash_WaitForWriteEnd(const ExternalFlashConfig *config,
         /* Deselect the External Flash: Chip Select high */
         ExternalFlash_Unselect(config);
 
+#if SPI_USE_MUTUAL_EXCLUSION
         /* Release the SPI bus */
         spiReleaseBus(config->spip); 
+#endif /* SPI_USE_MUTUAL_EXCLUSION */
     } while (wip & FLASH_WIP_FLAG);
 }
 
@@ -73,8 +76,10 @@ static void ExternalFlash_WaitForWriteEnd(const ExternalFlashConfig *config,
  */
 static void ExternalFlash_WriteEnable(const ExternalFlashConfig *config)
 {
+#if SPI_USE_MUTUAL_EXCLUSION
     /* Claim the SPI bus */
     spiAcquireBus(config->spip);
+#endif /* SPI_USE_MUTUAL_EXCLUSION */
 
     /* Select the External Flash: Chip Select low */
     ExternalFlash_Select(config);
@@ -85,8 +90,10 @@ static void ExternalFlash_WriteEnable(const ExternalFlashConfig *config)
     /* Deselect the External Flash: Chip Select high */
     ExternalFlash_Unselect(config);
 
+#if SPI_USE_MUTUAL_EXCLUSION
     /* Release the SPI bus */
     spiReleaseBus(config->spip);
+#endif /* SPI_USE_MUTUAL_EXCLUSION */
 }
 
 /*===========================================================================*/
@@ -124,8 +131,10 @@ void ExternalFlash_EraseBulk(const ExternalFlashConfig *config)
     /* Enable the write access to the External Flash */
     ExternalFlash_WriteEnable(config);
 
+#if SPI_USE_MUTUAL_EXCLUSION
     /* Claim the SPI bus */
     spiAcquireBus(config->spip);
+#endif /* SPI_USE_MUTUAL_EXCLUSION */
 
     /* Select the External Flash: Chip Select low */
     ExternalFlash_Select(config);
@@ -136,8 +145,10 @@ void ExternalFlash_EraseBulk(const ExternalFlashConfig *config)
     /* Deselect the External Flash: Chip Select high */
     ExternalFlash_Unselect(config);
 
+#if SPI_USE_MUTUAL_EXCLUSION
     /* Release the SPI bus */
     spiReleaseBus(config->spip);
+#endif /* SPI_USE_MUTUAL_EXCLUSION */
 
     /* Wait the end of Flash writing */
     ExternalFlash_WaitForWriteEnd(config, 100);
@@ -161,8 +172,10 @@ void ExternalFlash_EraseSector(const ExternalFlashConfig *config,
     /* Enable the write access to the External Flash */
     ExternalFlash_WriteEnable(config);
 
+#if SPI_USE_MUTUAL_EXCLUSION
     /* Claim the SPI bus */
     spiAcquireBus(config->spip);
+#endif /* SPI_USE_MUTUAL_EXCLUSION */
 
     /* Select the External Flash: Chip Select low */
     ExternalFlash_Select(config);
@@ -178,8 +191,10 @@ void ExternalFlash_EraseSector(const ExternalFlashConfig *config,
     /* Deselect the External Flash: Chip Select high */
     ExternalFlash_Unselect(config);
 
+#if SPI_USE_MUTUAL_EXCLUSION
     /* Release the SPI bus */
     spiReleaseBus(config->spip);
+#endif /* SPI_USE_MUTUAL_EXCLUSION */
 
     /* Wait the end of Flash writing */
     ExternalFlash_WaitForWriteEnd(config, 100);
@@ -203,8 +218,10 @@ void ExternalFlash_ErasePage(const ExternalFlashConfig *config,
     /* Enable the write access to the External Flash */
     ExternalFlash_WriteEnable(config);
 
+#if SPI_USE_MUTUAL_EXCLUSION
     /* Claim the SPI bus */
     spiAcquireBus(config->spip);
+#endif /* SPI_USE_MUTUAL_EXCLUSION */
 
     /* Select the External Flash: Chip Select low */
     ExternalFlash_Select(config);
@@ -220,8 +237,10 @@ void ExternalFlash_ErasePage(const ExternalFlashConfig *config,
     /* Deselect the External Flash: Chip Select high */
     ExternalFlash_Unselect(config);
 
+#if SPI_USE_MUTUAL_EXCLUSION
     /* Release the SPI bus */
     spiReleaseBus(config->spip);
+#endif /* SPI_USE_MUTUAL_EXCLUSION */
 
     /* Wait the end of Flash writing */
     ExternalFlash_WaitForWriteEnd(config, 10);
@@ -243,8 +262,10 @@ uint32_t ExternalFlash_ReadID(const ExternalFlashConfig *config)
     /* Claim external flash */
     ExternalFlash_Claim(config);
 
+#if SPI_USE_MUTUAL_EXCLUSION
     /* Claim the SPI bus */
     spiAcquireBus(config->spip);
+#endif /* SPI_USE_MUTUAL_EXCLUSION */
 
     /* Select the External Flash: Chip Select low */
     ExternalFlash_Select(config);
@@ -260,8 +281,10 @@ uint32_t ExternalFlash_ReadID(const ExternalFlashConfig *config)
     /* Deselect the External Flash: Chip Select high */
     ExternalFlash_Unselect(config);
 
+#if SPI_USE_MUTUAL_EXCLUSION
     /* Release the SPI bus */
     spiReleaseBus(config->spip);
+#endif /* SPI_USE_MUTUAL_EXCLUSION */
 
     /* Release external flash */
     ExternalFlash_Release(config);
@@ -294,8 +317,10 @@ void ExternalFlash_WritePagePolling(const ExternalFlashConfig *config,
     /* Enable the write access to the External Flash */
     ExternalFlash_WriteEnable(config);
 
+#if SPI_USE_MUTUAL_EXCLUSION
     /* Claim the SPI bus */
     spiAcquireBus(config->spip);
+#endif /* SPI_USE_MUTUAL_EXCLUSION */
 
     /* Select the External Flash: Chip Select low */
     ExternalFlash_Select(config);
@@ -315,8 +340,10 @@ void ExternalFlash_WritePagePolling(const ExternalFlashConfig *config,
     /* Deselect the External Flash: Chip Select high */
     ExternalFlash_Unselect(config);
 
+#if SPI_USE_MUTUAL_EXCLUSION
     /* Release the SPI bus */
     spiReleaseBus(config->spip);
+#endif /* SPI_USE_MUTUAL_EXCLUSION */
 
     /* Wait the end of Flash writing */
     ExternalFlash_WaitForWriteEnd(config, 1);
@@ -350,8 +377,10 @@ void ExternalFlash_WritePage(const ExternalFlashConfig *config,
     /* Enable the write access to the External Flash */
     ExternalFlash_WriteEnable(config);
 
+#if SPI_USE_MUTUAL_EXCLUSION
     /* Claim the SPI bus */
     spiAcquireBus(config->spip);
+#endif /* SPI_USE_MUTUAL_EXCLUSION */
 
     /* Select the External Flash: Chip Select low */
     ExternalFlash_Select(config);
@@ -372,8 +401,10 @@ void ExternalFlash_WritePage(const ExternalFlashConfig *config,
     /* Deselect the External Flash: Chip Select high */
     ExternalFlash_Unselect(config);
 
+#if SPI_USE_MUTUAL_EXCLUSION
     /* Release the SPI bus */
     spiReleaseBus(config->spip);
+#endif /* SPI_USE_MUTUAL_EXCLUSION */
 
     /* Wait the end of Flash writing */
     ExternalFlash_WaitForWriteEnd(config, 1);
@@ -398,8 +429,10 @@ void ExternalFlash_ReadBufferPolling(const ExternalFlashConfig *config,
     /* Claim external flash */
     ExternalFlash_Claim(config);
 
+#if SPI_USE_MUTUAL_EXCLUSION
     /* Claim the SPI bus */
     spiAcquireBus(config->spip);
+#endif /* SPI_USE_MUTUAL_EXCLUSION */
 
     /* Select the External Flash: Chip Select low */
     ExternalFlash_Select(config);
@@ -418,8 +451,10 @@ void ExternalFlash_ReadBufferPolling(const ExternalFlashConfig *config,
     /* Deselect the External Flash: Chip Select high */
     ExternalFlash_Unselect(config);
 
+#if SPI_USE_MUTUAL_EXCLUSION
     /* Release the SPI bus */
     spiReleaseBus(config->spip);
+#endif /* SPI_USE_MUTUAL_EXCLUSION */
 
     /* Release external flash */
     ExternalFlash_Release(config);
@@ -442,8 +477,10 @@ void ExternalFlash_ReadBuffer(const ExternalFlashConfig *config,
     /* Claim external flash */
     ExternalFlash_Claim(config);
 
+#if SPI_USE_MUTUAL_EXCLUSION
     /* Claim the SPI bus */
     spiAcquireBus(config->spip);
+#endif /* SPI_USE_MUTUAL_EXCLUSION */
 
     /* Select the External Flash: Chip Select low */
     ExternalFlash_Select(config);
@@ -464,8 +501,10 @@ void ExternalFlash_ReadBuffer(const ExternalFlashConfig *config,
     /* Deselect the External Flash: Chip Select high */
     ExternalFlash_Unselect(config);
 
+#if SPI_USE_MUTUAL_EXCLUSION
     /* Release the SPI bus */
     spiReleaseBus(config->spip);
+#endif /* SPI_USE_MUTUAL_EXCLUSION */
 
     /* Release external flash */
     ExternalFlash_Release(config);
