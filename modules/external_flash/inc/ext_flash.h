@@ -6,13 +6,13 @@
 /*===========================================================================*/
 #define FLASH_CMD_WRSR          0x01        /* Write Status Register
                                                instruction */
-#define FLASH_CMD_PAGE_PROGRAM  0x02        /* Write to Memory instruction */
-#define FLASH_CMD_READ          0x03        /* Read from Memory instruction */
+#define FLASH_CMD_PAGE_PROGRAM  0x02        /* Write to page instruction */
+#define FLASH_CMD_READ          0x03        /* Read from memory instruction */
 #define FLASH_CMD_RDSR          0x05        /* Read Status Register
                                                instruction */
 #define FLASH_CMD_WREN          0x06        /* Write enable instruction */
-#define FLASH_CMD_PAGE_WRITE    0x0A        /* Writes a page with automatic 
-                                               erase */
+#define FLASH_CMD_PAGE_WRITE    0x0A        /* Writes to page with automatic 
+                                               page erase */
 
 #define FLASH_CMD_BE            0xC7        /* Bulk Erase instruction */
 #define FLASH_CMD_SE            0xD8        /* Sector Erase instruction */
