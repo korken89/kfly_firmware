@@ -12,12 +12,13 @@
                                                instruction */
 #define FLASH_CMD_WREN          0x06        /* Write enable instruction */
 #define FLASH_CMD_PAGE_WRITE    0x0A        /* Writes to page with automatic 
-                                               page erase */
+                                               page erase instruction */
 
 #define FLASH_CMD_BE            0xC7        /* Bulk Erase instruction */
 #define FLASH_CMD_SE            0xD8        /* Sector Erase instruction */
-#define FLASH_CMD_PE            0xDB        /* Page erase */
-#define FLASH_CMD_RDID          0x9F        /* Read identification */
+#define FLASH_CMD_PE            0xDB        /* Page erase instruction */
+#define FLASH_CMD_RDID          0x9F        /* Read identification
+                                               instruction */
 
 #define FLASH_WIP_FLAG          0x01        /* Write In Progress (WIP) flag */
 
