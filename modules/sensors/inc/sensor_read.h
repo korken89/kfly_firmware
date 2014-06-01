@@ -53,7 +53,6 @@ typedef struct
 
 /* Global function defines */
 msg_t SensorReadInit(void);
-void SetSensorCalibration(Sensor_Calibration *cal, float bias[3], float gain[3]);
 void MPU6050cb(EXTDriver *extp, expchannel_t channel);
 void HMC5983cb(EXTDriver *extp, expchannel_t channel);
 event_source_t *ptrGetNewDataEventSource(void);

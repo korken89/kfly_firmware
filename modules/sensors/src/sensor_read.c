@@ -138,28 +138,6 @@ msg_t SensorReadInit(void)
 }
 
 /**
- * @brief Updates a sensor caibration with new values.
- * 
- * @param[in] cal   Pointer to calibration structure.
- * @param[in] bias  Pointer to new bias (3 values vector).
- * @param[in] gain  Pointer to new gain (3 values vector).
- */
-void SetSensorCalibration(Sensor_Calibration *cal, float bias[3], float gain[3])
-{
-    int i;
-
-    chMtxLock(&cal->lock);
-
-    for (i = 0; i < 3; i++)
-    {
-        cal->bias[i] = bias[i];
-        cal->gain[i] = gain[i];    
-    }
-    
-    chMtxUnlock(&cal->lock);
-}
-
-/**
  * @brief MPU6050 external interrupt callback.
  * 
  * @param[in] extp      Pointer to EXT Driver.
