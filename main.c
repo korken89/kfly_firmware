@@ -64,6 +64,16 @@ static const EXTConfig extcfg = {
     }
 };
 
+static ExternalFlashData flash_data;
+static const ExternalFlashConfig flashcfg = {
+    &SPID1,
+    GPIOC,
+    GPIOC_FLASH_SEL,
+    M25PE40_NUM_PAGES,
+    FLASH_M25PE40_ID,
+    &flash_data
+};
+
 int main(void)
 {
     /*
@@ -127,7 +137,7 @@ int main(void)
      * Initialize the external flash
      *
      */
-    ExternalFlashInit();
+    ExternalFlashInit(&flashcfg);
 
     /*
      *

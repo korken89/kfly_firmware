@@ -1,23 +1,7 @@
 #ifndef __EXT_FLASH_H
 #define __EXT_FLASH_H
 
-/* Standard includes */
-
-/* System includes */
-
-/* Scheduler includes. */
-
-/* KFly includes */
-
-/* Driver Includes */
-
-/* Includes */
-
 /* Defines */
-#define FLASH_SYNC_WORD         0xdeadbeef  /* Sync word to detect errors in
-                                               the flash structure */
-#define FLASH_SYNC_WORD_REV     0xefbeadde
-
 #define FLASH_CMD_WRSR          0x01        /* Write Status Register
                                                instruction */
 #define FLASH_CMD_PAGE_PROGRAM  0x02        /* Write to Memory instruction */
@@ -40,31 +24,43 @@
 #define FLASH_M25P40_ID         0x202013
 #define FLASH_M25PE40_ID        0x208013
 
-#define M25PE40_NUM_SECTORS     7
-#define FLASH_NUM_SECTORS       M25PE40_NUM_SECTORS
+#define M25PE40_NUM_SECTORS     8
+
+#define M25PE40_NUM_PAGES       2048
 
 #define FLASH_PAGE_SIZE         0x00000100
 #define FLASH_SECTOR_SIZE       0x00010000
-#define FLASH_SECTOR_0          0x00000000
-#define FLASH_SECTOR_1          0x00010000
-#define FLASH_SECTOR_2          0x00020000
-#define FLASH_SECTOR_3          0x00030000
-#define FLASH_SECTOR_4          0x00040000
-#define FLASH_SECTOR_5          0x00050000
-#define FLASH_SECTOR_6          0x00060000
-#define FLASH_SECTOR_7          0x00070000
-
-#define FLASH_SPI_DRIVER       &SPID1
 
 #define FLASH_DUMMY_BYTE        0xFF
 
-#define FLASH_END               0
-
 /* Typedefs */
+typedef struct
+{
+    uint8_t flash_tmp[4];
+    mutex_t flash_mutex;
+} ExternalFlashData;
+
+typedef struct
+{
+    SPIDriver *spip;
+    ioportid_t cs_port;
+    uint16_t cs_pad;
+    uint32_t num_pages;
+    uint32_t jedec_id;
+    ExternalFlashData *data;
+} ExternalFlashConfig;
 
 /* Macros */
-#define FLASH_CS_LOW()          palClearPad(GPIOC, GPIOC_FLASH_SEL)
-#define FLASH_CS_HIGH()         palSetPad(GPIOC, GPIOC_FLASH_SEL)
+
+/* Claim and release macros for external flash memory */
+#define ExternalFlash_Claim(config)   chMtxLock(&(config)->data->flash_mutex)
+#define ExternalFlash_Release(config) chMtxUnlock(&(config)->data->flash_mutex)
+
+/* Flash CS select macros */
+#define ExternalFlash_Select(config)    palClearPad((config)->cs_port, \
+                                                    (config)->cs_pad)
+#define ExternalFlash_Unselect(config)  palSetPad((config)->cs_port, \
+                                                  (config)->cs_pad)
 #define FLASH_STR_TO_ID(str)    (((uint32_t)((str)[0]) << 0) | \
                                 ((uint32_t)((str)[1]) << 8) | \
                                 ((uint32_t)((str)[2]) << 16) | \
@@ -75,20 +71,27 @@
                                         ((uint32_t)(d) << 24))
 
 /* Global functions */
-void ExternalFlashInit(void);
-void ExternalFlash_EraseBulk(void);
-void ExternalFlash_EraseSector(uint32_t sector);
-uint32_t ExternalFlash_ReadID(void);
-void ExternalFlash_WritePagePolling(uint8_t *buffer,
+void ExternalFlashInit(const ExternalFlashConfig *config);
+void ExternalFlash_EraseBulk(const ExternalFlashConfig *config);
+void ExternalFlash_EraseSector(const ExternalFlashConfig *config,
+                               uint32_t address);
+void ExternalFlash_ErasePage(const ExternalFlashConfig *config,
+                             uint32_t address);
+uint32_t ExternalFlash_ReadID(const ExternalFlashConfig *config);
+void ExternalFlash_WritePagePolling(const ExternalFlashConfig *config,
+                                    uint8_t *buffer,
                                     uint32_t address, 
                                     uint16_t count);
-void ExternalFlash_WritePage(uint8_t *buffer,
+void ExternalFlash_WritePage(const ExternalFlashConfig *config,
+                             uint8_t *buffer,
                              uint32_t address, 
                              uint16_t count);
-void ExternalFlash_ReadBufferPolling(uint8_t *buffer,
+void ExternalFlash_ReadBufferPolling(const ExternalFlashConfig *config,
+                                     uint8_t *buffer,
                                      uint32_t address, 
                                      uint16_t count);
-void ExternalFlash_ReadBuffer(uint8_t *buffer,
+void ExternalFlash_ReadBuffer(const ExternalFlashConfig *config,
+                              uint8_t *buffer,
                               uint32_t address, 
                               uint16_t count);
 
