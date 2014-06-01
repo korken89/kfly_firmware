@@ -281,11 +281,11 @@ void ExternalFlash_WritePage(const ExternalFlashConfig *config,
     /* Select the External Flash: Chip Select low */
     ExternalFlash_Select(config);
 
-    /* Load the data */
-    config->data->flash_tmp[0] = FLASH_CMD_PAGE_PROGRAM;
-    config->data->flash_tmp[1] = (address & 0xFF0000) >> 16;
-    config->data->flash_tmp[2] = (address & 0xFF00) >> 8;
-    config->data->flash_tmp[3] = (address & 0xFF);
+    /* Load the command and address data */
+    config->data->flash_tmp[0] = (uint8_t)FLASH_CMD_PAGE_PROGRAM;
+    config->data->flash_tmp[1] = (uint8_t)((address & 0xFF0000) >> 16);
+    config->data->flash_tmp[2] = (uint8_t)((address & 0xFF00) >> 8);
+    config->data->flash_tmp[3] = (uint8_t)(address & 0xFF);
 
     /* Send "Write to Memory" instruction and send address nibbles
        from address to read from */
@@ -308,7 +308,7 @@ void ExternalFlash_WritePage(const ExternalFlashConfig *config,
 }
 
 /**
- * @brief               Read a block of data from the External Flash using DMA.
+ * @brief               Read a block of data from the External Flash by polling.
  * 
  * @param[in] config    Pointer to External Flash config.
  * @param[in] buffer    Pointer to the buffer saving the data.
@@ -373,11 +373,11 @@ void ExternalFlash_ReadBuffer(const ExternalFlashConfig *config,
     /* Select the External Flash: Chip Select low */
     ExternalFlash_Select(config);
 
-    /* Load the data */
-    config->data->flash_tmp[0] = FLASH_CMD_READ;
-    config->data->flash_tmp[1] = (address & 0xFF0000) >> 16;
-    config->data->flash_tmp[2] = (address & 0xFF00) >> 8;
-    config->data->flash_tmp[3] = (address & 0xFF);
+    /* Load the command and address data */
+    config->data->flash_tmp[0] = (uint8_t)FLASH_CMD_READ;
+    config->data->flash_tmp[1] = (uint8_t)((address & 0xFF0000) >> 16);
+    config->data->flash_tmp[2] = (uint8_t)((address & 0xFF00) >> 8);
+    config->data->flash_tmp[3] = (uint8_t)(address & 0xFF);
 
     /* Send "Read from Memory" instruction and send address nibbles
        from address to read from */
