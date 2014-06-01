@@ -137,7 +137,8 @@ int main(void)
      * Initialize the external flash
      *
      */
-    ExternalFlashInit(&flashcfg);
+    if (ExternalFlashInit(&flashcfg) != HAL_SUCCESS)
+        chSysHalt("External Flash ID error.");
 
     /*
      *

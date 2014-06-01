@@ -79,7 +79,7 @@ typedef struct
 /*===========================================================================*/
 /* External declarations.                                                    */
 /*===========================================================================*/
-void ExternalFlashInit(const ExternalFlashConfig *config);
+bool ExternalFlashInit(const ExternalFlashConfig *config);
 void ExternalFlash_EraseBulk(const ExternalFlashConfig *config);
 void ExternalFlash_EraseSector(const ExternalFlashConfig *config,
                                uint32_t address);

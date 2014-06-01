@@ -106,16 +106,15 @@ static void ExternalFlash_WriteEnable(const ExternalFlashConfig *config)
  *
  * @param[in] config    Pointer to External Flash config.
  */
-void ExternalFlashInit(const ExternalFlashConfig *config)
+bool ExternalFlashInit(const ExternalFlashConfig *config)
 {
-    uint32_t id;
-
+    /* Initialize External Flash mutex */
     chMtxObjectInit(&config->data->flash_mutex);
 
-    id = ExternalFlash_ReadID(config);
-
-    if (id != config->jedec_id)
-        chSysHalt("External Flash ID error.");
+    if (ExternalFlash_ReadID(config) != config->jedec_id)
+        return HAL_FAILED;
+    else
+        return HAL_SUCCESS;
 }
 
 /**
