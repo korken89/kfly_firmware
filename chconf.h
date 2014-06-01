@@ -487,8 +487,6 @@
  */
 #define CH_CFG_SYSTEM_HALT_HOOK(reason) {                                   \
   /* System halt code here.*/                                               \
-  extern volatile const char *kfly_error;                                   \
-  kfly_error = reason;                                                      \
 }
 
 /** @} */
