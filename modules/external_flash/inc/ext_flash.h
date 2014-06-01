@@ -38,19 +38,50 @@
 /*===========================================================================*/
 /* Driver data structures and types.                                         */
 /*===========================================================================*/
+
+/**
+ * @brief   External Flash temporary data holder.
+ */
 typedef struct
 {
+    /**
+     * @brief   External Flash temporary data for DMA read and writes.
+     */
     uint8_t flash_tmp[4];
+    /**
+     * @brief   External Flash mutex.
+     */
     mutex_t flash_mutex;
 } ExternalFlashData;
 
+/**
+ * @brief   External Flash configuration structure.
+ */
 typedef struct
 {
+    /**
+     * @brief   Pointer to the SPI Driver for the external flash.
+     */
     SPIDriver *spip;
+    /**
+     * @brief   Chip Select port.
+     */
     ioportid_t cs_port;
+    /**
+     * @brief   Chip Select pad.
+     */
     uint16_t cs_pad;
+    /**
+     * @brief   Number of pages available in the external flash.
+     */
     uint32_t num_pages;
+    /**
+     * @brief   The JEDEC ID of the external flash including manufacturer ID.
+     */
     uint32_t jedec_id;
+    /**
+     * @brief   Pointer to the temporary data holder.
+     */
     ExternalFlashData *data;
 } ExternalFlashConfig;
 
