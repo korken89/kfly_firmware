@@ -212,7 +212,7 @@ void ExternalFlash_WritePagePolling(const ExternalFlashConfig *config,
                                     uint16_t count)
 {
     /* Error check. */
-    if (count >= config->num_pages)
+    if (count > FLASH_PAGE_SIZE)
         chSysHalt("Page write size too big");
 
     /* Claim external flash */
@@ -266,7 +266,7 @@ void ExternalFlash_WritePage(const ExternalFlashConfig *config,
                              uint16_t count)
 {
     /* Error check. */
-    if (count >= config->num_pages)
+    if (count > FLASH_PAGE_SIZE)
         chSysHalt("Page write size too big");
 
     /* Claim external flash */
