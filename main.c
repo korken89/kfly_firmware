@@ -4,7 +4,7 @@
 #include "myusb.h"
 #include "mpu6050.h"
 #include "hmc5983.h"
-#include "ext_flash.h"
+#include "flash_save.h"
 #include "sensor_calibration.h"
 #include "sensor_read.h"
 #include "rc_output.h"
@@ -60,16 +60,6 @@ static const EXTConfig extcfg = {
         {EXT_CH_MODE_DISABLED, NULL},
         {EXT_CH_MODE_DISABLED, NULL}
     }
-};
-
-static ExternalFlashData flash_data;
-static const ExternalFlashConfig flashcfg = {
-    &SPID1,
-    GPIOC,
-    GPIOC_FLASH_SEL,
-    M25PE40_NUM_PAGES,
-    FLASH_M25PE40_ID,
-    &flash_data
 };
 
 int main(void)
@@ -132,11 +122,10 @@ int main(void)
 
     /*
      *
-     * Initialize the external flash
+     * Initialize the external flash and save to flash functionality
      *
      */
-    if (ExternalFlashInit(&flashcfg) != MSG_OK)
-        osalSysHalt("External Flash ID error.");
+    FlashSaveInit();
 
     /*
      *
