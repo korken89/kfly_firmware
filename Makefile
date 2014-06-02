@@ -97,7 +97,7 @@ include $(CHIBIOS)/os/rt/ports/ARMCMx/compilers/GCC/mk/port_stm32f4xx.mk
 #include $(CHIBIOS)/test/rt/test.mk
 
 # Define linker script file here
-LDSCRIPT= make/STM32F405xG.ld
+LDSCRIPT= make/STM32F405xG_CCM.ld
 #LDSCRIPT= $(PORTLD)/STM32F407xG_CCM.ld
 
 # C sources that can be compiled in ARM or THUMB mode depending on the global
