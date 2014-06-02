@@ -129,12 +129,12 @@ void ExternalFlash_WritePage(const ExternalFlashConfig *config,
                              uint32_t address, 
                              uint16_t count);
 void ExternalFlash_ReadBufferPolling(const ExternalFlashConfig *config,
+									 uint32_t address,
                                      uint8_t *buffer,
-                                     uint32_t address, 
                                      uint16_t count);
 void ExternalFlash_ReadBuffer(const ExternalFlashConfig *config,
-                              uint8_t *buffer,
-                              uint32_t address, 
+							  uint32_t address,
+                              uint8_t *buffer, 
                               uint16_t count);
 
 #endif

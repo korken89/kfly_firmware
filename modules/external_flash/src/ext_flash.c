@@ -423,8 +423,8 @@ void ExternalFlash_WritePage(const ExternalFlashConfig *config,
  * @param[in] count     Number of bytes to read.
  */
 void ExternalFlash_ReadBufferPolling(const ExternalFlashConfig *config,
-                                     uint8_t *buffer, 
-                                     uint32_t address, 
+									 uint32_t address,
+                                     uint8_t *buffer,  
                                      uint16_t count)
 {
     /* Claim external flash */
@@ -470,8 +470,8 @@ void ExternalFlash_ReadBufferPolling(const ExternalFlashConfig *config,
  * @param[in] count     Number of bytes to read.
  */
 void ExternalFlash_ReadBuffer(const ExternalFlashConfig *config,
-                              uint8_t *buffer, 
-                              uint32_t address, 
+							  uint32_t address,
+                              uint8_t *buffer,  
                               uint16_t count)
 {
     
