@@ -11,12 +11,31 @@
 /*===========================================================================*/
 /* Module data structures and types.                                         */
 /*===========================================================================*/
+/**
+ * @brief   Possible Flash Save statuses.
+ */
 typedef enum
 {
+    /**
+     * @brief   Status if the requested size and actual size does not match.
+     */
     FLASHSAVE_SIZE_MISSMATCH = 0,
+    /**
+     * @brief   The requested write or read is over the maximum limit.
+     */
     FLASHSAVE_OVERSIZE = 1,
+    /**
+     * @brief   There was no match.
+     */
     FLASHSAVE_NO_MATCH = 2,
+    /**
+     * @brief   If there was already data with an UID and overwrite was
+     *          not allowed.
+     */
     FLASHSAVE_NO_OVERWRITE = 2,
+    /**
+     * @brief   If everything completed successfully.
+     */
     FLASHSAVE_OK = 3,
 } FlashSave_Status;
 

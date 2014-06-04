@@ -127,6 +127,7 @@ bool FlashSave_Seek(uint32_t uid, int16_t *page_number, uint8_t *size)
  * @param[in] overwrite True to overwrite old data.
  * @param[in] data      Pointer to the data to write.
  * @param[in] count     Number of bytes to write.
+ * @Return      Returns the status of the operation.
  */
 FlashSave_Status FlashSave_Write(uint32_t uid,
                                  bool overwrite,
@@ -178,7 +179,7 @@ FlashSave_Status FlashSave_Write(uint32_t uid,
  * @param[in] uid               UID to read from.
  * @param[in] data              Pointer to the save location of the data.
  * @param[in] requested_size    Number of bytes to write.
- * @return      Returns true if the UID already existed.
+ * @return      Returns the status of the operation.
  */
 FlashSave_Status FlashSave_Read(uint32_t uid,
                                 uint8_t *data,
