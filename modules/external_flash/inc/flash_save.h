@@ -17,9 +17,9 @@
 typedef enum
 {
     /**
-     * @brief   Status if the requested size and actual size does not match.
+     * @brief   If everything completed successfully.
      */
-    FLASHSAVE_SIZE_MISSMATCH = 0,
+    FLASHSAVE_OK = 0,
     /**
      * @brief   The requested write or read is over the maximum limit.
      */
@@ -34,9 +34,13 @@ typedef enum
      */
     FLASHSAVE_NO_OVERWRITE = 3,
     /**
-     * @brief   If everything completed successfully.
+     * @brief   Status if the requested size and actual size does not match.
      */
-    FLASHSAVE_OK = 4,
+    FLASHSAVE_SIZE_MISSMATCH = 4,
+    /**
+     * @brief   If the external flash is out of memory.
+     */
+    FLASHSAVE_FLASH_FULL = 5,
 } FlashSave_Status;
 
 /*===========================================================================*/

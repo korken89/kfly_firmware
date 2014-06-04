@@ -144,6 +144,10 @@ FlashSave_Status FlashSave_Write(uint32_t uid,
 
     result = FlashSave_Seek(uid, &page_number, &size);
 
+    /* Check if the external flash is full */
+    if (page_number == -1)
+        return FLASHSAVE_FLASH_FULL;
+
     if (result == FLASHSAVE_NO_MATCH)
     {
         /* No previous data, save at the end of the flash memory.
