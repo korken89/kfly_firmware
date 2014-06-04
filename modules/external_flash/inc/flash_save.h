@@ -54,8 +54,8 @@ typedef enum
  */
 static inline uint32_t FlashSave_STR2ID(char str[4])
 {
-    return (((uint32_t)(str[0]) << 0) |
-            ((uint32_t)(str[1]) << 8) |
+    return (((uint32_t)(str[0]) << 0)  |
+            ((uint32_t)(str[1]) << 8)  |
             ((uint32_t)(str[2]) << 16) |
             ((uint32_t)(str[3]) << 24));
 }
@@ -74,10 +74,24 @@ static inline uint32_t FlashSave_BYTES2ID(uint8_t b1,
                                           uint8_t b3,
                                           uint8_t b4)
 {
-    return (((uint32_t)(b1) << 0) |
-            ((uint32_t)(b2) << 8) |
+    return (((uint32_t)(b1) << 0)  |
+            ((uint32_t)(b2) << 8)  |
             ((uint32_t)(b3) << 16) |
             ((uint32_t)(b4) << 24));
+}
+
+/**
+ * @brief       Swaps the oder of the bytes in a word.
+ * 
+ * @param[in] swap  The word to be reverse the order of bytes in.
+ * @return      Returns the reordered word.
+ */
+static inline uint32_t FlashSave_Swap32(uint32_t swap)
+{
+    return ((swap >> 24) & 0xFF)     |  /* Move byte 3 to byte 0 */
+           ((swap << 8)  & 0xFF0000) |  /* Move byte 1 to byte 2 */
+           ((swap >> 8)  & 0xFF00)   |  /* Move byte 2 to byte 1 */
+           ((swap << 24) & 0xFF000000); /* Move byte 0 to byte 3 */
 }
 
 /*===========================================================================*/
