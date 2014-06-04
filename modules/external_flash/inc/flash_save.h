@@ -32,11 +32,11 @@ typedef enum
      * @brief   If there was already data with an UID and overwrite was
      *          not allowed.
      */
-    FLASHSAVE_NO_OVERWRITE = 2,
+    FLASHSAVE_NO_OVERWRITE = 3,
     /**
      * @brief   If everything completed successfully.
      */
-    FLASHSAVE_OK = 3,
+    FLASHSAVE_OK = 4,
 } FlashSave_Status;
 
 /*===========================================================================*/
