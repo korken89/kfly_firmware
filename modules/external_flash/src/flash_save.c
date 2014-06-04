@@ -34,6 +34,9 @@
 /* Module local variables and types.                                         */
 /*===========================================================================*/
 
+/*
+ * External Flash configuration
+ */
 static ExternalFlashData flash_data;
 static const ExternalFlashConfig flashcfg = {
     &SPID1,             /* SPI driver connected to the external flash.       */
