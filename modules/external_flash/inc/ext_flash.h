@@ -100,16 +100,6 @@ typedef struct
 #define ExternalFlash_Unselect(config)  palSetPad((config)->cs_port, \
                                                   (config)->cs_pad)
 
-/* Following macros are to be moved */
-#define FLASH_STR_TO_ID(str)    (((uint32_t)((str)[0]) << 0) | \
-                                ((uint32_t)((str)[1]) << 8) | \
-                                ((uint32_t)((str)[2]) << 16) | \
-                                ((uint32_t)((str)[3]) << 24))
-#define FLASH_BYTES_TO_ID(a, b, c, d)   (((uint32_t)(a) << 0) | \
-                                        ((uint32_t)(b) << 8) | \
-                                        ((uint32_t)(c) << 16) | \
-                                        ((uint32_t)(d) << 24))
-
 /*===========================================================================*/
 /* External declarations.                                                    */
 /*===========================================================================*/
@@ -121,12 +111,12 @@ void ExternalFlash_ErasePage(const ExternalFlashConfig *config,
                              uint32_t address);
 uint32_t ExternalFlash_ReadID(const ExternalFlashConfig *config);
 void ExternalFlash_WritePagePolling(const ExternalFlashConfig *config,
+                                    uint32_t address,
                                     uint8_t *buffer,
-                                    uint32_t address, 
                                     uint16_t count);
 void ExternalFlash_WritePage(const ExternalFlashConfig *config,
+                             uint32_t address,
                              uint8_t *buffer,
-                             uint32_t address, 
                              uint16_t count);
 void ExternalFlash_ReadBufferPolling(const ExternalFlashConfig *config,
 									 uint32_t address,

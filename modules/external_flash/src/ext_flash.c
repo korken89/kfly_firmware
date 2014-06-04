@@ -304,8 +304,8 @@ uint32_t ExternalFlash_ReadID(const ExternalFlashConfig *config)
  * @param[in] count     Number of bytes to write (max 256 bytes).
  */
 void ExternalFlash_WritePagePolling(const ExternalFlashConfig *config,
+                                    uint32_t address,
                                     uint8_t *buffer,
-                                    uint32_t address, 
                                     uint16_t count)
 {
     /* Error check. */
@@ -364,8 +364,8 @@ void ExternalFlash_WritePagePolling(const ExternalFlashConfig *config,
  * @param[in] count     Number of bytes to write (max 256 bytes).
  */
 void ExternalFlash_WritePage(const ExternalFlashConfig *config,
-                             uint8_t *buffer,
                              uint32_t address, 
+                             uint8_t *buffer,
                              uint16_t count)
 {
     /* Error check. */
