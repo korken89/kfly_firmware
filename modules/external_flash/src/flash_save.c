@@ -209,7 +209,8 @@ FlashSave_Status FlashSave_Read(uint32_t uid,
         {
             /* The requested data is available, read it */
             ExternalFlash_ReadBuffer(&flashcfg,
-                                     page_number * FLASH_PAGE_SIZE,
+                                     page_number * FLASH_PAGE_SIZE +
+                                     FLASHSAVE_HEADER_OFFSET,
                                      data,
                                      size);
 

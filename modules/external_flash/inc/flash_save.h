@@ -6,7 +6,8 @@
 /*===========================================================================*/
 /* Module global definitions.                                                */
 /*===========================================================================*/
-#define FLASHSAVE_UNALLOCATED   0xFFFFFFFF
+#define FLASHSAVE_UNALLOCATED       0xFFFFFFFF
+#define FLASHSAVE_HEADER_OFFSET     5
 
 /*===========================================================================*/
 /* Module data structures and types.                                         */
