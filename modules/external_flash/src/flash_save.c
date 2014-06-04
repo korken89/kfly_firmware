@@ -5,17 +5,20 @@
  * */
 
  /* Structure of the external flash:
-  *  _________ _________
-  * |         |         |
-  * |  Save1  |  Save2  | ......
-  * |_________|_________|
-  *
-  * Each save block:
-  *  ____________________ ____________ ____________
-  * |                    |            |            |
-  * |  32-bit Unique ID  |  Data size | Saved Data |
-  * |____________________|____________|____________|
+  *  __________ __________  _  _  _  _________
+  * |          |          |         |          |
+  * |  Save 1  |  Save 2  | -  -  - |  Save N  |
+  * |__________|__________| _  _  _ |__________|
+  *                                /            \  
+  *  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _/              \_ _ _ _ _ _
+  * /___________________________ _____________ ______________\
+  * |                           |             |              |
+  * |  32-bit Unique ID  (UID)  |  Data size  |  Saved Data  |
+  * |___________________________|_____________|______________|
   * 
+  * Each block can only span one page as maximum limiting the saved data to be
+  * maximum 250 bytes.
+  * The time to complete a save is approximately 11 ms.
   */
 
 #include "ch.h"
@@ -200,6 +203,7 @@ FlashSave_Status FlashSave_Read(uint32_t uid,
 
     if (result == true)
     {
+        /* If there was a match check the size */
         if (size == requested_size)
         {
             /* The requested data is available, read it */
