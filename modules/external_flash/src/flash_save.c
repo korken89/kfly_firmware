@@ -61,6 +61,15 @@ void FlashSaveInit(void)
         osalSysHalt("External Flash ID error.");
 }
 
+/**
+ * @brief       Seek the flash memory for the requested UID and reports back
+ *              the page number and size of the saved data.
+ * 
+ * @param[in]  uid          UID to search for.
+ * @param[out] page_number  Pointer to saving variable for page number.
+ * @param[out] size         Pointer to saving variable for data size.
+ * @return      Returns true if there was a match.
+ */
 bool FlashSave_Seek(uint32_t uid, int16_t *page_number, uint8_t *size)
 {
     uint16_t current_page = 0;
@@ -78,16 +87,24 @@ bool FlashSave_Seek(uint32_t uid, int16_t *page_number, uint8_t *size)
        memory is reached. */
     do {
         ExternalFlash_ReadBufferPolling(&flashcfg,
-                                        (current_page++ * FLASH_PAGE_SIZE),
+                                        (current_page * FLASH_PAGE_SIZE),
                                         seek_union.raw_data,
                                         5);
+        
+        current_page++;
     } while((seek_union.formated_seek.id != uid) &&
             (seek_union.formated_seek.id != FLASHSAVE_UNALLOCATED) &&
             (current_page <= flashcfg.num_pages));
 
     /* Return the page number */
     if (page_number != NULL)
-        *page_number = current_page - 1;
+    {
+        /* If the flash is full return -1 */
+        if (current_page <= flashcfg.num_pages)
+            *page_number = -1;
+        else
+            *page_number = current_page - 1;
+    }
 
     /* If there was a match return the size */
     if (seek_union.formated_seek.id == uid)
@@ -95,28 +112,46 @@ bool FlashSave_Seek(uint32_t uid, int16_t *page_number, uint8_t *size)
         if (size != NULL)
             *size = seek_union.formated_seek.size;
 
-        return FLASHSAVE_MATCH;
+        return true;
     }
     else
-        return FLASHSAVE_NO_MATCH;
+        return false;
 }
 
-void FlashSave_Write(uint32_t uid,
-                     bool overwrite,
-                     uint8_t *data,
-                     uint8_t count)
+/**
+ * @brief       Writes data to a location with the correct UID, or saved at a 
+ *              new location if the UID was not already written. 
+ * @note        Max write size is 250 bytes.
+ * 
+ * @param[in] uid       UID to write at.
+ * @param[in] overwrite True to overwrite old data.
+ * @param[in] data      Pointer to the data to write.
+ * @param[in] count     Number of bytes to write.
+ */
+FlashSave_Status FlashSave_Write(uint32_t uid,
+                                 bool overwrite,
+                                 uint8_t *data,
+                                 uint16_t count)
 {
-    (void)data;
-    (void)count;
-
+    bool result;
     int16_t page_number;
     uint8_t size;
-    bool result = FlashSave_Seek(uid, &page_number, &size);
+
+    /*  Check if the data is within correct size */
+    if (count > 250)
+        return FLASHSAVE_OVERSIZE;
+
+    result = FlashSave_Seek(uid, &page_number, &size);
 
     if (result == FLASHSAVE_NO_MATCH)
     {
-        /* No previous data, save at the end of the flash memory */
-
+        /* No previous data, save at the end of the flash memory.
+           Just in case erase the page. */
+        ExternalFlash_ErasePage(&flashcfg, page_number * FLASH_PAGE_SIZE);
+        ExternalFlash_WritePage(&flashcfg,
+                                page_number * FLASH_PAGE_SIZE,
+                                data,
+                                count);
     }
     else
     {
@@ -124,30 +159,51 @@ void FlashSave_Write(uint32_t uid,
         if (overwrite == true)
         {
             /* Overwrite old data */
-
+            ExternalFlash_ErasePage(&flashcfg, page_number * FLASH_PAGE_SIZE);
+            ExternalFlash_WritePage(&flashcfg,
+                                    page_number * FLASH_PAGE_SIZE,
+                                    data,
+                                    count);
         }
+        else
+            return FLASHSAVE_NO_OVERWRITE;
     }
+
+    return FLASHSAVE_OK;
 }
 
-bool FlashSave_Read(uint32_t uid, uint8_t *data, int16_t requested_size)
+/**
+ * @brief       Reads data from a location with the correct UID. 
+ * 
+ * @param[in] uid               UID to read from.
+ * @param[in] data              Pointer to the save location of the data.
+ * @param[in] requested_size    Number of bytes to write.
+ * @return      Returns true if the UID already existed.
+ */
+FlashSave_Status FlashSave_Read(uint32_t uid,
+                                uint8_t *data,
+                                uint8_t requested_size)
 {
-    (void)data;
     int16_t page_number;
     uint8_t size;
 
     /* Look for the specified UID in the external memory */
     bool result = FlashSave_Seek(uid, &page_number, &size);
 
-    if (result == FLASHSAVE_MATCH)
+    if (result == true)
     {
         if (size == requested_size)
         {
             /* The requested data is available, read it */
+            ExternalFlash_ReadBuffer(&flashcfg,
+                                     page_number * FLASH_PAGE_SIZE,
+                                     data,
+                                     size);
 
-            return FLASHSAVE_MATCH;
+            return FLASHSAVE_OK;
         }
         else
-            return FLASHSAVE_NO_MATCH;
+            return FLASHSAVE_SIZE_MISSMATCH;
     }
     else
         return FLASHSAVE_NO_MATCH;

@@ -6,13 +6,19 @@
 /*===========================================================================*/
 /* Module global definitions.                                                */
 /*===========================================================================*/
-#define FLASHSAVE_NO_MATCH      false
-#define FLASHSAVE_MATCH         true
 #define FLASHSAVE_UNALLOCATED   0xFFFFFFFF
 
 /*===========================================================================*/
 /* Module data structures and types.                                         */
 /*===========================================================================*/
+typedef enum
+{
+    FLASHSAVE_SIZE_MISSMATCH = 0,
+    FLASHSAVE_OVERSIZE = 1,
+    FLASHSAVE_NO_MATCH = 2,
+    FLASHSAVE_NO_OVERWRITE = 2,
+    FLASHSAVE_OK = 3,
+} FlashSave_Status;
 
 /*===========================================================================*/
 /* Module macros.                                                            */
@@ -60,10 +66,12 @@ static inline uint32_t FlashSave_BYTES2ID(uint8_t b1,
 /*===========================================================================*/
 void FlashSaveInit(void);
 bool FlashSave_Seek(uint32_t uid, int16_t *page_number, uint8_t *size);
-void FlashSave_Write(uint32_t uid,
-                     bool overwrite, 
-                     uint8_t *data, 
-                     uint8_t count);
-bool FlashSave_Read(uint32_t uid, uint8_t *data, int16_t requested_size);
+FlashSave_Status FlashSave_Write(uint32_t uid,
+                                 bool overwrite, 
+                                 uint8_t *data, 
+                                 uint16_t count);
+FlashSave_Status FlashSave_Read(uint32_t uid,
+                                uint8_t *data,
+                                uint8_t requested_size);
 
 #endif /* __FLASH_SAVE_H */
