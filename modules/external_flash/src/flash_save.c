@@ -55,6 +55,17 @@ static const ExternalFlashConfig flashcfg = {
 /* Module local functions.                                                   */
 /*===========================================================================*/
 
+/**
+ * @brief               Writes data to a Flash page using DMA.
+ * @note                This assumes that the page to be written to has been
+ *                      erased prior to the call to this function.
+ *
+ * @param[in] config    Pointer to External Flash config.
+ * @param[in] address   Where in the Flash to save the data.
+ * @param[in] uid       The unique ID.
+ * @param[in] buffer    Pointer to the buffer holding the data.
+ * @param[in] count     Number of bytes to write (max 256 bytes).
+ */
 static void FlashSave_WritePage(const ExternalFlashConfig *config,
                                 uint32_t address, 
                                 uint32_t uid,

@@ -230,8 +230,8 @@ uint32_t ExternalFlash_ReadID(const ExternalFlashConfig *config)
  *                      erased prior to the call to this function.
  * 
  * @param[in] config    Pointer to External Flash config.
- * @param[in] buffer    Pointer to the buffer holding the data.
  * @param[in] address   Where in the Flash to save the data.
+ * @param[in] buffer    Pointer to the buffer holding the data.
  * @param[in] count     Number of bytes to write (max 256 bytes).
  */
 void ExternalFlash_WritePagePolling(const ExternalFlashConfig *config,
@@ -290,8 +290,8 @@ void ExternalFlash_WritePagePolling(const ExternalFlashConfig *config,
  *                      erased prior to the call to this function.
  * 
  * @param[in] config    Pointer to External Flash config.
- * @param[in] buffer    Pointer to the buffer holding the data.
  * @param[in] address   Where in the Flash to save the data.
+ * @param[in] buffer    Pointer to the buffer holding the data.
  * @param[in] count     Number of bytes to write (max 256 bytes).
  */
 void ExternalFlash_WritePage(const ExternalFlashConfig *config,
@@ -349,8 +349,8 @@ void ExternalFlash_WritePage(const ExternalFlashConfig *config,
  * @brief               Read a block of data from the External Flash by polling.
  * 
  * @param[in] config    Pointer to External Flash config.
- * @param[in] buffer    Pointer to the buffer saving the data.
  * @param[in] address   Where in the Flash to read the data.
+ * @param[in] buffer    Pointer to the buffer saving the data.
  * @param[in] count     Number of bytes to read.
  */
 void ExternalFlash_ReadBufferPolling(const ExternalFlashConfig *config,
@@ -396,8 +396,8 @@ void ExternalFlash_ReadBufferPolling(const ExternalFlashConfig *config,
  * @brief               Read a block of data from the External Flash using DMA.
  * 
  * @param[in] config    Pointer to External Flash config.
- * @param[in] buffer    Pointer to the buffer saving the data.
  * @param[in] address   Where in the Flash to read the data.
+ * @param[in] buffer    Pointer to the buffer saving the data.
  * @param[in] count     Number of bytes to read.
  */
 void ExternalFlash_ReadBuffer(const ExternalFlashConfig *config,
