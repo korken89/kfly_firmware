@@ -11,11 +11,11 @@
   * |__________|__________| _  _  _ |__________|
   *                                /            \  
   *    _ _ _ _ _ _ _ _ _ _ _ _ _ _/              \_ _ _ _ _ 
-  *  /                                                      \
-  * /___________________________ _____________ ______________\
-  * |                           |             |              |
-  * |  32-bit Unique ID  (UID)  |  Data size  |  Saved Data  |
-  * |___________________________|_____________|______________|
+  *  /                                                     \
+  * /__________________________ _____________ ______________\
+  * |                          |             |              |
+  * |  32-bit Unique ID (UID)  |  Data size  |  Saved Data  |
+  * |__________________________|_____________|______________|
   * 
   * Each block can only span one page as maximum limiting the saved data to be
   * maximum 250 bytes.
@@ -54,6 +54,65 @@ static const ExternalFlashConfig flashcfg = {
 /*===========================================================================*/
 /* Module local functions.                                                   */
 /*===========================================================================*/
+
+static void FlashSave_WritePage(const ExternalFlashConfig *config,
+                                uint32_t address, 
+                                uint32_t uid,
+                                uint8_t *buffer,
+                                uint16_t count)
+{
+    /* Error check. */
+    if (count > FLASH_PAGE_SIZE)
+        osalSysHalt("Page write size too big");
+
+    /* Claim external flash */
+    ExternalFlash_Claim(config);
+
+    /* Enable the write access to the External Flash */
+    ExternalFlash_WriteEnable(config);
+
+#if SPI_USE_MUTUAL_EXCLUSION
+    /* Claim the SPI bus */
+    spiAcquireBus(config->spip);
+#endif /* SPI_USE_MUTUAL_EXCLUSION */
+
+    /* Select the External Flash: Chip Select low */
+    ExternalFlash_Select(config);
+
+    /* Load the command and address data */
+    config->data->flash_tmp[0] = (uint8_t)FLASH_CMD_PAGE_PROGRAM;
+    config->data->flash_tmp[1] = (uint8_t)((address & 0xFF0000) >> 16);
+    config->data->flash_tmp[2] = (uint8_t)((address & 0xFF00) >> 8);
+    config->data->flash_tmp[3] = (uint8_t)(address & 0xFF);
+
+    /* Send "Write to Memory" instruction and send address nibbles
+       from address to read from */
+    spiSend(config->spip, 4, config->data->flash_tmp);
+
+    /* Send the header consisting of UID + size (5 bytes) */
+    spiPolledExchange(config->spip, (uint8_t)(uid & 0x000000FF));
+    spiPolledExchange(config->spip, (uint8_t)((uid & 0x0000FF00) >> 8));
+    spiPolledExchange(config->spip, (uint8_t)((uid & 0x00FF0000) >> 16));
+    spiPolledExchange(config->spip, (uint8_t)((uid & 0xFF000000) >> 24));
+    spiPolledExchange(config->spip, (uint8_t)count);
+
+    /* Send the data to memory using DMA */
+    spiSend(config->spip, count, buffer);
+
+    /* Deselect the External Flash: Chip Select high */
+    ExternalFlash_Unselect(config);
+
+#if SPI_USE_MUTUAL_EXCLUSION
+    /* Release the SPI bus */
+    spiReleaseBus(config->spip);
+#endif /* SPI_USE_MUTUAL_EXCLUSION */
+
+    /* Wait the end of Flash writing */
+    ExternalFlash_WaitForWriteEnd(config, 1);
+
+    /* Release external flash */
+    ExternalFlash_Release(config);
+}
 
 /*===========================================================================*/
 /* Module exported functions.                                                */
@@ -107,7 +166,7 @@ bool FlashSave_Seek(uint32_t uid, int16_t *page_number, uint8_t *size)
     if (page_number != NULL)
     {
         /* If the flash is full return -1 */
-        if (current_page <= flashcfg.num_pages)
+        if (current_page >= flashcfg.num_pages)
             *page_number = -1;
         else
             *page_number = current_page - 1;
@@ -155,15 +214,16 @@ FlashSave_Status FlashSave_Write(uint32_t uid,
     if (page_number == -1)
         return FLASHSAVE_FLASH_FULL;
 
-    if (result == FLASHSAVE_NO_MATCH)
+    if (result == false)
     {
         /* No previous data, save at the end of the flash memory.
            Just in case erase the page. */
         ExternalFlash_ErasePage(&flashcfg, page_number * FLASH_PAGE_SIZE);
-        ExternalFlash_WritePage(&flashcfg,
-                                page_number * FLASH_PAGE_SIZE,
-                                data,
-                                count);
+        FlashSave_WritePage(&flashcfg,
+                            page_number * FLASH_PAGE_SIZE,
+                            uid,
+                            data,
+                            count);
     }
     else
     {
@@ -172,10 +232,11 @@ FlashSave_Status FlashSave_Write(uint32_t uid,
         {
             /* Overwrite old data */
             ExternalFlash_ErasePage(&flashcfg, page_number * FLASH_PAGE_SIZE);
-            ExternalFlash_WritePage(&flashcfg,
-                                    page_number * FLASH_PAGE_SIZE,
-                                    data,
-                                    count);
+            FlashSave_WritePage(&flashcfg,
+                                page_number * FLASH_PAGE_SIZE,
+                                uid,
+                                data,
+                                count);
         }
         else
             return FLASHSAVE_NO_OVERWRITE;

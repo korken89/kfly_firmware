@@ -126,5 +126,8 @@ void ExternalFlash_ReadBuffer(const ExternalFlashConfig *config,
 							  uint32_t address,
                               uint8_t *buffer, 
                               uint16_t count);
+void ExternalFlash_WaitForWriteEnd(const ExternalFlashConfig *config,
+                                   uint32_t delay_ms);
+void ExternalFlash_WriteEnable(const ExternalFlashConfig *config);
 
 #endif
