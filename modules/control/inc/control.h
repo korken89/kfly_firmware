@@ -54,7 +54,10 @@ typedef struct
     /* The general structure containing control reference */
     Flight_Mode_Type mode;
     Target_Direcion_Type target;
-    vector3f_t reference;
+    vector3f_t position_reference;
+    vector3f_t velocity_reference;
+    quaternion_t attitude_reference;
+    vector3f_t rate_reference;
     float throttle;
 } Control_Reference_Type;
 
