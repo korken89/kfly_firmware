@@ -16,10 +16,13 @@
   * |                          |             |              |
   * |  32-bit Unique ID (UID)  |  Data size  |  Saved Data  |
   * |__________________________|_____________|______________|
-  * 
+  *            4 bytes              1 byte      1-250 bytes
+  *            
   * Each block can only span one page as maximum limiting the saved data to be
   * maximum 250 bytes.
-  * The time to complete a save is approximately 11 ms.
+  * 
+  * - The worst case time to complete a save is approximately 50 ms.
+  * - The worst case time to complete a read is approximately 35 ms.
   */
 
 #include "ch.h"
