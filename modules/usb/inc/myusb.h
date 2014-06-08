@@ -23,7 +23,7 @@ extern const SerialUSBConfig serusbcfg;
 /* Global functions */
 bool isUSBActive(void);
 void USBMutexInit(void);
-uint32_t USBSendData(uint8_t *data, uint32_t size, systime_t timeout);
-uint32_t USBReadByte(systime_t timeout);
+size_t USBSendData(uint8_t *data, size_t size, systime_t timeout);
+size_t USBReadByte(systime_t timeout);
 
 #endif
