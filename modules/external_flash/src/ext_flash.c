@@ -448,7 +448,8 @@ void ExternalFlash_ReadBuffer(const ExternalFlashConfig *config,
  *                      operation has completed.
  * 
  * @param[in] config    Pointer to External Flash config.
- * @param[in] delay_ms  Delay between checks in ms. 0 for continous polling.
+ * @param[in] delay_ms  Delay between checks in ms. 0 indicates continuous
+ *                      polling without and delay (blocking).
  */
 void ExternalFlash_WaitForWriteEnd(const ExternalFlashConfig *config,
                                    uint32_t delay_ms)
