@@ -37,7 +37,7 @@ typedef enum
     FLIGHTMODE_VELOCITY,
     FLIGHTMODE_POSITION,
     FLIGHTMODE_POSITION_HOLD
-} Flight_Mode_Type;
+} Flight_Mode;
 
 typedef enum
 {
@@ -47,19 +47,19 @@ typedef enum
     TARGET_VELOCITY_VECTOR,
     TARGET_GOAL,
     TARGET_COORDINATE
-} Target_Direcion_Type;
+} Target_Direcion;
 
 typedef struct
 {
     /* The general structure containing control reference */
-    Flight_Mode_Type mode;
-    Target_Direcion_Type target;
+    Flight_Mode mode;
+    Target_Direcion target;
     vector3f_t position_reference;
     vector3f_t velocity_reference;
     quaternion_t attitude_reference;
     vector3f_t rate_reference;
     float throttle;
-} Control_Reference_Type;
+} Control_Reference;
 
 typedef struct
 {
@@ -69,7 +69,7 @@ typedef struct
     PI_Data_Type velocity_controller[3];
     PI_Data_Type attitude_controller[3];
     PI_Data_Type rate_controller[3];
-} Control_Data_Type;
+} Control_Data;
 
 typedef struct
 {
@@ -99,20 +99,20 @@ typedef struct
         float horizontal;
         float vertical;
     } max_velocity;
-} Control_Limits_Type;
+} Control_Limits;
 
 typedef struct
 {
     float weights[8][4];
-} Output_Mixer_Type;
+} Output_Mixer;
 
 /* Global variable defines */
 
 /* Global function defines */
 void ControlInit(void);
-void vUpdateControlAction(Control_Reference_Type *, Control_Limits_Type *, float);
-Control_Data_Type *ptrGetControlData(void);
-Control_Limits_Type *ptrGetControlLimits(void);
-Output_Mixer_Type *ptrGetOutputMixer(void);
+void vUpdateControlAction(Control_Reference *ref, Control_Limits *limits, float dt);
+Control_Data *ptrGetControlData(void);
+Control_Limits *ptrGetControlLimits(void);
+Output_Mixer *ptrGetOutputMixer(void);
 
 #endif

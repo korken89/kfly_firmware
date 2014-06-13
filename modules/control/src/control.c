@@ -35,10 +35,10 @@
 /* Private Typedefs */
 
 /* Private variable defines */
-CCM_MEMORY static Control_Reference_Type Control_Reference;
-CCM_MEMORY static Control_Data_Type Control_Data;
-CCM_MEMORY static Control_Limits_Type Control_Limits;
-CCM_MEMORY static Output_Mixer_Type Output_Mixer;
+CCM_MEMORY static Control_Reference control_reference;
+CCM_MEMORY static Control_Data control_data;
+CCM_MEMORY static Control_Limits control_limits;
+CCM_MEMORY static Output_Mixer output_mixer;
 
 /* RC Output Configuration */
 static const PWMConfig pwmcfg = {
@@ -63,11 +63,22 @@ static const RCOutput_Configuration rcoutputcfg = {
 /* Global variable defines */
 
 /* Private function defines */
-static vector3f_t vPositionControl(vector3f_t, Control_Limits_Type *, float);
-static vector3f_t vVelocityControl(vector3f_t, Control_Limits_Type *, float);
-static vector3f_t vAttitudeControl(vector3f_t, Control_Limits_Type *, float);
-static void vRateControl(vector3f_t, Control_Limits_Type *, float);
-static void vUpdateOutputs(float, float, float, float);
+static void vPositionControl(Control_Reference *ref,
+                             Control_Limits *limits,
+                             float dt);
+static void vVelocityControl(Control_Reference *ref,
+                             Control_Limits *limits,
+                             float dt);
+static void vAttitudeControl(Control_Reference *ref,
+                             Control_Limits *limits,
+                             float dt);
+static void vRateControl(Control_Reference *ref,
+                         Control_Limits *limits,
+                         float dt);
+static void vUpdateOutputs(float u_throttle,
+                           float u_pitch,
+                           float u_roll,
+                           float u_yaw);
 
 void ControlInit(void)
 {
@@ -83,54 +94,54 @@ void ControlInit(void)
         osalSysHalt("RC output init failed"); /* Initialization failed */
 
     /* Initialize the controllers to 0 */
-    p = (float *)&Control_Data;
+    p = (float *)&control_data;
 
     for (i = 0; i < (CONTROL_DATA_SIZE / 4); i++)
         p[i] = 0.0f;
 
     /* Initialize the limits to 0 */
-    p = (float *)&Control_Limits;
+    p = (float *)&control_limits;
 
     for (i = 0; i < (CONTROL_LIMITS_SIZE / 4); i++)
         p[i] = 0.0f;
 
     /* Initialize the mixer to 0 */
-    p = (float *)&Output_Mixer;
+    p = (float *)&output_mixer;
 
     for (i = 0; i < (OUTPUT_MIXER_SIZE / 4); i++)
         p[i] = 0.0f;
 }
 
-void vUpdateControlAction(Control_Reference_Type *reference, Control_Limits_Type *limits, float dt)
+void vUpdateControlAction(Control_Reference *ref,
+                          Control_Limits *limits,
+                          float dt)
 {
-    vector3f_t u;
-
-    switch (reference->mode)
+    switch (ref->mode)
     {
         case FLIGHTMODE_POSITION_HOLD:
 
             break;
 
         case FLIGHTMODE_POSITION:
-            u = vPositionControl(reference->reference, limits, dt);
-            u = vVelocityControl(u, limits, dt);
-            u = vAttitudeControl(u, limits, dt);
-            vRateControl(u, limits, dt);
+            vPositionControl(ref, limits, dt);
+            vVelocityControl(ref, limits, dt);
+            vAttitudeControl(ref, limits, dt);
+            vRateControl(ref, limits, dt);
             break;
 
         case FLIGHTMODE_VELOCITY:
-            u = vVelocityControl(reference->reference, limits, dt);
-            u = vAttitudeControl(u, limits, dt);
-            vRateControl(u, limits, dt);
+            vVelocityControl(ref, limits, dt);
+            vAttitudeControl(ref, limits, dt);
+            vRateControl(ref, limits, dt);
             break;
 
         case FLIGHTMODE_ATTITUDE:
-            u = vAttitudeControl(reference->reference, limits, dt);
-            vRateControl(u, limits, dt);
+            vAttitudeControl(ref, limits, dt);
+            vRateControl(ref, limits, dt);
             break;
 
         case FLIGHTMODE_RATE:
-            vRateControl(reference->reference, limits, dt);
+            vRateControl(ref, limits, dt);
             break;
 
         case FLIGHTMODE_DISARMED:
@@ -141,19 +152,19 @@ void vUpdateControlAction(Control_Reference_Type *reference, Control_Limits_Type
 
 }
 
-Control_Data_Type *ptrGetControlData(void)
+Control_Data *ptrGetControlData(void)
 {
-    return &Control_Data;
+    return &control_data;
 }
 
-Control_Limits_Type *ptrGetControlLimits(void)
+Control_Limits *ptrGetControlLimits(void)
 {
-    return &Control_Limits;
+    return &control_limits;
 }
 
-Output_Mixer_Type *ptrGetOutputMixer(void)
+Output_Mixer *ptrGetOutputMixer(void)
 {
-    return &Output_Mixer;
+    return &output_mixer;
 }
 
 
@@ -163,31 +174,38 @@ Output_Mixer_Type *ptrGetOutputMixer(void)
  *
  * */
 
-static vector3f_t vPositionControl(vector3f_t reference, Control_Limits_Type *limits, float dt)
+static void vPositionControl(Control_Reference *ref,
+                             Control_Limits *limits,
+                             float dt)
 {
     (void)limits;
-    float error_x, error_y, error_z;
-    vector3f_t u;
+    (void)ref;
+    (void)dt;
 
-    error_x = reference.x - 0.0f; /* Add where the position can be read */
-    error_y = reference.y - 0.0f; /* Add where the position can be read */
-    error_z = reference.z - 0.0f; /* Add where the position can be read */
+    //vector3f_t u, error;
 
-    u.x = fPIUpdate(&Control_Data.position_controller[0], error_x, dt);
-    u.y = fPIUpdate(&Control_Data.position_controller[1], error_y, dt);
-    u.z = fPIUpdate(&Control_Data.position_controller[2], error_z, dt);
+    //error.x = ref->position_reference.x - 0.0f; /* Add where the position can be read */
+    //error.y = ref->position_reference.y - 0.0f; /* Add where the position can be read */
+    //error.z = ref->position_reference.z - 0.0f; /* Add where the position can be read */
+
+    //u.x = fPIUpdate(&control_data.position_controller[0], error.x, dt);
+    //u.y = fPIUpdate(&control_data.position_controller[1], error.y, dt);
+    //u.z = fPIUpdate(&control_data.position_controller[2], error.z, dt);
 
     /* Send control signal to the next step in the cascade */
-    return u;
+    //return u;
 
 }
 
-static vector3f_t vVelocityControl(vector3f_t reference, Control_Limits_Type *limits, float dt)
+static void vVelocityControl(Control_Reference *ref,
+                             Control_Limits *limits,
+                             float dt)
 {
     (void)limits;
-    float error_x, error_y, error_z;
-    vector3f_t u;
+    (void)ref;
+    (void)dt;
 
+    //vector3f_t u, error;
 
     /* *
      *
@@ -195,13 +213,13 @@ static vector3f_t vVelocityControl(vector3f_t reference, Control_Limits_Type *li
      *
      * */
 
-    error_x = reference.x - 0.0f; /* Add where the velocity can be read */
-    error_y = reference.y - 0.0f; /* Add where the velocity can be read */
-    error_z = reference.z - 0.0f; /* Add where the velocity can be read */
+    //error.x = ref->velocity_reference.x - 0.0f; /* Add where the velocity can be read */
+    //error.y = ref->velocity_reference.y - 0.0f; /* Add where the velocity can be read */
+    //error.z = ref->velocity_reference.z - 0.0f; /* Add where the velocity can be read */
 
-    u.x = fPIUpdate(&Control_Data.velocity_controller[0], error_x, dt);
-    u.y = fPIUpdate(&Control_Data.velocity_controller[1], error_y, dt);
-    u.z = fPIUpdate(&Control_Data.velocity_controller[2], error_z, dt);
+    //u.x = fPIUpdate(&control_data.velocity_controller[0], error.x, dt);
+    //u.y = fPIUpdate(&control_data.velocity_controller[1], error.y, dt);
+    //u.z = fPIUpdate(&control_data.velocity_controller[2], error.z, dt);
 
     /* *
      *
@@ -210,18 +228,18 @@ static vector3f_t vVelocityControl(vector3f_t reference, Control_Limits_Type *li
      * */
 
     /* Send control signal to the next step in the cascade */
-    return u;
+    //return u;
 }
 
-static vector3f_t vAttitudeControl(vector3f_t reference, Control_Limits_Type *limits, float dt)
+static void vAttitudeControl(Control_Reference *ref,
+                             Control_Limits *limits,
+                             float dt)
 {
     (void)limits;
-    (void)reference;
+    (void)ref;
     (void)dt;
 
-    //float error_x, error_y, error_z;
-    vector3f_t u = reference;
-
+    //vector3f_t u, error;
 
     /* *
      *
@@ -235,19 +253,23 @@ static vector3f_t vAttitudeControl(vector3f_t reference, Control_Limits_Type *li
      *
      * */
 
-    // u.x = fPIUpdate(&Control_Data.attitude_controller[0], error_x, dt);
-    // u.y = fPIUpdate(&Control_Data.attitude_controller[1], error_y, dt);
-    // u.z = fPIUpdate(&Control_Data.attitude_controller[2], error_z, dt);
+    // u.x = fPIUpdate(&control_data.attitude_controller[0], error.x, dt);
+    // u.y = fPIUpdate(&control_data.attitude_controller[1], error.y, dt);
+    // u.z = fPIUpdate(&control_data.attitude_controller[2], error.z, dt);
 
     /* Send control signal to the next step in the cascade */
-    return u;
+    
 }
 
-static void vRateControl(vector3f_t reference, Control_Limits_Type *limits, float dt)
+static void vRateControl(Control_Reference *ref,
+                         Control_Limits *limits,
+                         float dt)
 {
     (void)limits;
-    float error_x, error_y, error_z;
-    vector3f_t u;
+    (void)ref;
+    (void)dt;
+
+    //vector3f_t u, error;
 
 
     /* *
@@ -256,29 +278,32 @@ static void vRateControl(vector3f_t reference, Control_Limits_Type *limits, floa
      *
      * */
 
-    error_x = reference.x - 0.0f; /* Add where the rotational rate can be read */
-    error_y = reference.y - 0.0f; /* Add where the rotational rate can be read */
-    error_z = reference.z - 0.0f; /* Add where the rotational rate can be read */
+    //error.x = ref->rate_reference.x - 0.0f; /* Add where the rotational rate can be read */
+    //error.y = ref->rate_reference.y - 0.0f; /* Add where the rotational rate can be read */
+    //error.z = ref->rate_reference.z - 0.0f; /* Add where the rotational rate can be read */
 
-    u.x = fPIUpdate(&Control_Data.rate_controller[0], error_x, dt);
-    u.y = fPIUpdate(&Control_Data.rate_controller[1], error_y, dt);
-    u.z = fPIUpdate(&Control_Data.rate_controller[2], error_z, dt);
+    //u.x = fPIUpdate(&control_data.rate_controller[0], error.x, dt);
+    //u.y = fPIUpdate(&control_data.rate_controller[1], error.y, dt);
+    //u.z = fPIUpdate(&control_data.rate_controller[2], error.z, dt);
 
     /* Send control signal to the engines */
-    vUpdateOutputs(Control_Reference.throttle, u.x, u.y, u.z);
+    //vUpdateOutputs(control_reference.throttle, u.x, u.y, u.z);
 }
 
-static void vUpdateOutputs(float u_throttle, float u_pitch, float u_roll, float u_yaw)
+static void vUpdateOutputs(float u_throttle,
+                           float u_pitch,
+                           float u_roll,
+                           float u_yaw)
 {
     float sum;
     int i;
 
     for (i = 0; i < 8; i++)
     {
-        sum =  u_throttle * Output_Mixer.weights[i][0];
-        sum += u_pitch    * Output_Mixer.weights[i][1];
-        sum += u_roll     * Output_Mixer.weights[i][2];
-        sum += u_yaw      * Output_Mixer.weights[i][3];
+        sum =  u_throttle * output_mixer.weights[i][0];
+        sum += u_pitch    * output_mixer.weights[i][1];
+        sum += u_roll     * output_mixer.weights[i][2];
+        sum += u_yaw      * output_mixer.weights[i][3];
 
         RCOutputSetChannelWidthRelativePositive(&rcoutputcfg, i, sum);
     }
