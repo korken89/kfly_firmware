@@ -14,9 +14,9 @@
 #include "crc.h"
 #include "pid.h"
 #include "rc_input.h"
-#include "control.h"
 #include "sensor_read.h"
 #include "estimation.h"
+#include "control.h"
 #include "statemachine_parsers.h"
 
 static IMU_Calibration imu_calibration;
@@ -187,13 +187,13 @@ static void ParseGenericSetControllerData(const uint32_t pi_offset,
                                           const uint32_t limit_count, 
                                           uint8_t *data)
 {
-    PI_Data_Type *PI_settings;
+    PI_Data *PI_settings;
     uint8_t *save_location;
     uint32_t i, j;
 
-    /* Cast the control data to an array of PI_Data_Type
+    /* Cast the control data to an array of PI_Data
     to access each PI controller */
-    PI_settings = (PI_Data_Type *)ptrGetControlData();
+    PI_settings = (PI_Data *)ptrGetControlData();
 
     /* Write only the PI coefficients */
     for (i = 0; i < 3; i++) 
