@@ -29,6 +29,7 @@
 #include "quaternion.h"
 #include "attitude_ekf.h"
 #include "control.h"
+#include "rc_input.h"
 #include "rc_output.h"
 
 /*===========================================================================*/
@@ -70,6 +71,13 @@ static const RCOutput_Configuration rcoutputcfg = {
 /*===========================================================================*/
 /* Module local functions.                                                   */
 /*===========================================================================*/
+static void vRCInputsToControlAction(Control_Reference *ref,
+                                     Control_Limits *limits)
+{
+    (void)ref;
+    (void)limits;
+}
+
 /*static void vPositionControl(Control_Reference *ref,
                              Control_Limits *limits,
                              Control_Data *controllers,
@@ -200,6 +208,7 @@ void ControlInit(void)
 void vUpdateControlAction(quaternion_t *q_m, vector3f_t *omega_m, float dt)
 {
     /* Add code for reference generation from RC Inputs and flight mode check */
+    vRCInputsToControlAction(&control_reference, &control_limits);
 
     switch (control_reference.mode)
     {
