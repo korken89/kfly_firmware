@@ -2,15 +2,7 @@
 #define __QUATERNION_H
 
 /* Standard includes */
-
-
-/* System includes */
-
-/* Scheduler includes */
-
-/* KFly includes */
-
-/* Includes */
+#include <math.h>
 
 /* Defines */
 #define PI ( 3.14159265359f )
