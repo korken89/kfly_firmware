@@ -11,13 +11,13 @@ typedef struct
     float I_gain;
     float I_limit;
     float I_state;
-} PI_Data_Type;
+} PI_Data;
 
 /* Global variable defines */
 
 /* Global function defines */
-void vInitPIController(PI_Data_Type *, float, float, float);
-void vUpdatePISettings(PI_Data_Type *, float, float, float);
-float fPIUpdate(PI_Data_Type *, float, float);
+void vInitPIController(PI_Data *, float, float, float);
+void vUpdatePISettings(PI_Data *, float, float, float);
+float fPIUpdate(PI_Data *, float, float);
 
 #endif
