@@ -74,6 +74,7 @@ static void vAttitudeControl(Control_Reference *ref,
                              float dt);
 static void vRateControl(Control_Reference *ref,
                          Control_Limits *limits,
+                         vector3f_t *omega,
                          float dt);
 static void vUpdateOutputs(float u_throttle,
                            float u_pitch,
@@ -263,31 +264,29 @@ static void vAttitudeControl(Control_Reference *ref,
 
 static void vRateControl(Control_Reference *ref,
                          Control_Limits *limits,
+                         vector3f_t *omega,
                          float dt)
 {
-    (void)limits;
-    (void)ref;
-    (void)dt;
+    vector3f_t u, error;
 
-    //vector3f_t u, error;
+    /* Calculate the bounded errors */
+    error.x = bound( limits->max_rate.pitch,
+                    -limits->max_rate.pitch,
+                     ref->rate_reference.x) - omega->x;
+    error.y = bound( limits->max_rate.roll,
+                    -limits->max_rate.roll,
+                     ref->rate_reference.y) - omega->y;
+    error.z = bound( limits->max_rate.yaw,
+                    -limits->max_rate.yaw,
+                     ref->rate_reference.z) - omega->z;
 
-
-    /* *
-     *
-     * TODO: Add the saturation of rotational rates.
-     *
-     * */
-
-    //error.x = ref->rate_reference.x - 0.0f; /* Add where the rotational rate can be read */
-    //error.y = ref->rate_reference.y - 0.0f; /* Add where the rotational rate can be read */
-    //error.z = ref->rate_reference.z - 0.0f; /* Add where the rotational rate can be read */
-
-    //u.x = fPIUpdate(&control_data.rate_controller[0], error.x, dt);
-    //u.y = fPIUpdate(&control_data.rate_controller[1], error.y, dt);
-    //u.z = fPIUpdate(&control_data.rate_controller[2], error.z, dt);
+    /* Update the PI controllers */
+    u.x = fPIUpdate(&control_data.rate_controller[0], error.x, dt);
+    u.y = fPIUpdate(&control_data.rate_controller[1], error.y, dt);
+    u.z = fPIUpdate(&control_data.rate_controller[2], error.z, dt);
 
     /* Send control signal to the engines */
-    //vUpdateOutputs(control_reference.throttle, u.x, u.y, u.z);
+    vUpdateOutputs(ref->throttle, u.x, u.y, u.z);
 }
 
 static void vUpdateOutputs(float u_throttle,

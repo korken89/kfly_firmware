@@ -58,17 +58,22 @@ typedef struct
     vector3f_t velocity_reference;
     quaternion_t attitude_reference;
     vector3f_t rate_reference;
-    float throttle;
+    struct {
+        float pitch;
+        float roll;
+        float yaw;
+        float throttle;
+    } actuator_desired;
 } Control_Reference;
 
 typedef struct
 {
     /* The controller gains, integral limits and states
      * of each controller in the cascade scheme */
-    PI_Data_Type position_controller[3];
-    PI_Data_Type velocity_controller[3];
-    PI_Data_Type attitude_controller[3];
-    PI_Data_Type rate_controller[3];
+    PI_Data position_controller[3];
+    PI_Data velocity_controller[3];
+    PI_Data attitude_controller[3];
+    PI_Data rate_controller[3];
 } Control_Data;
 
 typedef struct
