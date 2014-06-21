@@ -6,7 +6,9 @@
 #include "linear_algebra.h"
 #include "trigonometry.h"
 
-/* Defines */
+/*===========================================================================*/
+/* Module global definitions.                                                */
+/*===========================================================================*/
 #define ESTIMATION_DT   (0.005f)
 
 /* Process covariances */
@@ -44,35 +46,74 @@
 /* Sizes */
 #define ESTIMATION_ATTITUDE_STATES_SIZE     (10*4)
 
-/* Typedefs */
+/*===========================================================================*/
+/* Module data structures and types.                                         */
+/*===========================================================================*/
+
+/**
+ * @brief   Attitude estimation states.
+ */
 typedef struct
 {
+    /**
+     * @brief   Attitude quaternion.
+     */
     quaternion_t q;
+    /**
+     * @brief   Angular rate in rad/s.
+     */
     vector3f_t w;
+    /**
+     * @brief   Angular rate bias in rad/s.
+     */
     vector3f_t wb;
 } Attitude_Estimation_States;
 
+/**
+ * @brief   EKF matrices.
+ */
 typedef struct
 {
-    float Sp[6][6];         /* Square-root error covariance matrix          */
-    float T1[6][6];         /* Temporary matrix 1                           */
-    float Ss[3][3];         /* Square-root innovation covariance matrix     */
-    float T2[3][3];         /* Temporary matrix 2                           */
-    float T3[3][6];         /* Temporary matrix 3                           */
+    /**
+     * @brief   Square-root error covariance matrix.
+     */
+    float Sp[6][6];
+     /**
+     * @brief   Temporary matrix 1.
+     */
+    float T1[6][6];
+     /**
+     * @brief   Square-root innovation covariance matrix.
+     */
+    float Ss[3][3];
+     /**
+     * @brief   Temporary matrix 2.
+     */
+    float T2[3][3];
+     /**
+     * @brief   Temporary matrix 3.
+     */
+    float T3[3][6];
 } Attitude_Estimation_Data;
 
-/* Global variable defines */
+/*===========================================================================*/
+/* Module macros.                                                            */
+/*===========================================================================*/
 
-/* Global function defines */
+/*===========================================================================*/
+/* Module inline functions.                                                  */
+/*===========================================================================*/
+
+/*===========================================================================*/
+/* External declarations.                                                    */
+/*===========================================================================*/
 void AttitudeEstimationInit(Attitude_Estimation_States *states,
                             Attitude_Estimation_Data *settings,
                             quaternion_t *start_attitude,
                             vector3f_t *start_bias);
-
 void GenerateStartingGuess(vector3f_t *acc,
                            vector3f_t *mag, 
                            quaternion_t *attitude_guess);
-
 void InnovateAttitudeEKF(Attitude_Estimation_States *states,
                          Attitude_Estimation_Data *settings, 
                          float gyro[3],

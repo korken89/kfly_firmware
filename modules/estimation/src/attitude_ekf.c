@@ -3,25 +3,36 @@
  *
  * */
 
-/* Includes */
 #include <math.h>
 #include "attitude_ekf.h"
 
-/* Private Defines */
+/*===========================================================================*/
+/* Module local definitions.                                                 */
+/*===========================================================================*/
 
-/* Private Typedefs */
+/*===========================================================================*/
+/* Module exported variables.                                                */
+/*===========================================================================*/
 
-/* Global variable defines */
+/*===========================================================================*/
+/* Module local variables and types.                                         */
+/*===========================================================================*/
 
-/* Private function defines */
+/*===========================================================================*/
+/* Module local functions.                                                   */
+/*===========================================================================*/
+
+/*===========================================================================*/
+/* Module exported functions.                                                */
+/*===========================================================================*/
 
 /**
  * @brief   Used to initialize and zero the matrices and states of the EKF
  * 
- * @param[out] states           Pointer to the EKF states
- * @param[out] data             Pointer to the EKF data holder
- * @param[in] start_attitude    Pointer to the starting guess of attitude
- * @param[in] start_bias        Pointer to the starting guess of gyro bias
+ * @param[out] states           Pointer to the EKF states.
+ * @param[out] data             Pointer to the EKF data holder.
+ * @param[in] start_attitude    Pointer to the starting guess of attitude.
+ * @param[in] start_bias        Pointer to the starting guess of gyro bias.
  */
 void AttitudeEstimationInit(Attitude_Estimation_States *states,
                             Attitude_Estimation_Data *data,
@@ -71,13 +82,13 @@ void AttitudeEstimationInit(Attitude_Estimation_States *states,
 }
 
 /**
- * @brief   Generates a staring guess attitude quaternion for the EKF
+ * @brief   Generates a staring guess attitude quaternion for the EKF,
  * 
  * @param[in] acc               Acceleration vector pointing approximating
- *                              gravity
+ *                              gravity.
  * @param[in] mag               Magnetic vector approximating the earth's 
- *                              magnetic field
- * @param[out] attitude_guess   Output quaternion
+ *                              magnetic field.
+ * @param[out] attitude_guess   Output quaternion.
  */
 void GenerateStartingGuess(vector3f_t *acc,
                            vector3f_t *mag, 
@@ -117,14 +128,14 @@ void GenerateStartingGuess(vector3f_t *acc,
  * @param u_sum[in]       The sum of squared control signals.
  * @param dt[in]          The size of the time step.
  */
-void InnovateAttitudeEKF(   Attitude_Estimation_States *states,
-                            Attitude_Estimation_Data *data, 
-                            float gyro[3],
-                            float acc[3],
-                            float mag[3],
-                            float beta,
-                            float u_sum,
-                            float dt)
+void InnovateAttitudeEKF(Attitude_Estimation_States *states,
+                         Attitude_Estimation_Data *data, 
+                         float gyro[3],
+                         float acc[3],
+                         float mag[3],
+                         float beta,
+                         float u_sum,
+                         float dt)
 {
     (void)beta;
     (void)u_sum;

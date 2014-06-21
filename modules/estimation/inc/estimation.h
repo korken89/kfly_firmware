@@ -3,19 +3,27 @@
 
 #include "attitude_ekf.h"
 
-/* Defines */
-#define ESTIMATION_RESET_EVENT				EVENT_MASK(31) /* last event bit is 
-															  set as reset bit
-															*/
+/*===========================================================================*/
+/* Module global definitions.                                                */
+/*===========================================================================*/
+#define ESTIMATION_RESET_EVENT          EVENT_MASK(31)
 
-/* Typedefs */
+/*===========================================================================*/
+/* Module data structures and types.                                         */
+/*===========================================================================*/
 
-/* Global variable defines */
+/*===========================================================================*/
+/* Module macros.                                                            */
+/*===========================================================================*/
 
-/* Global function defines */
+/*===========================================================================*/
+/* Module inline functions.                                                  */
+/*===========================================================================*/
+
+/*===========================================================================*/
+/* External declarations.                                                    */
+/*===========================================================================*/
 void EstimationInit(void);
-void vTaskRunEstimation(void *);
-
 void ResetEstimation(void);
 Attitude_Estimation_States *ptrGetAttitudeEstimationStates(void);
 
