@@ -9,11 +9,26 @@
 /*===========================================================================*/
 /* Module data structures and types.                                         */
 /*===========================================================================*/
+/**
+ * @brief   PI controller data structure.
+ */
 typedef struct
 {
+	/**
+ 	 * @brief   Controller proportional gain.
+ 	 */
     float P_gain;
+    /**
+ 	 * @brief   Controller integral gain.
+ 	 */
     float I_gain;
+    /**
+ 	 * @brief   Controller integral limit.
+ 	 */
     float I_limit;
+    /**
+ 	 * @brief   Current controller integral state.
+ 	 */
     float I_state;
 } PI_Data;
 
