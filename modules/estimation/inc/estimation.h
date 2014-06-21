@@ -4,7 +4,6 @@
 #include "attitude_ekf.h"
 
 /* Defines */
-#define ESTIMATION_ATTITUDE_STATES_SIZE     (28)
 #define ESTIMATION_RESET_EVENT				EVENT_MASK(31) /* last event bit is 
 															  set as reset bit
 															*/
