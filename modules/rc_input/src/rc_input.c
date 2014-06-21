@@ -10,23 +10,21 @@
 #include "rc_input.h"
 #include "trigonometry.h"
 
-/* Global variable defines */
-
-/* Private function defines */
-static void ParseCPPMInput(RCInput_Data *data,
-                           uint32_t capture);
-static void ParseRSSIInput(RCInput_Data *data,
-                           uint32_t width,
-                           uint32_t period);
-static void RCInputDataReset(RCInput_Data *data);
-static void RCInputSettingsReset(RCInput_Settings *data);
-static uint32_t RoleToIndex(Input_Role_Selector role);
-static void vt_no_connection_timeout_callback(void *p);
+/*===========================================================================*/
+/* Module local definitions.                                                 */
+/*===========================================================================*/
 static void cppm_callback(EICUDriver *eicup, eicuchannel_t channel);
 static void rssi_callback(EICUDriver *eicup, eicuchannel_t channel);
 static void pwm_callback(EICUDriver *eicup, eicuchannel_t channel);
+static void vt_no_connection_timeout_callback(void *p);
 
-/* Private variable defines */
+/*===========================================================================*/
+/* Module exported variables.                                                */
+/*===========================================================================*/
+
+/*===========================================================================*/
+/* Module local variables and types.                                         */
+/*===========================================================================*/
 CCM_MEMORY static RCInput_Data rcinput_data;
 CCM_MEMORY static RCInput_Settings rcinput_settings;
 CCM_MEMORY static uint64_t role_lookup;
@@ -102,164 +100,11 @@ static const EICUConfig pwm_rcinputcfg_2 = {
     0
 };
 
-
-
-/* Private external functions */
-
-/**
- * @brief           Initializes RC inputs.
- * 
- * @param[in] mode  Input mode for the RC inputs.
- * @return          MSG_OK if the initialization was successful.
- */
-msg_t RCInputInit(RCInput_Mode_Selector mode)
-{
-    msg_t status = MSG_OK;
-    int i;
-
-    /* Initialize the RC Input event source */
-    osalSysLock();
-    if (rcinput_es.es_next == NULL)
-        osalEventObjectInit(&rcinput_es);
-    osalSysUnlock();
-
-    /* If the EICU driver was already in use, disable it */
-    if (EICUD3.state != EICU_STOP)
-        eicuDisable(&EICUD3);
-    if (EICUD9.state != EICU_STOP)
-        eicuDisable(&EICUD9);
-    if (EICUD12.state != EICU_STOP)
-        eicuDisable(&EICUD12);
-
-    /* Reset data structures */
-    RCInputDataReset(&rcinput_data);
-    RCInputSettingsReset(&rcinput_settings);
-
-    /* Configure the input capture unit */
-    if (mode == MODE_CPPM_INPUT)
-    {
-        /* Start and enable the EICU driver */
-        eicuStart(&EICUD9, &cppm_rcinputcfg);
-        eicuStart(&EICUD12, &rssi_rcinputcfg);
-        eicuEnable(&EICUD9);
-        eicuEnable(&EICUD12);
-    }
-    else if (mode == MODE_PWM_INPUT)
-    {
-        /* Start and enable the EICU driver */
-        eicuStart(&EICUD3, &pwm_rcinputcfg_2);
-        eicuStart(&EICUD9, &pwm_rcinputcfg_1);
-        eicuStart(&EICUD12, &pwm_rcinputcfg_1);
-        eicuEnable(&EICUD3);
-        eicuEnable(&EICUD9);
-        eicuEnable(&EICUD12);
-    }
-    else /* Invalid input, return error */
-        return MSG_RESET;
-
-    /* Set the settings to the corresponding mode */
-    rcinput_settings.mode = mode;
-
-    /* For each role associated with a channel, generate
-       the inverse lookup table */
-    role_lookup = 0;
-
-    for (i = 0; i < RCINPUT_MAX_NUMBER_OF_INPUTS; i++)
-        if (rcinput_settings.role[i] != ROLE_OFF)
-            role_lookup |= (i << ((rcinput_settings.role[i] - 1) *
-                                   RCINPUT_ROLE_TO_INDEX_BITS));
-
-    return status;
-}
-
-/**
- * @brief           Get the input level of the corresponding role and returns
- *                  it in the span of -1.0 to 1.0 or 0.0 to 1.0.
- * 
- * @param[in] role  Input role for the RC input.
- * @return          The curernt input value of the corresponding role.
- */
-float RCInputGetInputLevel(Input_Role_Selector role)
-{
-    int32_t value, idx;
-    float level;
-
-    /* Get the position in the array for the requested role */
-    idx = RoleToIndex(role);
-
-    /* Check the validity of the index */
-    if (idx == RCINPUT_ROLE_TO_INDEX_MASK)
-        return 0.0f;
-
-    /* Get the raw value from the raw data structure */
-    value = rcinput_data.value[idx];
-
-    /* Check so the data and input is valid */
-    if ((value == 0) ||
-        (role == ROLE_OFF) ||
-        (rcinput_data.active_connection == FALSE))
-        return 0.0f;
-
-    /* Remove the center offset */
-    level = (float)(value - rcinput_settings.ch_center[idx]);
-
-    /* If it is larger than zero */
-    if (level > 0.0f)
-    {
-        /* If the settings does not allow positive output */
-        if (rcinput_settings.ch_center[idx] == rcinput_settings.ch_top[idx])
-            return 0.0f;
-
-        /* Use the calibration to calculate the position */
-        level = level / (float)(rcinput_settings.ch_top[idx] - 
-                                rcinput_settings.ch_center[idx]);
-    }
-    /* If it is smaller than zero */
-    else if (level < 0.0f)
-    {
-        /* If the settings does not allow negative output */
-        if (rcinput_settings.ch_center[idx] == rcinput_settings.ch_bottom[idx])
-            return 0.0f;
-
-        /* Use the calibration to calculate the position */
-        level = level / (float)(rcinput_settings.ch_center[idx] - 
-                                rcinput_settings.ch_bottom[idx]);
-    }
-
-    return bound(1.0f, -1.0f, level);
-}
-
-/**
- * @brief           Return the pointer to the RC Input data.
- * 
- * @return          Pointer to the RC input data.
- */
-RCInput_Data *ptrGetRCInputData(void)
-{
-    return &rcinput_data;
-}
-
-/**
- * @brief           Return the pointer to the RC Input settings.
- * 
- * @return          Pointer to the RC input settings.
- */
-RCInput_Settings *ptrGetRCInputSettings(void)
-{
-    return &rcinput_settings;
-}
-
-/**
- * @brief           Return the pointer to the RC Input event source.
- * 
- * @return          Pointer to the RC input event source.
- */
-event_source_t *ptrGetRCInputEventSource(void)
-{
-    return &rcinput_es;
-}
-
 static uint16_t rssi_counter = 0;
+
+/*===========================================================================*/
+/* Module local functions.                                                   */
+/*===========================================================================*/
 
 /**
  * @brief               Parses CPPM inputs.
@@ -518,4 +363,161 @@ static void pwm_callback(EICUDriver *eicup, eicuchannel_t channel)
 {
     (void)eicup;
     (void)channel;
+}
+
+/*===========================================================================*/
+/* Module exported functions.                                                */
+/*===========================================================================*/
+
+/**
+ * @brief           Initializes RC inputs.
+ * 
+ * @param[in] mode  Input mode for the RC inputs.
+ * @return          MSG_OK if the initialization was successful.
+ */
+msg_t RCInputInit(RCInput_Mode_Selector mode)
+{
+    msg_t status = MSG_OK;
+    int i;
+
+    /* Initialize the RC Input event source */
+    osalSysLock();
+    if (rcinput_es.es_next == NULL)
+        osalEventObjectInit(&rcinput_es);
+    osalSysUnlock();
+
+    /* If the EICU driver was already in use, disable it */
+    if (EICUD3.state != EICU_STOP)
+        eicuDisable(&EICUD3);
+    if (EICUD9.state != EICU_STOP)
+        eicuDisable(&EICUD9);
+    if (EICUD12.state != EICU_STOP)
+        eicuDisable(&EICUD12);
+
+    /* Reset data structures */
+    RCInputDataReset(&rcinput_data);
+    RCInputSettingsReset(&rcinput_settings);
+
+    /* Configure the input capture unit */
+    if (mode == MODE_CPPM_INPUT)
+    {
+        /* Start and enable the EICU driver */
+        eicuStart(&EICUD9, &cppm_rcinputcfg);
+        eicuStart(&EICUD12, &rssi_rcinputcfg);
+        eicuEnable(&EICUD9);
+        eicuEnable(&EICUD12);
+    }
+    else if (mode == MODE_PWM_INPUT)
+    {
+        /* Start and enable the EICU driver */
+        eicuStart(&EICUD3, &pwm_rcinputcfg_2);
+        eicuStart(&EICUD9, &pwm_rcinputcfg_1);
+        eicuStart(&EICUD12, &pwm_rcinputcfg_1);
+        eicuEnable(&EICUD3);
+        eicuEnable(&EICUD9);
+        eicuEnable(&EICUD12);
+    }
+    else /* Invalid input, return error */
+        return MSG_RESET;
+
+    /* Set the settings to the corresponding mode */
+    rcinput_settings.mode = mode;
+
+    /* For each role associated with a channel, generate
+       the inverse lookup table */
+    role_lookup = 0;
+
+    for (i = 0; i < RCINPUT_MAX_NUMBER_OF_INPUTS; i++)
+        if (rcinput_settings.role[i] != ROLE_OFF)
+            role_lookup |= (i << ((rcinput_settings.role[i] - 1) *
+                                   RCINPUT_ROLE_TO_INDEX_BITS));
+
+    return status;
+}
+
+/**
+ * @brief           Get the input level of the corresponding role and returns
+ *                  it in the span of -1.0 to 1.0 or 0.0 to 1.0.
+ * 
+ * @param[in] role  Input role for the RC input.
+ * @return          The curernt input value of the corresponding role.
+ */
+float RCInputGetInputLevel(Input_Role_Selector role)
+{
+    int32_t value, idx;
+    float level;
+
+    /* Get the position in the array for the requested role */
+    idx = RoleToIndex(role);
+
+    /* Check the validity of the index */
+    if (idx == RCINPUT_ROLE_TO_INDEX_MASK)
+        return 0.0f;
+
+    /* Get the raw value from the raw data structure */
+    value = rcinput_data.value[idx];
+
+    /* Check so the data and input is valid */
+    if ((value == 0) ||
+        (role == ROLE_OFF) ||
+        (rcinput_data.active_connection == FALSE))
+        return 0.0f;
+
+    /* Remove the center offset */
+    level = (float)(value - rcinput_settings.ch_center[idx]);
+
+    /* If it is larger than zero */
+    if (level > 0.0f)
+    {
+        /* If the settings does not allow positive output */
+        if (rcinput_settings.ch_center[idx] == rcinput_settings.ch_top[idx])
+            return 0.0f;
+
+        /* Use the calibration to calculate the position */
+        level = level / (float)(rcinput_settings.ch_top[idx] - 
+                                rcinput_settings.ch_center[idx]);
+    }
+    /* If it is smaller than zero */
+    else if (level < 0.0f)
+    {
+        /* If the settings does not allow negative output */
+        if (rcinput_settings.ch_center[idx] == rcinput_settings.ch_bottom[idx])
+            return 0.0f;
+
+        /* Use the calibration to calculate the position */
+        level = level / (float)(rcinput_settings.ch_center[idx] - 
+                                rcinput_settings.ch_bottom[idx]);
+    }
+
+    return bound(1.0f, -1.0f, level);
+}
+
+/**
+ * @brief           Return the pointer to the RC Input data.
+ * 
+ * @return          Pointer to the RC input data.
+ */
+RCInput_Data *ptrGetRCInputData(void)
+{
+    return &rcinput_data;
+}
+
+/**
+ * @brief           Return the pointer to the RC Input settings.
+ * 
+ * @return          Pointer to the RC input settings.
+ */
+RCInput_Settings *ptrGetRCInputSettings(void)
+{
+    return &rcinput_settings;
+}
+
+/**
+ * @brief           Return the pointer to the RC Input event source.
+ * 
+ * @return          Pointer to the RC input event source.
+ */
+event_source_t *ptrGetRCInputEventSource(void)
+{
+    return &rcinput_es;
 }
