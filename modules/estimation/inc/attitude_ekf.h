@@ -41,10 +41,14 @@
                                                        approximation equal 
                                                        the angle  */
 
+/* Sizes */
+#define ESTIMATION_ATTITUDE_STATES_SIZE     (10*4)
+
 /* Typedefs */
 typedef struct
 {
     quaternion_t q;
+    vector3f_t w;
     vector3f_t wb;
 } Attitude_Estimation_States;
 

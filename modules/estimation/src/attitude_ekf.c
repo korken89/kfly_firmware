@@ -34,6 +34,10 @@ void AttitudeEstimationInit(Attitude_Estimation_States *states,
     states->q.q2 = start_attitude->q2;
     states->q.q3 = start_attitude->q3;
 
+    states->w.x = 0.0f;
+    states->w.y = 0.0f;
+    states->w.z = 0.0f;
+
     states->wb.x = start_bias->x;
     states->wb.y = start_bias->y;
     states->wb.z = start_bias->z;
@@ -441,8 +445,12 @@ void InnovateAttitudeEKF(   Attitude_Estimation_States *states,
     states->wb.y += x_hat[4];
     states->wb.z += x_hat[5];
 
+    /* Save the current estimated angular rate */
+    states->w.x = gyro[0] - states->wb.x;
+    states->w.y = gyro[1] - states->wb.y;
+    states->w.z = -gyro[2] - states->wb.z;
+
     /*
      *      End of filter!
      */ 
 }
-
