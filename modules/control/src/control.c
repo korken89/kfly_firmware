@@ -199,6 +199,8 @@ void ControlInit(void)
 
 void vUpdateControlAction(quaternion_t *q_m, vector3f_t *omega_m, float dt)
 {
+    /* Add code for reference generation from RC Inputs and flight mode check */
+
     switch (control_reference.mode)
     {
         //case FLIGHTMODE_POSITION_HOLD:
