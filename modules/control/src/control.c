@@ -240,6 +240,7 @@ void vUpdateControlAction(quaternion_t *q_m, vector3f_t *omega_m, float dt)
 
         case FLIGHTMODE_DISARMED:
         default:
+            
             /* Disable all outputs */
             control_reference.actuator_desired.pitch = 0.0f;
             control_reference.actuator_desired.roll = 0.0f;

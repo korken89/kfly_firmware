@@ -5,7 +5,9 @@
 #include "trigonometry.h"
 #include "quaternion.h"
 
-/* Defines */
+/*===========================================================================*/
+/* Module global definitions.                                                */
+/*===========================================================================*/
 #define RATE_PI_OFFSET          0
 #define ATTITUDE_PI_OFFSET      3
 #define VELOCITY_PI_OFFSET      6
@@ -27,8 +29,9 @@
 #define CONTROL_LIMITS_SIZE     (10*4)
 #define CONTROL_REFERENCE_SIZE  (17 * 4 + 2)
 
-
-/* Typedefs */
+/*===========================================================================*/
+/* Module data structures and types.                                         */
+/*===========================================================================*/
 typedef enum PACKED_VAR
 {
     /* The different flight modes available */
@@ -113,9 +116,17 @@ typedef struct
     float weights[8][4];
 } Output_Mixer;
 
-/* Global variable defines */
+/*===========================================================================*/
+/* Module macros.                                                            */
+/*===========================================================================*/
 
-/* Global function defines */
+/*===========================================================================*/
+/* Module inline functions.                                                  */
+/*===========================================================================*/
+
+/*===========================================================================*/
+/* External declarations.                                                    */
+/*===========================================================================*/
 void ControlInit(void);
 void vUpdateControlAction(quaternion_t *q_m, vector3f_t *omega_m, float dt);
 Control_Data *ptrGetControlData(void);
