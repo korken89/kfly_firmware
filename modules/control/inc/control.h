@@ -29,7 +29,7 @@
 
 
 /* Typedefs */
-typedef enum
+typedef enum PACKED_VAR
 {
     /* The different flight modes available */
     FLIGHTMODE_DISARMED = 0,
@@ -41,7 +41,7 @@ typedef enum
     FLIGHTMODE_POSITION_HOLD
 } Flight_Mode;
 
-typedef enum
+typedef enum PACKED_VAR
 {
     /* This determines where the system will be looking
      * while following velocity and position commands */
