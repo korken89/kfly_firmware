@@ -25,6 +25,7 @@
 #define OUTPUT_MIXER_SIZE       (4*8*4)
 #define CONTROL_DATA_SIZE       (12*PI_DATA_SIZE)
 #define CONTROL_LIMITS_SIZE     (10*4)
+#define CONTROL_REFERENCE_SIZE  ()
 
 
 /* Typedefs */
@@ -32,6 +33,7 @@ typedef enum
 {
     /* The different flight modes available */
     FLIGHTMODE_DISARMED = 0,
+    FLIGHTMODE_DIRECT_CONTROL,
     FLIGHTMODE_RATE,
     FLIGHTMODE_ATTITUDE,
     FLIGHTMODE_VELOCITY,
@@ -52,8 +54,6 @@ typedef enum
 typedef struct
 {
     /* The general structure containing control reference */
-    Flight_Mode mode;
-    Target_Direcion target;
     vector3f_t position_reference;
     vector3f_t velocity_reference;
     quaternion_t attitude_reference;
@@ -64,6 +64,8 @@ typedef struct
         float yaw;
         float throttle;
     } actuator_desired;
+    Flight_Mode mode;
+    Target_Direcion target;
 } Control_Reference;
 
 typedef struct
@@ -115,7 +117,7 @@ typedef struct
 
 /* Global function defines */
 void ControlInit(void);
-void vUpdateControlAction(Control_Reference *ref, Control_Limits *limits, float dt);
+void vUpdateControlAction(quaternion_t *q_m, vector3f_t *omega_m, float dt);
 Control_Data *ptrGetControlData(void);
 Control_Limits *ptrGetControlLimits(void);
 Output_Mixer *ptrGetOutputMixer(void);
