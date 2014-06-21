@@ -68,9 +68,25 @@ static const RCOutput_Configuration rcoutputcfg = {
     &pwmcfg
 };
 
+CCM_MEMORY static THD_WORKING_AREA(waThreadControl, 256);
+
 /*===========================================================================*/
 /* Module local functions.                                                   */
 /*===========================================================================*/
+static THD_FUNCTION(ThreadControl, arg)
+{
+    (void)arg;
+
+    chRegSetThreadName("Control");
+
+    while (1)
+    {
+
+    }
+
+    return MSG_OK;
+}
+
 static void vRCInputsToControlAction(Control_Reference *ref,
                                      Control_Limits *limits)
 {
@@ -179,12 +195,19 @@ void ControlInit(void)
     int i;
 
     /*
-     *
      * Initialize the RC Outputs
-     *
      */
     if (RCOutputInit(&rcoutputcfg) != MSG_OK)
         osalSysHalt("RC output init failed"); /* Initialization failed */
+
+    /* Initialize all references to 0 and disarm controllers */
+    p = (float *)&control_reference;
+
+    for (i = 0; i < ((CONTROL_REFERENCE_SIZE - 2) / 4); i++)
+        p[i] = 0.0f;
+
+    control_reference.mode = FLIGHTMODE_DISARMED;
+    control_reference.target = TARGET_GOAL;
 
     /* Initialize the controllers to 0 */
     p = (float *)&control_data;
@@ -203,6 +226,13 @@ void ControlInit(void)
 
     for (i = 0; i < (OUTPUT_MIXER_SIZE / 4); i++)
         p[i] = 0.0f;
+
+    /* Initialize control thread */
+    chThdCreateStatic(waThreadControl,
+                      sizeof(waThreadControl),
+                      HIGHPRIO - 1,
+                      ThreadControl,
+                      NULL);
 }
 
 void vUpdateControlAction(quaternion_t *q_m, vector3f_t *omega_m, float dt)
@@ -240,7 +270,7 @@ void vUpdateControlAction(quaternion_t *q_m, vector3f_t *omega_m, float dt)
 
         case FLIGHTMODE_DISARMED:
         default:
-            
+
             /* Disable all outputs */
             control_reference.actuator_desired.pitch = 0.0f;
             control_reference.actuator_desired.roll = 0.0f;
