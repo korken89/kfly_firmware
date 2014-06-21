@@ -289,9 +289,9 @@ void InnovateAttitudeEKF(   Attitude_Estimation_States *states,
      * division go towards infinity. This should not happen after
      * convergence, but is an added security.
      */
-    y.x = fastatan2(-acc_B.y, acc_B.z);
-    y.y = fastatan2( acc_B.x, acc_B.z);
-    y.z = fastatan2( mag_B.y, mag_B.x);
+    y.x = atan2f(-acc_B.y, acc_B.z);
+    y.y = atan2f( acc_B.x, acc_B.z);
+    y.z = atan2f( mag_B.y, mag_B.x);
 
 
     /*
