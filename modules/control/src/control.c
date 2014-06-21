@@ -27,7 +27,7 @@
 #include "ch.h"
 #include "hal.h"
 #include "quaternion.h"
-#include "attitude_ekf.h"
+#include "estimation.h"
 #include "control.h"
 #include "rc_input.h"
 #include "rc_output.h"
@@ -79,46 +79,41 @@ static THD_FUNCTION(ThreadControl, arg)
 
     chRegSetThreadName("Control");
 
+    /* Event registration for new estimation */
+    event_listener_t el;
+
+    /* Register to new estimation */
+    chEvtRegisterMask(ptrGetEstimationEventSource(),
+                      &el,
+                      ESTIMATION_NEW_ESTIMATION_EVENTMASK);
+
     while (1)
     {
+        /* Wait for new estimation */ 
+        chEvtWaitOne(ESTIMATION_NEW_ESTIMATION_EVENTMASK);
 
     }
 
     return MSG_OK;
 }
 
-static void vRCInputsToControlAction(Control_Reference *ref,
-                                     Control_Limits *limits)
+static void vRCInputsToControlAction(void)
 {
-    (void)ref;
-    (void)limits;
 }
 
-/*static void vPositionControl(Control_Reference *ref,
-                             Control_Limits *limits,
-                             Control_Data *controllers,
-                             vector3f_t *position_m,
+/*static void vPositionControl(vector3f_t *position_m,
                              float dt)
 {
 }
 
-static void vVelocityControl(Control_Reference *ref,
-                             Control_Limits *limits,
-                             Control_Data *controllers,
-                             vector3f_t *velocity_m,
+static void vVelocityControl(vector3f_t *velocity_m,
                              float dt)
 {
 }*/
 
-static void vAttitudeControl(Control_Reference *ref,
-                             Control_Limits *limits,
-                             Control_Data *controllers,
-                             quaternion_t *attitude_m,
+static void vAttitudeControl(quaternion_t *attitude_m,
                              float dt)
 {
-    (void)ref;
-    (void)limits;
-    (void)controllers;
     (void)attitude_m;
     (void)dt;
 
@@ -146,41 +141,39 @@ static void vAttitudeControl(Control_Reference *ref,
     //                               u.z);
 }
 
-static void vRateControl(Control_Reference *ref,
-                         Control_Data *controllers,
-                         vector3f_t *omega_m,
+static void vRateControl(vector3f_t *omega_m,
                          float dt)
 {
     vector3f_t u, error;
 
     /* Calculate the errors */
-    error.x = ref->rate_reference.x - omega_m->x;
-    error.y = ref->rate_reference.y - omega_m->y;
-    error.z = ref->rate_reference.z - omega_m->z;
+    error.x = control_reference.rate_reference.x - omega_m->x;
+    error.y = control_reference.rate_reference.y - omega_m->y;
+    error.z = control_reference.rate_reference.z - omega_m->z;
 
     /* Update the PI controllers */
-    u.x = fPIUpdate(&controllers->rate_controller[0], error.x, dt);
-    u.y = fPIUpdate(&controllers->rate_controller[1], error.y, dt);
-    u.z = fPIUpdate(&controllers->rate_controller[2], error.z, dt);
+    u.x = fPIUpdate(&control_data.rate_controller[0], error.x, dt);
+    u.y = fPIUpdate(&control_data.rate_controller[1], error.y, dt);
+    u.z = fPIUpdate(&control_data.rate_controller[2], error.z, dt);
 
     /* Send control signal to the next stage */
-    ref->actuator_desired.pitch = u.x;
-    ref->actuator_desired.roll = u.y;
-    ref->actuator_desired.yaw = u.z;
+    control_reference.actuator_desired.pitch = u.x;
+    control_reference.actuator_desired.roll = u.y;
+    control_reference.actuator_desired.yaw = u.z;
     
 }
 
-static void vUpdateOutputs(Control_Reference *ref, Output_Mixer *mixer)
+static void vUpdateOutputs(void)
 {
     float sum;
     int i;
 
     for (i = 0; i < 8; i++)
     {
-        sum =  ref->actuator_desired.throttle * mixer->weights[i][0];
-        sum += ref->actuator_desired.pitch    * mixer->weights[i][1];
-        sum += ref->actuator_desired.roll     * mixer->weights[i][2];
-        sum += ref->actuator_desired.yaw      * mixer->weights[i][3];
+        sum =  control_reference.actuator_desired.throttle * output_mixer.weights[i][0];
+        sum += control_reference.actuator_desired.pitch    * output_mixer.weights[i][1];
+        sum += control_reference.actuator_desired.roll     * output_mixer.weights[i][2];
+        sum += control_reference.actuator_desired.yaw      * output_mixer.weights[i][3];
 
         RCOutputSetChannelWidthRelativePositive(&rcoutputcfg, i, sum);
     }
@@ -237,8 +230,7 @@ void ControlInit(void)
 
 void vUpdateControlAction(quaternion_t *q_m, vector3f_t *omega_m, float dt)
 {
-    /* Add code for reference generation from RC Inputs and flight mode check */
-    vRCInputsToControlAction(&control_reference, &control_limits);
+    vRCInputsToControlAction();
 
     switch (control_reference.mode)
     {
@@ -252,20 +244,15 @@ void vUpdateControlAction(quaternion_t *q_m, vector3f_t *omega_m, float dt)
         //    vVelocityControl(ref, limits, controllers, dt);
 
         case FLIGHTMODE_ATTITUDE:
-            vAttitudeControl(&control_reference,
-                             &control_limits,
-                             &control_data,
-                             q_m,
+            vAttitudeControl(q_m,
                              dt);
 
         case FLIGHTMODE_RATE:
-            vRateControl(&control_reference,
-                         &control_data,
-                         omega_m,
+            vRateControl(omega_m,
                          dt);
 
         case FLIGHTMODE_DIRECT_CONTROL:
-            vUpdateOutputs(&control_reference, &output_mixer);
+            vUpdateOutputs();
             break;
 
         case FLIGHTMODE_DISARMED:
@@ -278,7 +265,7 @@ void vUpdateControlAction(quaternion_t *q_m, vector3f_t *omega_m, float dt)
             control_reference.actuator_desired.throttle = 0.0f;
 
             /* Update outputs with zero control signal */
-            vUpdateOutputs(&control_reference, &output_mixer);
+            vUpdateOutputs();
             break;
     }
 

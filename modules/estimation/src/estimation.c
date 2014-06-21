@@ -23,6 +23,7 @@ CCM_MEMORY static THD_WORKING_AREA(waThreadEstimation, 512);
 CCM_MEMORY static Attitude_Estimation_States states;
 CCM_MEMORY static Attitude_Estimation_Data data;
 CCM_MEMORY static IMU_Data imu_data;
+CCM_MEMORY static event_source_t estimation_events_es;
 
 static thread_t *tp;
 
@@ -71,12 +72,12 @@ static THD_FUNCTION(ThreadEstimation, arg)
                       BARO_DATA_AVAILABLE_EVENTMASK);
 
     /* Force an initialization of the estimation */
-    chEvtAddEvents(ESTIMATION_RESET_EVENT);
+    chEvtAddEvents(ESTIMATION_RESET_EVENTMASK);
 
     while(1)
     {
         /* Check if there has been a request to reset the filter */
-        if (chEvtWaitOneTimeout(ESTIMATION_RESET_EVENT, TIME_IMMEDIATE))
+        if (chEvtWaitOneTimeout(ESTIMATION_RESET_EVENTMASK, TIME_IMMEDIATE))
         {
             /* Filter reset requested */
 
@@ -129,6 +130,15 @@ static THD_FUNCTION(ThreadEstimation, arg)
                             0.0f,
                             0.0f,
                             0.005f);
+
+        /* Broadcast new estimation available */
+        osalSysLock();
+
+        if (chEvtIsListeningI(&estimation_events_es))
+            chEvtBroadcastFlagsI(&estimation_events_es,
+                                 ESTIMATION_NEW_ESTIMATION_EVENTMASK);
+
+        osalSysUnlock();
     }
 
     return MSG_OK;
@@ -143,6 +153,10 @@ static THD_FUNCTION(ThreadEstimation, arg)
  */
 void EstimationInit(void)
 {
+    /* Initialize new estimation event source */
+    osalEventObjectInit(&estimation_events_es);
+
+    /* Start the estimation thread */
     chThdCreateStatic(waThreadEstimation,
                       sizeof(waThreadEstimation), 
                       HIGHPRIO - 1, 
@@ -157,14 +171,25 @@ void EstimationInit(void)
 void ResetEstimation(void)
 {
     if (tp != NULL)
-        chEvtSignal(tp, ESTIMATION_RESET_EVENT);
+        chEvtSignal(tp, ESTIMATION_RESET_EVENTMASK);
 }
 
 /**
  * @brief Returns the pointer to the attitude estimation states.
+ * 
  * @return Pointer to the attitude estimation states.
  */
 Attitude_Estimation_States *ptrGetAttitudeEstimationStates(void)
 {
     return &states;
+}
+
+/**
+ * @brief Returns the pointer to the estimation event source.
+ * 
+ * @return Pointer to the estimation event source.
+ */
+event_source_t *ptrGetEstimationEventSource(void)
+{
+    return &estimation_events_es;
 }

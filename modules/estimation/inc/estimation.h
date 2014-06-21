@@ -6,7 +6,8 @@
 /*===========================================================================*/
 /* Module global definitions.                                                */
 /*===========================================================================*/
-#define ESTIMATION_RESET_EVENT          EVENT_MASK(31)
+#define ESTIMATION_RESET_EVENTMASK                      EVENT_MASK(31)
+#define ESTIMATION_NEW_ESTIMATION_EVENTMASK             EVENT_MASK(0)
 
 /*===========================================================================*/
 /* Module data structures and types.                                         */
@@ -26,5 +27,6 @@
 void EstimationInit(void);
 void ResetEstimation(void);
 Attitude_Estimation_States *ptrGetAttitudeEstimationStates(void);
+event_source_t *ptrGetEstimationEventSource(void);
 
 #endif
