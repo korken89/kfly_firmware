@@ -7,9 +7,6 @@
 #include "ch.h"
 #include "hal.h"
 #include "ext_flash.h"
-#include "sensor_read.h"
-#include "control.h"
-#include "rc_input.h"
 
 /*===========================================================================*/
 /* Driver local definitions.                                                 */
