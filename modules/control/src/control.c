@@ -48,7 +48,7 @@ CCM_MEMORY static Control_Reference control_reference;
 CCM_MEMORY static Control_Data control_data;
 static Control_Limits control_limits;
 static Output_Mixer output_mixer;
-static Control_Parameters flash_save_control_paramters;
+static Control_Parameters flash_save_control_parameters;
     
 /* RC Output Configuration */
 static const PWMConfig pwmcfg = {
@@ -142,12 +142,12 @@ static THD_FUNCTION(ThreadControlFlashSave, arg)
         chEvtWaitOne(FLASHSAVE_SAVE_EVENTMASK);
 
         /* Get the current control parameters */
-        GetControlParameters(&flash_save_control_paramters);
+        GetControlParameters(&flash_save_control_parameters);
 
         /* Save Control Parameters */
         FlashSave_Write(FlashSave_STR2ID("CON1"),
                         true,
-                        (uint8_t *)&flash_save_control_paramters,
+                        (uint8_t *)&flash_save_control_parameters,
                         CONTROL_PARAMETERS_SIZE);
 
         /* Save Control Limits */
@@ -175,12 +175,12 @@ static void vReadControlParametersFromFlash(void)
 
     /* Read Control Parameters */
     status = FlashSave_Read(FlashSave_STR2ID("CON1"),
-                            (uint8_t *)&flash_save_control_paramters,
+                            (uint8_t *)&flash_save_control_parameters,
                             CONTROL_PARAMETERS_SIZE);
 
     /* Save the read control parameters */
     if (status == FLASHSAVE_OK)
-        SetControlParameters(&flash_save_control_paramters);
+        SetControlParameters(&flash_save_control_parameters);
 
     /* Read Control Limits */
     FlashSave_Read(FlashSave_STR2ID("CON2"),
@@ -384,7 +384,7 @@ void ControlInit(void)
 
     /* Read data from flash (if available) */
     vReadControlParametersFromFlash();
-    
+
     /* Initialize control thread */
     chThdCreateStatic(waThreadControl,
                       sizeof(waThreadControl),
