@@ -27,7 +27,7 @@
 #define OUTPUT_MIXER_SIZE       (4*8*4)
 #define CONTROL_DATA_SIZE       (12*PI_DATA_SIZE)
 #define CONTROL_LIMITS_SIZE     (10*4)
-#define CONTROL_REFERENCE_SIZE  (17 * 4 + 2)
+#define CONTROL_REFERENCE_SIZE  (25*4+2)
 
 /*===========================================================================*/
 /* Module data structures and types.                                         */
@@ -42,6 +42,10 @@ typedef enum PACKED_VAR
      * @brief   Disarm the controllers and set outputs to zero.
      */
     FLIGHTMODE_DISARMED = 0,
+    /**
+     * @brief   Direct control of the PWM outputs.
+     */
+    FLIGTMODE_DIRECT_PWM,
     /**
      * @brief   Direct control of the actuator desired commands.
      */
@@ -136,6 +140,10 @@ typedef struct
          */
         float throttle;
     } actuator_desired;
+    /**
+     * @brief   Control signal to each PWM channel.
+     */
+    float pwm_out[8];
     /**
      * @brief   Current flight mode.
      */
@@ -264,6 +272,7 @@ typedef struct
 /*===========================================================================*/
 void ControlInit(void);
 void vUpdateControlAction(quaternion_t *q_m, vector3f_t *omega_m, float dt);
+Control_Reference *ptrGetControlReferences(void);
 Control_Data *ptrGetControlData(void);
 Control_Limits *ptrGetControlLimits(void);
 Output_Mixer *ptrGetOutputMixer(void);

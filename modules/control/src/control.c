@@ -107,19 +107,19 @@ static void vRCInputsToControlAction(void)
 {
 }
 
-/*
-static void vPositionControl(vector3f_t *position_m,
-                             float dt)
+static void vPositionControl(vector3f_t *position_m, float dt)
 {
+    (void)position_m;
+    (void)dt;
 }
 
-static void vVelocityControl(vector3f_t *velocity_m,
-                             float dt)
+static void vVelocityControl(vector3f_t *velocity_m, float dt)
 {
-}*/
+    (void)velocity_m;
+    (void)dt;
+}
 
-static void vAttitudeControl(quaternion_t *attitude_m,
-                             float dt)
+static void vAttitudeControl(quaternion_t *attitude_m, float dt)
 {
     vector3f_t u;
     quaternion_t qerr;
@@ -148,8 +148,7 @@ static void vAttitudeControl(quaternion_t *attitude_m,
                                                 u.z);
 }
 
-static void vRateControl(vector3f_t *omega_m,
-                         float dt)
+static void vRateControl(vector3f_t *omega_m, float dt)
 {
     vector3f_t u, error;
 
@@ -175,6 +174,7 @@ static void vUpdateOutputs(void)
     float sum;
     int i;
 
+    /* Calculate the control signal for each PWM output */
     for (i = 0; i < 8; i++)
     {
         sum =  control_reference.actuator_desired.throttle *
@@ -186,8 +186,28 @@ static void vUpdateOutputs(void)
         sum += control_reference.actuator_desired.yaw *
                output_mixer.weights[i][3];
 
-        RCOutputSetChannelWidthRelativePositive(&rcoutputcfg, i, sum);
+        control_reference.pwm_out[i] = sum;
     }
+}
+
+static void vSendPWMCommands(void)
+{
+    int i;
+
+    for (i = 0; i < 8; i++)
+        RCOutputSetChannelWidthRelativePositive(&rcoutputcfg,
+                                                i,
+                                                control_reference.pwm_out[i]);
+}
+
+static void vDisableAllOutputs(void)
+{
+    int i;
+
+    for (i = 0; i < 8; i++)
+        control_reference.pwm_out[i] = 0.0f;
+
+    vSendPWMCommands();
 }
 
 /*===========================================================================*/
@@ -225,7 +245,7 @@ void ControlInit(void)
     for (i = 0; i < (CONTROL_LIMITS_SIZE / 4); i++)
         p[i] = 0.0f;
 
-    /* Initialize the mixer to 0 */
+    /* Initialize the mixer's weights to 0 */
     p = (float *)&output_mixer;
 
     for (i = 0; i < (OUTPUT_MIXER_SIZE / 4); i++)
@@ -245,14 +265,14 @@ void vUpdateControlAction(quaternion_t *q_m, vector3f_t *omega_m, float dt)
 
     switch (control_reference.mode)
     {
-        case FLIGHTMODE_POSITION_HOLD:
+        //case FLIGHTMODE_POSITION_HOLD:
         //    break;
 
         case FLIGHTMODE_POSITION:
-        //    vPositionControl(pos_m, dt);
+            vPositionControl(NULL, dt);
 
         case FLIGHTMODE_VELOCITY:
-        //    vVelocityControl(vel_m, dt);
+            vVelocityControl(NULL, dt);
 
         case FLIGHTMODE_ATTITUDE:
             vAttitudeControl(q_m,
@@ -264,22 +284,23 @@ void vUpdateControlAction(quaternion_t *q_m, vector3f_t *omega_m, float dt)
 
         case FLIGHTMODE_DIRECT_CONTROL:
             vUpdateOutputs();
+
+        case FLIGTMODE_DIRECT_PWM:
+            vSendPWMCommands();
             break;
 
         case FLIGHTMODE_DISARMED:
         default:
 
             /* Disable all outputs */
-            control_reference.actuator_desired.pitch = 0.0f;
-            control_reference.actuator_desired.roll = 0.0f;
-            control_reference.actuator_desired.yaw = 0.0f;
-            control_reference.actuator_desired.throttle = 0.0f;
-
-            /* Update outputs with zero control signal */
-            vUpdateOutputs();
+            vDisableAllOutputs();
             break;
     }
+}
 
+Control_Reference *ptrGetControlReferences(void)
+{
+    return &control_reference;
 }
 
 Control_Data *ptrGetControlData(void)
