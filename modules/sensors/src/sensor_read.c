@@ -8,10 +8,26 @@
 #include "hal.h"
 #include "sensor_read.h"
 
-/* Global variable defines */
+/*===========================================================================*/
+/* Module local definitions.                                                 */
+/*===========================================================================*/
+static int16_t twoscomplement2signed(uint8_t msb, uint8_t lsb);
+static void ApplyCalibration(Sensor_Calibration *cal,
+                             int16_t raw_data[3], 
+                             float calibrated_data[3],
+                             float sensor_gain);
+static void MPU6050ConvertAndSave(MPU6050_Data *dh,
+                                  uint8_t data[14]);
+static void HMC5983ConvertAndSave(HMC5983_Data *dh, 
+                                  uint8_t data[6]);
 
-/* Private variable defines */
+/*===========================================================================*/
+/* Module exported variables.                                                */
+/*===========================================================================*/
 
+/*===========================================================================*/
+/* Module local variables and types.                                         */
+/*===========================================================================*/
 /* MPU6050 calibration, data holder and configurations */
 static event_source_t new_data_es;
 CCM_MEMORY static Sensor_Calibration mpu6050cal;
@@ -71,19 +87,206 @@ static uint8_t temp_data[14]; /* NOTE: This variable may NOT be placed in CCM
 /* Working area for the sensor read thread */
 CCM_MEMORY static THD_WORKING_AREA(waThreadSensorRead, 128);
 
-/* Private function defines */
-static int16_t twoscomplement2signed(uint8_t msb, uint8_t lsb);
-static THD_FUNCTION(ThreadSensorRead, arg);
+/*===========================================================================*/
+/* Module local functions.                                                   */
+/*===========================================================================*/
+
+/**
+ * @brief Reads data from the sensors whom have new data available.
+ * 
+ * @param[in] arg Unused.
+ * @return Never arrives at the return value.
+ */
+static THD_FUNCTION(ThreadSensorRead, arg)
+{
+    (void)arg;
+
+    eventmask_t events;
+    thread_sensor_read_p = chThdGetSelfX();
+
+    chRegSetThreadName("Sensor Readout");
+
+    while (1)
+    {
+        /* Waiting for an IRQ to happen.*/
+        events = chEvtWaitAny((eventmask_t)(ACCGYRO_DATA_AVAILABLE_EVENTMASK | 
+                                            MAG_DATA_AVAILABLE_EVENTMASK | 
+                                            BARO_DATA_AVAILABLE_EVENTMASK));
+
+        if (events & ACCGYRO_DATA_AVAILABLE_EVENTMASK)
+        {
+            /* Read the data */
+            MPU6050ReadData(sensorcfg.mpu6050cfg, temp_data);
+
+            /* Lock the data structure while changing it */
+            chMtxLock(&sensorcfg.mpu6050cfg->data_holder->read_lock);
+
+            /* Convert and save the raw data */
+            MPU6050ConvertAndSave(sensorcfg.mpu6050cfg->data_holder, temp_data);
+
+            /* Apply calibration and save calibrated data */
+            ApplyCalibration(sensorcfg.mpu6050cal,
+                             sensorcfg.mpu6050cfg->data_holder->raw_accel_data,
+                             sensorcfg.mpu6050cfg->data_holder->accel_data,
+                             1.0f);
+
+            ApplyCalibration(NULL,
+                             sensorcfg.mpu6050cfg->data_holder->raw_gyro_data,
+                             sensorcfg.mpu6050cfg->data_holder->gyro_data,
+                             MPU6050GetGyroGain(sensorcfg.mpu6050cfg));
+
+            /* Unlock the data structure */
+            chMtxUnlock(&sensorcfg.mpu6050cfg->data_holder->read_lock);
+
+            /* Broadcast new data available */
+            osalSysLock();
+
+            if (chEvtIsListeningI(sensorcfg.new_data_es))
+                chEvtBroadcastFlagsI(sensorcfg.new_data_es,
+                                     ACCGYRO_DATA_AVAILABLE_EVENTMASK);
+
+            osalSysUnlock();
+        }
+
+        if (events & MAG_DATA_AVAILABLE_EVENTMASK)
+        {
+            /* Read the data */
+            HMC5983ReadData(sensorcfg.hmc5983cfg, temp_data);
+
+            /* Lock the data structure while changing it */
+            chMtxLock(&sensorcfg.hmc5983cfg->data_holder->read_lock);
+
+            /* Convert and save the raw data */
+            HMC5983ConvertAndSave(sensorcfg.hmc5983cfg->data_holder, temp_data);
+
+            /* Apply calibration and save calibrated data */
+            ApplyCalibration(NULL,
+                             sensorcfg.hmc5983cfg->data_holder->raw_mag_data,
+                             sensorcfg.hmc5983cfg->data_holder->mag_data,
+                             1.0f);
+
+            /* Unlock the data structure */
+            chMtxUnlock(&sensorcfg.hmc5983cfg->data_holder->read_lock);
+
+            /* Broadcast new data available */
+            osalSysLock();
+
+            if (chEvtIsListeningI(sensorcfg.new_data_es))
+                chEvtBroadcastFlagsI(sensorcfg.new_data_es,
+                                     MAG_DATA_AVAILABLE_EVENTMASK);
+
+            osalSysUnlock();
+        }
+
+        if (events & BARO_DATA_AVAILABLE_EVENTMASK)
+        {
+
+        }
+    }
+
+    return MSG_OK;
+}
+
+/**
+ * @brief Converts two bytes in 2's complement form to a signed 16-bit value.
+ * 
+ * @param[in] msb Most significant byte.
+ * @param[in] lsb Least significant byte.
+ * 
+ * @return Signed 16-bit value.
+ */
+static int16_t twoscomplement2signed(uint8_t msb, uint8_t lsb)
+{
+    return (int16_t)((((uint16_t)msb) << 8) | ((uint16_t)lsb));
+}
+
+/**
+ * @brief Applies sensor calibration to raw data values.
+ * 
+ * @details The calibration will provide unity output to the reference
+ *          vector. Use senor_gain to get correct output relative to reality.
+ * 
+ * @param[in] cal Pointer to calibration structure.
+ * @param[in] raw_data Pointer to the raw data array.
+ * @param[out] calibrated_data Pointer to the calibrated data array.
+ * @param[in] sensor_gain The gain of the sensor after calibration.
+ */
 static void ApplyCalibration(Sensor_Calibration *cal,
                              int16_t raw_data[3], 
                              float calibrated_data[3],
-                             float sensor_gain);
-static void MPU6050ConvertAndSave(MPU6050_Data *dh,
-                                  uint8_t data[14]);
-static void HMC5983ConvertAndSave(HMC5983_Data *dh, 
-                                  uint8_t data[6]);
+                             float sensor_gain)
+{
+    if (cal != NULL)
+    {
+        chMtxLock(&cal->lock);
+        calibrated_data[0] = (((float)raw_data[0]) - cal->bias[0]) * cal->gain[0]
+                             * sensor_gain;
+        calibrated_data[1] = (((float)raw_data[1]) - cal->bias[1]) * cal->gain[1]
+                             * sensor_gain;
+        calibrated_data[2] = (((float)raw_data[2]) - cal->bias[2]) * cal->gain[2]
+                             * sensor_gain;
+        chMtxUnlock(&cal->lock);
+    }
+    else
+    {
+        calibrated_data[0] = ((float)raw_data[0]) * sensor_gain;
+        calibrated_data[1] = ((float)raw_data[1]) * sensor_gain;
+        calibrated_data[2] = ((float)raw_data[2]) * sensor_gain;
+    }
+    
+}
 
-/* Private external functions */
+/**
+ * @brief Converts raw MPU6050 sensor data to signed 16-bit values.
+ * 
+ * @param[out] dh Pointer to data holder structure.
+ * @param[in] data Pointer to temporary raw data holder.
+ */
+static void MPU6050ConvertAndSave(MPU6050_Data *dh, uint8_t data[14])
+{
+    /*
+     * The accelerometer and gyro is rotated on the board and conversion
+     * is needed as for both sensors:
+     * - Board XYZ = Sensor XYZ -
+     *           x =  y
+     *           y = -x
+     *           z =  z
+     */
+
+    dh->raw_accel_data[0] = twoscomplement2signed(data[2], data[3]);
+    dh->raw_accel_data[1] = -twoscomplement2signed(data[0], data[1]);
+    dh->raw_accel_data[2] = twoscomplement2signed(data[4], data[5]);
+
+    dh->temperature = twoscomplement2signed(data[6], data[7]);
+
+    dh->raw_gyro_data[0] = twoscomplement2signed(data[10], data[11]);
+    dh->raw_gyro_data[1] = -twoscomplement2signed(data[8], data[9]);
+    dh->raw_gyro_data[2] = twoscomplement2signed(data[12], data[13]);
+}
+
+/**
+ * @brief Converts raw HMC5983 sensor data to signed 16-bit values.
+ * 
+ * @param[out] dh Pointer to data holder structure.
+ * @param[in] data Pointer to temporary raw data holder.
+ */
+static void HMC5983ConvertAndSave(HMC5983_Data *dh, uint8_t data[6])
+{
+    /*
+     * The magnetometer is rotated on the board and conversion is needed as:
+     * - Board XYZ = Sensor XYZ -
+     *           x = -y
+     *           y =  x
+     *           z = -z
+     */
+    dh->raw_mag_data[0] = -twoscomplement2signed(data[4], data[5]);
+    dh->raw_mag_data[1] = twoscomplement2signed(data[0], data[1]);
+    dh->raw_mag_data[2] = -twoscomplement2signed(data[2], data[3]);
+}
+
+/*===========================================================================*/
+/* Module exported functions.                                                */
+/*===========================================================================*/
 
 /**
  * @brief Initializes the sensor read thread and config pointers.
@@ -474,200 +677,4 @@ Sensor_Calibration *ptrGetAccelerometerCalibration(void)
 Sensor_Calibration *ptrGetMagnetometerCalibration(void)
 {
     return &hmc5983cal;
-}
-
-/**
- * @brief Converts two bytes in 2's complement form to a signed 16-bit value.
- * 
- * @param[in] msb Most significant byte.
- * @param[in] lsb Least significant byte.
- * 
- * @return Signed 16-bit value.
- */
-static int16_t twoscomplement2signed(uint8_t msb, uint8_t lsb)
-{
-    return (int16_t)((((uint16_t)msb) << 8) | ((uint16_t)lsb));
-}
-
-
-/* Private functions */
-
-/**
- * @brief Reads data from the sensors whom have new data available.
- * 
- * @param[in] arg Unused.
- * @return Never arrives at the return value.
- */
-static THD_FUNCTION(ThreadSensorRead, arg)
-{
-    (void)arg;
-
-    eventmask_t events;
-    thread_sensor_read_p = chThdGetSelfX();
-
-    chRegSetThreadName("Sensor Readout");
-
-    while (1)
-    {
-        /* Waiting for an IRQ to happen.*/
-        events = chEvtWaitAny((eventmask_t)(ACCGYRO_DATA_AVAILABLE_EVENTMASK | 
-                                            MAG_DATA_AVAILABLE_EVENTMASK | 
-                                            BARO_DATA_AVAILABLE_EVENTMASK));
-
-        if (events & ACCGYRO_DATA_AVAILABLE_EVENTMASK)
-        {
-            /* Read the data */
-            MPU6050ReadData(sensorcfg.mpu6050cfg, temp_data);
-
-            /* Lock the data structure while changing it */
-            chMtxLock(&sensorcfg.mpu6050cfg->data_holder->read_lock);
-
-            /* Convert and save the raw data */
-            MPU6050ConvertAndSave(sensorcfg.mpu6050cfg->data_holder, temp_data);
-
-            /* Apply calibration and save calibrated data */
-            ApplyCalibration(sensorcfg.mpu6050cal,
-                             sensorcfg.mpu6050cfg->data_holder->raw_accel_data,
-                             sensorcfg.mpu6050cfg->data_holder->accel_data,
-                             1.0f);
-
-            ApplyCalibration(NULL,
-                             sensorcfg.mpu6050cfg->data_holder->raw_gyro_data,
-                             sensorcfg.mpu6050cfg->data_holder->gyro_data,
-                             MPU6050GetGyroGain(sensorcfg.mpu6050cfg));
-
-            /* Unlock the data structure */
-            chMtxUnlock(&sensorcfg.mpu6050cfg->data_holder->read_lock);
-
-            /* Broadcast new data available */
-            osalSysLock();
-
-            if (chEvtIsListeningI(sensorcfg.new_data_es))
-                chEvtBroadcastFlagsI(sensorcfg.new_data_es,
-                                     ACCGYRO_DATA_AVAILABLE_EVENTMASK);
-
-            osalSysUnlock();
-        }
-
-        if (events & MAG_DATA_AVAILABLE_EVENTMASK)
-        {
-            /* Read the data */
-            HMC5983ReadData(sensorcfg.hmc5983cfg, temp_data);
-
-            /* Lock the data structure while changing it */
-            chMtxLock(&sensorcfg.hmc5983cfg->data_holder->read_lock);
-
-            /* Convert and save the raw data */
-            HMC5983ConvertAndSave(sensorcfg.hmc5983cfg->data_holder, temp_data);
-
-            /* Apply calibration and save calibrated data */
-            ApplyCalibration(NULL,
-                             sensorcfg.hmc5983cfg->data_holder->raw_mag_data,
-                             sensorcfg.hmc5983cfg->data_holder->mag_data,
-                             1.0f);
-
-            /* Unlock the data structure */
-            chMtxUnlock(&sensorcfg.hmc5983cfg->data_holder->read_lock);
-
-            /* Broadcast new data available */
-            osalSysLock();
-
-            if (chEvtIsListeningI(sensorcfg.new_data_es))
-                chEvtBroadcastFlagsI(sensorcfg.new_data_es,
-                                     MAG_DATA_AVAILABLE_EVENTMASK);
-
-            osalSysUnlock();
-        }
-
-        if (events & BARO_DATA_AVAILABLE_EVENTMASK)
-        {
-
-        }
-    }
-
-    return MSG_OK;
-}
-
-/**
- * @brief Applies sensor calibration to raw data values.
- * 
- * @details The calibration will provide unity output to the reference
- *          vector. Use senor_gain to get correct output relative to reality.
- * 
- * @param[in] cal Pointer to calibration structure.
- * @param[in] raw_data Pointer to the raw data array.
- * @param[out] calibrated_data Pointer to the calibrated data array.
- * @param[in] sensor_gain The gain of the sensor after calibration.
- */
-static void ApplyCalibration(Sensor_Calibration *cal,
-                             int16_t raw_data[3], 
-                             float calibrated_data[3],
-                             float sensor_gain)
-{
-    if (cal != NULL)
-    {
-        chMtxLock(&cal->lock);
-        calibrated_data[0] = (((float)raw_data[0]) - cal->bias[0]) * cal->gain[0]
-                             * sensor_gain;
-        calibrated_data[1] = (((float)raw_data[1]) - cal->bias[1]) * cal->gain[1]
-                             * sensor_gain;
-        calibrated_data[2] = (((float)raw_data[2]) - cal->bias[2]) * cal->gain[2]
-                             * sensor_gain;
-        chMtxUnlock(&cal->lock);
-    }
-    else
-    {
-        calibrated_data[0] = ((float)raw_data[0]) * sensor_gain;
-        calibrated_data[1] = ((float)raw_data[1]) * sensor_gain;
-        calibrated_data[2] = ((float)raw_data[2]) * sensor_gain;
-    }
-    
-}
-
-/**
- * @brief Converts raw MPU6050 sensor data to signed 16-bit values.
- * 
- * @param[out] dh Pointer to data holder structure.
- * @param[in] data Pointer to temporary raw data holder.
- */
-static void MPU6050ConvertAndSave(MPU6050_Data *dh, uint8_t data[14])
-{
-    /*
-     * The accelerometer and gyro is rotated on the board and conversion
-     * is needed as for both sensors:
-     * - Board XYZ = Sensor XYZ -
-     *           x =  y
-     *           y = -x
-     *           z =  z
-     */
-
-    dh->raw_accel_data[0] = twoscomplement2signed(data[2], data[3]);
-    dh->raw_accel_data[1] = -twoscomplement2signed(data[0], data[1]);
-    dh->raw_accel_data[2] = twoscomplement2signed(data[4], data[5]);
-
-    dh->temperature = twoscomplement2signed(data[6], data[7]);
-
-    dh->raw_gyro_data[0] = twoscomplement2signed(data[10], data[11]);
-    dh->raw_gyro_data[1] = -twoscomplement2signed(data[8], data[9]);
-    dh->raw_gyro_data[2] = twoscomplement2signed(data[12], data[13]);
-}
-
-/**
- * @brief Converts raw HMC5983 sensor data to signed 16-bit values.
- * 
- * @param[out] dh Pointer to data holder structure.
- * @param[in] data Pointer to temporary raw data holder.
- */
-static void HMC5983ConvertAndSave(HMC5983_Data *dh, uint8_t data[6])
-{
-    /*
-     * The magnetometer is rotated on the board and conversion is needed as:
-     * - Board XYZ = Sensor XYZ -
-     *           x = -y
-     *           y =  x
-     *           z = -z
-     */
-    dh->raw_mag_data[0] = -twoscomplement2signed(data[4], data[5]);
-    dh->raw_mag_data[1] = twoscomplement2signed(data[0], data[1]);
-    dh->raw_mag_data[2] = -twoscomplement2signed(data[2], data[3]);
 }
