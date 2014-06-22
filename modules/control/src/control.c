@@ -73,6 +73,13 @@ CCM_MEMORY static THD_WORKING_AREA(waThreadControl, 256);
 /*===========================================================================*/
 /* Module local functions.                                                   */
 /*===========================================================================*/
+/**
+ * @brief           Thread for the entire control structure.
+ * 
+ * @param[in] arg   Unused.
+ * 
+ * @return          Unused.
+ */
 static THD_FUNCTION(ThreadControl, arg)
 {
     (void)arg;
@@ -103,22 +110,44 @@ static THD_FUNCTION(ThreadControl, arg)
     return MSG_OK;
 }
 
+/**
+ * @brief           Converts RC inputs to control action depending on
+ *                  the current flight mode.
+ */
 static void vRCInputsToControlAction(void)
 {
 }
 
+/**
+ * @brief           Implements the position controller.
+ * 
+ * @param[in] position_m    Position measurement.
+ * @param[in] dt            Controller sampling time.
+ */
 static void vPositionControl(vector3f_t *position_m, float dt)
 {
     (void)position_m;
     (void)dt;
 }
 
+/**
+ * @brief           Implements the velocity controller.
+ * 
+ * @param[in] velocity_m    Velocity measurement.
+ * @param[in] dt            Controller sampling time.
+ */
 static void vVelocityControl(vector3f_t *velocity_m, float dt)
 {
     (void)velocity_m;
     (void)dt;
 }
 
+/**
+ * @brief           Implements the attitude controller.
+ * 
+ * @param[in] attitude_m    Attitude measurement.
+ * @param[in] dt            Controller sampling time.
+ */
 static void vAttitudeControl(quaternion_t *attitude_m, float dt)
 {
     vector3f_t u;
@@ -148,6 +177,12 @@ static void vAttitudeControl(quaternion_t *attitude_m, float dt)
                                                 u.z);
 }
 
+/**
+ * @brief           Implements the rate controller.
+ * 
+ * @param[in] omega_m   Rate measurement.
+ * @param[in] dt        Controller sampling time.
+ */
 static void vRateControl(vector3f_t *omega_m, float dt)
 {
     vector3f_t u, error;
@@ -169,6 +204,10 @@ static void vRateControl(vector3f_t *omega_m, float dt)
     
 }
 
+/**
+ * @brief   Calculates the control signals based on the output weighting
+ *          matrix and the desired torque around each axis plus throttle.
+ */
 static void vUpdateOutputs(void)
 {
     float sum;
@@ -190,6 +229,10 @@ static void vUpdateOutputs(void)
     }
 }
 
+/**
+ * @brief   Takes the calculated control signals and sends the to the RC
+ *          output subsystem.
+ */
 static void vSendPWMCommands(void)
 {
     int i;
@@ -200,6 +243,9 @@ static void vSendPWMCommands(void)
                                                 control_reference.pwm_out[i]);
 }
 
+/**
+ * @brief   Forces all RC outputs to zero.
+ */
 static void vDisableAllOutputs(void)
 {
     int i;
@@ -213,6 +259,10 @@ static void vDisableAllOutputs(void)
 /*===========================================================================*/
 /* Module exported functions.                                                */
 /*===========================================================================*/
+
+/**
+ * @brief           Initializes the entire control structure.
+ */
 void ControlInit(void)
 {
     float *p;
@@ -259,6 +309,13 @@ void ControlInit(void)
                       NULL);
 }
 
+/**
+ * @brief       Updates all the controllers depending om current flight mode.
+ * 
+ * @param[in] q_m       Attitude measurement.
+ * @param[in] omega_m   Rate measurement.
+ * @param[in] dt        Controller sampling rate.
+ */
 void vUpdateControlAction(quaternion_t *q_m, vector3f_t *omega_m, float dt)
 {
     vRCInputsToControlAction();
@@ -291,28 +348,48 @@ void vUpdateControlAction(quaternion_t *q_m, vector3f_t *omega_m, float dt)
 
         case FLIGHTMODE_DISARMED:
         default:
-
             /* Disable all outputs */
             vDisableAllOutputs();
+
             break;
     }
 }
 
+/**
+ * @brief       Return the pointer to the control reference structure.
+ * 
+ * @return      Pointer to the control reference structure.
+ */
 Control_Reference *ptrGetControlReferences(void)
 {
     return &control_reference;
 }
 
+/**
+ * @brief       Return the pointer to the control data structure.
+ * 
+ * @return      Pointer to the control data structure.
+ */
 Control_Data *ptrGetControlData(void)
 {
     return &control_data;
 }
 
+/**
+ * @brief       Return the pointer to the control limits structure.
+ * 
+ * @return      Pointer to the control limits structure.
+ */
 Control_Limits *ptrGetControlLimits(void)
 {
     return &control_limits;
 }
 
+/**
+ * @brief       Return the pointer to the output mixer structure.
+ * 
+ * @return      Pointer to the output mixer structure.
+ */
 Output_Mixer *ptrGetOutputMixer(void)
 {
     return &output_mixer;
