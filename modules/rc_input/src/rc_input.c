@@ -315,6 +315,8 @@ static void RCInputSettingsReset(RCInput_Settings *data)
         data->ch_center[i] = 1500;
         data->ch_top[i]    = 2000;
     }
+
+    data->mode = MODE_CPPM_INPUT;
 }
 
 /**
@@ -415,12 +417,16 @@ void RCInputInit(void)
     /* Initialize the RC Input event source */
     osalEventObjectInit(&rcinput_es);
 
+    /* Reset data structures */
+    RCInputDataReset(&rcinput_data);
+    RCInputSettingsReset(&rcinput_settings);
+
     /* Read RC input settings from flash */
     FlashSave_Read(FlashSave_STR2ID("RCIN"),
-                    (uint8_t *)&rcinput_settings,
-                    RCINPUT_SETTINGS_SIZE);
+                   (uint8_t *)&rcinput_settings,
+                   RCINPUT_SETTINGS_SIZE);
 
-    if (RCInputInitialization(MODE_CPPM_INPUT) != MSG_OK)
+    if (RCInputInitialization(rcinput_settings.mode) != MSG_OK)
         osalSysHalt("RC input initialization failed.");
 
     /* Start the Flash Save thread */
@@ -449,10 +455,6 @@ msg_t RCInputInitialization(RCInput_Mode_Selector mode)
         eicuDisable(&EICUD9);
     if (EICUD12.state != EICU_STOP)
         eicuDisable(&EICUD12);
-
-    /* Reset data structures */
-    RCInputDataReset(&rcinput_data);
-    RCInputSettingsReset(&rcinput_settings);
 
     /* Configure the input capture unit */
     if (mode == MODE_CPPM_INPUT)

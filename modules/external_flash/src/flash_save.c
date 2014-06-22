@@ -159,7 +159,7 @@ void FlashSaveInit(void)
 /**
  * @brief       Seek the flash memory for the requested UID and reports back
  *              the page number and size of the saved data.
- * 
+ *  
  * @param[in]  uid          UID to search for.
  * @param[out] page_number  Pointer to saving variable for page number.
  * @param[out] size         Pointer to saving variable for data size.
@@ -320,7 +320,7 @@ FlashSave_Status FlashSave_Read(uint32_t uid,
 void vBroadcastFlashSaveEvent(void)
 {
     vFlashSaveEraseSettings();
-
+    
     osalSysLock();
 
     if (chEvtIsListeningI(&save_to_flash_es))

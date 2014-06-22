@@ -93,6 +93,10 @@ typedef struct
      * @brief   Raw temperature of the accelerometer and gyroscope.
      */
     int16_t temperature;
+    /**
+     * @brief   Raw temperature of the accelerometer and gyroscope.
+     */
+    uint32_t pressure;
 } IMU_RawData;
 
 /**
