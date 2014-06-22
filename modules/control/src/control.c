@@ -77,10 +77,14 @@ static THD_FUNCTION(ThreadControl, arg)
 {
     (void)arg;
 
-    chRegSetThreadName("Control");
-
     /* Event registration for new estimation */
     event_listener_t el;
+
+    /* Estimation states */
+    Attitude_Estimation_States *states = ptrGetAttitudeEstimationStates();
+
+    /* Set thread name */
+    chRegSetThreadName("Control");
 
     /* Register to new estimation */
     chEvtRegisterMask(ptrGetEstimationEventSource(),
@@ -92,6 +96,8 @@ static THD_FUNCTION(ThreadControl, arg)
         /* Wait for new estimation */ 
         chEvtWaitOne(ESTIMATION_NEW_ESTIMATION_EVENTMASK);
 
+        /* Run control */
+        vUpdateControlAction(&states->q, &states->w, ESTIMATION_DT);
     }
 
     return MSG_OK;
