@@ -27,6 +27,7 @@
 #include "ch.h"
 #include "hal.h"
 #include "quaternion.h"
+#include "flash_save.h"
 #include "estimation.h"
 #include "control.h"
 #include "rc_input.h"
@@ -44,10 +45,11 @@
 /* Module local variables and types.                                         */
 /*===========================================================================*/
 CCM_MEMORY static Control_Reference control_reference;
-static Control_Data control_data;
+CCM_MEMORY static Control_Data control_data;
 static Control_Limits control_limits;
 static Output_Mixer output_mixer;
-
+static Control_Parameters flash_save_control_paramters;
+    
 /* RC Output Configuration */
 static const PWMConfig pwmcfg = {
     RCOUTPUT_1MHZ_CLOCK_FREQUENCY,      /* 1 MHz PWM clock frequency    */
@@ -69,10 +71,12 @@ static const RCOutput_Configuration rcoutputcfg = {
 };
 
 CCM_MEMORY static THD_WORKING_AREA(waThreadControl, 256);
+CCM_MEMORY static THD_WORKING_AREA(waThreadControlFlashSave, 64);
 
 /*===========================================================================*/
 /* Module local functions.                                                   */
 /*===========================================================================*/
+
 /**
  * @brief           Thread for the entire control structure.
  * 
@@ -108,6 +112,85 @@ static THD_FUNCTION(ThreadControl, arg)
     }
 
     return MSG_OK;
+}
+
+/**
+ * @brief           Thread for the flash save operation.
+ * 
+ * @param[in] arg   Unused.
+ * 
+ * @return          Unused.
+ */
+static THD_FUNCTION(ThreadControlFlashSave, arg)
+{
+    (void)arg;
+
+    /* Event registration for new estimation */
+    event_listener_t el;
+
+    /* Set thread name */
+    chRegSetThreadName("Control Save");
+
+    /* Register to new estimation */
+    chEvtRegisterMask(ptrGetFlashSaveEventSource(),
+                      &el,
+                      FLASHSAVE_SAVE_EVENTMASK);
+
+    while (1)
+    {
+        /* Wait for new estimation */ 
+        chEvtWaitOne(FLASHSAVE_SAVE_EVENTMASK);
+
+        /* Get the current control parameters */
+        GetControlParameters(&flash_save_control_paramters);
+
+        /* Save Control Parameters */
+        FlashSave_Write(FlashSave_STR2ID("CON1"),
+                        true,
+                        (uint8_t *)&flash_save_control_paramters,
+                        CONTROL_PARAMETERS_SIZE);
+
+        /* Save Control Limits */
+        FlashSave_Write(FlashSave_STR2ID("CON2"),
+                        true,
+                        (uint8_t *)&control_limits,
+                        CONTROL_LIMITS_SIZE);
+
+        /* Save Output Mixer */
+        FlashSave_Write(FlashSave_STR2ID("CON3"),
+                        true,
+                        (uint8_t *)&output_mixer,
+                        OUTPUT_MIXER_SIZE);
+    }
+
+    return MSG_OK;
+}
+
+/**
+ * @brief   Read all control parameters from flash.
+ */
+static void vReadControlParametersFromFlash(void)
+{
+    FlashSave_Status status;
+
+    /* Read Control Parameters */
+    status = FlashSave_Read(FlashSave_STR2ID("CON1"),
+                            (uint8_t *)&flash_save_control_paramters,
+                            CONTROL_PARAMETERS_SIZE);
+
+    /* Save the read control parameters */
+    if (status == FLASHSAVE_OK)
+        SetControlParameters(&flash_save_control_paramters);
+
+    /* Read Control Limits */
+    FlashSave_Read(FlashSave_STR2ID("CON2"),
+                   (uint8_t *)&control_limits,
+                   CONTROL_LIMITS_SIZE);
+
+    /* Read Output Mixer */
+    FlashSave_Read(FlashSave_STR2ID("CON3"),
+                   (uint8_t *)&output_mixer,
+                   OUTPUT_MIXER_SIZE);
 }
 
 /**
@@ -268,9 +351,7 @@ void ControlInit(void)
     float *p;
     int i;
 
-    /*
-     * Initialize the RC Outputs
-     */
+    /* Initialize the RC Outputs */
     if (RCOutputInit(&rcoutputcfg) != MSG_OK)
         osalSysHalt("RC output init failed"); /* Initialization failed */
 
@@ -301,11 +382,21 @@ void ControlInit(void)
     for (i = 0; i < (OUTPUT_MIXER_SIZE / 4); i++)
         p[i] = 0.0f;
 
+    /* Read data from flash (if available) */
+    vReadControlParametersFromFlash();
+    
     /* Initialize control thread */
     chThdCreateStatic(waThreadControl,
                       sizeof(waThreadControl),
                       HIGHPRIO - 1,
                       ThreadControl,
+                      NULL);
+
+    /* Initialize control flash save thread */
+    chThdCreateStatic(waThreadControlFlashSave,
+                      sizeof(waThreadControlFlashSave),
+                      NORMALPRIO,
+                      ThreadControlFlashSave,
                       NULL);
 }
 
@@ -350,7 +441,6 @@ void vUpdateControlAction(quaternion_t *q_m, vector3f_t *omega_m, float dt)
         default:
             /* Disable all outputs */
             vDisableAllOutputs();
-
             break;
     }
 }
@@ -393,4 +483,57 @@ Control_Limits *ptrGetControlLimits(void)
 Output_Mixer *ptrGetOutputMixer(void)
 {
     return &output_mixer;
+}
+
+/**
+ * @brief       Copies current PI control parameters to an external structure.
+ * @param[out] param    Save location.
+ */
+void GetControlParameters(Control_Parameters *param)
+{
+    int i, j;
+    float *f_pi, *f_par;
+
+    /* Cast parameters and PI controller to arrays of respective kind */
+    PI_Data *pi = (PI_Data *)&control_data;
+    PI_Parameters *par = (PI_Parameters *)param;
+
+    for (i = 0; i < CONTROL_NUMBER_OF_CONTROLLERS; i++)
+    {
+        /* Cast each of the PI and parameters to float arrays
+           for easy copying */
+        f_pi = (float *)&pi[i];
+        f_par = (float *)&par[i];
+
+        /* Copy PI parameters to the external location */
+        for (j = 0; j < 3; j++)
+            f_par[j] = f_pi[j];
+    }
+}
+
+/**
+ * @brief       Saves PI control parameters from an external structure to the
+ *              current PI control parameters.
+ * @param[out] param    Copy location.
+ */
+void SetControlParameters(Control_Parameters *param)
+{
+    int i, j;
+    float *f_pi, *f_par;
+
+    /* Cast parameters and PI controller to arrays of respective kind */
+    PI_Data *pi = (PI_Data *)&control_data;
+    PI_Parameters *par = (PI_Parameters *)param;
+
+    for (i = 0; i < CONTROL_NUMBER_OF_CONTROLLERS; i++)
+    {
+        /* Cast each of the PI and parameters to float arrays
+           for easy copying */
+        f_pi = (float *)&pi[i];
+        f_par = (float *)&par[i];
+
+        /* Save PI parameters from the external location */
+        for (j = 0; j < 3; j++)
+            f_pi[j] = f_par[j];
+    }
 }

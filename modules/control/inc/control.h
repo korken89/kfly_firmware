@@ -8,26 +8,28 @@
 /*===========================================================================*/
 /* Module global definitions.                                                */
 /*===========================================================================*/
-#define RATE_PI_OFFSET          0
-#define ATTITUDE_PI_OFFSET      3
-#define VELOCITY_PI_OFFSET      6
-#define POSITION_PI_OFFSET      9
+#define RATE_PI_OFFSET                          0
+#define ATTITUDE_PI_OFFSET                      3
+#define VELOCITY_PI_OFFSET                      6
+#define POSITION_PI_OFFSET                      9
 
-#define RATE_LIMIT_OFFSET       0
-#define ATTITUDE_LIMIT_OFFSET   12
-#define VELOCITY_LIMIT_OFFSET   32
-#define POSITION_LIMIT_OFFSET   40
+#define RATE_LIMIT_OFFSET                       0
+#define ATTITUDE_LIMIT_OFFSET                   12
+#define VELOCITY_LIMIT_OFFSET                   32
+#define POSITION_LIMIT_OFFSET                   40
 
-#define RATE_LIMIT_COUNT        12
-#define ATTITUDE_LIMIT_COUNT    20
-#define VELOCITY_LIMIT_COUNT    8
-#define POSITION_LIMIT_COUNT    0
+#define RATE_LIMIT_COUNT                        12
+#define ATTITUDE_LIMIT_COUNT                    20
+#define VELOCITY_LIMIT_COUNT                    8
+#define POSITION_LIMIT_COUNT                    0
 
 /* Sizes */
-#define OUTPUT_MIXER_SIZE       (4*8*4)
-#define CONTROL_DATA_SIZE       (12*PI_DATA_SIZE)
-#define CONTROL_LIMITS_SIZE     (10*4)
-#define CONTROL_REFERENCE_SIZE  (25*4+2)
+#define OUTPUT_MIXER_SIZE                       (4*8*4)
+#define CONTROL_LIMITS_SIZE                     (10*4)
+#define CONTROL_REFERENCE_SIZE                  (25*4+2)
+#define CONTROL_NUMBER_OF_CONTROLLERS           (3*4)
+#define CONTROL_DATA_SIZE                       (12*PI_DATA_SIZE)
+#define CONTROL_PARAMETERS_SIZE                 (12*3*4)
 
 /*===========================================================================*/
 /* Module data structures and types.                                         */
@@ -259,6 +261,52 @@ typedef struct
     float weights[8][4];
 } Output_Mixer;
 
+/*
+ * Data transfer structures
+ */
+
+/**
+ * @brief   PI controller parameters structure.
+ */
+typedef struct
+{
+    /**
+     * @brief   Controller proportional gain.
+     */
+    float P_gain;
+    /**
+     * @brief   Controller integral gain.
+     */
+    float I_gain;
+    /**
+     * @brief   Controller integral limit.
+     */
+    float I_limit;
+} PI_Parameters;
+
+/**
+ * @brief   Control parameters structure for moving data.
+ */
+typedef struct
+{
+    /**
+     * @brief   Position controller parameters.
+     */
+    PI_Parameters position_parameters[3];
+    /**
+     * @brief   Velocity controller parameters.
+     */
+    PI_Parameters velocity_parameters[3];
+    /**
+     * @brief   Attitude controller parameters.
+     */
+    PI_Parameters attitude_parameters[3];
+    /**
+     * @brief   Rate controller parameters.
+     */
+    PI_Parameters rate_parameters[3];
+} Control_Parameters;
+
 /*===========================================================================*/
 /* Module macros.                                                            */
 /*===========================================================================*/
@@ -276,5 +324,7 @@ Control_Reference *ptrGetControlReferences(void);
 Control_Data *ptrGetControlData(void);
 Control_Limits *ptrGetControlLimits(void);
 Output_Mixer *ptrGetOutputMixer(void);
+void GetControlParameters(Control_Parameters *param);
+void SetControlParameters(Control_Parameters *param);
 
 #endif
