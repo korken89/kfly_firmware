@@ -129,7 +129,7 @@ static THD_FUNCTION(ThreadEstimation, arg)
                             imu_data.magnetometer,
                             0.0f,
                             0.0f,
-                            0.005f);
+                            ESTIMATION_DT);
 
         /* Broadcast new estimation available */
         osalSysLock();
