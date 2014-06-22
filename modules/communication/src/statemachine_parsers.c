@@ -77,7 +77,7 @@ static const Parser_Type parser_lookup[128] = {
     ParseSetRCCalibration,            /* 42:  Cmd_SetRCCalibration            */
     ParseGetRCValues,                 /* 43:  Cmd_GetRCValues                 */
     ParseGetSensorData,               /* 44:  Cmd_GetSensorData               */
-    ParseGetRawSensorData,            /* 45:  Cmd_GetRarSensorData            */
+    ParseGetRawSensorData,            /* 45:  Cmd_GetRawSensorData            */
     ParseGetSensorCalibration,        /* 46:  Cmd_GetSensorCalibration        */
     ParseSetSensorCalibration,        /* 47:  Cmd_SetSensorCalibration        */
     ParseGetEstimationRate,           /* 48:  Cmd_GetEstimationRate           */

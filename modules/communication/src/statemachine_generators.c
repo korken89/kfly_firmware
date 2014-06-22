@@ -677,10 +677,8 @@ bool GenerateGetEstimationRate(Circular_Buffer_Type *Cbuff)
  */
 bool GenerateGetEstimationAttitude(Circular_Buffer_Type *Cbuff)
 {
-    return GenerateGenericCommand(Cmd_GetEstimationAttitude,
-                                  (uint8_t *)ptrGetAttitudeEstimationStates(), 
-                                  ESTIMATION_ATTITUDE_STATES_SIZE, 
-                                  Cbuff);
+    (void)Cbuff;
+    return HAL_FAILED;
 }
 
 /**
@@ -721,8 +719,10 @@ bool GenerateGetEstimationPosition(Circular_Buffer_Type *Cbuff)
  */
 bool GenerateGetEstimationAllStates(Circular_Buffer_Type *Cbuff)
 {
-    (void)Cbuff;
-    return HAL_FAILED;
+    return GenerateGenericCommand(Cmd_GetEstimationAllStates,
+                                  (uint8_t *)ptrGetAttitudeEstimationStates(), 
+                                  ESTIMATION_ATTITUDE_STATES_SIZE, 
+                                  Cbuff);
 }
 
 /**
