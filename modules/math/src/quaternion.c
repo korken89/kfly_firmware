@@ -3,21 +3,33 @@
  *
  * */
 
-/* Includes */
 #include "linear_algebra.h"
 #include "quaternion.h"
 #include "trigonometry.h"
 
-/* Private Defines */
+/*===========================================================================*/
+/* Module local definitions.                                                 */
+/*===========================================================================*/
 
-/* Private Typedefs */
+/*===========================================================================*/
+/* Module exported variables.                                                */
+/*===========================================================================*/
 
-/* Global variable defines */
+/*===========================================================================*/
+/* Module local variables and types.                                         */
+/*===========================================================================*/
 
-/* Private function defines */
+/*===========================================================================*/
+/* Module local functions.                                                   */
+/*===========================================================================*/
+
+/*===========================================================================*/
+/* Module exported functions.                                                */
+/*===========================================================================*/
 
 /*
  * @brief               Convert Pitch, Roll and Yaw to quaternion
+ * 
  * @param[in] roll      Roll [rad]
  * @param[in] pitch     Pitch [rad]
  * @param[in] yaw       Yaw [rad]
@@ -43,7 +55,6 @@ void euler2quat(float roll, float pitch, float yaw, quaternion_t *q)
 /*
  * @brief               Converts a quaternion to a Direction Cosine Matrix.
  *
- * @author              Emil Fresk, Luleå University of Technology
  * @param[out] R        Where to save the matrix.
  * @param[in] q         pointer to input quaternion.
  */

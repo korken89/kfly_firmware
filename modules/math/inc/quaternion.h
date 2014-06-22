@@ -1,32 +1,70 @@
 #ifndef __QUATERNION_H
 #define __QUATERNION_H
 
-/* Standard includes */
 #include <math.h>
 
-/* Defines */
+/*===========================================================================*/
+/* Module global definitions.                                                */
+/*===========================================================================*/
 #define PI ( 3.14159265359f )
 
-/* Typedefs */
+/*===========================================================================*/
+/* Module data structures and types.                                         */
+/*===========================================================================*/
+
+/**
+ * @brief   Quaternion definition.
+ */
 typedef struct
 {
+    /**
+     * @brief   Scalar component.
+     */
     float q0;
+    /**
+     * @brief   i component.
+     */
     float q1;
+    /**
+     * @brief   j component.
+     */
     float q2;
+    /**
+     * @brief   k component.
+     */
     float q3;
 } quaternion_t;
 
+/**
+ * @brief   3 dimensional vector definition.
+ */
 typedef struct
 {
+    /**
+     * @brief   x component.
+     */
     float x;
+    /**
+     * @brief   y component.
+     */
     float y;
+    /**
+     * @brief   z component.
+     */
     float z;
 } vector3f_t;
+
+/*===========================================================================*/
+/* Module macros.                                                            */
+/*===========================================================================*/
+
+/*===========================================================================*/
+/* Module inline functions.                                                  */
+/*===========================================================================*/
 
 /*
  * @brief               Adds two vectors.
  *
- * @author              Emil Fresk, Luleå University of Technology
  * @param[in] v         First vector to be added. 
  * @param[in] w         Second vector to be added. 
  * @return              The sum of the two vectors.
@@ -45,7 +83,6 @@ static inline vector3f_t vector_add(vector3f_t v, vector3f_t w)
 /*
  * @brief               Subtract two vectors.
  *
- * @author              Emil Fresk, Luleå University of Technology
  * @param[in] v         First vector to be subtracted. 
  * @param[in] w         Second vector to be subtraced. 
  * @return              The difference of the two vectors.
@@ -64,7 +101,6 @@ static inline vector3f_t vector_sub(vector3f_t v, vector3f_t w)
 /*
  * @brief               Scale a vector.
  *
- * @author              Emil Fresk, Luleå University of Technology
  * @param[in] v         Vector to be scaled. 
  * @param[in] scale     Scaling constant.
  * @return              The scaled vector.
@@ -83,7 +119,6 @@ static inline vector3f_t vector_scale(vector3f_t v, float scale)
 /*
  * @brief               Performs the dot product of two vectors.
  *
- * @author              Emil Fresk, Luleå University of Technology
  * @param[in] v         First vector to be dotted. 
  * @param[in] w         Second vector to be dotted. 
  * @return              The dot product of the two vectors.
@@ -100,7 +135,6 @@ static inline float vector_dot_product(vector3f_t v, vector3f_t w)
 /*
  * @brief               Performs the cross product of two vectors.
  *
- * @author              Emil Fresk, Luleå University of Technology
  * @param[in] v         First vector to be crossed. 
  * @param[in] w         Second vector to be crossed. 
  * @return              The cross product of the two vectors.
@@ -119,7 +153,6 @@ static inline vector3f_t vector_cross_product(vector3f_t v, vector3f_t w)
 /*
  * @brief               Performs vector rotation.
  *
- * @author              Emil Fresk, Luleå University of Technology
  * @param[in] R         Rotation matrix. 
  * @param[in] v         Vector to be rotated. 
  * @return              The rotated vector.
@@ -138,7 +171,6 @@ static inline vector3f_t vector_rotation(float R[3][3], vector3f_t v)
 /*
  * @brief               Performs vector rotation (R is transposed).
  *
- * @author              Emil Fresk, Luleå University of Technology
  * @param[in] R         Rotation matrix. 
  * @param[in] v         Vector to be rotated. 
  * @return              The rotated vector.
@@ -157,7 +189,6 @@ static inline vector3f_t vector_rotation_transposed(float R[3][3], vector3f_t v)
 /*
  * @brief               Calculates the norm of a vector.
  *
- * @author              Emil Fresk, Luleå University of Technology
  * @param[in] v         Input vector. 
  * @return              The vector norm.
  */
@@ -170,7 +201,6 @@ static inline float vector_norm(vector3f_t v)
  * @brief               Converts a Generalized Rodrigues Parameter to a
  *                      quaternion.
  *
- * @author              Emil Fresk, Luleå University of Technology
  * @param[in] v         GRP vector. 
  * @param[in] a         First scaling constant.
  * @param[in] f         Second scaling constant.
@@ -183,7 +213,7 @@ static inline quaternion_t grp2q(vector3f_t p, const float a, const float f)
 
     sq = vector_norm(p);
 
-    q.q0 = (-a * sq + f * sqrtf(f * f + (1 - a * a) * sq)) / (f * f + sq);
+    q.q0 = (-a * sq + f * sqrtf(f * f + (1.0f - a * a) * sq)) / (f * f + sq);
 
     inv = (a + q.q0) / f;
     q.q1 = p.x * inv;
@@ -196,7 +226,6 @@ static inline quaternion_t grp2q(vector3f_t p, const float a, const float f)
 /*
  * @brief               Performs quaternion multiplication.
  *
- * @author              Emil Fresk, Luleå University of Technology
  * @param[in] a         First quaternion to be multiplied.
  * @param[in] b         Second quaternion to be multiplied.
  * @return              Multiplied quaternion.
@@ -222,23 +251,23 @@ static inline quaternion_t qmult(quaternion_t a, quaternion_t b)
 /*
  * @brief               Conjugates a quaternion.
  *
- * @author              Emil Fresk, Luleå University of Technology
  * @param[in] q         Quaternion to be conjugated.
  * @return              Conjugated quaternion.
  */
 static inline quaternion_t qconj(quaternion_t q)
 {
-    q.q1 = - q.q1;
-    q.q2 = - q.q2;
-    q.q3 = - q.q3;
+    quaternion_t r;
 
-    return q;
+    r.q1 = - q.q1;
+    r.q2 = - q.q2;
+    r.q3 = - q.q3;
+
+    return r;
 }
 
 /*
  * @brief               Calculates the norm of a quaternion.
  *
- * @author              Emil Fresk, Luleå University of Technology
  * @param[in] q         Input quaternion.
  * @return              Quaternion norm.
  */
@@ -250,7 +279,6 @@ static inline float qnorm(quaternion_t q)
 /*
  * @brief               Performs quaternion normalization.
  *
- * @author              Emil Fresk, Luleå University of Technology
  * @param[in] q         Quaternion to be normalized.
  * @return              Normalized quaternion.
  */
@@ -266,8 +294,9 @@ static inline quaternion_t qnormalize(quaternion_t q)
     return q;
 }
 
-
-/* Global function defines */
+/*===========================================================================*/
+/* External declarations.                                                    */
+/*===========================================================================*/
 void euler2quat(float, float, float, quaternion_t *);
 void q2dcm(float R[3][3], quaternion_t *q);
 
