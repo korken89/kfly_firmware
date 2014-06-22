@@ -54,6 +54,8 @@ static const ExternalFlashConfig flashcfg = {
     &flash_data         /* Pointer to mutex and temporary data structure.    */
 };
 
+static event_source_t save_to_flash_es;
+
 /*===========================================================================*/
 /* Module local functions.                                                   */
 /*===========================================================================*/
@@ -137,6 +139,10 @@ static void FlashSave_WritePage(const ExternalFlashConfig *config,
  */
 void FlashSaveInit(void)
 {
+    /* Initialize Save to Flash event source */
+    osalEventObjectInit(&save_to_flash_es);
+
+    /* Initialize external flash */
     if (ExternalFlashInit(&flashcfg) != MSG_OK)
         osalSysHalt("External Flash ID error.");
 }
@@ -296,4 +302,28 @@ FlashSave_Status FlashSave_Read(uint32_t uid,
     }
     else
         return FLASHSAVE_NO_MATCH;
+}
+
+/**
+ * @brief       Broadcasts the save to flash event, signaling all threads using
+ *              the save to flash functionality to save the current data.
+ */
+void vBroadcastFlashSaveEvent(void)
+{
+    osalSysLock();
+
+    if (chEvtIsListeningI(&save_to_flash_es))
+        chEvtBroadcastFlagsI(&save_to_flash_es, FLASHSAVE_SAVE_EVENTMASK);
+
+    osalSysUnlock();
+}
+
+/**
+ * @brief       Returns the pointer to the Flash Save event source.
+ * 
+ * @return      Pointer to the Flash Save event source.
+ */
+event_source_t *ptrGetFlashSaveEventSource(void)
+{
+    return &save_to_flash_es;
 }

@@ -9,6 +9,7 @@
 #include "ch.h"
 #include "hal.h"
 #include "myusb.h"
+#include "flash_save.h"
 #include "version_information.h"
 #include "statemachine_generators.h"
 #include "crc.h"
@@ -280,6 +281,9 @@ void ParseSetDeviceID(Parser_Holder_Type *pHolder)
 void ParseSaveToFlash(Parser_Holder_Type *pHolder)
 {
     (void)pHolder;
+
+    /* Broadcast the Save to Flash event */
+    vBroadcastFlashSaveEvent();
 }
 
 /**

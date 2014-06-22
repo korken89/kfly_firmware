@@ -8,6 +8,7 @@
 /*===========================================================================*/
 #define FLASHSAVE_UNALLOCATED       0xFFFFFFFF
 #define FLASHSAVE_HEADER_OFFSET     5
+#define FLASHSAVE_SAVE_EVENTMASK    EVENT_MASK(0)
 
 /*===========================================================================*/
 /* Module data structures and types.                                         */
@@ -111,5 +112,7 @@ FlashSave_Status FlashSave_Write(uint32_t uid,
 FlashSave_Status FlashSave_Read(uint32_t uid,
                                 uint8_t *data,
                                 uint8_t requested_size);
+void vBroadcastFlashSaveEvent(void);
+event_source_t *ptrGetFlashSaveEventSource(void);
 
 #endif /* __FLASH_SAVE_H */
