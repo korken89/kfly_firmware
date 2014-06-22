@@ -118,7 +118,6 @@ static THD_FUNCTION(ThreadControl, arg)
  * @brief           Thread for the flash save operation.
  * 
  * @param[in] arg   Unused.
- * 
  * @return          Unused.
  */
 static THD_FUNCTION(ThreadControlFlashSave, arg)

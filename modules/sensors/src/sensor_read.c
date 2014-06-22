@@ -100,7 +100,6 @@ CCM_MEMORY static THD_WORKING_AREA(waThreadSensorReadFlashSave, 64);
  * @brief           Thread for the flash save operation.
  * 
  * @param[in] arg   Unused.
- * 
  * @return          Unused.
  */
 static THD_FUNCTION(ThreadSensorReadFlashSave, arg)
