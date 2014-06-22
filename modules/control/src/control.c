@@ -44,9 +44,9 @@
 /* Module local variables and types.                                         */
 /*===========================================================================*/
 CCM_MEMORY static Control_Reference control_reference;
-CCM_MEMORY static Control_Data control_data;
-CCM_MEMORY static Control_Limits control_limits;
-CCM_MEMORY static Output_Mixer output_mixer;
+static Control_Data control_data;
+static Control_Limits control_limits;
+static Output_Mixer output_mixer;
 
 /* RC Output Configuration */
 static const PWMConfig pwmcfg = {
@@ -107,7 +107,8 @@ static void vRCInputsToControlAction(void)
 {
 }
 
-/*static void vPositionControl(vector3f_t *position_m,
+/*
+static void vPositionControl(vector3f_t *position_m,
                              float dt)
 {
 }
@@ -120,31 +121,31 @@ static void vVelocityControl(vector3f_t *velocity_m,
 static void vAttitudeControl(quaternion_t *attitude_m,
                              float dt)
 {
-    (void)attitude_m;
-    (void)dt;
+    vector3f_t u;
+    quaternion_t qerr;
 
-    //vector3f_t u, error;
+    /* Calculate the quaternion error */
+    qerr = qmult(control_reference.attitude_reference, qconj(*attitude_m));
 
-    /* *
-     *
-     * TODO: Calculate quaternion error.
-     *
-     * */
+    /* Check if the error represents the shortest route */
+    if (qerr.q0 < 0.0f)
+        qerr = qconj(qerr);
 
-    // u.x = fPIUpdate(&control_data.attitude_controller[0], error.x, dt);
-    // u.y = fPIUpdate(&control_data.attitude_controller[1], error.y, dt);
-    // u.z = fPIUpdate(&control_data.attitude_controller[2], error.z, dt);
+    /* Update controllers */
+    u.x = fPIUpdate(&control_data.attitude_controller[0], qerr.q1, dt);
+    u.y = fPIUpdate(&control_data.attitude_controller[1], qerr.q2, dt);
+    u.z = fPIUpdate(&control_data.attitude_controller[2], qerr.q3, dt);
 
     /* Send bounded control signal to the next step in the cascade */
-    //ref->rate_reference.x = bound( limits->max_rate.pitch,
-    //                              -limits->max_rate.pitch,
-    //                               u.x);
-    //ref->rate_reference.y = bound( limits->max_rate.roll,
-    //                              -limits->max_rate.roll,
-    //                               u.y);
-    //ref->rate_reference.z = bound( limits->max_rate.yaw,
-    //                              -limits->max_rate.yaw,
-    //                               u.z);
+    control_reference.rate_reference.x = bound( control_limits.max_rate.pitch,
+                                               -control_limits.max_rate.pitch,
+                                                u.x);
+    control_reference.rate_reference.y = bound( control_limits.max_rate.roll,
+                                               -control_limits.max_rate.roll,
+                                                u.y);
+    control_reference.rate_reference.z = bound( control_limits.max_rate.yaw,
+                                               -control_limits.max_rate.yaw,
+                                                u.z);
 }
 
 static void vRateControl(vector3f_t *omega_m,
@@ -176,10 +177,14 @@ static void vUpdateOutputs(void)
 
     for (i = 0; i < 8; i++)
     {
-        sum =  control_reference.actuator_desired.throttle * output_mixer.weights[i][0];
-        sum += control_reference.actuator_desired.pitch    * output_mixer.weights[i][1];
-        sum += control_reference.actuator_desired.roll     * output_mixer.weights[i][2];
-        sum += control_reference.actuator_desired.yaw      * output_mixer.weights[i][3];
+        sum =  control_reference.actuator_desired.throttle *
+               output_mixer.weights[i][0];
+        sum += control_reference.actuator_desired.pitch *
+               output_mixer.weights[i][1];
+        sum += control_reference.actuator_desired.roll *
+               output_mixer.weights[i][2];
+        sum += control_reference.actuator_desired.yaw *
+               output_mixer.weights[i][3];
 
         RCOutputSetChannelWidthRelativePositive(&rcoutputcfg, i, sum);
     }
@@ -240,14 +245,14 @@ void vUpdateControlAction(quaternion_t *q_m, vector3f_t *omega_m, float dt)
 
     switch (control_reference.mode)
     {
-        //case FLIGHTMODE_POSITION_HOLD:
+        case FLIGHTMODE_POSITION_HOLD:
         //    break;
 
-        //case FLIGHTMODE_POSITION:
-        //    vPositionControl(ref, limits, controllers, dt);
+        case FLIGHTMODE_POSITION:
+        //    vPositionControl(pos_m, dt);
 
-        //case FLIGHTMODE_VELOCITY:
-        //    vVelocityControl(ref, limits, controllers, dt);
+        case FLIGHTMODE_VELOCITY:
+        //    vVelocityControl(vel_m, dt);
 
         case FLIGHTMODE_ATTITUDE:
             vAttitudeControl(q_m,
