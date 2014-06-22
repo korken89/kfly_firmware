@@ -426,7 +426,7 @@ void RCInputInit(void)
                    (uint8_t *)&rcinput_settings,
                    RCINPUT_SETTINGS_SIZE);
 
-    if (RCInputInitialization(rcinput_settings.mode) != MSG_OK)
+    if (RCInputInitialization() != MSG_OK)
         osalSysHalt("RC input initialization failed.");
 
     /* Start the Flash Save thread */
@@ -439,11 +439,10 @@ void RCInputInit(void)
 
 /**
  * @brief           Initializes RC inputs.
- * 
- * @param[in] mode  Input mode for the RC inputs.
+ *
  * @return          MSG_OK if the initialization was successful.
  */
-msg_t RCInputInitialization(RCInput_Mode_Selector mode)
+msg_t RCInputInitialization(void)
 {
     msg_t status = MSG_OK;
     int i;
@@ -457,7 +456,7 @@ msg_t RCInputInitialization(RCInput_Mode_Selector mode)
         eicuDisable(&EICUD12);
 
     /* Configure the input capture unit */
-    if (mode == MODE_CPPM_INPUT)
+    if (rcinput_settings.mode == MODE_CPPM_INPUT)
     {
         /* Start and enable the EICU driver */
         eicuStart(&EICUD9, &cppm_rcinputcfg);
@@ -465,7 +464,7 @@ msg_t RCInputInitialization(RCInput_Mode_Selector mode)
         eicuEnable(&EICUD9);
         eicuEnable(&EICUD12);
     }
-    else if (mode == MODE_PWM_INPUT)
+    else if (rcinput_settings.mode == MODE_PWM_INPUT)
     {
         /* Start and enable the EICU driver */
         eicuStart(&EICUD3, &pwm_rcinputcfg_2);
@@ -477,9 +476,6 @@ msg_t RCInputInitialization(RCInput_Mode_Selector mode)
     }
     else /* Invalid input, return error */
         return MSG_RESET;
-
-    /* Set the settings to the corresponding mode */
-    rcinput_settings.mode = mode;
 
     /* For each role associated with a channel, generate
        the inverse lookup table */

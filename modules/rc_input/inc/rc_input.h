@@ -205,7 +205,7 @@ typedef struct {
 /* External declarations.                                                    */
 /*===========================================================================*/
 void RCInputInit(void);
-msg_t RCInputInitialization(RCInput_Mode_Selector mode);
+msg_t RCInputInitialization(void);
 float RCInputGetInputLevel(Input_Role_Selector role);
 RCInput_Data *ptrGetRCInputData(void);
 RCInput_Settings *ptrGetRCInputSettings(void);

@@ -451,6 +451,9 @@ void ParseSetRCCalibration(Parser_Holder_Type *pHolder)
         for (i = 0; i < RCINPUT_SETTINGS_SIZE; i++)
             save_location[i] = pHolder->buffer[i];
     }
+
+    /* Reinitialize the RC Input module */
+    RCInputInitialization();
 }
 
 /**
