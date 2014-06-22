@@ -6,6 +6,7 @@
 
 #include "ch.h"
 #include "hal.h"
+#include "flash_save.h"
 #include "sensor_read.h"
 
 /*===========================================================================*/
@@ -84,12 +85,56 @@ static thread_t *thread_sensor_read_p = NULL;
 static uint8_t temp_data[14]; /* NOTE: This variable may NOT be placed in CCM 
                                  memory because DMA directly accesses it. */
 
+/* Temporary holder for IMU calibration while saving to flash */
+static IMU_Calibration imu_cal;
+
 /* Working area for the sensor read thread */
 CCM_MEMORY static THD_WORKING_AREA(waThreadSensorRead, 128);
+CCM_MEMORY static THD_WORKING_AREA(waThreadSensorReadFlashSave, 64);
 
 /*===========================================================================*/
 /* Module local functions.                                                   */
 /*===========================================================================*/
+
+/**
+ * @brief           Thread for the flash save operation.
+ * 
+ * @param[in] arg   Unused.
+ * 
+ * @return          Unused.
+ */
+static THD_FUNCTION(ThreadSensorReadFlashSave, arg)
+{
+    (void)arg;
+
+    /* Event registration for new estimation */
+    event_listener_t el;
+
+    /* Set thread name */
+    chRegSetThreadName("SenRead FlashSave");
+
+    /* Register to new estimation */
+    chEvtRegisterMask(ptrGetFlashSaveEventSource(),
+                      &el,
+                      FLASHSAVE_SAVE_EVENTMASK);
+
+    while (1)
+    {
+        /* Wait for new estimation */ 
+        chEvtWaitOne(FLASHSAVE_SAVE_EVENTMASK);
+
+        /* Get IMU calibration */
+        GetIMUCalibration(&imu_cal);
+
+        /* Save RC input settings to flash */
+        FlashSave_Write(FlashSave_STR2ID("SENC"),
+                        true,
+                        (uint8_t *)&imu_cal,
+                        SENSOR_IMU_CALIBRATION_SIZE);
+    }
+
+    return MSG_OK;
+}
 
 /**
  * @brief Reads data from the sensors whom have new data available.
@@ -298,6 +343,8 @@ static void HMC5983ConvertAndSave(HMC5983_Data *dh, uint8_t data[6])
  */
 msg_t SensorReadInit(void)
 {
+    FlashSave_Status status;
+
     /* Parameter checks */
     if ((sensorcfg.mpu6050cfg == NULL) || (sensorcfg.hmc5983cfg == NULL))
         return MSG_RESET; /* Error! */
@@ -329,12 +376,28 @@ msg_t SensorReadInit(void)
     mpu6050cal.bias[0] = mpu6050cal.bias[1] = mpu6050cal.bias[2] = 0.0f;
     hmc5983cal.bias[0] = hmc5983cal.bias[1] = hmc5983cal.bias[2] = 0.0f;
     calibration_timestamp = 0;
-    
+
+    /* Read data from flash if available */
+    status = FlashSave_Read(FlashSave_STR2ID("SENC"),
+                            (uint8_t *)&imu_cal,
+                            SENSOR_IMU_CALIBRATION_SIZE);
+
+    /* Set IMU calibration */
+    if (status == FLASHSAVE_OK)
+        SetIMUCalibration(&imu_cal);
+
     /* Initialize read thread */
     chThdCreateStatic(waThreadSensorRead,
                       sizeof(waThreadSensorRead), 
                       HIGHPRIO, 
                       ThreadSensorRead, 
+                      NULL);
+
+    /* Initialize the Flash Save thread */
+    chThdCreateStatic(waThreadSensorReadFlashSave,
+                      sizeof(waThreadSensorReadFlashSave),
+                      NORMALPRIO,
+                      ThreadSensorReadFlashSave,
                       NULL);
 
     return MSG_OK;
