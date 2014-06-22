@@ -129,7 +129,7 @@ static THD_FUNCTION(ThreadControlFlashSave, arg)
     event_listener_t el;
 
     /* Set thread name */
-    chRegSetThreadName("Control Save");
+    chRegSetThreadName("Control FlashSave");
 
     /* Register to new estimation */
     chEvtRegisterMask(ptrGetFlashSaveEventSource(),
