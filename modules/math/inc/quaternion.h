@@ -258,6 +258,7 @@ static inline quaternion_t qconj(quaternion_t q)
 {
     quaternion_t r;
 
+    r.q0 =   q.q0;
     r.q1 = - q.q1;
     r.q2 = - q.q2;
     r.q3 = - q.q3;
