@@ -134,8 +134,7 @@ int main(void)
      * Initialize RC inputs
      *
      */
-    if (RCInputInit(MODE_CPPM_INPUT) != MSG_OK)
-        osalSysHalt("RC input initialization failed.");
+    RCInputInit();
 
     /*
      *

@@ -7,6 +7,7 @@
 #include "ch.h"
 #include "hal.h"
 #include "eicu.h"
+#include "flash_save.h"
 #include "rc_input.h"
 #include "trigonometry.h"
 
@@ -26,7 +27,7 @@ static void vt_no_connection_timeout_callback(void *p);
 /* Module local variables and types.                                         */
 /*===========================================================================*/
 CCM_MEMORY static RCInput_Data rcinput_data;
-CCM_MEMORY static RCInput_Settings rcinput_settings;
+static RCInput_Settings rcinput_settings;
 CCM_MEMORY static uint64_t role_lookup;
 static event_source_t rcinput_es;
 static virtual_timer_t rcinput_timeout_vt;
@@ -101,10 +102,48 @@ static const EICUConfig pwm_rcinputcfg_2 = {
 };
 
 static uint16_t rssi_counter = 0;
+CCM_MEMORY static THD_WORKING_AREA(waThreadRCInputFlashSave, 64);
 
 /*===========================================================================*/
 /* Module local functions.                                                   */
 /*===========================================================================*/
+
+/**
+ * @brief           Thread for the flash save operation.
+ * 
+ * @param[in] arg   Unused.
+ * 
+ * @return          Unused.
+ */
+static THD_FUNCTION(ThreadRCInputFlashSave, arg)
+{
+    (void)arg;
+
+    /* Event registration for new estimation */
+    event_listener_t el;
+
+    /* Set thread name */
+    chRegSetThreadName("RCInput FlashSave");
+
+    /* Register to new estimation */
+    chEvtRegisterMask(ptrGetFlashSaveEventSource(),
+                      &el,
+                      FLASHSAVE_SAVE_EVENTMASK);
+
+    while (1)
+    {
+        /* Wait for new estimation */ 
+        chEvtWaitOne(FLASHSAVE_SAVE_EVENTMASK);
+
+        /* Save RC input settings to flash */
+        FlashSave_Write(FlashSave_STR2ID("RCIN"),
+                        true,
+                        (uint8_t *)&rcinput_settings,
+                        RCINPUT_SETTINGS_SIZE);
+    }
+
+    return MSG_OK;
+}
 
 /**
  * @brief               Parses CPPM inputs.
@@ -370,21 +409,39 @@ static void pwm_callback(EICUDriver *eicup, eicuchannel_t channel)
 /*===========================================================================*/
 
 /**
+ * @brief           Initializes the RC input module.
+ */
+void RCInputInit(void)
+{
+    /* Initialize the RC Input event source */
+    osalEventObjectInit(&rcinput_es);
+
+    /* Read RC input settings from flash */
+    FlashSave_Read(FlashSave_STR2ID("RCIN"),
+                    (uint8_t *)&rcinput_settings,
+                    RCINPUT_SETTINGS_SIZE);
+
+    if (RCInputInitialization(MODE_CPPM_INPUT) != MSG_OK)
+        osalSysHalt("RC input initialization failed.");
+
+    /* Start the Flash Save thread */
+    chThdCreateStatic(waThreadRCInputFlashSave,
+                      sizeof(waThreadRCInputFlashSave),
+                      NORMALPRIO,
+                      ThreadRCInputFlashSave,
+                      NULL);
+}
+
+/**
  * @brief           Initializes RC inputs.
  * 
  * @param[in] mode  Input mode for the RC inputs.
  * @return          MSG_OK if the initialization was successful.
  */
-msg_t RCInputInit(RCInput_Mode_Selector mode)
+msg_t RCInputInitialization(RCInput_Mode_Selector mode)
 {
     msg_t status = MSG_OK;
     int i;
-
-    /* Initialize the RC Input event source */
-    osalSysLock();
-    if (rcinput_es.es_next == NULL)
-        osalEventObjectInit(&rcinput_es);
-    osalSysUnlock();
 
     /* If the EICU driver was already in use, disable it */
     if (EICUD3.state != EICU_STOP)
