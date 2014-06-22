@@ -130,6 +130,15 @@ static void FlashSave_WritePage(const ExternalFlashConfig *config,
     ExternalFlash_Release(config);
 }
 
+/**
+ * @brief       Erases the current settings.
+ */
+static void vFlashSaveEraseSettings(void)
+{
+    /* Erase the first sector (64kB) */
+    ExternalFlash_EraseSector(&flashcfg, 0);
+}
+
 /*===========================================================================*/
 /* Module exported functions.                                                */
 /*===========================================================================*/
@@ -310,6 +319,8 @@ FlashSave_Status FlashSave_Read(uint32_t uid,
  */
 void vBroadcastFlashSaveEvent(void)
 {
+    vFlashSaveEraseSettings();
+
     osalSysLock();
 
     if (chEvtIsListeningI(&save_to_flash_es))
