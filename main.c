@@ -122,7 +122,9 @@ int main(void)
 
     /*
      *
-     * Initialize the external flash and save to flash functionality
+     * Initialize the external flash and save to flash functionality.
+     * Note: Must be initialized before any module that uses the save to or 
+     *       read from flash functionality.
      *
      */
     FlashSaveInit();
