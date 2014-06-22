@@ -616,6 +616,8 @@ void GetRawIMUData(IMU_RawData *data)
     
     data->temperature = sensorcfg.mpu6050cfg->data_holder->raw_temperature;
 
+    data->pressure = 0;
+
     /* Unlock data structures after reading */
     UnlockSensorStructures();
 }

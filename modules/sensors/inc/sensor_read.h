@@ -12,7 +12,7 @@
 #define MAG_DATA_AVAILABLE_EVENTMASK                    EVENT_MASK(1)
 #define BARO_DATA_AVAILABLE_EVENTMASK                   EVENT_MASK(2)
 #define SENSOR_IMU_DATA_SIZE                            (10*4)
-#define SENSOR_IMU_RAW_DATA_SIZE                        (10*2)
+#define SENSOR_IMU_RAW_DATA_SIZE                        (10*2 + 4)
 #define SENSOR_IMU_CALIBRATION_SIZE                     (10*4 + 4)
 
 /*===========================================================================*/
@@ -94,7 +94,7 @@ typedef struct
      */
     int16_t temperature;
     /**
-     * @brief   Raw temperature of the accelerometer and gyroscope.
+     * @brief   Raw pressure of the barometer.
      */
     uint32_t pressure;
 } IMU_RawData;
