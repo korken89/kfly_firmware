@@ -25,54 +25,171 @@
 /*===========================================================================*/
 /* Module data structures and types.                                         */
 /*===========================================================================*/
+/**
+ * @brief   Input capture channel selector.
+ */
 typedef enum {
+    /**
+     * @brief   Channel 1 selector.
+     */
     INPUT_CH1 = 0,
+    /**
+     * @brief   Channel 2 selector.
+     */
     INPUT_CH2 = 1,
+    /**
+     * @brief   Channel 3 selector.
+     */
     INPUT_CH3 = 2,
+    /**
+     * @brief   Channel 4 selector.
+     */
     INPUT_CH4 = 3,
+    /**
+     * @brief   Channel 5 selector.
+     */
     INPUT_CH5 = 4,
+    /**
+     * @brief   Channel 6 selector.
+     */
     INPUT_CH6 = 5,
+    /**
+     * @brief   Channel 7 selector.
+     */
     INPUT_CPPM = 6,
+    /**
+     * @brief   Channel 8 selector.
+     */
     INPUT_RSSI = 7
 } RCInput_Capture_Channel;
 
+/**
+ * @brief   Input capture type selector.
+ */
 typedef enum {
+    /**
+     * @brief   CPPM input: all channels on one input line.
+     */
     MODE_CPPM_INPUT = 1,
+    /**
+     * @brief   PWM input: all channels have its own input line.
+     */
     MODE_PWM_INPUT = 2
 } RCInput_Mode_Selector;
 
+/**
+ * @brief   Input capture channel role selector.
+ */
 typedef enum PACKED_VAR {
+    /**
+     * @brief   Unused role selector.
+     */
     ROLE_OFF = 0,
+    /**
+     * @brief   Throttle role selector.
+     */
     ROLE_THROTTLE = 1,
+    /**
+     * @brief   Pitch role selector.
+     */
     ROLE_PITCH = 2,
+    /**
+     * @brief   Roll role selector.
+     */
     ROLE_ROLL = 3,
+    /**
+     * @brief   Yaw role selector.
+     */
     ROLE_YAW = 4,
+    /**
+     * @brief   Flight mode role selector.
+     */
     ROLE_FLIGHT_MODE = 6,
+    /**
+     * @brief   Aux 1 role selector.
+     */
     ROLE_AUX1 = 7,
+    /**
+     * @brief   Aux 2 role selector.
+     */
     ROLE_AUX2 = 8,
+    /**
+     * @brief   Aux 3 role selector.
+     */
     ROLE_AUX3 = 9
 } Input_Role_Selector;
 
+/**
+ * @brief   Input capture channel type.
+ */
 typedef enum PACKED_VAR {
+    /**
+     * @brief   Analog type input.
+     */
     TYPE_ANALOG = 1,
+    /**
+     * @brief   Tri-state type input.
+     */
     TYPE_3_STATE = 2,
+    /**
+     * @brief   On/off type input.
+     */
     TYPE_ON_OFF = 3
 } Input_Type_Selector;
 
+/**
+ * @brief   Input capture data holder.
+ */
 typedef struct {
+    /**
+     * @brief   Active connection indicator.
+     */
     uint32_t active_connection;
+    /**
+     * @brief   Number of active channels.
+     */
     uint16_t number_active_connections;
+    /**
+     * @brief   The value of each input channel.
+     */
     uint16_t value[RCINPUT_MAX_NUMBER_OF_INPUTS];
+    /**
+     * @brief   Current RSSI value.
+     */
     uint16_t rssi;
+    /**
+     * @brief   Current RSSI frequency.
+     */
     uint16_t rssi_frequency;
 } RCInput_Data;
 
+/**
+ * @brief   Input capture settings holder.
+ */
 typedef struct {
+    /**
+     * @brief   Input capture mode selector.
+     */
     uint32_t mode;
+    /**
+     * @brief   Input capture role selector.
+     */
     Input_Role_Selector role[RCINPUT_MAX_NUMBER_OF_INPUTS];
+    /**
+     * @brief   Input capture type selector.
+     */
     Input_Type_Selector type[RCINPUT_MAX_NUMBER_OF_INPUTS];
+    /**
+     * @brief   Input capture top calibration value.
+     */
     uint16_t ch_top[RCINPUT_MAX_NUMBER_OF_INPUTS];
+    /**
+     * @brief   Input capture center calibration value.
+     */
     uint16_t ch_center[RCINPUT_MAX_NUMBER_OF_INPUTS];
+    /**
+     * @brief   Input capture bottom calibration value.
+     */
     uint16_t ch_bottom[RCINPUT_MAX_NUMBER_OF_INPUTS];
 } RCInput_Settings;
 
