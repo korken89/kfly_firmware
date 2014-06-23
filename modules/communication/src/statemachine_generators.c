@@ -663,8 +663,11 @@ bool GenerateGetSensorCalibration(Circular_Buffer_Type *Cbuff)
  */
 bool GenerateGetEstimationRate(Circular_Buffer_Type *Cbuff)
 {
-    (void)Cbuff;
-    return HAL_FAILED;
+    return GenerateGenericCommand(Cmd_GetEstimationRate,
+                                  ((uint8_t *)ptrGetAttitudeEstimationStates()) 
+                                  + ESTIMATION_RATE_OFFSET, 
+                                  ESTIMATION_RATE_STATE_SIZE, 
+                                  Cbuff);
 }
 
 /**
@@ -677,8 +680,10 @@ bool GenerateGetEstimationRate(Circular_Buffer_Type *Cbuff)
  */
 bool GenerateGetEstimationAttitude(Circular_Buffer_Type *Cbuff)
 {
-    (void)Cbuff;
-    return HAL_FAILED;
+    return GenerateGenericCommand(Cmd_GetEstimationAttitude,
+                                  (uint8_t *)ptrGetAttitudeEstimationStates(), 
+                                  ESTIMATION_ATTITUDE_STATE_SIZE, 
+                                  Cbuff);
 }
 
 /**
@@ -721,7 +726,7 @@ bool GenerateGetEstimationAllStates(Circular_Buffer_Type *Cbuff)
 {
     return GenerateGenericCommand(Cmd_GetEstimationAllStates,
                                   (uint8_t *)ptrGetAttitudeEstimationStates(), 
-                                  ESTIMATION_ATTITUDE_STATES_SIZE, 
+                                  ESTIMATION_STATES_SIZE, 
                                   Cbuff);
 }
 
