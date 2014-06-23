@@ -174,8 +174,6 @@ static const Generator_Type generator_lookup[128] = {
   */
 bool GenerateMessage(KFly_Command_Type command, Port_Type port)
 {
-    (void)port;
-
     bool status;
     Circular_Buffer_Type *Cbuff = NULL;
 
