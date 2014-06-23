@@ -319,7 +319,7 @@ FlashSave_Status FlashSave_Read(uint32_t uid,
  */
 void vBroadcastFlashSaveEvent(void)
 {
-    vFlashSaveEraseSettings();
+    //vFlashSaveEraseSettings();
     
     osalSysLock();
 
