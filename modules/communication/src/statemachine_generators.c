@@ -72,7 +72,7 @@ static const Generator_Type generator_lookup[128] = {
     GenerateGetPositionControllerData,/* 36:  Cmd_GetPositionControllerData   */
     NULL,                             /* 37:  Cmd_SetPositionControllerData   */
     NULL,                             /* 38:  RESERVED                        */
-    NULL,                             /* 39:  Cmd_GetChannelMix               */
+    GenerateGetChannelMix,            /* 39:  Cmd_GetChannelMix               */
     NULL,                             /* 40:  Cmd_SetChannelMix               */
     GenerateGetRCCalibration,         /* 41:  Cmd_GetRCCalibration            */
     NULL,                             /* 42:  Cmd_SetRCCalibration            */
