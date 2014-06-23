@@ -90,7 +90,7 @@ static IMU_Calibration imu_cal;
 
 /* Working area for the sensor read thread */
 CCM_MEMORY static THD_WORKING_AREA(waThreadSensorRead, 128);
-CCM_MEMORY static THD_WORKING_AREA(waThreadSensorReadFlashSave, 64);
+CCM_MEMORY static THD_WORKING_AREA(waThreadSensorReadFlashSave, 128);
 
 /*===========================================================================*/
 /* Module local functions.                                                   */

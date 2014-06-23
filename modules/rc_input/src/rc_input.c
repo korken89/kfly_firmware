@@ -102,7 +102,7 @@ static const EICUConfig pwm_rcinputcfg_2 = {
 };
 
 static uint16_t rssi_counter = 0;
-CCM_MEMORY static THD_WORKING_AREA(waThreadRCInputFlashSave, 64);
+CCM_MEMORY static THD_WORKING_AREA(waThreadRCInputFlashSave, 128);
 
 /*===========================================================================*/
 /* Module local functions.                                                   */
