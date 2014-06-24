@@ -49,21 +49,21 @@ msg_t ExternalFlashInit(const ExternalFlashConfig *config)
 
 /**
  * @brief               Erases the entire External Flash.
+ * @note                This function call does not lock the flash from access
+ *                      by other threads, it is up to the user to use the Claim
+ *                      and Release macros to make flash access thread safe.
  *
  * @param[in] config    Pointer to External Flash config.
  */
 void ExternalFlash_EraseBulk(const ExternalFlashConfig *config)
 {
-    /* Claim external flash */
-    ExternalFlash_Claim(config);
-
-    /* Enable the write access to the External Flash */
-    ExternalFlash_WriteEnable(config);
-
 #if SPI_USE_MUTUAL_EXCLUSION
     /* Claim the SPI bus */
     spiAcquireBus(config->spip);
 #endif /* SPI_USE_MUTUAL_EXCLUSION */
+
+    /* Enable the write access to the External Flash */
+    ExternalFlash_WriteEnable(config);
 
     /* Select the External Flash: Chip Select low */
     ExternalFlash_Select(config);
@@ -81,13 +81,13 @@ void ExternalFlash_EraseBulk(const ExternalFlashConfig *config)
 
     /* Wait the end of Flash writing */
     ExternalFlash_WaitForWriteEnd(config, 100);
-
-    /* Release external flash */
-    ExternalFlash_Release(config);
 }
 
 /**
  * @brief               Erases a sector on the External Flash.
+ * @note                This function call does not lock the flash from access
+ *                      by other threads, it is up to the user to use the Claim
+ *                      and Release macros to make flash access thread safe.
  *
  * @param[in] config    Pointer to External Flash config.
  * @param[in] address   Address to the flash sector.
@@ -95,16 +95,13 @@ void ExternalFlash_EraseBulk(const ExternalFlashConfig *config)
 void ExternalFlash_EraseSector(const ExternalFlashConfig *config,
                                uint32_t address)
 {
-    /* Claim external flash */
-    ExternalFlash_Claim(config);
-
-    /* Enable the write access to the External Flash */
-    ExternalFlash_WriteEnable(config);
-
 #if SPI_USE_MUTUAL_EXCLUSION
     /* Claim the SPI bus */
     spiAcquireBus(config->spip);
 #endif /* SPI_USE_MUTUAL_EXCLUSION */
+
+    /* Enable the write access to the External Flash */
+    ExternalFlash_WriteEnable(config);
 
     /* Select the External Flash: Chip Select low */
     ExternalFlash_Select(config);
@@ -127,13 +124,13 @@ void ExternalFlash_EraseSector(const ExternalFlashConfig *config,
 
     /* Wait the end of Flash writing */
     ExternalFlash_WaitForWriteEnd(config, 100);
-
-    /* Release external flash */
-    ExternalFlash_Release(config);
 }
 
 /**
  * @brief               Erases a page on the External Flash.
+ * @note                This function call does not lock the flash from access
+ *                      by other threads, it is up to the user to use the Claim
+ *                      and Release macros to make flash access thread safe.
  *
  * @param[in] config    Pointer to External Flash config.
  * @param[in] address   Address to the flash page.
@@ -141,16 +138,13 @@ void ExternalFlash_EraseSector(const ExternalFlashConfig *config,
 void ExternalFlash_ErasePage(const ExternalFlashConfig *config,
                              uint32_t address)
 {
-    /* Claim external flash */
-    ExternalFlash_Claim(config);
-
-    /* Enable the write access to the External Flash */
-    ExternalFlash_WriteEnable(config);
-
 #if SPI_USE_MUTUAL_EXCLUSION
     /* Claim the SPI bus */
     spiAcquireBus(config->spip);
 #endif /* SPI_USE_MUTUAL_EXCLUSION */
+
+    /* Enable the write access to the External Flash */
+    ExternalFlash_WriteEnable(config);
 
     /* Select the External Flash: Chip Select low */
     ExternalFlash_Select(config);
@@ -173,9 +167,6 @@ void ExternalFlash_ErasePage(const ExternalFlashConfig *config,
 
     /* Wait the end of Flash writing */
     ExternalFlash_WaitForWriteEnd(config, 10);
-
-    /* Release external flash */
-    ExternalFlash_Release(config);
 }
 
 /**
@@ -225,6 +216,9 @@ uint32_t ExternalFlash_ReadID(const ExternalFlashConfig *config)
  * @brief               Writes data to a Flash page using polling.
  * @note                This assumes that the page to be written to has been
  *                      erased prior to the call to this function.
+ * @note                This function call does not lock the flash from access
+ *                      by other threads, it is up to the user to use the Claim
+ *                      and Release macros to make flash access thread safe.
  * 
  * @param[in] config    Pointer to External Flash config.
  * @param[in] address   Where in the Flash to save the data.
@@ -240,16 +234,13 @@ void ExternalFlash_WritePagePolling(const ExternalFlashConfig *config,
     if (count > FLASH_PAGE_SIZE)
         osalSysHalt("Page write size too big");
 
-    /* Claim external flash */
-    ExternalFlash_Claim(config);
-
-    /* Enable the write access to the External Flash */
-    ExternalFlash_WriteEnable(config);
-
 #if SPI_USE_MUTUAL_EXCLUSION
     /* Claim the SPI bus */
     spiAcquireBus(config->spip);
 #endif /* SPI_USE_MUTUAL_EXCLUSION */
+
+    /* Enable the write access to the External Flash */
+    ExternalFlash_WriteEnable(config);
 
     /* Select the External Flash: Chip Select low */
     ExternalFlash_Select(config);
@@ -276,16 +267,16 @@ void ExternalFlash_WritePagePolling(const ExternalFlashConfig *config,
 
     /* Wait the end of Flash writing */
     ExternalFlash_WaitForWriteEnd(config, 1);
-
-    /* Release external flash */
-    ExternalFlash_Release(config);
 }
 
 /**
  * @brief               Writes data to a Flash page using DMA.
  * @note                This assumes that the page to be written to has been
  *                      erased prior to the call to this function.
- * 
+ * @note                This function call does not lock the flash from access
+ *                      by other threads, it is up to the user to use the Claim
+ *                      and Release macros to make flash access thread safe.
+ *                      
  * @param[in] config    Pointer to External Flash config.
  * @param[in] address   Where in the Flash to save the data.
  * @param[in] buffer    Pointer to the buffer holding the data.
@@ -300,16 +291,13 @@ void ExternalFlash_WritePage(const ExternalFlashConfig *config,
     if (count > FLASH_PAGE_SIZE)
         osalSysHalt("Page write size too big");
 
-    /* Claim external flash */
-    ExternalFlash_Claim(config);
-
-    /* Enable the write access to the External Flash */
-    ExternalFlash_WriteEnable(config);
-
 #if SPI_USE_MUTUAL_EXCLUSION
     /* Claim the SPI bus */
     spiAcquireBus(config->spip);
 #endif /* SPI_USE_MUTUAL_EXCLUSION */
+
+    /* Enable the write access to the External Flash */
+    ExternalFlash_WriteEnable(config);
 
     /* Select the External Flash: Chip Select low */
     ExternalFlash_Select(config);
@@ -337,14 +325,14 @@ void ExternalFlash_WritePage(const ExternalFlashConfig *config,
 
     /* Wait the end of Flash writing */
     ExternalFlash_WaitForWriteEnd(config, 1);
-
-    /* Release external flash */
-    ExternalFlash_Release(config);
 }
 
 /**
  * @brief               Read a block of data from the External Flash by polling.
- * 
+ * @note                This function call does not lock the flash from access
+ *                      by other threads, it is up to the user to use the Claim
+ *                      and Release macros to make flash access thread safe.
+ *                      
  * @param[in] config    Pointer to External Flash config.
  * @param[in] address   Where in the Flash to read the data.
  * @param[in] buffer    Pointer to the buffer saving the data.
@@ -355,9 +343,6 @@ void ExternalFlash_ReadBufferPolling(const ExternalFlashConfig *config,
                                      uint8_t *buffer,  
                                      uint16_t count)
 {
-    /* Claim external flash */
-    ExternalFlash_Claim(config);
-
 #if SPI_USE_MUTUAL_EXCLUSION
     /* Claim the SPI bus */
     spiAcquireBus(config->spip);
@@ -384,14 +369,14 @@ void ExternalFlash_ReadBufferPolling(const ExternalFlashConfig *config,
     /* Release the SPI bus */
     spiReleaseBus(config->spip);
 #endif /* SPI_USE_MUTUAL_EXCLUSION */
-
-    /* Release external flash */
-    ExternalFlash_Release(config);
 }
 
 /**
  * @brief               Read a block of data from the External Flash using DMA.
- * 
+ * @note                This function call does not lock the flash from access
+ *                      by other threads, it is up to the user to use the Claim
+ *                      and Release macros to make flash access thread safe.
+ *                      
  * @param[in] config    Pointer to External Flash config.
  * @param[in] address   Where in the Flash to read the data.
  * @param[in] buffer    Pointer to the buffer saving the data.
@@ -402,10 +387,6 @@ void ExternalFlash_ReadBuffer(const ExternalFlashConfig *config,
                               uint8_t *buffer,  
                               uint16_t count)
 {
-    
-    /* Claim external flash */
-    ExternalFlash_Claim(config);
-
 #if SPI_USE_MUTUAL_EXCLUSION
     /* Claim the SPI bus */
     spiAcquireBus(config->spip);
@@ -434,16 +415,16 @@ void ExternalFlash_ReadBuffer(const ExternalFlashConfig *config,
     /* Release the SPI bus */
     spiReleaseBus(config->spip);
 #endif /* SPI_USE_MUTUAL_EXCLUSION */
-
-    /* Release external flash */
-    ExternalFlash_Release(config);
 }
 
 /**
  * @brief               Polls the status of the Write In Progress (WIP) flag in
  *                      the External Flash's status register until write
  *                      operation has completed.
- * 
+ * @note                This function call does not lock the flash from access
+ *                      by other threads, it is up to the user to use the Claim
+ *                      and Release macros to make flash access thread safe.
+ *                      
  * @param[in] config    Pointer to External Flash config.
  * @param[in] delay_ms  Delay between checks in ms. 0 indicates continuous
  *                      polling without and delay (blocking).
@@ -464,6 +445,7 @@ void ExternalFlash_WaitForWriteEnd(const ExternalFlashConfig *config,
         /* Claim the SPI bus */
         spiAcquireBus(config->spip);
 #endif /* SPI_USE_MUTUAL_EXCLUSION */
+        
         /* Select the External Flash: Chip Select low */
         ExternalFlash_Select(config);
 
@@ -484,16 +466,14 @@ void ExternalFlash_WaitForWriteEnd(const ExternalFlashConfig *config,
 
 /**
  * @brief               Enables the write access to the External Flash.
- * 
+ * @note                This function call does not lock the flash from access
+ *                      by other threads, it is up to the user to use the Claim
+ *                      and Release macros to make flash access thread safe.
+ *                      
  * @param[in] config    Pointer to External Flash config.
  */
 void ExternalFlash_WriteEnable(const ExternalFlashConfig *config)
 {
-#if SPI_USE_MUTUAL_EXCLUSION
-    /* Claim the SPI bus */
-    spiAcquireBus(config->spip);
-#endif /* SPI_USE_MUTUAL_EXCLUSION */
-
     /* Select the External Flash: Chip Select low */
     ExternalFlash_Select(config);
 
@@ -502,9 +482,4 @@ void ExternalFlash_WriteEnable(const ExternalFlashConfig *config)
 
     /* Deselect the External Flash: Chip Select high */
     ExternalFlash_Unselect(config);
-
-#if SPI_USE_MUTUAL_EXCLUSION
-    /* Release the SPI bus */
-    spiReleaseBus(config->spip);
-#endif /* SPI_USE_MUTUAL_EXCLUSION */
 }

@@ -81,16 +81,13 @@ static void FlashSave_WritePage(const ExternalFlashConfig *config,
     if (count > FLASH_PAGE_SIZE)
         osalSysHalt("Page write size too big");
 
-    /* Claim external flash */
-    ExternalFlash_Claim(config);
-
-    /* Enable the write access to the External Flash */
-    ExternalFlash_WriteEnable(config);
-
 #if SPI_USE_MUTUAL_EXCLUSION
     /* Claim the SPI bus */
     spiAcquireBus(config->spip);
 #endif /* SPI_USE_MUTUAL_EXCLUSION */
+
+    /* Enable the write access to the External Flash */
+    ExternalFlash_WriteEnable(config);
 
     /* Select the External Flash: Chip Select low */
     ExternalFlash_Select(config);
@@ -125,18 +122,6 @@ static void FlashSave_WritePage(const ExternalFlashConfig *config,
 
     /* Wait the end of Flash writing */
     ExternalFlash_WaitForWriteEnd(config, 1);
-
-    /* Release external flash */
-    ExternalFlash_Release(config);
-}
-
-/**
- * @brief       Erases the current settings.
- */
-static void vFlashSaveEraseSettings(void)
-{
-    /* Erase the first sector (64kB) */
-    ExternalFlash_EraseSector(&flashcfg, 0);
 }
 
 /*===========================================================================*/
@@ -233,6 +218,9 @@ FlashSave_Status FlashSave_Write(uint32_t uid,
     int16_t page_number;
     uint8_t size;
 
+    /* Claim external flash */
+    ExternalFlash_Claim(&flashcfg);
+
     /*  Check if the data is within correct size */
     if (count > 250)
         return FLASHSAVE_OVERSIZE;
@@ -266,10 +254,15 @@ FlashSave_Status FlashSave_Write(uint32_t uid,
                                 uid,
                                 data,
                                 count);
-        }
-        else
+
+            ExternalFlash_Release(&flashcfg);
+
             return FLASHSAVE_NO_OVERWRITE;
+        }
     }
+
+    /* Release external flash */
+    ExternalFlash_Release(&flashcfg);
 
     return FLASHSAVE_OK;
 }
@@ -289,6 +282,9 @@ FlashSave_Status FlashSave_Read(uint32_t uid,
     int16_t page_number;
     uint8_t size;
 
+    /* Claim external flash */
+    ExternalFlash_Claim(&flashcfg);
+
     /* Look for the specified UID in the external memory */
     bool result = FlashSave_Seek(uid, &page_number, &size);
 
@@ -304,13 +300,26 @@ FlashSave_Status FlashSave_Read(uint32_t uid,
                                      data,
                                      size);
 
+            /* Release external flash */
+            ExternalFlash_Release(&flashcfg);
+
             return FLASHSAVE_OK;
         }
         else
+        {
+            /* Release external flash */
+            ExternalFlash_Release(&flashcfg);
+
             return FLASHSAVE_SIZE_MISSMATCH;
+        }
     }
     else
+    {
+        /* Release external flash */
+        ExternalFlash_Release(&flashcfg);
+
         return FLASHSAVE_NO_MATCH;
+    }
 }
 
 /**
