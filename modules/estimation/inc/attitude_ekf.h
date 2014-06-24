@@ -12,9 +12,9 @@
 #define ESTIMATION_DT   (0.005f)
 
 /* Process covariances */
-#define SQ_Q            (0.01f)                     /* Quaternion error
-                                                       covariance */
-#define SQ_B            (0.001f * ESTIMATION_DT)    /* Gyro bias covariance */ 
+#define SQ_Q            (0.001f)                    /* Quaternion error
+                                                      covariance */
+#define SQ_B            (0.0001f * ESTIMATION_DT)   /* Gyro bias covariance */ 
 
 /* Observation covariances */
 #define SR_A            (100.0f)                    /* Acceleration error
