@@ -36,6 +36,8 @@ typedef enum
     Cmd_SetDeviceID                 = 18,
     Cmd_SaveToFlash                 = 19,
 
+    Cmd_GetArmSettings              = 28,
+    Cmd_SetArmSettings              = 29,
     Cmd_GetRateControllerData       = 30,
     Cmd_SetRateControllerData       = 31,
     Cmd_GetAttitudeControllerData   = 32,

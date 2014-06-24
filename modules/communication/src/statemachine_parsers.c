@@ -60,8 +60,8 @@ static const Parser_Type parser_lookup[128] = {
     NULL,                             /* 25:                                  */
     NULL,                             /* 26:                                  */
     NULL,                             /* 27:                                  */
-    NULL,                             /* 28:                                  */
-    NULL,                             /* 29:                                  */
+    ParseGetArmSettings,              /* 28:  Cmd_GetArmSettings              */
+    ParseSetArmSettings,              /* 29:  Cmd_SetArmSettings              */
     ParseGetRateControllerData,       /* 30:  Cmd_GetRateControllerData       */
     ParseSetRateControllerData,       /* 31:  Cmd_SetRateControllerData       */
     ParseGetAttitudeControllerData,   /* 32:  Cmd_GetAttitudeControllerData   */
@@ -173,6 +173,24 @@ Parser_Type GetParser(KFly_Command_Type command)
     return parser_lookup[command];
 }
 
+static void GenericSaveData(uint8_t *save_location,
+                            uint8_t *buffer,
+                            uint32_t data_length)
+{
+    uint32_t i;
+
+    /* Lock while saving the data */
+    osalSysLock();
+
+    /* Save the string */
+    for (i = 0; i < data_length; i++) 
+            save_location[i] = buffer[i];
+
+    /* Add a trailing zero to end the string */
+    save_location[i] = 0x00;
+
+    osalSysUnlock();
+}
 /**
  * @brief                   A generic function to save controller data and
  *                          control limits.
@@ -191,6 +209,9 @@ static void ParseGenericSetControllerData(const uint32_t pi_offset,
     PI_Data *PI_settings;
     uint8_t *save_location;
     uint32_t i, j;
+
+    /* Lock while saving the data */
+    osalSysLock();
 
     /* Cast the control data to an array of PI_Data
     to access each PI controller */
@@ -211,6 +232,8 @@ static void ParseGenericSetControllerData(const uint32_t pi_offset,
     /* Write only the controller constraints */
     for (i = 0; i < limit_count; i++) 
         save_location[limit_offset + i] = data[(3*3*4) + i];
+
+    osalSysUnlock();
 }
 
 /**
@@ -255,21 +278,20 @@ void ParseGetDeviceInfo(Parser_Holder_Type *pHolder)
 void ParseSetDeviceID(Parser_Holder_Type *pHolder)
 {
     uint8_t *save_location;
-    uint32_t i;
-
-    /* Get the address where to save the User ID string */
-    save_location = ptrGetUserIDString();
 
     /* Check so the wasn't to big a string received */
-    if (pHolder->data_length > USER_ID_MAX_SIZE)
+    if (pHolder->buffer_count > USER_ID_MAX_SIZE)
         return;
 
+    save_location = ptrGetUserIDString();
+
     /* Save the string */
-    for (i = 0; i < pHolder->data_length; i++) 
-            save_location[i] = pHolder->buffer[i];
+    GenericSaveData(save_location,
+                    pHolder->buffer,
+                    pHolder->data_length);
 
     /* Add a trailing zero to end the string */
-    save_location[i] = 0x00;
+    save_location[pHolder->data_length] = 0x00;
 }
 
 /**
@@ -284,6 +306,34 @@ void ParseSaveToFlash(Parser_Holder_Type *pHolder)
 
     /* Broadcast the Save to Flash event */
     vBroadcastFlashSaveEvent();
+}
+
+/**
+ * @brief               Parses a SetArmSettings command.
+ * 
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
+ */
+void ParseSetArmSettings(Parser_Holder_Type *pHolder)
+{
+    if (pHolder->buffer_count == CONTROL_ARM_SIZE)
+    {
+        /* Save the data */
+        GenericSaveData((uint8_t *)ptrGetControlArmSettings(),
+                        pHolder->buffer,
+                        CONTROL_ARM_SIZE);
+    }
+}
+
+/**
+ * @brief               Parses a GetArmSettings command.
+ * 
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
+ */
+void ParseGetArmSettings(Parser_Holder_Type *pHolder)
+{
+    GenerateMessage(Cmd_GetArmSettings, pHolder->Port);
 }
 
 /**
@@ -410,15 +460,12 @@ void ParseGetChannelMix(Parser_Holder_Type *pHolder)
  */
 void ParseSetChannelMix(Parser_Holder_Type *pHolder)
 {
-    uint32_t i;
-    uint8_t *save_location;
-
     if (pHolder->buffer_count == OUTPUT_MIXER_SIZE)
     {
-        save_location = (uint8_t *)ptrGetOutputMixer();
-
-        for (i = 0; i < OUTPUT_MIXER_SIZE; i++)
-            save_location[i] = pHolder->buffer[i];
+        /* Save the data */
+        GenericSaveData((uint8_t *)ptrGetOutputMixer(),
+                        pHolder->buffer,
+                        OUTPUT_MIXER_SIZE);
     }
 }
 
@@ -441,15 +488,12 @@ void ParseGetRCCalibration(Parser_Holder_Type *pHolder)
  */
 void ParseSetRCCalibration(Parser_Holder_Type *pHolder)
 {
-    uint32_t i;
-    uint8_t *save_location;
-
     if (pHolder->buffer_count == RCINPUT_SETTINGS_SIZE)
     {
-        save_location = (uint8_t *)ptrGetRCInputSettings();
-
-        for (i = 0; i < RCINPUT_SETTINGS_SIZE; i++)
-            save_location[i] = pHolder->buffer[i];
+        /* Save the data */
+        GenericSaveData((uint8_t *)ptrGetRCInputSettings(),
+                        pHolder->buffer,
+                        RCINPUT_SETTINGS_SIZE);
     }
 
     /* Reinitialize the RC Input module */
@@ -508,16 +552,13 @@ void ParseGetSensorCalibration(Parser_Holder_Type *pHolder)
  */
 void ParseSetSensorCalibration(Parser_Holder_Type *pHolder)
 {
-    uint32_t i;
-    uint8_t *save_location;
-
     /* Save the data into the temporary calibration structure */
     if (pHolder->buffer_count == SENSOR_IMU_CALIBRATION_SIZE)
     {
-        save_location = (uint8_t *)&imu_calibration;
-
-        for (i = 0; i < SENSOR_IMU_CALIBRATION_SIZE; i++)
-            save_location[i] = pHolder->buffer[i];
+        /* Save the data */
+        GenericSaveData((uint8_t *)&imu_calibration,
+                        pHolder->buffer,
+                        SENSOR_IMU_CALIBRATION_SIZE);
     }
 
     /* Move the calibration data into the sensor structures */

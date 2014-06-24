@@ -24,6 +24,7 @@ bool GenerateDebugMessage(uint8_t *data,
 						  Circular_Buffer_Type *Cbuff);
 bool GenerateGetRunningMode(Circular_Buffer_Type *Cbuff);
 bool GenerateGetDeviceInfo(Circular_Buffer_Type *Cbuff);
+bool GenerateGetArmSettings(Circular_Buffer_Type *Cbuff);
 bool GenerateGetRateControllerData(Circular_Buffer_Type *Cbuff);
 bool GenerateGetAttitudeControllerData(Circular_Buffer_Type *Cbuff);
 bool GenerateGetVelocityControllerData(Circular_Buffer_Type *Cbuff);

@@ -61,8 +61,8 @@ static const Generator_Type generator_lookup[128] = {
     NULL,                             /* 25:                                  */
     NULL,                             /* 26:                                  */
     NULL,                             /* 27:                                  */
-    NULL,                             /* 28:                                  */
-    NULL,                             /* 29:                                  */
+    GenerateGetArmSettings,           /* 28:  Cmd_GetArmSettings              */
+    NULL,                             /* 29:  Cmd_SetArmSettings              */
     GenerateGetRateControllerData,    /* 30:  Cmd_GetRateControllerData       */
     NULL,                             /* 31:  Cmd_SetRateControllerData       */
     GenerateGetAttitudeControllerData,/* 32:  Cmd_GetAttitudeControllerData   */
@@ -489,6 +489,21 @@ bool GenerateGetDeviceInfo(Circular_Buffer_Type *Cbuff)
 
     /* Check if the message fit inside the buffer */
     return CircularBuffer_Increment(Cbuff, count);
+}
+
+/**
+ * @brief               Generates the message for controller arm settings.
+ * 
+ * @param Cbuff[out]    Pointer to the circular buffer to put the data in.
+ * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
+ *                      if it did fit.
+ */
+bool GenerateGetArmSettings(Circular_Buffer_Type *Cbuff)
+{
+    return GenerateGenericCommand(Cmd_GetArmSettings, 
+                                  (uint8_t *)ptrGetControlArmSettings(), 
+                                  CONTROL_ARM_SIZE, 
+                                  Cbuff);
 }
 
 /**

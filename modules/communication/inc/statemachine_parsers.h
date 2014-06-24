@@ -16,6 +16,8 @@ void ParseGetRunningMode(Parser_Holder_Type *pHolder);
 void ParseGetDeviceInfo(Parser_Holder_Type *pHolder);
 void ParseSetDeviceID(Parser_Holder_Type *pHolder);
 void ParseSaveToFlash(Parser_Holder_Type *pHolder);
+void ParseSetArmSettings(Parser_Holder_Type *pHolder);
+void ParseGetArmSettings(Parser_Holder_Type *pHolder);
 void ParseGetRateControllerData(Parser_Holder_Type *pHolder);
 void ParseSetRateControllerData(Parser_Holder_Type *pHolder);
 void ParseGetAttitudeControllerData(Parser_Holder_Type *pHolder);
