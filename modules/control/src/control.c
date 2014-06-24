@@ -37,6 +37,8 @@
 /* Module local definitions.                                                 */
 /*===========================================================================*/
 
+static Arming_Stick_Region SticksInRegion(void);
+
 /*===========================================================================*/
 /* Module exported variables.                                                */
 /*===========================================================================*/
@@ -46,9 +48,11 @@
 /*===========================================================================*/
 CCM_MEMORY static Control_Reference control_reference;
 CCM_MEMORY static Control_Data control_data;
+static Control_Arm_Settings arm_settings;
 static Control_Limits control_limits;
 static Output_Mixer output_mixer;
 static Control_Parameters flash_save_control_parameters;
+static volatile bool controllers_armed;
     
 /* RC Output Configuration */
 static const PWMConfig pwmcfg = {
@@ -70,6 +74,7 @@ static const RCOutput_Configuration rcoutputcfg = {
     &pwmcfg
 };
 
+CCM_MEMORY static THD_WORKING_AREA(waThreadControlArming, 256);
 CCM_MEMORY static THD_WORKING_AREA(waThreadControl, 256);
 CCM_MEMORY static THD_WORKING_AREA(waThreadControlFlashSave, 128);
 
@@ -78,10 +83,94 @@ CCM_MEMORY static THD_WORKING_AREA(waThreadControlFlashSave, 128);
 /*===========================================================================*/
 
 /**
+ * @brief           Thread for the arm and disarm functionality.
+ * 
+ * @param[in] arg   Unused.
+ * @return          Unused.
+ */
+static THD_FUNCTION(ThreadControlArming, arg)
+{
+    (void)arg;
+
+    uint16_t arm_time = 0, disarm_time = 0, timeout_time = 0;
+    Arming_Stick_Region current_region;
+
+    /* Set thread name */
+    chRegSetThreadName("Arm Control");
+
+    while (1)
+    {
+        /* Check the conditions for arming and disarming */
+        osalThreadSleepMilliseconds(1000 / ARM_RATE);
+
+        /*
+         * Check all conditions for arming and disarming the system
+         */
+
+        /* Check so there is an active RC connection and st the arming stick
+           position has been set */
+        if ((bActiveRCInputConnection() == true) &&
+            (arm_settings.stick_direction != STICK_NONE))
+        {
+            /* Check so the sticks are in the correct region */
+            current_region = SticksInRegion();
+
+            if (current_region == STICK_ARM_REGION)
+            {
+                /* Check if the required time has been reached */
+                if ((arm_time / ARM_RATE) > arm_settings.arm_stick_time)
+                    controllers_armed = true;
+                else
+                    arm_time++;
+            }
+            else if (current_region == STICK_DISARM_REGION)
+            {
+                /* Check if the required time has been reached */
+                if ((disarm_time / ARM_RATE) > arm_settings.arm_stick_time)
+                    controllers_armed = false;
+                else
+                    disarm_time++;
+            }
+            else
+            {
+                /* Sticks are not in the correct region,
+                   reset timing counters */
+                arm_time = 0;
+                disarm_time = 0;
+
+                /* Check the zero throttle timeout */
+                if (arm_settings.arm_zero_throttle_timeout != 0)
+                {
+                    if ((RCInputGetInputLevel(ROLE_THROTTLE) <=
+                        arm_settings.stick_threshold))
+                    {
+                        /* Check if the required time has passed, else
+                           increment the timing counter */
+                        if ((timeout_time / ARM_RATE) >
+                                        arm_settings.arm_zero_throttle_timeout)
+                            controllers_armed = false;
+                        else
+                            timeout_time++;
+                    }
+                    /* The throttle is not in the correct position,
+                       reset the timing counter */
+                    else 
+                        timeout_time = 0;
+                }
+            }
+
+        }
+        else
+            controllers_armed = false;
+    }
+
+    return MSG_OK;
+}
+
+/**
  * @brief           Thread for the entire control structure.
  * 
  * @param[in] arg   Unused.
- * 
  * @return          Unused.
  */
 static THD_FUNCTION(ThreadControl, arg)
@@ -140,23 +229,29 @@ static THD_FUNCTION(ThreadControlFlashSave, arg)
         /* Wait for new estimation */ 
         chEvtWaitOne(FLASHSAVE_SAVE_EVENTMASK);
 
+        /* Save Control Parameters */
+        FlashSave_Write(FlashSave_STR2ID("CONA"),
+                        true,
+                        (uint8_t *)&arm_settings,
+                        CONTROL_ARM_SIZE);
+
         /* Get the current control parameters */
         GetControlParameters(&flash_save_control_parameters);
 
         /* Save Control Parameters */
-        FlashSave_Write(FlashSave_STR2ID("CON1"),
+        FlashSave_Write(FlashSave_STR2ID("CONP"),
                         true,
                         (uint8_t *)&flash_save_control_parameters,
                         CONTROL_PARAMETERS_SIZE);
 
         /* Save Control Limits */
-        FlashSave_Write(FlashSave_STR2ID("CON2"),
+        FlashSave_Write(FlashSave_STR2ID("CONL"),
                         true,
                         (uint8_t *)&control_limits,
                         CONTROL_LIMITS_SIZE);
 
         /* Save Output Mixer */
-        FlashSave_Write(FlashSave_STR2ID("CON3"),
+        FlashSave_Write(FlashSave_STR2ID("CONM"),
                         true,
                         (uint8_t *)&output_mixer,
                         OUTPUT_MIXER_SIZE);
@@ -172,8 +267,13 @@ static void vReadControlParametersFromFlash(void)
 {
     FlashSave_Status status;
 
+    /* Read Arming Parameters */
+    FlashSave_Read(FlashSave_STR2ID("CONA"),
+                   (uint8_t *)&arm_settings,
+                   CONTROL_ARM_SIZE);
+
     /* Read Control Parameters */
-    status = FlashSave_Read(FlashSave_STR2ID("CON1"),
+    status = FlashSave_Read(FlashSave_STR2ID("CONP"),
                             (uint8_t *)&flash_save_control_parameters,
                             CONTROL_PARAMETERS_SIZE);
 
@@ -182,14 +282,89 @@ static void vReadControlParametersFromFlash(void)
         SetControlParameters(&flash_save_control_parameters);
 
     /* Read Control Limits */
-    FlashSave_Read(FlashSave_STR2ID("CON2"),
+    FlashSave_Read(FlashSave_STR2ID("CONL"),
                    (uint8_t *)&control_limits,
                    CONTROL_LIMITS_SIZE);
 
     /* Read Output Mixer */
-    FlashSave_Read(FlashSave_STR2ID("CON3"),
+    FlashSave_Read(FlashSave_STR2ID("CONM"),
                    (uint8_t *)&output_mixer,
                    OUTPUT_MIXER_SIZE);
+}
+
+/**
+ * @brief           Checks if the sticks are in the correct position for
+ *                  Arm/Disarm access and returns the position_m.
+ * 
+ * @return          Returns the current region the sticks are in.
+ */
+static Arming_Stick_Region SticksInRegion(void)
+{
+    Input_Role_Selector sel;
+    bool is_min;
+    float level, threshold = arm_settings.stick_threshold;
+
+    /* Check so the throttle is within the threshold */
+    if (RCInputGetInputLevel(ROLE_THROTTLE) <= threshold)
+    {
+        /* Determine which role the arm is linked to and if it is min/max. */
+        switch (arm_settings.stick_direction)
+        {
+            case STICK_PITCH_MIN:
+                sel = ROLE_PITCH;
+                is_min = true;
+                break;
+
+            case STICK_PITCH_MAX:
+                sel = ROLE_PITCH;
+                is_min = false;
+                break;
+
+            case STICK_ROLL_MIN:
+                sel = ROLE_ROLL;
+                is_min = true;
+                break;
+
+            case STICK_ROLL_MAX:
+                sel = ROLE_ROLL;
+                is_min = false;
+                break;
+
+            case STICK_YAW_MIN:
+                sel = ROLE_YAW;
+                is_min = true;
+                break;
+
+            case STICK_YAW_MAX:
+                sel = ROLE_YAW;
+                is_min = false;
+                break;
+
+            default:
+                return STICK_NO_REGION;
+
+        }
+
+        /* Check so the last role is within threshold */
+        level = RCInputGetInputLevel(sel);
+
+        if (is_min == true)
+        {
+            if (level <= (-1.0f + 2.0f * threshold))
+                return STICK_ARM_REGION;
+            else if (level >= (1.0f - 2.0f * threshold))
+                return STICK_DISARM_REGION;
+        }
+        else
+        {
+            if (level >= (1.0f - 2.0f * threshold))
+                return STICK_ARM_REGION;
+            else if (level <= (-1.0f + 2.0f * threshold))
+                return STICK_DISARM_REGION;
+        }
+    }
+
+    return STICK_NO_REGION;
 }
 
 /**
@@ -350,6 +525,15 @@ void ControlInit(void)
     float *p;
     int i;
 
+    /* Initialize the arming structures */
+    controllers_armed = false;
+
+    arm_settings.stick_threshold = 0.0f;
+    arm_settings.armed_min_throttle = 0.0f;
+    arm_settings.stick_direction = STICK_NONE;
+    arm_settings.arm_stick_time = 5;
+    arm_settings.arm_zero_throttle_timeout = 30;
+
     /* Initialize the RC Outputs */
     if (RCOutputInit(&rcoutputcfg) != MSG_OK)
         osalSysHalt("RC output init failed"); /* Initialization failed */
@@ -384,10 +568,17 @@ void ControlInit(void)
     /* Read data from flash (if available) */
     vReadControlParametersFromFlash();
 
+    /* Initialize arming control thread */
+    chThdCreateStatic(waThreadControlArming,
+                      sizeof(waThreadControlArming),
+                      HIGHPRIO - 1,
+                      ThreadControlArming,
+                      NULL);
+
     /* Initialize control thread */
     chThdCreateStatic(waThreadControl,
                       sizeof(waThreadControl),
-                      HIGHPRIO - 1,
+                      HIGHPRIO - 2,
                       ThreadControl,
                       NULL);
 
@@ -442,6 +633,26 @@ void vUpdateControlAction(quaternion_t *q_m, vector3f_t *omega_m, float dt)
             vDisableAllOutputs();
             break;
     }
+}
+
+/**
+ * @brief       Forces the controllers to disarm if the correct key has been
+ *              received. Key is 0xdeadbeef
+ */
+void vControlForceDisarm(uint32_t key)
+{
+    if (key == 0xdeadbeef)
+        controllers_armed = false;
+}
+
+/**
+ * @brief       Return the pointer to the controller arm structure.
+ * 
+ * @return      Pointer to the controller arm structure.
+ */
+Control_Arm_Settings *ptrGetControlArmSettings(void)
+{
+    return &arm_settings;
 }
 
 /**

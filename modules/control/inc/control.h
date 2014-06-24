@@ -8,6 +8,9 @@
 /*===========================================================================*/
 /* Module global definitions.                                                */
 /*===========================================================================*/
+
+#define ARM_RATE                                10 /* Hz */
+
 #define RATE_PI_OFFSET                          0
 #define ATTITUDE_PI_OFFSET                      3
 #define VELOCITY_PI_OFFSET                      6
@@ -70,6 +73,25 @@ typedef enum PACKED_VAR
      */
     STICK_YAW_MAX
 } Arming_Stick_Direction;
+
+/**
+ * @brief   Possible stick regions for arming/disarming the controllers.
+ */
+typedef enum
+{
+    /**
+     * @brief   Sticks are neither in the arm or disarm position.
+     */
+    STICK_NO_REGION = 0,
+    /**
+     * @brief   Sticks are in the arm position.
+     */
+    STICK_ARM_REGION,
+    /**
+     * @brief   Sticks are in the disarm position.
+     */
+    STICK_DISARM_REGION
+} Arming_Stick_Region;
 
 /**
  * @brief   Possible flight modes the controllers support.
@@ -141,9 +163,9 @@ typedef enum PACKED_VAR
 typedef struct
 {
     /**
-     * @brief   Throttle threshold for the arm/disarm logic to react.
+     * @brief   Stick threshold for the arm/disarm logic to react.
      */
-    float throttle_threshold;
+    float stick_threshold;
     /**
      * @brief   Minimum throttle when armed (to spin propellers when armed).
      */
@@ -385,6 +407,8 @@ typedef struct
 /*===========================================================================*/
 void ControlInit(void);
 void vUpdateControlAction(quaternion_t *q_m, vector3f_t *omega_m, float dt);
+void vControlForceDisarm(uint32_t key);
+Control_Arm_Settings *ptrGetControlArmSettings(void);
 Control_Reference *ptrGetControlReferences(void);
 Control_Data *ptrGetControlData(void);
 Control_Limits *ptrGetControlLimits(void);
