@@ -207,6 +207,7 @@ typedef struct {
 void RCInputInit(void);
 msg_t RCInputInitialization(void);
 float RCInputGetInputLevel(Input_Role_Selector role);
+bool bActiveRCInputConnection(void);
 RCInput_Data *ptrGetRCInputData(void);
 RCInput_Settings *ptrGetRCInputSettings(void);
 event_source_t *ptrGetRCInputEventSource(void);

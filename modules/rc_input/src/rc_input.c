@@ -547,6 +547,19 @@ float RCInputGetInputLevel(Input_Role_Selector role)
 }
 
 /**
+ * @brief           Return the current connection status of the RC Input.
+ * 
+ * @return          Return true if there is a connection, else false.
+ */
+bool bActiveRCInputConnection(void)
+{
+    if (rcinput_data.active_connection == FALSE)
+        return false;
+    else
+        return true;
+}
+
+/**
  * @brief           Return the pointer to the RC Input data.
  * 
  * @return          Pointer to the RC input data.
