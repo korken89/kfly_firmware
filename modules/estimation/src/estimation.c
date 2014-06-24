@@ -159,7 +159,7 @@ void EstimationInit(void)
     /* Start the estimation thread */
     chThdCreateStatic(waThreadEstimation,
                       sizeof(waThreadEstimation), 
-                      HIGHPRIO - 1, 
+                      HIGHPRIO - 2, 
                       ThreadEstimation, 
                       NULL);
 
