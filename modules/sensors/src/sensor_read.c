@@ -388,7 +388,7 @@ msg_t SensorReadInit(void)
     /* Initialize read thread */
     chThdCreateStatic(waThreadSensorRead,
                       sizeof(waThreadSensorRead), 
-                      HIGHPRIO, 
+                      HIGHPRIO - 2, 
                       ThreadSensorRead, 
                       NULL);
 
