@@ -27,8 +27,8 @@ static void vt_no_connection_timeout_callback(void *p);
 /* Module local variables and types.                                         */
 /*===========================================================================*/
 CCM_MEMORY static RCInput_Data rcinput_data;
-static RCInput_Settings rcinput_settings;
 CCM_MEMORY static uint64_t role_lookup;
+static RCInput_Settings rcinput_settings;
 static event_source_t rcinput_es;
 static virtual_timer_t rcinput_timeout_vt;
 
@@ -167,8 +167,6 @@ static void ParseCPPMInput(RCInput_Data *data,
             cppm_count = 0;
 
             /* Reset timeout and broadcast new input */
-            osalSysLockFromISR();
-
             chVTSetI(&rcinput_timeout_vt,
                      MS2ST(RCINPUT_NO_CON_TIMEOUT_MS),
                      vt_no_connection_timeout_callback,
@@ -176,8 +174,6 @@ static void ParseCPPMInput(RCInput_Data *data,
 
             if (chEvtIsListeningI(&rcinput_es))
                 chEvtBroadcastFlagsI(&rcinput_es, RCINPUT_NEWINPUT_EVENTMASK);
-
-            osalSysUnlockFromISR();
         }
         else
         {
@@ -188,14 +184,10 @@ static void ParseCPPMInput(RCInput_Data *data,
                 data->active_connection = FALSE;
 
                 /* Disable timeout timer and broadcast connection lost */
-                osalSysLockFromISR();
-
                 chVTResetI(&rcinput_timeout_vt);
 
                 if (chEvtIsListeningI(&rcinput_es))
                     chEvtBroadcastFlagsI(&rcinput_es, RCINPUT_LOST_EVENTMASK);
-
-                osalSysUnlockFromISR();
             }
             else
             {
@@ -216,8 +208,6 @@ static void ParseCPPMInput(RCInput_Data *data,
         data->active_connection = TRUE;
 
         /* Enable timeout timer and broadcast connection active */
-        osalSysLockFromISR();
-
         chVTSetI(&rcinput_timeout_vt,
                  MS2ST(RCINPUT_NO_CON_TIMEOUT_MS),
                  vt_no_connection_timeout_callback,
@@ -225,8 +215,6 @@ static void ParseCPPMInput(RCInput_Data *data,
 
         if (chEvtIsListeningI(&rcinput_es))
             chEvtBroadcastFlagsI(&rcinput_es, RCINPUT_ACTIVE_EVENTMASK);
-        
-        osalSysUnlockFromISR();
     }
 }
 
@@ -259,14 +247,10 @@ static void ParseRSSIInput(RCInput_Data *data,
                 data->active_connection = FALSE;
 
                 /* Disable timeout timer and broadcast connection lost */
-                osalSysLockFromISR();
-
                 chVTResetI(&rcinput_timeout_vt);
 
                 if (chEvtIsListeningI(&rcinput_es))
                     chEvtBroadcastFlagsI(&rcinput_es, RCINPUT_LOST_EVENTMASK);
-
-                osalSysUnlockFromISR();
             }
             else
                 rssi_counter++;
@@ -366,8 +350,12 @@ static void vt_no_connection_timeout_callback(void *p)
  */
 static void cppm_callback(EICUDriver *eicup, eicuchannel_t channel)
 {
-    uint32_t capture = eicuGetWidth(eicup, channel);
-    uint32_t last_count = eicup->last_count[0];
+    uint32_t capture, last_count;
+
+    osalSysLockFromISR();
+
+    capture = eicuGetWidth(eicup, channel);
+    last_count = eicup->last_count[0];
     eicup->last_count[0] = capture;
 
     if (capture > last_count)       /* No overflow */
@@ -375,8 +363,9 @@ static void cppm_callback(EICUDriver *eicup, eicuchannel_t channel)
     else if (capture < last_count)  /* Timer overflow */
         capture = ((0xFFFF - last_count) + capture); 
 
-    ParseCPPMInput(&rcinput_data,
-                   capture);
+    ParseCPPMInput(&rcinput_data, capture);
+
+    osalSysUnlockFromISR();
 }
 
 /**
@@ -388,9 +377,14 @@ static void cppm_callback(EICUDriver *eicup, eicuchannel_t channel)
 static void rssi_callback(EICUDriver *eicup, eicuchannel_t channel)
 {
     (void)channel;
+
+    osalSysLockFromISR();
+
     ParseRSSIInput(&rcinput_data,
                    eicuGetWidth(eicup, EICU_CHANNEL_2),
                    eicuGetPeriod(eicup));
+
+    osalSysUnlockFromISR();
 }
 
 /**
