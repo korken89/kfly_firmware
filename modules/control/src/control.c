@@ -373,6 +373,12 @@ static Arming_Stick_Region SticksInRegion(void)
  */
 static void vRCInputsToControlAction(void)
 {
+    if (controllers_armed == true)
+    {
+
+    }
+    else
+        control_reference.mode = FLIGHTMODE_DISARMED;
 }
 
 /**
