@@ -119,17 +119,31 @@ static THD_FUNCTION(ThreadControlArming, arg)
             {
                 /* Check if the required time has been reached */
                 if ((arm_time / ARM_RATE) > arm_settings.arm_stick_time)
+                {
+                    palSetPad(GPIOC, GPIOC_LED_ERR);
                     controllers_armed = true;
+                }
                 else
+                {
                     arm_time++;
+                    disarm_time = 0;
+                    timeout_time = 0;
+                }
             }
             else if (current_region == STICK_DISARM_REGION)
             {
                 /* Check if the required time has been reached */
                 if ((disarm_time / ARM_RATE) > arm_settings.arm_stick_time)
+                {
+                    palClearPad(GPIOC, GPIOC_LED_ERR);
                     controllers_armed = false;
+                }
                 else
+                {
                     disarm_time++;
+                    arm_time = 0;
+                    timeout_time = 0;
+                }
             }
             else
             {
@@ -148,9 +162,16 @@ static THD_FUNCTION(ThreadControlArming, arg)
                            increment the timing counter */
                         if ((timeout_time / ARM_RATE) >
                                         arm_settings.arm_zero_throttle_timeout)
+                        {
+                            palClearPad(GPIOC, GPIOC_LED_ERR);
                             controllers_armed = false;
+                        }
                         else
+                        {
                             timeout_time++;
+                            arm_time = 0;
+                            disarm_time = 0;
+                        }
                     }
                     /* The throttle is not in the correct position,
                        reset the timing counter */
@@ -161,7 +182,10 @@ static THD_FUNCTION(ThreadControlArming, arg)
 
         }
         else
+        {
+            palClearPad(GPIOC, GPIOC_LED_ERR);
             controllers_armed = false;
+        }
     }
 
     return MSG_OK;
