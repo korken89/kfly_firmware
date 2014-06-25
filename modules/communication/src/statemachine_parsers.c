@@ -186,9 +186,6 @@ static void GenericSaveData(uint8_t *save_location,
     for (i = 0; i < data_length; i++) 
             save_location[i] = buffer[i];
 
-    /* Add a trailing zero to end the string */
-    save_location[i] = 0x00;
-
     osalSysUnlock();
 }
 /**
