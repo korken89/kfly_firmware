@@ -302,10 +302,13 @@ static Arming_Stick_Region SticksInRegion(void)
 {
     Input_Role_Selector sel;
     bool is_min;
-    float level, threshold = arm_settings.stick_threshold;
+    float level, threshold;
+
+    threshold = arm_settings.stick_threshold;
+    level = RCInputGetInputLevel(ROLE_THROTTLE);
 
     /* Check so the throttle is within the threshold */
-    if (RCInputGetInputLevel(ROLE_THROTTLE) <= threshold)
+    if (level <= threshold)
     {
         /* Determine which role the arm is linked to and if it is min/max. */
         switch (arm_settings.stick_direction)
