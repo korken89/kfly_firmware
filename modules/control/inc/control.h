@@ -9,6 +9,8 @@
 /* Module global definitions.                                                */
 /*===========================================================================*/
 
+#define DEG2RAD                                 (0.0174532925199433f)
+
 #define ARM_RATE                                10 /* Hz */
 
 #define RATE_PI_OFFSET                          0
@@ -277,15 +279,15 @@ typedef struct
     struct
     {
         /**
-         * @brief   Pitch rate limit in rad/s.
+         * @brief   Pitch rate limit in deg/s.
          */
         float pitch;
         /**
-         * @brief   Roll rate limit in rad/s.
+         * @brief   Roll rate limit in deg/s.
          */
         float roll;
         /**
-         * @brief   Yaw rate limit in rad/s.
+         * @brief   Yaw rate limit in deg/s.
          */
         float yaw;
     } max_rate;
@@ -295,15 +297,15 @@ typedef struct
     struct
     {
         /**
-         * @brief   Pitch rate limit in rad/s.
+         * @brief   Pitch rate limit in deg/s.
          */
         float pitch;
         /**
-         * @brief   Roll rate limit in rad/s.
+         * @brief   Roll rate limit in deg/s.
          */
         float roll;
         /**
-         * @brief   Yaw rate limit in rad/s.
+         * @brief   Yaw rate limit in deg/s.
          */
         float yaw;
     } max_rate_attitude;

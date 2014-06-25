@@ -317,8 +317,8 @@ static void vReadControlParametersFromFlash(void)
 }
 
 /**
- * @brief           Checks if the sticks are in the correct position for
- *                  Arm/Disarm access and returns the position_m.
+ * @brief           Checks if the sticks are in the correct position for Arm
+ *                  Disarm access and returns the current region of the sticks.
  * 
  * @return          Returns the current region the sticks are in.
  */
@@ -372,21 +372,26 @@ static Arming_Stick_Region SticksInRegion(void)
 
         }
 
-        /* Check so the last role is within threshold */
+        /* Calculate the threshold value. The *2 comes from the fact that the 
+           throttle has half the span of the other sticks so double the
+           threshold is needed to the same relative threshold. */
+        threshold = 1.0f - 2.0f * threshold;
+
+        /* Check so the last role is within the threshold */
         level = RCInputGetInputLevel(sel);
 
         if (is_min == true)
         {
-            if (level <= (-1.0f + 2.0f * threshold))
+            if (level <= -threshold)
                 return STICK_ARM_REGION;
-            else if (level >= (1.0f - 2.0f * threshold))
+            else if (level >= threshold)
                 return STICK_DISARM_REGION;
         }
         else
         {
-            if (level >= (1.0f - 2.0f * threshold))
+            if (level >= threshold)
                 return STICK_ARM_REGION;
-            else if (level <= (-1.0f + 2.0f * threshold))
+            else if (level <= -threshold)
                 return STICK_DISARM_REGION;
         }
     }
@@ -400,9 +405,28 @@ static Arming_Stick_Region SticksInRegion(void)
  */
 static void vRCInputsToControlAction(void)
 {
+    float throttle;
+
     if (controllers_armed == true)
     {
+        control_reference.mode = FLIGHTMODE_RATE;
 
+        control_reference.rate_reference.x = control_limits.max_rate.pitch *
+            DEG2RAD * RCInputGetInputLevel(ROLE_PITCH);
+
+        control_reference.rate_reference.y = control_limits.max_rate.pitch *
+            DEG2RAD * RCInputGetInputLevel(ROLE_ROLL);
+
+        control_reference.rate_reference.z = control_limits.max_rate.pitch *
+            DEG2RAD * RCInputGetInputLevel(ROLE_YAW);
+
+        throttle = RCInputGetInputLevel(ROLE_THROTTLE);
+
+        if (throttle < arm_settings.armed_min_throttle)
+            control_reference.actuator_desired.throttle =
+                                               arm_settings.armed_min_throttle;
+        else
+            control_reference.actuator_desired.throttle = throttle;
     }
     else
         control_reference.mode = FLIGHTMODE_DISARMED;
