@@ -255,3 +255,45 @@ bool SerialManager_USBTransmitCircularBuffer(Circular_Buffer_Type *Cbuff)
     else
         return HAL_FAILED;
 }
+
+/**
+ * @brief               Transmits a circular buffer over the UART (Aux)
+ *                      interface.
+ *             
+ * @param[in] sdp       Pointer to the Serial Driver to transmit the data over.
+ * @param[in] Cbuff     Circular buffer to transmit.
+ * @return              Returns HAL_FAILED if it did not succeed to transmit
+ *                      the buffer, else HAL_SUCCESS is returned.
+ */
+bool SerialManager_AuxTransmitCircularBuffer(SerialDriver *sdp,
+                                             Circular_Buffer_Type *Cbuff)
+{
+    uint8_t *read_pointer;
+    uint32_t read_size;
+
+    if ((sdp != NULL) && (Cbuff != NULL))
+    {
+        /* Read out the number of bytes to send and the pointer to the
+           first byte */
+        read_pointer = CircularBuffer_GetReadPointer(Cbuff, &read_size);
+
+        while (read_size > 0)
+        {
+            /* Send the data from the circular buffer */
+            sdWrite(sdp, read_pointer, read_size);
+
+            /* Increment the circular buffer tail */
+            CircularBuffer_IncrementTail(Cbuff, read_size);
+
+            /* Get the read size again in case new data is available or if
+               we reached the end of the buffer (to make sure the entire
+               buffer is sent) */
+            read_pointer = CircularBuffer_GetReadPointer(Cbuff, &read_size);
+        }
+
+        /* Transfer finished successfully */
+        return HAL_SUCCESS;
+    }
+    else
+        return HAL_FAILED;
+}
