@@ -3,21 +3,28 @@
 
 #include "serialmanager_types.h"
 
-/* Defines */
-#define tskSerialManagerPRIORITY        (tskIDLE_PRIORITY + 1)
-#define START_TRANSMISSION_EVENT		((eventmask_t)1)
+/*===========================================================================*/
+/* Module global definitions.                                                */
+/*===========================================================================*/
 
-/* Typedefs */
+/*===========================================================================*/
+/* Module data structures and types.                                         */
+/*===========================================================================*/
 
-/* Global variable defines */
+/*===========================================================================*/
+/* Module macros.                                                            */
+/*===========================================================================*/
 
-/* Global function defines */
+/*===========================================================================*/
+/* Module inline functions.                                                  */
+/*===========================================================================*/
+
+/*===========================================================================*/
+/* External declarations.                                                    */
+/*===========================================================================*/
 void vSerialManagerInit(void);
 void vTaskUSBSerialManager(void *);
 Circular_Buffer_Type *SerialManager_GetCircularBufferFromPort(Port_Type port);
 void SerialManager_StartTransmission(Port_Type port);
-bool SerialManager_USBTransmitCircularBuffer(Circular_Buffer_Type *Cbuff);
-bool SerialManager_AuxTransmitCircularBuffer(SerialDriver *sdp,
-                                             Circular_Buffer_Type *Cbuff);
 
 #endif
