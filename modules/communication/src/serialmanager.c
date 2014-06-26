@@ -252,7 +252,7 @@ bool SerialManager_USBTransmitCircularBuffer(Circular_Buffer_Type *Cbuff)
         /* Transfer finished successfully */
         return HAL_SUCCESS;
     }
-    else
+    else /* Some error occurred */
         return HAL_FAILED;
 }
 
@@ -294,6 +294,6 @@ bool SerialManager_AuxTransmitCircularBuffer(SerialDriver *sdp,
         /* Transfer finished successfully */
         return HAL_SUCCESS;
     }
-    else
+    else /* Some error occurred */
         return HAL_FAILED;
 }
