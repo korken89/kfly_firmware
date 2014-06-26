@@ -42,6 +42,14 @@ static Serial_Datapump_Holder data_pumps = {
     .ptrAUX4DataPump = NULL
 };
 
+static const SerialConfig aux1_config =
+{
+  115200,
+  0,
+  USART_CR2_STOP1_BITS,
+  0
+};
+
 /*===================================================*/
 /* Working area for the data pump                    */
 /* and data decode threads.                          */
@@ -342,6 +350,8 @@ void vSerialManagerInit(void)
                       NULL);
 
     /* Start the Aux1 communication tasks */
+
+    sdStart(&AUX1_SERIAL_DRIVER, &aux1_config);
 
     chThdCreateStatic(waAux1SerialManagerTask,
                       sizeof(waAux1SerialManagerTask),
