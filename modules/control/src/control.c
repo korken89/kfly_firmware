@@ -117,7 +117,8 @@ static THD_FUNCTION(ThreadControlArming, arg)
 
             if (current_region == STICK_ARM_REGION)
             {
-                /* Check if the required time has been reached */
+                /* Check if the required time has been reached
+                   to arm the system */
                 if ((arm_time / ARM_RATE) > arm_settings.arm_stick_time)
                 {
                     palSetPad(GPIOC, GPIOC_LED_ERR);
@@ -132,7 +133,8 @@ static THD_FUNCTION(ThreadControlArming, arg)
             }
             else if (current_region == STICK_DISARM_REGION)
             {
-                /* Check if the required time has been reached */
+                /* Check if the required time has been reached
+                   to disarm the system*/
                 if ((disarm_time / ARM_RATE) > arm_settings.arm_stick_time)
                 {
                     palClearPad(GPIOC, GPIOC_LED_ERR);
@@ -158,8 +160,8 @@ static THD_FUNCTION(ThreadControlArming, arg)
                     if ((RCInputGetInputLevel(ROLE_THROTTLE) <=
                         arm_settings.stick_threshold))
                     {
-                        /* Check if the required time has passed, else
-                           increment the timing counter */
+                        /* Check if the required time has passed to disarm due
+                           to timeout, else increment the timing counter */
                         if ((timeout_time / ARM_RATE) >
                                         arm_settings.arm_zero_throttle_timeout)
                         {
