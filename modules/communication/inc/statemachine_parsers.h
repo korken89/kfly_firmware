@@ -22,6 +22,6 @@
 /*===========================================================================*/
 /* External declarations.                                                    */
 /*===========================================================================*/
-parser_t GetParser(KFly_Command_Type command);
+parser_t GetParser(KFly_Command command);
 
 #endif

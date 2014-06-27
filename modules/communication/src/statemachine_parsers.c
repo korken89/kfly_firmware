@@ -682,7 +682,7 @@ static void ParseResetEstimation(parser_holder_t *pHolder)
  * @param[in] command   Command to get the parser for.
  * @return              Pointer to the associated parser.
  */
-parser_t GetParser(KFly_Command_Type command)
+parser_t GetParser(KFly_Command command)
 {
     return parser_lookup[command];
 }

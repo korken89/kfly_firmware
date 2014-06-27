@@ -23,7 +23,7 @@
 /* External declarations.                                                    */
 /*===========================================================================*/
 
-bool GenerateMessage(KFly_Command_Type command, Port_Type port);
+bool GenerateMessage(KFly_Command command, Port_Type port);
 bool GenerateDebugMessage(uint8_t *data, 
                           uint32_t size, 
                           circular_buffer_t *Cbuff);

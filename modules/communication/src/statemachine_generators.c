@@ -208,7 +208,7 @@ static const generator_t generator_lookup[128] = {
  * @return                  HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                          if it did fit.
  */
-static bool GenerateGenericGetControllerData(KFly_Command_Type command, 
+static bool GenerateGenericGetControllerData(KFly_Command command, 
                                              const uint32_t pi_offset, 
                                              const uint32_t limit_offset, 
                                              const uint32_t limit_count, 
@@ -279,7 +279,7 @@ static bool GenerateGenericGetControllerData(KFly_Command_Type command,
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS 
  *                      if it did fit.
  */
-static bool GenerateHeaderOnlyCommand(KFly_Command_Type command, 
+static bool GenerateHeaderOnlyCommand(KFly_Command command, 
                                       circular_buffer_t *Cbuff)
 {
     int32_t count = 0;
@@ -307,7 +307,7 @@ static bool GenerateHeaderOnlyCommand(KFly_Command_Type command,
  * @return                  HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                          if it did fit.
  */
-static bool GenerateGenericCommand(KFly_Command_Type command, 
+static bool GenerateGenericCommand(KFly_Command command, 
                                    uint8_t *data, 
                                    const uint32_t data_count, 
                                    circular_buffer_t *Cbuff)
@@ -749,7 +749,7 @@ uint32_t myStrlen(const uint8_t *str, const uint32_t max_length)
   * @return             HAL_FAILED if the message didn't fit or HAL_SUCCESS
   *                     if it did fit.
   */
-bool GenerateMessage(KFly_Command_Type command, Port_Type port)
+bool GenerateMessage(KFly_Command command, Port_Type port)
 {
     bool status;
     circular_buffer_t *Cbuff = NULL;

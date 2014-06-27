@@ -225,7 +225,7 @@ typedef enum
      * @brief   Reset estimation.
      */
     Cmd_ResetEstimation             = 53
-} KFly_Command_Type;
+} KFly_Command;
 
 /**
  * @brief   The structure to keep track of transfers through the state machine.
