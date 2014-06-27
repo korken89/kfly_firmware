@@ -37,7 +37,7 @@
  * @param[in] buffer        Pointer to where the circular buffer data is stored.
  * @param[in] buffer_size   Size of the circular buffer in bytes.
  */
-void CircularBuffer_Init(Circular_Buffer_Type *Cbuff,
+void CircularBuffer_Init(circular_buffer_t *Cbuff,
                          uint8_t *buffer, 
                          uint32_t buffer_size)
 {
@@ -52,7 +52,7 @@ void CircularBuffer_Init(Circular_Buffer_Type *Cbuff,
  * 
  * @param[in] Cbuff     Pointer to the circular buffer.
  */
-void CircularBuffer_InitMutex(Circular_Buffer_Type *Cbuff)
+void CircularBuffer_InitMutex(circular_buffer_t *Cbuff)
 {
     chMtxObjectInit(&Cbuff->write_lock);
 }
@@ -62,7 +62,7 @@ void CircularBuffer_InitMutex(Circular_Buffer_Type *Cbuff)
  * 
  * @param[in] Cbuff     Pointer to the circular buffer.
  */
-void CircularBuffer_Claim(Circular_Buffer_Type *Cbuff)
+void CircularBuffer_Claim(circular_buffer_t *Cbuff)
 {
     chMtxLock(&Cbuff->write_lock);
 }
@@ -72,7 +72,7 @@ void CircularBuffer_Claim(Circular_Buffer_Type *Cbuff)
  * 
  * @param[in] Cbuff     Pointer to the circular buffer.
  */
-void CircularBuffer_Release(Circular_Buffer_Type *Cbuff)
+void CircularBuffer_Release(circular_buffer_t *Cbuff)
 {
     chMtxUnlock(&Cbuff->write_lock);
 }
@@ -82,7 +82,7 @@ void CircularBuffer_Release(Circular_Buffer_Type *Cbuff)
  * 
  * @param[in] Cbuff     Pointer to the circular buffer.
  */
-uint32_t CircularBuffer_SpaceLeft(Circular_Buffer_Type *Cbuff)
+uint32_t CircularBuffer_SpaceLeft(circular_buffer_t *Cbuff)
 {
     return (Cbuff->tail + Cbuff->size - Cbuff->head - 1) % Cbuff->size;
 }
@@ -92,7 +92,7 @@ uint32_t CircularBuffer_SpaceLeft(Circular_Buffer_Type *Cbuff)
  * 
  * @param[in] Cbuff     Pointer to the circular buffer.
  */
-void CircularBuffer_WriteSingle(Circular_Buffer_Type *Cbuff, uint8_t data)
+void CircularBuffer_WriteSingle(circular_buffer_t *Cbuff, uint8_t data)
 {
     Cbuff->buffer[Cbuff->head] = data;
     Cbuff->head = ((Cbuff->head + 1) % Cbuff->size);
@@ -107,7 +107,7 @@ void CircularBuffer_WriteSingle(Circular_Buffer_Type *Cbuff, uint8_t data)
  * @param[in] data      Pointer to the data being written.
  * @param[in] count     Size of the data being written in bytes.
  */
-void CircularBuffer_WriteChunk(Circular_Buffer_Type *Cbuff, 
+void CircularBuffer_WriteChunk(circular_buffer_t *Cbuff, 
                                uint8_t *data, 
                                const uint32_t count)
 {
@@ -149,7 +149,7 @@ void CircularBuffer_WriteChunk(Circular_Buffer_Type *Cbuff,
  * @param[in] crc8      Pointer to the CRC8 data holder.
  * @param[in] crc16     Pointer to the CRC16 data holder.
  */
-void CircularBuffer_WriteSYNCNoIncrement(Circular_Buffer_Type *Cbuff, 
+void CircularBuffer_WriteSYNCNoIncrement(circular_buffer_t *Cbuff, 
                                          int32_t *count, 
                                          uint8_t *crc8, 
                                          uint16_t *crc16)
@@ -181,7 +181,7 @@ void CircularBuffer_WriteSYNCNoIncrement(Circular_Buffer_Type *Cbuff,
  * @param[in] crc8      Pointer to the CRC8 data holder.
  * @param[in] crc16     Pointer to the CRC16 data holder.
  */
-void CircularBuffer_WriteNoIncrement(Circular_Buffer_Type *Cbuff,
+void CircularBuffer_WriteNoIncrement(circular_buffer_t *Cbuff,
                                      uint8_t data, 
                                      int32_t *count, 
                                      uint8_t *crc8, 
@@ -221,7 +221,7 @@ void CircularBuffer_WriteNoIncrement(Circular_Buffer_Type *Cbuff,
  * @param[in/out] Cbuff Pointer to the circular buffer.
  * @param[in] count     Number of bytes to increment the pointer.
  */
-bool CircularBuffer_Increment(Circular_Buffer_Type *Cbuff, int32_t count)
+bool CircularBuffer_Increment(circular_buffer_t *Cbuff, int32_t count)
 {
     if (count == -1) /* Error! */
         return HAL_FAILED;
@@ -238,7 +238,7 @@ bool CircularBuffer_Increment(Circular_Buffer_Type *Cbuff, int32_t count)
  *  
  * @param[in/out] Cbuff Pointer to the circular buffer.
  */
-uint8_t CircularBuffer_ReadSingle(Circular_Buffer_Type *Cbuff)
+uint8_t CircularBuffer_ReadSingle(circular_buffer_t *Cbuff)
 {
     uint8_t data;
 
@@ -255,7 +255,7 @@ uint8_t CircularBuffer_ReadSingle(Circular_Buffer_Type *Cbuff)
  * @param[out] data     Pointer to write the data.
  * @param[in] count     Number of bytes to read.
  */
-void CircularBuffer_ReadChunk(Circular_Buffer_Type *Cbuff, 
+void CircularBuffer_ReadChunk(circular_buffer_t *Cbuff, 
                               uint8_t *data, 
                               uint32_t count)
 {
@@ -273,7 +273,7 @@ void CircularBuffer_ReadChunk(Circular_Buffer_Type *Cbuff,
  * @param[out] size     Pointer to the size holder.
  * @return              Pointer to the buffer with offset.
  */
-uint8_t *CircularBuffer_GetReadPointer(Circular_Buffer_Type *Cbuff,
+uint8_t *CircularBuffer_GetReadPointer(circular_buffer_t *Cbuff,
                                        uint32_t *size)
 {
     uint8_t *p;
@@ -288,7 +288,7 @@ uint8_t *CircularBuffer_GetReadPointer(Circular_Buffer_Type *Cbuff,
     return p;
 }
 
-void CircularBuffer_IncrementTail(Circular_Buffer_Type *Cbuff, int32_t count)
+void CircularBuffer_IncrementTail(circular_buffer_t *Cbuff, int32_t count)
 {
     Cbuff->tail = ((Cbuff->tail + count) % Cbuff->size);
 }

@@ -34,7 +34,7 @@ typedef struct
 	 * @brief   Pointer to the data holding region.
 	 */
     uint8_t *buffer;        /* Pointer to memory area */
-} Circular_Buffer_Type;
+} circular_buffer_t;
 
 /*===========================================================================*/
 /* Module macros.                                                            */
@@ -48,32 +48,32 @@ typedef struct
 /* External declarations.                                                    */
 /*===========================================================================*/
 
-void CircularBuffer_Init(Circular_Buffer_Type *Cbuff,
+void CircularBuffer_Init(circular_buffer_t *Cbuff,
 						 uint8_t *buffer, 
 						 uint32_t buffer_size);
-void CircularBuffer_InitMutex(Circular_Buffer_Type *Cbuff);
-void CircularBuffer_Claim(Circular_Buffer_Type *Cbuff);
-void CircularBuffer_Release(Circular_Buffer_Type *Cbuff);
-uint32_t CircularBuffer_SpaceLeft(Circular_Buffer_Type *Cbuff);
-void CircularBuffer_WriteSingle(Circular_Buffer_Type *Cbuff, uint8_t data);
-void CircularBuffer_WriteChunk(Circular_Buffer_Type *Cbuff, 
+void CircularBuffer_InitMutex(circular_buffer_t *Cbuff);
+void CircularBuffer_Claim(circular_buffer_t *Cbuff);
+void CircularBuffer_Release(circular_buffer_t *Cbuff);
+uint32_t CircularBuffer_SpaceLeft(circular_buffer_t *Cbuff);
+void CircularBuffer_WriteSingle(circular_buffer_t *Cbuff, uint8_t data);
+void CircularBuffer_WriteChunk(circular_buffer_t *Cbuff, 
 							   uint8_t *data, 
 							   const uint32_t count);
-void CircularBuffer_WriteSYNCNoIncrement(Circular_Buffer_Type *Cbuff, 
+void CircularBuffer_WriteSYNCNoIncrement(circular_buffer_t *Cbuff, 
 										 int32_t *count, 
 										 uint8_t *crc8, 
 										 uint16_t *crc16);
-void CircularBuffer_WriteNoIncrement(Circular_Buffer_Type *Cbuff,
+void CircularBuffer_WriteNoIncrement(circular_buffer_t *Cbuff,
                                      uint8_t data, 
                                      int32_t *count, 
                                      uint8_t *crc8, 
                                      uint16_t *crc16);
-bool CircularBuffer_Increment(Circular_Buffer_Type *Cbuff, int32_t count);
-uint8_t CircularBuffer_ReadSingle(Circular_Buffer_Type *Cbuff);
-void CircularBuffer_ReadChunk(Circular_Buffer_Type *Cbuff, 
+bool CircularBuffer_Increment(circular_buffer_t *Cbuff, int32_t count);
+uint8_t CircularBuffer_ReadSingle(circular_buffer_t *Cbuff);
+void CircularBuffer_ReadChunk(circular_buffer_t *Cbuff, 
 							  uint8_t *data, 
 							  uint32_t count);
-uint8_t *CircularBuffer_GetReadPointer(Circular_Buffer_Type *Cbuff,
+uint8_t *CircularBuffer_GetReadPointer(circular_buffer_t *Cbuff,
 									   uint32_t *size);
-void CircularBuffer_IncrementTail(Circular_Buffer_Type *Cbuff, int32_t count);
+void CircularBuffer_IncrementTail(circular_buffer_t *Cbuff, int32_t count);
 #endif

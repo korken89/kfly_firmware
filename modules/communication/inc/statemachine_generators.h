@@ -26,6 +26,6 @@
 bool GenerateMessage(KFly_Command_Type command, Port_Type port);
 bool GenerateDebugMessage(uint8_t *data, 
                           uint32_t size, 
-                          Circular_Buffer_Type *Cbuff);
+                          circular_buffer_t *Cbuff);
 
 #endif

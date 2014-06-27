@@ -287,7 +287,7 @@ typedef void (*parser_t)(struct _parser_holder *);
 /**
  * @brief   Function pointer definition for the Message Generator lookup table.
  */
-typedef bool (*generator_t)(Circular_Buffer_Type *);
+typedef bool (*generator_t)(circular_buffer_t *);
 
 /*===========================================================================*/
 /* Module macros.                                                            */

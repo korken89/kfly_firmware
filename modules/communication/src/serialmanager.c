@@ -22,9 +22,9 @@
 #define AUX2_SERIAL_DRIVER              SD5
 #define AUX3_SERIAL_DRIVER              SD4
 
-static bool USBTransmitCircularBuffer(Circular_Buffer_Type *Cbuff);
+static bool USBTransmitCircularBuffer(circular_buffer_t *Cbuff);
 static bool AuxTransmitCircularBuffer(SerialDriver *sdp,
-                                      Circular_Buffer_Type *Cbuff);
+                                      circular_buffer_t *Cbuff);
 
 /*===========================================================================*/
 /* Module exported variables.                                                */
@@ -46,7 +46,7 @@ typedef struct
     /**
      * @brief   USB data pump circular transmit buffer.
      */
-    Circular_Buffer_Type USBTransmitBuffer;
+    circular_buffer_t USBTransmitBuffer;
     /**
      * @brief   Pointer to the AUX1 data pump thread.
      */
@@ -54,7 +54,7 @@ typedef struct
     /**
      * @brief   AUX1 data pump circular transmit buffer.
      */
-    Circular_Buffer_Type AUX1TransmitBuffer;
+    circular_buffer_t AUX1TransmitBuffer;
     /**
      * @brief   Pointer to the AUX2 data pump thread.
      */
@@ -62,7 +62,7 @@ typedef struct
     /**
      * @brief   AUX2 data pump circular transmit buffer.
      */
-    Circular_Buffer_Type AUX2TransmitBuffer;
+    circular_buffer_t AUX2TransmitBuffer;
     /**
      * @brief   Pointer to the AUX3 data pump thread.
      */
@@ -70,7 +70,7 @@ typedef struct
     /**
      * @brief   AUX3 data pump circular transmit buffer.
      */
-    Circular_Buffer_Type AUX3TransmitBuffer;
+    circular_buffer_t AUX3TransmitBuffer;
     /**
      * @brief   Pointer to the AUX4 data pump thread.
      */
@@ -78,7 +78,7 @@ typedef struct
     /**
      * @brief   AUX4 data pump circular transmit buffer.
      */
-    Circular_Buffer_Type AUX4TransmitBuffer;
+    circular_buffer_t AUX4TransmitBuffer;
 } Serial_Datapump_Holder;
 
 /* Instance of the data pump holder structure */
@@ -291,7 +291,7 @@ static THD_FUNCTION(Aux1DataPumpTask, arg)
  * @return              Returns HAL_FAILED if it did not succeed to transmit
  *                      the buffer, else HAL_SUCCESS is returned.
  */
-static bool USBTransmitCircularBuffer(Circular_Buffer_Type *Cbuff)
+static bool USBTransmitCircularBuffer(circular_buffer_t *Cbuff)
 {
     uint8_t *read_pointer;
     uint32_t read_size;
@@ -341,7 +341,7 @@ static bool USBTransmitCircularBuffer(Circular_Buffer_Type *Cbuff)
  *                      the buffer, else HAL_SUCCESS is returned.
  */
 static bool AuxTransmitCircularBuffer(SerialDriver *sdp,
-                                      Circular_Buffer_Type *Cbuff)
+                                      circular_buffer_t *Cbuff)
 {
     uint8_t *read_pointer;
     uint32_t read_size;
@@ -423,7 +423,7 @@ void vSerialManagerInit(void)
  * @return              Returns the pointer to the corresponding port's 
  *                      circular buffer.
  */
-Circular_Buffer_Type *SerialManager_GetCircularBufferFromPort(Port_Type port)
+circular_buffer_t *SerialManager_GetCircularBufferFromPort(Port_Type port)
 {
     if (port == PORT_USB)
         return &data_pumps.USBTransmitBuffer;

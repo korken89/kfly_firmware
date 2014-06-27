@@ -22,27 +22,27 @@
 /* Module local definitions.                                                 */
 /*===========================================================================*/
 
-static bool GenerateACK(Circular_Buffer_Type *Cbuff);
-static bool GeneratePing(Circular_Buffer_Type *Cbuff);
-static bool GenerateGetRunningMode(Circular_Buffer_Type *Cbuff);
-static bool GenerateGetDeviceInfo(Circular_Buffer_Type *Cbuff);
-static bool GenerateGetArmSettings(Circular_Buffer_Type *Cbuff);
-static bool GenerateGetRateControllerData(Circular_Buffer_Type *Cbuff);
-static bool GenerateGetAttitudeControllerData(Circular_Buffer_Type *Cbuff);
-static bool GenerateGetVelocityControllerData(Circular_Buffer_Type *Cbuff);
-static bool GenerateGetPositionControllerData(Circular_Buffer_Type *Cbuff);
-static bool GenerateGetChannelMix(Circular_Buffer_Type *Cbuff);
-static bool GenerateGetRCCalibration(Circular_Buffer_Type *Cbuff);
-static bool GenerateGetRCValues(Circular_Buffer_Type *Cbuff);
-static bool GenerateGetSensorData(Circular_Buffer_Type *Cbuff);
-static bool GenerateGetRawSensorData(Circular_Buffer_Type *Cbuff);
-static bool GenerateGetSensorCalibration(Circular_Buffer_Type *Cbuff);
-static bool GenerateGetSensorCalibration(Circular_Buffer_Type *Cbuff);
-static bool GenerateGetEstimationRate(Circular_Buffer_Type *Cbuff);
-static bool GenerateGetEstimationAttitude(Circular_Buffer_Type *Cbuff);
-static bool GenerateGetEstimationVelocity(Circular_Buffer_Type *Cbuff);
-static bool GenerateGetEstimationPosition(Circular_Buffer_Type *Cbuff);
-static bool GenerateGetEstimationAllStates(Circular_Buffer_Type *Cbuff);
+static bool GenerateACK(circular_buffer_t *Cbuff);
+static bool GeneratePing(circular_buffer_t *Cbuff);
+static bool GenerateGetRunningMode(circular_buffer_t *Cbuff);
+static bool GenerateGetDeviceInfo(circular_buffer_t *Cbuff);
+static bool GenerateGetArmSettings(circular_buffer_t *Cbuff);
+static bool GenerateGetRateControllerData(circular_buffer_t *Cbuff);
+static bool GenerateGetAttitudeControllerData(circular_buffer_t *Cbuff);
+static bool GenerateGetVelocityControllerData(circular_buffer_t *Cbuff);
+static bool GenerateGetPositionControllerData(circular_buffer_t *Cbuff);
+static bool GenerateGetChannelMix(circular_buffer_t *Cbuff);
+static bool GenerateGetRCCalibration(circular_buffer_t *Cbuff);
+static bool GenerateGetRCValues(circular_buffer_t *Cbuff);
+static bool GenerateGetSensorData(circular_buffer_t *Cbuff);
+static bool GenerateGetRawSensorData(circular_buffer_t *Cbuff);
+static bool GenerateGetSensorCalibration(circular_buffer_t *Cbuff);
+static bool GenerateGetSensorCalibration(circular_buffer_t *Cbuff);
+static bool GenerateGetEstimationRate(circular_buffer_t *Cbuff);
+static bool GenerateGetEstimationAttitude(circular_buffer_t *Cbuff);
+static bool GenerateGetEstimationVelocity(circular_buffer_t *Cbuff);
+static bool GenerateGetEstimationPosition(circular_buffer_t *Cbuff);
+static bool GenerateGetEstimationAllStates(circular_buffer_t *Cbuff);
 static uint32_t myStrlen(const uint8_t *str, const uint32_t max_length);
 
 /*===========================================================================*/
@@ -212,7 +212,7 @@ static bool GenerateGenericGetControllerData(KFly_Command_Type command,
                                              const uint32_t pi_offset, 
                                              const uint32_t limit_offset, 
                                              const uint32_t limit_count, 
-                                             Circular_Buffer_Type *Cbuff)
+                                             circular_buffer_t *Cbuff)
 {
     PI_Data *PI_settings;
     uint8_t *CL_settings;
@@ -280,7 +280,7 @@ static bool GenerateGenericGetControllerData(KFly_Command_Type command,
  *                      if it did fit.
  */
 static bool GenerateHeaderOnlyCommand(KFly_Command_Type command, 
-                                      Circular_Buffer_Type *Cbuff)
+                                      circular_buffer_t *Cbuff)
 {
     int32_t count = 0;
     uint8_t crc8;
@@ -310,7 +310,7 @@ static bool GenerateHeaderOnlyCommand(KFly_Command_Type command,
 static bool GenerateGenericCommand(KFly_Command_Type command, 
                                    uint8_t *data, 
                                    const uint32_t data_count, 
-                                   Circular_Buffer_Type *Cbuff)
+                                   circular_buffer_t *Cbuff)
 {
     int32_t count = 0;
     uint32_t i;
@@ -351,7 +351,7 @@ static bool GenerateGenericCommand(KFly_Command_Type command,
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-static bool GenerateACK(Circular_Buffer_Type *Cbuff)
+static bool GenerateACK(circular_buffer_t *Cbuff)
 {
     return GenerateHeaderOnlyCommand(Cmd_ACK, Cbuff);   /* Return status */
 }
@@ -363,7 +363,7 @@ static bool GenerateACK(Circular_Buffer_Type *Cbuff)
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-static bool GeneratePing(Circular_Buffer_Type *Cbuff)
+static bool GeneratePing(circular_buffer_t *Cbuff)
 {
     return GenerateHeaderOnlyCommand(Cmd_Ping, Cbuff);  /* Return status */
 }
@@ -375,7 +375,7 @@ static bool GeneratePing(Circular_Buffer_Type *Cbuff)
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-static bool GenerateGetRunningMode(Circular_Buffer_Type *Cbuff)
+static bool GenerateGetRunningMode(circular_buffer_t *Cbuff)
 {
     return GenerateGenericCommand(Cmd_GetRunningMode, (uint8_t *)"P", 1, Cbuff);
 }
@@ -387,7 +387,7 @@ static bool GenerateGetRunningMode(Circular_Buffer_Type *Cbuff)
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-static bool GenerateGetDeviceInfo(Circular_Buffer_Type *Cbuff)
+static bool GenerateGetDeviceInfo(circular_buffer_t *Cbuff)
 {
     uint8_t *device_id, *text_fw, *text_bl, *text_usr;
     uint32_t length_fw, length_bl, length_usr, data_count, i = 0;
@@ -472,7 +472,7 @@ static bool GenerateGetDeviceInfo(Circular_Buffer_Type *Cbuff)
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-static bool GenerateGetArmSettings(Circular_Buffer_Type *Cbuff)
+static bool GenerateGetArmSettings(circular_buffer_t *Cbuff)
 {
     return GenerateGenericCommand(Cmd_GetArmSettings, 
                                   (uint8_t *)ptrGetControlArmSettings(), 
@@ -487,7 +487,7 @@ static bool GenerateGetArmSettings(Circular_Buffer_Type *Cbuff)
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-static bool GenerateGetRateControllerData(Circular_Buffer_Type *Cbuff)
+static bool GenerateGetRateControllerData(circular_buffer_t *Cbuff)
 {
     return GenerateGenericGetControllerData(Cmd_GetRateControllerData,
                                             RATE_PI_OFFSET,
@@ -504,7 +504,7 @@ static bool GenerateGetRateControllerData(Circular_Buffer_Type *Cbuff)
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-static bool GenerateGetAttitudeControllerData(Circular_Buffer_Type *Cbuff)
+static bool GenerateGetAttitudeControllerData(circular_buffer_t *Cbuff)
 {
     return GenerateGenericGetControllerData(Cmd_GetAttitudeControllerData,
                                             ATTITUDE_PI_OFFSET,
@@ -520,7 +520,7 @@ static bool GenerateGetAttitudeControllerData(Circular_Buffer_Type *Cbuff)
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-static bool GenerateGetVelocityControllerData(Circular_Buffer_Type *Cbuff)
+static bool GenerateGetVelocityControllerData(circular_buffer_t *Cbuff)
 {
     return GenerateGenericGetControllerData(Cmd_GetVelocityControllerData,
                                             VELOCITY_PI_OFFSET,
@@ -536,7 +536,7 @@ static bool GenerateGetVelocityControllerData(Circular_Buffer_Type *Cbuff)
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-static bool GenerateGetPositionControllerData(Circular_Buffer_Type *Cbuff)
+static bool GenerateGetPositionControllerData(circular_buffer_t *Cbuff)
 {
     return GenerateGenericGetControllerData(Cmd_GetPositionControllerData,
                                             POSITION_PI_OFFSET,
@@ -552,7 +552,7 @@ static bool GenerateGetPositionControllerData(Circular_Buffer_Type *Cbuff)
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS 
  *                      if it did fit.
  */
-static bool GenerateGetChannelMix(Circular_Buffer_Type *Cbuff)
+static bool GenerateGetChannelMix(circular_buffer_t *Cbuff)
 {
     return GenerateGenericCommand(Cmd_GetChannelMix, 
                                   (uint8_t *)ptrGetOutputMixer(), 
@@ -567,7 +567,7 @@ static bool GenerateGetChannelMix(Circular_Buffer_Type *Cbuff)
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-static bool GenerateGetRCCalibration(Circular_Buffer_Type *Cbuff)
+static bool GenerateGetRCCalibration(circular_buffer_t *Cbuff)
 {
     return GenerateGenericCommand(Cmd_GetRCCalibration, 
                                   (uint8_t *)ptrGetRCInputSettings(), 
@@ -582,7 +582,7 @@ static bool GenerateGetRCCalibration(Circular_Buffer_Type *Cbuff)
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-static bool GenerateGetRCValues(Circular_Buffer_Type *Cbuff)
+static bool GenerateGetRCValues(circular_buffer_t *Cbuff)
 {
     return GenerateGenericCommand(Cmd_GetRCValues, 
                                   (uint8_t *)ptrGetRCInputData(), 
@@ -597,7 +597,7 @@ static bool GenerateGetRCValues(Circular_Buffer_Type *Cbuff)
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-static bool GenerateGetSensorData(Circular_Buffer_Type *Cbuff)
+static bool GenerateGetSensorData(circular_buffer_t *Cbuff)
 {
     GetIMUData(&imu_data);
     return GenerateGenericCommand(Cmd_GetSensorData, 
@@ -613,7 +613,7 @@ static bool GenerateGetSensorData(Circular_Buffer_Type *Cbuff)
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-static bool GenerateGetRawSensorData(Circular_Buffer_Type *Cbuff)
+static bool GenerateGetRawSensorData(circular_buffer_t *Cbuff)
 {
     GetRawIMUData(&imu_rawdata);
     return GenerateGenericCommand(Cmd_GetRawSensorData, 
@@ -630,7 +630,7 @@ static bool GenerateGetRawSensorData(Circular_Buffer_Type *Cbuff)
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-static bool GenerateGetSensorCalibration(Circular_Buffer_Type *Cbuff)
+static bool GenerateGetSensorCalibration(circular_buffer_t *Cbuff)
 {
     GetIMUCalibration(&imu_calibration);
 
@@ -648,7 +648,7 @@ static bool GenerateGetSensorCalibration(Circular_Buffer_Type *Cbuff)
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-static bool GenerateGetEstimationRate(Circular_Buffer_Type *Cbuff)
+static bool GenerateGetEstimationRate(circular_buffer_t *Cbuff)
 {
     return GenerateGenericCommand(Cmd_GetEstimationRate,
                                   ((uint8_t *)ptrGetAttitudeEstimationStates()) 
@@ -665,7 +665,7 @@ static bool GenerateGetEstimationRate(Circular_Buffer_Type *Cbuff)
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-static bool GenerateGetEstimationAttitude(Circular_Buffer_Type *Cbuff)
+static bool GenerateGetEstimationAttitude(circular_buffer_t *Cbuff)
 {
     return GenerateGenericCommand(Cmd_GetEstimationAttitude,
                                   (uint8_t *)ptrGetAttitudeEstimationStates(), 
@@ -681,7 +681,7 @@ static bool GenerateGetEstimationAttitude(Circular_Buffer_Type *Cbuff)
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-static bool GenerateGetEstimationVelocity(Circular_Buffer_Type *Cbuff)
+static bool GenerateGetEstimationVelocity(circular_buffer_t *Cbuff)
 {
     (void)Cbuff;
     return HAL_FAILED;
@@ -695,7 +695,7 @@ static bool GenerateGetEstimationVelocity(Circular_Buffer_Type *Cbuff)
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-static bool GenerateGetEstimationPosition(Circular_Buffer_Type *Cbuff)
+static bool GenerateGetEstimationPosition(circular_buffer_t *Cbuff)
 {
     (void)Cbuff;
     return HAL_FAILED;
@@ -709,7 +709,7 @@ static bool GenerateGetEstimationPosition(Circular_Buffer_Type *Cbuff)
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-static bool GenerateGetEstimationAllStates(Circular_Buffer_Type *Cbuff)
+static bool GenerateGetEstimationAllStates(circular_buffer_t *Cbuff)
 {
     return GenerateGenericCommand(Cmd_GetEstimationAllStates,
                                   (uint8_t *)ptrGetAttitudeEstimationStates(), 
@@ -752,7 +752,7 @@ uint32_t myStrlen(const uint8_t *str, const uint32_t max_length)
 bool GenerateMessage(KFly_Command_Type command, Port_Type port)
 {
     bool status;
-    Circular_Buffer_Type *Cbuff = NULL;
+    circular_buffer_t *Cbuff = NULL;
 
     Cbuff = SerialManager_GetCircularBufferFromPort(port);
 
@@ -792,7 +792,7 @@ bool GenerateMessage(KFly_Command_Type command, Port_Type port)
  */
 bool GenerateDebugMessage(uint8_t *data,
                           uint32_t size, 
-                          Circular_Buffer_Type *Cbuff)
+                          circular_buffer_t *Cbuff)
 {
     if (size > 256)
         return HAL_FAILED;
