@@ -20,13 +20,51 @@
 #include "control.h"
 #include "statemachine_parsers.h"
 
-static IMU_Calibration imu_calibration;
+/*===========================================================================*/
+/* Module local definitions.                                                 */
+/*===========================================================================*/
 
-/* Private functions */
-static void ParseGenericSetControllerData(const uint32_t pi_offset,
-                                          const uint32_t limit_offset, 
-                                          const uint32_t limit_count, 
-                                          uint8_t *data);
+static void ParsePing(Parser_Holder_Type *pHolder);
+static void ParseGetRunningMode(Parser_Holder_Type *pHolder);
+static void ParseGetDeviceInfo(Parser_Holder_Type *pHolder);
+static void ParseSetDeviceID(Parser_Holder_Type *pHolder);
+static void ParseSaveToFlash(Parser_Holder_Type *pHolder);
+static void ParseSetArmSettings(Parser_Holder_Type *pHolder);
+static void ParseGetArmSettings(Parser_Holder_Type *pHolder);
+static void ParseGetRateControllerData(Parser_Holder_Type *pHolder);
+static void ParseSetRateControllerData(Parser_Holder_Type *pHolder);
+static void ParseGetAttitudeControllerData(Parser_Holder_Type *pHolder);
+static void ParseSetAttitudeControllerData(Parser_Holder_Type *pHolder);
+static void ParseGetVelocityControllerData(Parser_Holder_Type *pHolder);
+static void ParseSetVelocityControllerData(Parser_Holder_Type *pHolder);
+static void ParseGetPositionControllerData(Parser_Holder_Type *pHolder);
+static void ParseSetPositionControllerData(Parser_Holder_Type *pHolder);
+static void ParseGetChannelMix(Parser_Holder_Type *pHolder);
+static void ParseSetChannelMix(Parser_Holder_Type *pHolder);
+static void ParseGetRCCalibration(Parser_Holder_Type *pHolder);
+static void ParseSetRCCalibration(Parser_Holder_Type *pHolder);
+static void ParseGetRCValues(Parser_Holder_Type *pHolder);
+static void ParseGetSensorData(Parser_Holder_Type *pHolder);
+static void ParseGetRawSensorData(Parser_Holder_Type *pHolder);
+static void ParseGetSensorCalibration(Parser_Holder_Type *pHolder);
+static void ParseSetSensorCalibration(Parser_Holder_Type *pHolder);
+static void ParseGetEstimationRate(Parser_Holder_Type *pHolder);
+static void ParseGetEstimationAttitude(Parser_Holder_Type *pHolder);
+static void ParseGetEstimationVelocity(Parser_Holder_Type *pHolder);
+static void ParseGetEstimationPosition(Parser_Holder_Type *pHolder);
+static void ParseGetEstimationAllStates(Parser_Holder_Type *pHolder);
+static void ParseResetEstimation(Parser_Holder_Type *pHolder);
+
+/*===========================================================================*/
+/* Module exported variables.                                                */
+/*===========================================================================*/
+
+/*===========================================================================*/
+/* Module local variables and types.                                         */
+/*===========================================================================*/
+
+/* Temporary holder for IMU calibration data */
+static IMU_Calibration imu_calibration;
 
 /**
  * Lookup table for all the serial parsers.
@@ -162,17 +200,19 @@ static const Parser_Type parser_lookup[128] = {
     NULL                              /* 127:                                 */
 };
 
-/**
- * @brief               Return the parser associated to the command.
- * 
- * @param[in] command   Command to get the parser for.
- * @return              Pointer to the associated parser.
- */
-Parser_Type GetParser(KFly_Command_Type command)
-{
-    return parser_lookup[command];
-}
+/*===========================================================================*/
+/* Module local functions.                                                   */
+/*===========================================================================*/
 
+/**
+ * @brief                   A generic function to save data. Locks the RTOS
+ *                          while saving.
+ * 
+ * @param[in] save_location Pointer to the location where the data shall be
+ *                          saved.
+ * @param[in] buffer        Pointer to the buffer where to save from.
+ * @param[in] data_length   Number of bytes to save
+ */
 static void GenericSaveData(uint8_t *save_location,
                             uint8_t *buffer,
                             uint32_t data_length)
@@ -188,6 +228,7 @@ static void GenericSaveData(uint8_t *save_location,
 
     osalSysUnlock();
 }
+
 /**
  * @brief                   A generic function to save controller data and
  *                          control limits.
@@ -239,7 +280,7 @@ static void ParseGenericSetControllerData(const uint32_t pi_offset,
  * @param[in] pHolder   Message holder containing information
  *                      about the transmission. 
  */
-void ParsePing(Parser_Holder_Type *pHolder)
+static void ParsePing(Parser_Holder_Type *pHolder)
 {
     GenerateMessage(Cmd_Ping, pHolder->Port);
 }
@@ -250,7 +291,7 @@ void ParsePing(Parser_Holder_Type *pHolder)
  * @param[in] pHolder   Message holder containing information
  *                      about the transmission.
  */
-void ParseGetRunningMode(Parser_Holder_Type *pHolder)
+static void ParseGetRunningMode(Parser_Holder_Type *pHolder)
 {
     GenerateMessage(Cmd_GetRunningMode, pHolder->Port);
 }
@@ -261,7 +302,7 @@ void ParseGetRunningMode(Parser_Holder_Type *pHolder)
  * @param[in] pHolder   Message holder containing information
  *                      about the transmission.
  */
-void ParseGetDeviceInfo(Parser_Holder_Type *pHolder)
+static void ParseGetDeviceInfo(Parser_Holder_Type *pHolder)
 {
     GenerateMessage(Cmd_GetDeviceInfo, pHolder->Port);
 }
@@ -272,7 +313,7 @@ void ParseGetDeviceInfo(Parser_Holder_Type *pHolder)
  * @param[in] pHolder   Message holder containing information
  *                      about the transmission.
  */
-void ParseSetDeviceID(Parser_Holder_Type *pHolder)
+static void ParseSetDeviceID(Parser_Holder_Type *pHolder)
 {
     uint8_t *save_location;
 
@@ -297,7 +338,7 @@ void ParseSetDeviceID(Parser_Holder_Type *pHolder)
  * @param[in] pHolder   Message holder containing information
  *                      about the transmission.
  */
-void ParseSaveToFlash(Parser_Holder_Type *pHolder)
+static void ParseSaveToFlash(Parser_Holder_Type *pHolder)
 {
     (void)pHolder;
 
@@ -311,7 +352,7 @@ void ParseSaveToFlash(Parser_Holder_Type *pHolder)
  * @param[in] pHolder   Message holder containing information
  *                      about the transmission.
  */
-void ParseSetArmSettings(Parser_Holder_Type *pHolder)
+static void ParseSetArmSettings(Parser_Holder_Type *pHolder)
 {
     if (pHolder->buffer_count == CONTROL_ARM_SIZE)
     {
@@ -328,7 +369,7 @@ void ParseSetArmSettings(Parser_Holder_Type *pHolder)
  * @param[in] pHolder   Message holder containing information
  *                      about the transmission.
  */
-void ParseGetArmSettings(Parser_Holder_Type *pHolder)
+static void ParseGetArmSettings(Parser_Holder_Type *pHolder)
 {
     GenerateMessage(Cmd_GetArmSettings, pHolder->Port);
 }
@@ -339,7 +380,7 @@ void ParseGetArmSettings(Parser_Holder_Type *pHolder)
  * @param[in] pHolder   Message holder containing information
  *                      about the transmission.
  */
-void ParseGetRateControllerData(Parser_Holder_Type *pHolder)
+static void ParseGetRateControllerData(Parser_Holder_Type *pHolder)
 {
     GenerateMessage(Cmd_GetRateControllerData, pHolder->Port);
 }
@@ -350,7 +391,7 @@ void ParseGetRateControllerData(Parser_Holder_Type *pHolder)
  * @param[in] pHolder   Message holder containing information
  *                      about the transmission.
  */
-void ParseSetRateControllerData(Parser_Holder_Type *pHolder)
+static void ParseSetRateControllerData(Parser_Holder_Type *pHolder)
 {
     if (pHolder->buffer_count == (36 + RATE_LIMIT_COUNT))
         ParseGenericSetControllerData(RATE_PI_OFFSET,
@@ -365,7 +406,7 @@ void ParseSetRateControllerData(Parser_Holder_Type *pHolder)
  * @param[in] pHolder   Message holder containing information
  *                      about the transmission.
  */
-void ParseGetAttitudeControllerData(Parser_Holder_Type *pHolder)
+static void ParseGetAttitudeControllerData(Parser_Holder_Type *pHolder)
 {
     GenerateMessage(Cmd_GetAttitudeControllerData, pHolder->Port);
 }
@@ -376,7 +417,7 @@ void ParseGetAttitudeControllerData(Parser_Holder_Type *pHolder)
  * @param[in] pHolder   Message holder containing information
  *                      about the transmission.
  */
-void ParseSetAttitudeControllerData(Parser_Holder_Type *pHolder)
+static void ParseSetAttitudeControllerData(Parser_Holder_Type *pHolder)
 {
     if (pHolder->buffer_count == (36 + ATTITUDE_LIMIT_COUNT))
         ParseGenericSetControllerData(ATTITUDE_PI_OFFSET,
@@ -391,7 +432,7 @@ void ParseSetAttitudeControllerData(Parser_Holder_Type *pHolder)
  * @param[in] pHolder   Message holder containing information
  *                      about the transmission.
  */
-void ParseGetVelocityControllerData(Parser_Holder_Type *pHolder)
+static void ParseGetVelocityControllerData(Parser_Holder_Type *pHolder)
 {
     GenerateMessage(Cmd_GetVelocityControllerData, pHolder->Port);
 }
@@ -402,7 +443,7 @@ void ParseGetVelocityControllerData(Parser_Holder_Type *pHolder)
  * @param[in] pHolder   Message holder containing information
  *                      about the transmission.
  */
-void ParseSetVelocityControllerData(Parser_Holder_Type *pHolder)
+static void ParseSetVelocityControllerData(Parser_Holder_Type *pHolder)
 {
     (void)pHolder;
     if (pHolder->buffer_count == (36 + VELOCITY_LIMIT_COUNT))
@@ -418,7 +459,7 @@ void ParseSetVelocityControllerData(Parser_Holder_Type *pHolder)
  * @param[in] pHolder   Message holder containing information
  *                      about the transmission.
  */
-void ParseGetPositionControllerData(Parser_Holder_Type *pHolder)
+static void ParseGetPositionControllerData(Parser_Holder_Type *pHolder)
 {
     GenerateMessage(Cmd_GetPositionControllerData, pHolder->Port);
 }
@@ -429,7 +470,7 @@ void ParseGetPositionControllerData(Parser_Holder_Type *pHolder)
  * @param[in] pHolder   Message holder containing information
  *                      about the transmission.
  */
-void ParseSetPositionControllerData(Parser_Holder_Type *pHolder)
+static void ParseSetPositionControllerData(Parser_Holder_Type *pHolder)
 {
     if (pHolder->buffer_count == (36 + POSITION_LIMIT_COUNT))
         ParseGenericSetControllerData(POSITION_PI_OFFSET, 
@@ -444,7 +485,7 @@ void ParseSetPositionControllerData(Parser_Holder_Type *pHolder)
  * @param[in] pHolder   Message holder containing information
  *                      about the transmission.
  */
-void ParseGetChannelMix(Parser_Holder_Type *pHolder)
+static void ParseGetChannelMix(Parser_Holder_Type *pHolder)
 {
     GenerateMessage(Cmd_GetChannelMix, pHolder->Port);
 }
@@ -455,7 +496,7 @@ void ParseGetChannelMix(Parser_Holder_Type *pHolder)
  * @param[in] pHolder   Message holder containing information
  *                      about the transmission.
  */
-void ParseSetChannelMix(Parser_Holder_Type *pHolder)
+static void ParseSetChannelMix(Parser_Holder_Type *pHolder)
 {
     if (pHolder->buffer_count == OUTPUT_MIXER_SIZE)
     {
@@ -472,7 +513,7 @@ void ParseSetChannelMix(Parser_Holder_Type *pHolder)
  * @param[in] pHolder   Message holder containing information
  *                      about the transmission.
  */
-void ParseGetRCCalibration(Parser_Holder_Type *pHolder)
+static void ParseGetRCCalibration(Parser_Holder_Type *pHolder)
 {
     GenerateMessage(Cmd_GetRCCalibration, pHolder->Port);
 }
@@ -483,7 +524,7 @@ void ParseGetRCCalibration(Parser_Holder_Type *pHolder)
  * @param[in] pHolder   Message holder containing information
  *                      about the transmission.
  */
-void ParseSetRCCalibration(Parser_Holder_Type *pHolder)
+static void ParseSetRCCalibration(Parser_Holder_Type *pHolder)
 {
     if (pHolder->buffer_count == RCINPUT_SETTINGS_SIZE)
     {
@@ -503,7 +544,7 @@ void ParseSetRCCalibration(Parser_Holder_Type *pHolder)
  * @param[in] pHolder   Message holder containing information
  *                      about the transmission.
  */
-void ParseGetRCValues(Parser_Holder_Type *pHolder)
+static void ParseGetRCValues(Parser_Holder_Type *pHolder)
 {
     GenerateMessage(Cmd_GetRCValues, pHolder->Port);
 }
@@ -514,7 +555,7 @@ void ParseGetRCValues(Parser_Holder_Type *pHolder)
  * @param[in] pHolder   Message holder containing information
  *                      about the transmission.
  */
-void ParseGetSensorData(Parser_Holder_Type *pHolder)
+static void ParseGetSensorData(Parser_Holder_Type *pHolder)
 {
     GenerateMessage(Cmd_GetSensorData, pHolder->Port);
 }
@@ -525,7 +566,7 @@ void ParseGetSensorData(Parser_Holder_Type *pHolder)
  * @param[in] pHolder   Message holder containing information
  *                      about the transmission.
  */
-void ParseGetRawSensorData(Parser_Holder_Type *pHolder)
+static void ParseGetRawSensorData(Parser_Holder_Type *pHolder)
 {
     GenerateMessage(Cmd_GetRawSensorData, pHolder->Port);
 }
@@ -536,7 +577,7 @@ void ParseGetRawSensorData(Parser_Holder_Type *pHolder)
  * @param[in] pHolder   Message holder containing information
  *                      about the transmission.
  */
-void ParseGetSensorCalibration(Parser_Holder_Type *pHolder)
+static void ParseGetSensorCalibration(Parser_Holder_Type *pHolder)
 {
     GenerateMessage(Cmd_GetSensorCalibration, pHolder->Port);
 }
@@ -547,7 +588,7 @@ void ParseGetSensorCalibration(Parser_Holder_Type *pHolder)
  * @param[in] pHolder   Message holder containing information
  *                      about the transmission.
  */
-void ParseSetSensorCalibration(Parser_Holder_Type *pHolder)
+static void ParseSetSensorCalibration(Parser_Holder_Type *pHolder)
 {
     /* Save the data into the temporary calibration structure */
     if (pHolder->buffer_count == SENSOR_IMU_CALIBRATION_SIZE)
@@ -571,7 +612,7 @@ void ParseSetSensorCalibration(Parser_Holder_Type *pHolder)
  * @param[in] pHolder   Message holder containing information
  *                      about the transmission.
  */
-void ParseGetEstimationRate(Parser_Holder_Type *pHolder)
+static void ParseGetEstimationRate(Parser_Holder_Type *pHolder)
 {
     GenerateMessage(Cmd_GetEstimationRate, pHolder->Port);
 }
@@ -582,7 +623,7 @@ void ParseGetEstimationRate(Parser_Holder_Type *pHolder)
  * @param[in] pHolder   Message holder containing information
  *                      about the transmission.
  */
-void ParseGetEstimationAttitude(Parser_Holder_Type *pHolder)
+static void ParseGetEstimationAttitude(Parser_Holder_Type *pHolder)
 {
     GenerateMessage(Cmd_GetEstimationAttitude, pHolder->Port);
 }
@@ -593,7 +634,7 @@ void ParseGetEstimationAttitude(Parser_Holder_Type *pHolder)
  * @param[in] pHolder   Message holder containing information
  *                      about the transmission.
  */
-void ParseGetEstimationVelocity(Parser_Holder_Type *pHolder)
+static void ParseGetEstimationVelocity(Parser_Holder_Type *pHolder)
 {
     GenerateMessage(Cmd_GetEstimationVelocity, pHolder->Port);
 }
@@ -604,7 +645,7 @@ void ParseGetEstimationVelocity(Parser_Holder_Type *pHolder)
  * @param[in] pHolder   Message holder containing information
  *                      about the transmission.
  */
-void ParseGetEstimationPosition(Parser_Holder_Type *pHolder)
+static void ParseGetEstimationPosition(Parser_Holder_Type *pHolder)
 {
     GenerateMessage(Cmd_GetEstimationPosition, pHolder->Port);
 }
@@ -615,7 +656,7 @@ void ParseGetEstimationPosition(Parser_Holder_Type *pHolder)
  * @param[in] pHolder   Message holder containing information
  *                      about the transmission.
  */
-void ParseGetEstimationAllStates(Parser_Holder_Type *pHolder)
+static void ParseGetEstimationAllStates(Parser_Holder_Type *pHolder)
 {
     GenerateMessage(Cmd_GetEstimationAllStates, pHolder->Port);
 }
@@ -626,7 +667,22 @@ void ParseGetEstimationAllStates(Parser_Holder_Type *pHolder)
  * @param[in] pHolder   Message holder containing information
  *                      about the transmission.
  */
-void ParseResetEstimation(Parser_Holder_Type *pHolder)
+static void ParseResetEstimation(Parser_Holder_Type *pHolder)
 {
     (void)pHolder;
+}
+
+/*===========================================================================*/
+/* Module exported functions.                                                */
+/*===========================================================================*/
+
+/**
+ * @brief               Return the parser associated to the command.
+ * 
+ * @param[in] command   Command to get the parser for.
+ * @return              Pointer to the associated parser.
+ */
+Parser_Type GetParser(KFly_Command_Type command)
+{
+    return parser_lookup[command];
 }
