@@ -34,6 +34,54 @@ static bool AuxTransmitCircularBuffer(SerialDriver *sdp,
 /* Module local variables and types.                                         */
 /*===========================================================================*/
 
+/**
+ * @brief   Holder of the necessary information for the data pump threads.
+ */
+typedef struct
+{
+    /**
+     * @brief   Pointer to the USB data pump thread.
+     */
+    thread_t *ptrUSBDataPump;
+    /**
+     * @brief   USB data pump circular transmit buffer.
+     */
+    Circular_Buffer_Type USBTransmitBuffer;
+    /**
+     * @brief   Pointer to the AUX1 data pump thread.
+     */
+    thread_t *ptrAUX1DataPump;
+    /**
+     * @brief   AUX1 data pump circular transmit buffer.
+     */
+    Circular_Buffer_Type AUX1TransmitBuffer;
+    /**
+     * @brief   Pointer to the AUX2 data pump thread.
+     */
+    thread_t *ptrAUX2DataPump;
+    /**
+     * @brief   AUX2 data pump circular transmit buffer.
+     */
+    Circular_Buffer_Type AUX2TransmitBuffer;
+    /**
+     * @brief   Pointer to the AUX3 data pump thread.
+     */
+    thread_t *ptrAUX3DataPump;
+    /**
+     * @brief   AUX3 data pump circular transmit buffer.
+     */
+    Circular_Buffer_Type AUX3TransmitBuffer;
+    /**
+     * @brief   Pointer to the AUX4 data pump thread.
+     */
+    thread_t *ptrAUX4DataPump;
+    /**
+     * @brief   AUX4 data pump circular transmit buffer.
+     */
+    Circular_Buffer_Type AUX4TransmitBuffer;
+} Serial_Datapump_Holder;
+
+/* Instance of the data pump holder structure */
 static Serial_Datapump_Holder data_pumps = {
     .ptrUSBDataPump = NULL,
     .ptrAUX1DataPump = NULL,
@@ -42,6 +90,7 @@ static Serial_Datapump_Holder data_pumps = {
     .ptrAUX4DataPump = NULL
 };
 
+/* Temporary settings until serial is settable through the USB */
 static const SerialConfig aux1_config =
 {
   115200,
