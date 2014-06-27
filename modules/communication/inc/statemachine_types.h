@@ -235,7 +235,7 @@ typedef struct _parser_holder
     /**
      * @brief   Which port the data came from.
      */
-    Port_Type Port;
+    External_Port Port;
     /**
      * @brief   If an ACK was requested.
      */

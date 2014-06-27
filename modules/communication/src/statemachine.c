@@ -64,7 +64,7 @@
  * @param[in]     buffer    Buffer used for intermediate data.
  */
 void vInitStatemachineDataHolder(parser_holder_t *pHolder,
-                                 Port_Type port,
+                                 External_Port port,
                                  uint8_t *buffer)
 {
     pHolder->Port = port;

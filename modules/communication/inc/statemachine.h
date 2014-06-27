@@ -11,7 +11,7 @@
 
 /* Global function defines */
 void vInitStatemachineDataHolder(parser_holder_t *pHolder,
-                                 Port_Type port,
+                                 External_Port port,
                                  uint8_t *buffer);
 void vStatemachineDataEntry(uint8_t data, parser_holder_t *pHolder);
 void vWaitingForSYNC(uint8_t data, parser_holder_t *pHolder);

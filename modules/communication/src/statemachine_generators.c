@@ -749,7 +749,7 @@ uint32_t myStrlen(const uint8_t *str, const uint32_t max_length)
   * @return             HAL_FAILED if the message didn't fit or HAL_SUCCESS
   *                     if it did fit.
   */
-bool GenerateMessage(KFly_Command command, Port_Type port)
+bool GenerateMessage(KFly_Command command, External_Port port)
 {
     bool status;
     circular_buffer_t *Cbuff = NULL;

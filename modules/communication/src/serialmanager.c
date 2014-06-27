@@ -423,7 +423,7 @@ void vSerialManagerInit(void)
  * @return              Returns the pointer to the corresponding port's 
  *                      circular buffer.
  */
-circular_buffer_t *SerialManager_GetCircularBufferFromPort(Port_Type port)
+circular_buffer_t *SerialManager_GetCircularBufferFromPort(External_Port port)
 {
     if (port == PORT_USB)
         return &data_pumps.USBTransmitBuffer;
@@ -448,7 +448,7 @@ circular_buffer_t *SerialManager_GetCircularBufferFromPort(Port_Type port)
  *             
  * @param[in] port      Port parameter.
  */
-void SerialManager_StartTransmission(Port_Type port)
+void SerialManager_StartTransmission(External_Port port)
 {
     if ((port == PORT_USB) && (data_pumps.ptrUSBDataPump != NULL))
         chEvtSignal(data_pumps.ptrUSBDataPump, START_TRANSMISSION_EVENT);

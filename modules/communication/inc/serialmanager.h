@@ -24,7 +24,7 @@
 /*===========================================================================*/
 void vSerialManagerInit(void);
 void vTaskUSBSerialManager(void *);
-circular_buffer_t *SerialManager_GetCircularBufferFromPort(Port_Type port);
-void SerialManager_StartTransmission(Port_Type port);
+circular_buffer_t *SerialManager_GetCircularBufferFromPort(External_Port port);
+void SerialManager_StartTransmission(External_Port port);
 
 #endif

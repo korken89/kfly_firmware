@@ -36,7 +36,7 @@ typedef enum
      * @brief   AUX4 (CAN) identifier.
      */
     PORT_AUX4
-} Port_Type;
+} External_Port;
 
 /*===========================================================================*/
 /* Module macros.                                                            */
