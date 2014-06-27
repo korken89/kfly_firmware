@@ -46,8 +46,8 @@ static Arming_Stick_Region SticksInRegion(void);
 /*===========================================================================*/
 /* Module local variables and types.                                         */
 /*===========================================================================*/
-CCM_MEMORY static Control_Reference control_reference;
-CCM_MEMORY static Control_Data control_data;
+static Control_Reference control_reference;
+static Control_Data control_data;
 static Control_Arm_Settings arm_settings;
 static Control_Limits control_limits;
 static Output_Mixer output_mixer;
