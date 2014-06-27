@@ -277,7 +277,7 @@ typedef struct _parser_holder
      *           successful transfer.
      */
     void (*parser)(struct _parser_holder *);
-} Parser_Holder_Type;
+} parser_holder_t;
 
 /**
  * @brief   Function pointer definition for the Message Parser lookup table.

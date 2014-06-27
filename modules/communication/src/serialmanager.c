@@ -133,7 +133,7 @@ static THD_FUNCTION(USBSerialManagerTask, arg)
     chRegSetThreadName("USB Serial Manager");
 
     /* Data structure for communication */
-    static Parser_Holder_Type data_holder;
+    static parser_holder_t data_holder;
 
     /* Buffer for parsing serial USB commands */
     CCM_MEMORY static uint8_t buffer[SERIAL_RECIEVE_BUFFER_SIZE]; 
@@ -203,7 +203,7 @@ static THD_FUNCTION(Aux1SerialManagerTask, arg)
     chRegSetThreadName("Aux1 Serial Manager");
 
     /* Data structure for communication */
-    static Parser_Holder_Type data_holder;
+    static parser_holder_t data_holder;
 
     /* Buffer for parsing serial USB commands */
     CCM_MEMORY static uint8_t buffer[SERIAL_RECIEVE_BUFFER_SIZE]; 
