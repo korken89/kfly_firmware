@@ -13,10 +13,10 @@
 
 #define ARM_RATE                                10 /* Hz */
 
-#define RATE_PI_OFFSET                          0
-#define ATTITUDE_PI_OFFSET                      3
-#define VELOCITY_PI_OFFSET                      6
-#define POSITION_PI_OFFSET                      9
+#define RATE_PI_OFFSET                          9
+#define ATTITUDE_PI_OFFSET                      6
+#define VELOCITY_PI_OFFSET                      3
+#define POSITION_PI_OFFSET                      0
 
 #define RATE_LIMIT_OFFSET                       0
 #define ATTITUDE_LIMIT_OFFSET                   12
