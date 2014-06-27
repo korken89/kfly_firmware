@@ -69,7 +69,7 @@ static IMU_Calibration imu_calibration;
 /**
  * Lookup table for all the serial parsers.
  */
-static const Parser_Type parser_lookup[128] = {
+static const parser_t parser_lookup[128] = {
     NULL,                             /* 0:   Cmd_None                        */
     NULL,                             /* 1:   Cmd_ACK                         */
     ParsePing,                        /* 2:   Cmd_Ping                        */
@@ -682,7 +682,7 @@ static void ParseResetEstimation(Parser_Holder_Type *pHolder)
  * @param[in] command   Command to get the parser for.
  * @return              Pointer to the associated parser.
  */
-Parser_Type GetParser(KFly_Command_Type command)
+parser_t GetParser(KFly_Command_Type command)
 {
     return parser_lookup[command];
 }

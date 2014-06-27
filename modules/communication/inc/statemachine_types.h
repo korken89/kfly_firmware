@@ -282,12 +282,12 @@ typedef struct _parser_holder
 /**
  * @brief   Function pointer definition for the Message Parser lookup table.
  */
-typedef void (*Parser_Type)(struct _parser_holder *);
+typedef void (*parser_t)(struct _parser_holder *);
 
 /**
  * @brief   Function pointer definition for the Message Generator lookup table.
  */
-typedef bool (*Generator_Type)(Circular_Buffer_Type *);
+typedef bool (*generator_t)(Circular_Buffer_Type *);
 
 /*===========================================================================*/
 /* Module macros.                                                            */

@@ -61,7 +61,7 @@ static IMU_Calibration imu_calibration;
 /**
  * The message generation lookup table
  */
-static const Generator_Type generator_lookup[128] = {
+static const generator_t generator_lookup[128] = {
     NULL,                             /* 0:   Cmd_None                        */
     GenerateACK,                      /* 1:   Cmd_ACK                         */
     GeneratePing,                     /* 2:   Cmd_Ping                        */
