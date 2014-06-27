@@ -1,14 +1,34 @@
+/* *
+ *
+ * Working layer for circular buffers
+ *
+ * */
+
 #include "ch.h"
 #include "hal.h"
 #include "crc.h"
 #include "statemachine_types.h"
 #include "circularbuffer.h"
 
-/* Global variable defines */
+/*===========================================================================*/
+/* Module local definitions.                                                 */
+/*===========================================================================*/
 
-/* Private function defines */
+/*===========================================================================*/
+/* Module exported variables.                                                */
+/*===========================================================================*/
 
-/* Private external functions */
+/*===========================================================================*/
+/* Module local variables and types.                                         */
+/*===========================================================================*/
+
+/*===========================================================================*/
+/* Module local functions.                                                   */
+/*===========================================================================*/
+
+/*===========================================================================*/
+/* Module exported functions.                                                */
+/*===========================================================================*/
 
 /**
  * @brief                   Initializes a circular buffer except the mutex.
@@ -253,7 +273,8 @@ void CircularBuffer_ReadChunk(Circular_Buffer_Type *Cbuff,
  * @param[out] size     Pointer to the size holder.
  * @return              Pointer to the buffer with offset.
  */
-uint8_t *CircularBuffer_GetReadPointer(Circular_Buffer_Type *Cbuff, uint32_t *size)
+uint8_t *CircularBuffer_GetReadPointer(Circular_Buffer_Type *Cbuff,
+                                       uint32_t *size)
 {
     uint8_t *p;
 

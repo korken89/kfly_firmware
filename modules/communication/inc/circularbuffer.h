@@ -1,21 +1,52 @@
 #ifndef __CIRCULARBUFFER_H
 #define __CIRCULARBUFFER_H
 
-/* Defines */
+/*===========================================================================*/
+/* Module global definitions.                                                */
+/*===========================================================================*/
 
-/* Typedefs */
+/*===========================================================================*/
+/* Module data structures and types.                                         */
+/*===========================================================================*/
+
+/**
+ * @brief   Circular buffer holder definition.
+ */
 typedef struct
 {
+	/**
+	 * @brief   Write lock mutex.
+	 */
     mutex_t write_lock;     /* Write lock mutex */
+	/**
+	 * @brief   Position of the head of the buffer.
+	 */
     uint32_t head;          /* Newest element */
+	/**
+	 * @brief   Position of the tail of the buffer.
+	 */
     uint32_t tail;          /* Oldest element */
+	/**
+	 * @brief   Size of the circular buffer.
+	 */
     uint32_t size;          /* Size of buffer */
+	/**
+	 * @brief   Pointer to the data holding region.
+	 */
     uint8_t *buffer;        /* Pointer to memory area */
 } Circular_Buffer_Type;
 
-/* Global variable defines */
+/*===========================================================================*/
+/* Module macros.                                                            */
+/*===========================================================================*/
 
-/* Global function defines */
+/*===========================================================================*/
+/* Module inline functions.                                                  */
+/*===========================================================================*/
+
+/*===========================================================================*/
+/* External declarations.                                                    */
+/*===========================================================================*/
 
 void CircularBuffer_Init(Circular_Buffer_Type *Cbuff,
 						 uint8_t *buffer, 
@@ -42,6 +73,7 @@ uint8_t CircularBuffer_ReadSingle(Circular_Buffer_Type *Cbuff);
 void CircularBuffer_ReadChunk(Circular_Buffer_Type *Cbuff, 
 							  uint8_t *data, 
 							  uint32_t count);
-uint8_t *CircularBuffer_GetReadPointer(Circular_Buffer_Type *Cbuff, uint32_t *size);
+uint8_t *CircularBuffer_GetReadPointer(Circular_Buffer_Type *Cbuff,
+									   uint32_t *size);
 void CircularBuffer_IncrementTail(Circular_Buffer_Type *Cbuff, int32_t count);
 #endif
