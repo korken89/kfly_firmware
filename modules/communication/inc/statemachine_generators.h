@@ -3,44 +3,29 @@
 
 #include "statemachine_types.h"
 
-/* Defines */
+/*===========================================================================*/
+/* Module global definitions.                                                */
+/*===========================================================================*/
 
-/* Typedefs */
+/*===========================================================================*/
+/* Module data structures and types.                                         */
+/*===========================================================================*/
 
-/* Global variable defines */
+/*===========================================================================*/
+/* Module macros.                                                            */
+/*===========================================================================*/
 
-/* Global function defines */
+/*===========================================================================*/
+/* Module inline functions.                                                  */
+/*===========================================================================*/
+
+/*===========================================================================*/
+/* External declarations.                                                    */
+/*===========================================================================*/
+
 bool GenerateMessage(KFly_Command_Type command, Port_Type port);
-bool GenerateHeaderOnlyCommand(KFly_Command_Type command,
-							   Circular_Buffer_Type *Cbuff);
-bool GenerateGenericCommand(KFly_Command_Type command, 
-							uint8_t *data, 
-							const uint32_t data_count, 
-							Circular_Buffer_Type *Cbuff);
-bool GenerateACK(Circular_Buffer_Type *Cbuff);
-bool GeneratePing(Circular_Buffer_Type *Cbuff);
 bool GenerateDebugMessage(uint8_t *data, 
-						  uint32_t size, 
-						  Circular_Buffer_Type *Cbuff);
-bool GenerateGetRunningMode(Circular_Buffer_Type *Cbuff);
-bool GenerateGetDeviceInfo(Circular_Buffer_Type *Cbuff);
-bool GenerateGetArmSettings(Circular_Buffer_Type *Cbuff);
-bool GenerateGetRateControllerData(Circular_Buffer_Type *Cbuff);
-bool GenerateGetAttitudeControllerData(Circular_Buffer_Type *Cbuff);
-bool GenerateGetVelocityControllerData(Circular_Buffer_Type *Cbuff);
-bool GenerateGetPositionControllerData(Circular_Buffer_Type *Cbuff);
-bool GenerateGetChannelMix(Circular_Buffer_Type *Cbuff);
-bool GenerateGetRCCalibration(Circular_Buffer_Type *Cbuff);
-bool GenerateGetRCValues(Circular_Buffer_Type *Cbuff);
-bool GenerateGetSensorData(Circular_Buffer_Type *Cbuff);
-bool GenerateGetRawSensorData(Circular_Buffer_Type *Cbuff);
-bool GenerateGetSensorCalibration(Circular_Buffer_Type *Cbuff);
-bool GenerateGetSensorCalibration(Circular_Buffer_Type *Cbuff);
-bool GenerateGetEstimationRate(Circular_Buffer_Type *Cbuff);
-bool GenerateGetEstimationAttitude(Circular_Buffer_Type *Cbuff);
-bool GenerateGetEstimationVelocity(Circular_Buffer_Type *Cbuff);
-bool GenerateGetEstimationPosition(Circular_Buffer_Type *Cbuff);
-bool GenerateGetEstimationAllStates(Circular_Buffer_Type *Cbuff);
-uint32_t myStrlen(const uint8_t *str, const uint32_t max_length);
+                          uint32_t size, 
+                          Circular_Buffer_Type *Cbuff);
 
 #endif

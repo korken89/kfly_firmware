@@ -1,6 +1,6 @@
 /* *
  *
- * All the generators for the different messages.
+ * All the generators for the different serial messages.
  * 
  * */
 
@@ -18,16 +18,45 @@
 #include "statemachine_parsers.h"
 #include "statemachine_generators.h"
 
+/*===========================================================================*/
+/* Module local definitions.                                                 */
+/*===========================================================================*/
+
+static bool GenerateACK(Circular_Buffer_Type *Cbuff);
+static bool GeneratePing(Circular_Buffer_Type *Cbuff);
+static bool GenerateGetRunningMode(Circular_Buffer_Type *Cbuff);
+static bool GenerateGetDeviceInfo(Circular_Buffer_Type *Cbuff);
+static bool GenerateGetArmSettings(Circular_Buffer_Type *Cbuff);
+static bool GenerateGetRateControllerData(Circular_Buffer_Type *Cbuff);
+static bool GenerateGetAttitudeControllerData(Circular_Buffer_Type *Cbuff);
+static bool GenerateGetVelocityControllerData(Circular_Buffer_Type *Cbuff);
+static bool GenerateGetPositionControllerData(Circular_Buffer_Type *Cbuff);
+static bool GenerateGetChannelMix(Circular_Buffer_Type *Cbuff);
+static bool GenerateGetRCCalibration(Circular_Buffer_Type *Cbuff);
+static bool GenerateGetRCValues(Circular_Buffer_Type *Cbuff);
+static bool GenerateGetSensorData(Circular_Buffer_Type *Cbuff);
+static bool GenerateGetRawSensorData(Circular_Buffer_Type *Cbuff);
+static bool GenerateGetSensorCalibration(Circular_Buffer_Type *Cbuff);
+static bool GenerateGetSensorCalibration(Circular_Buffer_Type *Cbuff);
+static bool GenerateGetEstimationRate(Circular_Buffer_Type *Cbuff);
+static bool GenerateGetEstimationAttitude(Circular_Buffer_Type *Cbuff);
+static bool GenerateGetEstimationVelocity(Circular_Buffer_Type *Cbuff);
+static bool GenerateGetEstimationPosition(Circular_Buffer_Type *Cbuff);
+static bool GenerateGetEstimationAllStates(Circular_Buffer_Type *Cbuff);
+static uint32_t myStrlen(const uint8_t *str, const uint32_t max_length);
+
+/*===========================================================================*/
+/* Module exported variables.                                                */
+/*===========================================================================*/
+
+/*===========================================================================*/
+/* Module local variables and types.                                         */
+/*===========================================================================*/
+
+/* Temporary IMU data holders */
 static IMU_Data imu_data;
 static IMU_RawData imu_rawdata;
 static IMU_Calibration imu_calibration;
-
-/* Private functions */
-bool GenerateGenericGetControllerData(KFly_Command_Type command,
-                                      const uint32_t pi_offset, 
-                                      const uint32_t limit_offset, 
-                                      const uint32_t limit_count, 
-                                      Circular_Buffer_Type *Cbuff);
 
 /**
  * The message generation lookup table
@@ -163,118 +192,9 @@ static const Generator_Type generator_lookup[128] = {
     NULL                              /* 127:                                 */
 };
 
- /**
-  * @brief              Generate a message for the ports based on the
-  *                     generators in the lookup table.
-  * 
-  * @param[in] command  The command to generate a message for.
-  * @param[in] port     Which port to send the data.
-  * @return             HAL_FAILED if the message didn't fit or HAL_SUCCESS
-  *                     if it did fit.
-  */
-bool GenerateMessage(KFly_Command_Type command, Port_Type port)
-{
-    bool status;
-    Circular_Buffer_Type *Cbuff = NULL;
-
-    Cbuff = SerialManager_GetCircularBufferFromPort(port);
-
-    /* Check so the circular buffer address is valid */
-    if (Cbuff == NULL)
-        return HAL_FAILED;
-
-    /* Check so there is an available Generator function for this command */
-    if (generator_lookup[command] != NULL)
-    {
-        /* Claim the circular buffer for writing */
-        CircularBuffer_Claim(Cbuff);
-        {
-            status = generator_lookup[command](Cbuff);
-        }
-        /* Release the circular buffer */
-        CircularBuffer_Release(Cbuff);
-
-        /* If it was successful then start the transmission */
-        if (status == HAL_SUCCESS)
-            SerialManager_StartTransmission(port);
-    }
-    else
-        status = HAL_FAILED;
-    
-    return status;
-}
-
-/**
- * @brief               Generates a message with no data part.
- * 
- * @param[in] command   Command to generate message for.
- * @param[in] Cbuff     Pointer to the circular buffer to put the data in.
- * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS 
- *                      if it did fit.
- */
-bool GenerateHeaderOnlyCommand(KFly_Command_Type command, 
-                               Circular_Buffer_Type *Cbuff)
-{
-    int32_t count = 0;
-    uint8_t crc8;
-
-    /* Write the stating SYNC (without doubling it) */
-    CircularBuffer_WriteSYNCNoIncrement(Cbuff, &count, &crc8, NULL); 
-
-    /* Add all the data to the message */
-    CircularBuffer_WriteNoIncrement(Cbuff, command, &count, &crc8, NULL); 
-    CircularBuffer_WriteNoIncrement(Cbuff, 0,       &count, &crc8, NULL); 
-    CircularBuffer_WriteNoIncrement(Cbuff, crc8,    &count, NULL,  NULL);
-
-    /* Check if the message fit inside the buffer */
-    return CircularBuffer_Increment(Cbuff, count); 
-}
-
-/**
- * @brief                   Generates a message with data and CRC16 part. 
- * 
- * @param[in] command       Command to generate message for.
- * @param[in] data          Pointer to where the data is located.
- * @param[in] data_count    Number of data bytes.
- * @param[out] Cbuff        Pointer to the circular buffer to put the data in.
- * @return                  HAL_FAILED if the message didn't fit or HAL_SUCCESS
- *                          if it did fit.
- */
-bool GenerateGenericCommand(KFly_Command_Type command, 
-                            uint8_t *data, 
-                            const uint32_t data_count, 
-                            Circular_Buffer_Type *Cbuff)
-{
-    int32_t count = 0;
-    uint32_t i;
-    uint8_t crc8;
-    uint16_t crc16;
-
-    /* Check if the "best case" won't fit in the buffer which is
-     * data_count + header + CRC16 = data_count + 6 bytes */
-    if (CircularBuffer_SpaceLeft(Cbuff) < (data_count + 6))
-        return HAL_FAILED;
-
-    /* Add the header */
-    /* Write the starting SYNC (without doubling it) */
-    CircularBuffer_WriteSYNCNoIncrement(Cbuff, &count, &crc8, &crc16); 
-
-    /* Add all of the header to the message */
-    CircularBuffer_WriteNoIncrement(Cbuff, command,    &count, &crc8, &crc16); 
-    CircularBuffer_WriteNoIncrement(Cbuff, data_count, &count, &crc8, &crc16); 
-    CircularBuffer_WriteNoIncrement(Cbuff, crc8,       &count, NULL,  &crc16);
-
-    /* Add the data to the message */
-    for (i = 0; i < data_count; i++)
-        CircularBuffer_WriteNoIncrement(Cbuff, data[i], &count, NULL, &crc16); 
-
-    /* Add the CRC16 */
-    CircularBuffer_WriteNoIncrement(Cbuff, (uint8_t)(crc16 >> 8), &count, NULL, NULL);
-    CircularBuffer_WriteNoIncrement(Cbuff, (uint8_t)(crc16),      &count, NULL, NULL);
-
-    /* Check if the message fit inside the buffer */
-    return CircularBuffer_Increment(Cbuff, count);
-}
+/*===========================================================================*/
+/* Module local functions.                                                   */
+/*===========================================================================*/
 
 /**
  * @brief                   Generates a message for the transmission of PI
@@ -288,11 +208,11 @@ bool GenerateGenericCommand(KFly_Command_Type command,
  * @return                  HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                          if it did fit.
  */
-bool GenerateGenericGetControllerData(KFly_Command_Type command, 
-                                      const uint32_t pi_offset, 
-                                      const uint32_t limit_offset, 
-                                      const uint32_t limit_count, 
-                                      Circular_Buffer_Type *Cbuff)
+static bool GenerateGenericGetControllerData(KFly_Command_Type command, 
+                                             const uint32_t pi_offset, 
+                                             const uint32_t limit_offset, 
+                                             const uint32_t limit_count, 
+                                             Circular_Buffer_Type *Cbuff)
 {
     PI_Data *PI_settings;
     uint8_t *CL_settings;
@@ -352,13 +272,86 @@ bool GenerateGenericGetControllerData(KFly_Command_Type command,
 }
 
 /**
+ * @brief               Generates a message with no data part.
+ * 
+ * @param[in] command   Command to generate message for.
+ * @param[in] Cbuff     Pointer to the circular buffer to put the data in.
+ * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS 
+ *                      if it did fit.
+ */
+static bool GenerateHeaderOnlyCommand(KFly_Command_Type command, 
+                                      Circular_Buffer_Type *Cbuff)
+{
+    int32_t count = 0;
+    uint8_t crc8;
+
+    /* Write the stating SYNC (without doubling it) */
+    CircularBuffer_WriteSYNCNoIncrement(Cbuff, &count, &crc8, NULL); 
+
+    /* Add all the data to the message */
+    CircularBuffer_WriteNoIncrement(Cbuff, command, &count, &crc8, NULL); 
+    CircularBuffer_WriteNoIncrement(Cbuff, 0,       &count, &crc8, NULL); 
+    CircularBuffer_WriteNoIncrement(Cbuff, crc8,    &count, NULL,  NULL);
+
+    /* Check if the message fit inside the buffer */
+    return CircularBuffer_Increment(Cbuff, count); 
+}
+
+/**
+ * @brief                   Generates a message with data and CRC16 part. 
+ * 
+ * @param[in] command       Command to generate message for.
+ * @param[in] data          Pointer to where the data is located.
+ * @param[in] data_count    Number of data bytes.
+ * @param[out] Cbuff        Pointer to the circular buffer to put the data in.
+ * @return                  HAL_FAILED if the message didn't fit or HAL_SUCCESS
+ *                          if it did fit.
+ */
+static bool GenerateGenericCommand(KFly_Command_Type command, 
+                                   uint8_t *data, 
+                                   const uint32_t data_count, 
+                                   Circular_Buffer_Type *Cbuff)
+{
+    int32_t count = 0;
+    uint32_t i;
+    uint8_t crc8;
+    uint16_t crc16;
+
+    /* Check if the "best case" won't fit in the buffer which is
+     * data_count + header + CRC16 = data_count + 6 bytes */
+    if (CircularBuffer_SpaceLeft(Cbuff) < (data_count + 6))
+        return HAL_FAILED;
+
+    /* Add the header */
+    /* Write the starting SYNC (without doubling it) */
+    CircularBuffer_WriteSYNCNoIncrement(Cbuff, &count, &crc8, &crc16); 
+
+    /* Add all of the header to the message */
+    CircularBuffer_WriteNoIncrement(Cbuff, command,    &count, &crc8, &crc16); 
+    CircularBuffer_WriteNoIncrement(Cbuff, data_count, &count, &crc8, &crc16); 
+    CircularBuffer_WriteNoIncrement(Cbuff, crc8,       &count, NULL,  &crc16);
+
+    /* Add the data to the message */
+    for (i = 0; i < data_count; i++)
+        CircularBuffer_WriteNoIncrement(Cbuff, data[i], &count, NULL, &crc16); 
+
+    /* Add the CRC16 */
+    CircularBuffer_WriteNoIncrement(Cbuff, (uint8_t)(crc16 >> 8), &count, NULL, NULL);
+    CircularBuffer_WriteNoIncrement(Cbuff, (uint8_t)(crc16),      &count, NULL, NULL);
+
+    /* Check if the message fit inside the buffer */
+    return CircularBuffer_Increment(Cbuff, count);
+}
+
+
+/**
  * @brief               Generates an ACK.
  * 
  * @param[out] Cbuff    Pointer to the circular buffer to put the data in.
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-bool GenerateACK(Circular_Buffer_Type *Cbuff)
+static bool GenerateACK(Circular_Buffer_Type *Cbuff)
 {
     return GenerateHeaderOnlyCommand(Cmd_ACK, Cbuff);   /* Return status */
 }
@@ -370,28 +363,9 @@ bool GenerateACK(Circular_Buffer_Type *Cbuff)
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-bool GeneratePing(Circular_Buffer_Type *Cbuff)
+static bool GeneratePing(Circular_Buffer_Type *Cbuff)
 {
     return GenerateHeaderOnlyCommand(Cmd_Ping, Cbuff);  /* Return status */
-}
-
-/**
- * @brief               Generates a Debug Message.
- * 
- * @param[in] data      Pointer to the data.
- * @param[in] size      Length of the data.
- * @param[out] Cbuff    Pointer to the circular buffer to put the data in.
- * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
- *                      if it did fit.
- */
-bool GenerateDebugMessage(uint8_t *data,
-                          uint32_t size, 
-                          Circular_Buffer_Type *Cbuff)
-{
-    if (size > 256)
-        return HAL_FAILED;
-    else
-        return GenerateGenericCommand(Cmd_DebugMessage, data, size, Cbuff);
 }
 
 /**
@@ -401,7 +375,7 @@ bool GenerateDebugMessage(uint8_t *data,
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-bool GenerateGetRunningMode(Circular_Buffer_Type *Cbuff)
+static bool GenerateGetRunningMode(Circular_Buffer_Type *Cbuff)
 {
     return GenerateGenericCommand(Cmd_GetRunningMode, (uint8_t *)"P", 1, Cbuff);
 }
@@ -413,7 +387,7 @@ bool GenerateGetRunningMode(Circular_Buffer_Type *Cbuff)
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-bool GenerateGetDeviceInfo(Circular_Buffer_Type *Cbuff)
+static bool GenerateGetDeviceInfo(Circular_Buffer_Type *Cbuff)
 {
     uint8_t *device_id, *text_fw, *text_bl, *text_usr;
     uint32_t length_fw, length_bl, length_usr, data_count, i = 0;
@@ -498,7 +472,7 @@ bool GenerateGetDeviceInfo(Circular_Buffer_Type *Cbuff)
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-bool GenerateGetArmSettings(Circular_Buffer_Type *Cbuff)
+static bool GenerateGetArmSettings(Circular_Buffer_Type *Cbuff)
 {
     return GenerateGenericCommand(Cmd_GetArmSettings, 
                                   (uint8_t *)ptrGetControlArmSettings(), 
@@ -513,7 +487,7 @@ bool GenerateGetArmSettings(Circular_Buffer_Type *Cbuff)
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-bool GenerateGetRateControllerData(Circular_Buffer_Type *Cbuff)
+static bool GenerateGetRateControllerData(Circular_Buffer_Type *Cbuff)
 {
     return GenerateGenericGetControllerData(Cmd_GetRateControllerData,
                                             RATE_PI_OFFSET,
@@ -530,7 +504,7 @@ bool GenerateGetRateControllerData(Circular_Buffer_Type *Cbuff)
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-bool GenerateGetAttitudeControllerData(Circular_Buffer_Type *Cbuff)
+static bool GenerateGetAttitudeControllerData(Circular_Buffer_Type *Cbuff)
 {
     return GenerateGenericGetControllerData(Cmd_GetAttitudeControllerData,
                                             ATTITUDE_PI_OFFSET,
@@ -546,7 +520,7 @@ bool GenerateGetAttitudeControllerData(Circular_Buffer_Type *Cbuff)
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-bool GenerateGetVelocityControllerData(Circular_Buffer_Type *Cbuff)
+static bool GenerateGetVelocityControllerData(Circular_Buffer_Type *Cbuff)
 {
     return GenerateGenericGetControllerData(Cmd_GetVelocityControllerData,
                                             VELOCITY_PI_OFFSET,
@@ -562,7 +536,7 @@ bool GenerateGetVelocityControllerData(Circular_Buffer_Type *Cbuff)
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-bool GenerateGetPositionControllerData(Circular_Buffer_Type *Cbuff)
+static bool GenerateGetPositionControllerData(Circular_Buffer_Type *Cbuff)
 {
     return GenerateGenericGetControllerData(Cmd_GetPositionControllerData,
                                             POSITION_PI_OFFSET,
@@ -578,7 +552,7 @@ bool GenerateGetPositionControllerData(Circular_Buffer_Type *Cbuff)
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS 
  *                      if it did fit.
  */
-bool GenerateGetChannelMix(Circular_Buffer_Type *Cbuff)
+static bool GenerateGetChannelMix(Circular_Buffer_Type *Cbuff)
 {
     return GenerateGenericCommand(Cmd_GetChannelMix, 
                                   (uint8_t *)ptrGetOutputMixer(), 
@@ -593,7 +567,7 @@ bool GenerateGetChannelMix(Circular_Buffer_Type *Cbuff)
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-bool GenerateGetRCCalibration(Circular_Buffer_Type *Cbuff)
+static bool GenerateGetRCCalibration(Circular_Buffer_Type *Cbuff)
 {
     return GenerateGenericCommand(Cmd_GetRCCalibration, 
                                   (uint8_t *)ptrGetRCInputSettings(), 
@@ -608,7 +582,7 @@ bool GenerateGetRCCalibration(Circular_Buffer_Type *Cbuff)
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-bool GenerateGetRCValues(Circular_Buffer_Type *Cbuff)
+static bool GenerateGetRCValues(Circular_Buffer_Type *Cbuff)
 {
     return GenerateGenericCommand(Cmd_GetRCValues, 
                                   (uint8_t *)ptrGetRCInputData(), 
@@ -623,7 +597,7 @@ bool GenerateGetRCValues(Circular_Buffer_Type *Cbuff)
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-bool GenerateGetSensorData(Circular_Buffer_Type *Cbuff)
+static bool GenerateGetSensorData(Circular_Buffer_Type *Cbuff)
 {
     GetIMUData(&imu_data);
     return GenerateGenericCommand(Cmd_GetSensorData, 
@@ -639,7 +613,7 @@ bool GenerateGetSensorData(Circular_Buffer_Type *Cbuff)
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-bool GenerateGetRawSensorData(Circular_Buffer_Type *Cbuff)
+static bool GenerateGetRawSensorData(Circular_Buffer_Type *Cbuff)
 {
     GetRawIMUData(&imu_rawdata);
     return GenerateGenericCommand(Cmd_GetRawSensorData, 
@@ -656,7 +630,7 @@ bool GenerateGetRawSensorData(Circular_Buffer_Type *Cbuff)
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-bool GenerateGetSensorCalibration(Circular_Buffer_Type *Cbuff)
+static bool GenerateGetSensorCalibration(Circular_Buffer_Type *Cbuff)
 {
     GetIMUCalibration(&imu_calibration);
 
@@ -674,7 +648,7 @@ bool GenerateGetSensorCalibration(Circular_Buffer_Type *Cbuff)
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-bool GenerateGetEstimationRate(Circular_Buffer_Type *Cbuff)
+static bool GenerateGetEstimationRate(Circular_Buffer_Type *Cbuff)
 {
     return GenerateGenericCommand(Cmd_GetEstimationRate,
                                   ((uint8_t *)ptrGetAttitudeEstimationStates()) 
@@ -691,7 +665,7 @@ bool GenerateGetEstimationRate(Circular_Buffer_Type *Cbuff)
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-bool GenerateGetEstimationAttitude(Circular_Buffer_Type *Cbuff)
+static bool GenerateGetEstimationAttitude(Circular_Buffer_Type *Cbuff)
 {
     return GenerateGenericCommand(Cmd_GetEstimationAttitude,
                                   (uint8_t *)ptrGetAttitudeEstimationStates(), 
@@ -707,7 +681,7 @@ bool GenerateGetEstimationAttitude(Circular_Buffer_Type *Cbuff)
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-bool GenerateGetEstimationVelocity(Circular_Buffer_Type *Cbuff)
+static bool GenerateGetEstimationVelocity(Circular_Buffer_Type *Cbuff)
 {
     (void)Cbuff;
     return HAL_FAILED;
@@ -721,7 +695,7 @@ bool GenerateGetEstimationVelocity(Circular_Buffer_Type *Cbuff)
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-bool GenerateGetEstimationPosition(Circular_Buffer_Type *Cbuff)
+static bool GenerateGetEstimationPosition(Circular_Buffer_Type *Cbuff)
 {
     (void)Cbuff;
     return HAL_FAILED;
@@ -735,7 +709,7 @@ bool GenerateGetEstimationPosition(Circular_Buffer_Type *Cbuff)
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-bool GenerateGetEstimationAllStates(Circular_Buffer_Type *Cbuff)
+static bool GenerateGetEstimationAllStates(Circular_Buffer_Type *Cbuff)
 {
     return GenerateGenericCommand(Cmd_GetEstimationAllStates,
                                   (uint8_t *)ptrGetAttitudeEstimationStates(), 
@@ -760,4 +734,68 @@ uint32_t myStrlen(const uint8_t *str, const uint32_t max_length)
         s++;
 
     return (s - str);
+}
+
+/*===========================================================================*/
+/* Module exported functions.                                                */
+/*===========================================================================*/
+
+ /**
+  * @brief              Generate a message for the ports based on the
+  *                     generators in the lookup table.
+  * 
+  * @param[in] command  The command to generate a message for.
+  * @param[in] port     Which port to send the data.
+  * @return             HAL_FAILED if the message didn't fit or HAL_SUCCESS
+  *                     if it did fit.
+  */
+bool GenerateMessage(KFly_Command_Type command, Port_Type port)
+{
+    bool status;
+    Circular_Buffer_Type *Cbuff = NULL;
+
+    Cbuff = SerialManager_GetCircularBufferFromPort(port);
+
+    /* Check so the circular buffer address is valid */
+    if (Cbuff == NULL)
+        return HAL_FAILED;
+
+    /* Check so there is an available Generator function for this command */
+    if (generator_lookup[command] != NULL)
+    {
+        /* Claim the circular buffer for writing */
+        CircularBuffer_Claim(Cbuff);
+        {
+            status = generator_lookup[command](Cbuff);
+        }
+        /* Release the circular buffer */
+        CircularBuffer_Release(Cbuff);
+
+        /* If it was successful then start the transmission */
+        if (status == HAL_SUCCESS)
+            SerialManager_StartTransmission(port);
+    }
+    else
+        status = HAL_FAILED;
+    
+    return status;
+}
+
+/**
+ * @brief               Generates a Debug Message.
+ * 
+ * @param[in] data      Pointer to the data.
+ * @param[in] size      Length of the data.
+ * @param[out] Cbuff    Pointer to the circular buffer to put the data in.
+ * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
+ *                      if it did fit.
+ */
+bool GenerateDebugMessage(uint8_t *data,
+                          uint32_t size, 
+                          Circular_Buffer_Type *Cbuff)
+{
+    if (size > 256)
+        return HAL_FAILED;
+    else
+        return GenerateGenericCommand(Cmd_DebugMessage, data, size, Cbuff);
 }
