@@ -97,8 +97,8 @@ void GenerateStartingGuess(vector3f_t *acc,
     float pitch, roll, yaw;
 
     /* Generate pitch and roll from the accelerometer reading */
-    roll  = atan2f(-acc->y, acc->z);
-    pitch = atan2f(acc->x, sqrtf(acc->y * acc->y + acc->z * acc->z));
+    roll  = -atan2f(-acc->y, acc->z);
+    pitch = -atan2f(acc->x, sqrtf(acc->y * acc->y + acc->z * acc->z));
 
     /* Generate yaw by compensating for the pitch and roll */
     yaw = atan2f(mag->y * fast_cos(roll) + mag->z * fast_sin(roll), 
