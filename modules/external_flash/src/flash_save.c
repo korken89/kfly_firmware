@@ -335,6 +335,9 @@ void vBroadcastFlashSaveEvent(void)
     if (chEvtIsListeningI(&save_to_flash_es))
         chEvtBroadcastFlagsI(&save_to_flash_es, FLASHSAVE_SAVE_EVENTMASK);
 
+    /* osalOsRescheduleS() must be called after a chEvtBroadcastFlagsI() */
+    osalOsRescheduleS();
+
     osalSysUnlock();
 }
 

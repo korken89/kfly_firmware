@@ -138,6 +138,9 @@ static THD_FUNCTION(ThreadEstimation, arg)
             chEvtBroadcastFlagsI(&estimation_events_es,
                                  ESTIMATION_NEW_ESTIMATION_EVENTMASK);
 
+        /* osalOsRescheduleS() must be called after a chEvtBroadcastFlagsI() */
+        osalOsRescheduleS();
+
         osalSysUnlock();
     }
 

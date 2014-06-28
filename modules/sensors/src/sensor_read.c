@@ -189,6 +189,10 @@ static THD_FUNCTION(ThreadSensorRead, arg)
                 chEvtBroadcastFlagsI(sensorcfg.new_data_es,
                                      ACCGYRO_DATA_AVAILABLE_EVENTMASK);
 
+            /* osalOsRescheduleS() must be called after a
+               chEvtBroadcastFlagsI() */
+            osalOsRescheduleS();
+
             osalSysUnlock();
         }
 
@@ -218,6 +222,10 @@ static THD_FUNCTION(ThreadSensorRead, arg)
             if (chEvtIsListeningI(sensorcfg.new_data_es))
                 chEvtBroadcastFlagsI(sensorcfg.new_data_es,
                                      MAG_DATA_AVAILABLE_EVENTMASK);
+
+            /* osalOsRescheduleS() must be called after a
+               chEvtBroadcastFlagsI() */
+            osalOsRescheduleS();
 
             osalSysUnlock();
         }
