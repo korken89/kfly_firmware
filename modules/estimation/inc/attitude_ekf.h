@@ -11,6 +11,8 @@
 /*===========================================================================*/
 #define ESTIMATION_DT   (0.005f)
 
+#define ESTIMATION_BIAS_LIMIT       (0.2f)
+
 /* Process covariances */
 #define SQ_Q            (0.001f)                    /* Quaternion error
                                                       covariance */

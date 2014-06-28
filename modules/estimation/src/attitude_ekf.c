@@ -452,9 +452,15 @@ void InnovateAttitudeEKF(Attitude_Estimation_States *states,
     states->q = qnormalize(states->q);
 
     /* Update the estimation of the bias */
-    states->wb.x += x_hat[3];
-    states->wb.y += x_hat[4];
-    states->wb.z += x_hat[5];
+    states->wb.x = bound(ESTIMATION_BIAS_LIMIT,
+                         -ESTIMATION_BIAS_LIMIT,
+                         states->wb.x + x_hat[3]);
+    states->wb.y = bound(ESTIMATION_BIAS_LIMIT,
+                         -ESTIMATION_BIAS_LIMIT,
+                         states->wb.y + x_hat[4]);
+    states->wb.z = bound(ESTIMATION_BIAS_LIMIT,
+                         -ESTIMATION_BIAS_LIMIT,
+                         states->wb.z + x_hat[5]);
 
     /* Save the current estimated angular rate */
     states->w.x = gyro[0] - states->wb.x;
