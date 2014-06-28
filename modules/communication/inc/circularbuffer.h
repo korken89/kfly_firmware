@@ -59,20 +59,11 @@ void CircularBuffer_WriteSingle(circular_buffer_t *Cbuff, uint8_t data);
 void CircularBuffer_WriteChunk(circular_buffer_t *Cbuff, 
 							   uint8_t *data, 
 							   const uint32_t count);
-void CircularBuffer_WriteSYNCNoIncrement(circular_buffer_t *Cbuff, 
-										 int32_t *count, 
-										 uint8_t *crc8, 
-										 uint16_t *crc16);
-void CircularBuffer_WriteNoIncrement(circular_buffer_t *Cbuff,
-                                     uint8_t data, 
-                                     int32_t *count, 
-                                     uint8_t *crc8, 
-                                     uint16_t *crc16);
-bool CircularBuffer_Increment(circular_buffer_t *Cbuff, int32_t count);
 uint8_t CircularBuffer_ReadSingle(circular_buffer_t *Cbuff);
 void CircularBuffer_ReadChunk(circular_buffer_t *Cbuff, 
 							  uint8_t *data, 
 							  uint32_t count);
+bool CircularBuffer_Increment(circular_buffer_t *Cbuff, int32_t count);
 uint8_t *CircularBuffer_GetReadPointer(circular_buffer_t *Cbuff,
 									   uint32_t *size);
 void CircularBuffer_IncrementTail(circular_buffer_t *Cbuff, int32_t count);

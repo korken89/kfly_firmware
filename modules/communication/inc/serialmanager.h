@@ -1,7 +1,7 @@
 #ifndef __SERIALMANAGER_H
 #define __SERIALMANAGER_H
 
-#include "serialmanager_types.h"
+#include "statemachine.h"
 
 /*===========================================================================*/
 /* Module global definitions.                                                */

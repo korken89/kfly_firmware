@@ -56,56 +56,31 @@
 #include "statemachine_generators.h"
 #include "statemachine.h"
 
-/**
- * @brief                   Initializes the data holder structure
- * 
- * @param[in/out] pHolder   Pointer to parser_holder_t structure.
- * @param[in]     port      Port used for data transfers.
- * @param[in]     buffer    Buffer used for intermediate data.
- */
-void vInitStatemachineDataHolder(parser_holder_t *pHolder,
-                                 External_Port port,
-                                 uint8_t *buffer)
-{
-    pHolder->Port = port;
-    pHolder->buffer = buffer;
-    pHolder->current_state = NULL;
-    pHolder->next_state = vWaitingForSYNC;
-    pHolder->parser = NULL;
-    pHolder->rx_error = 0;
-}
 
-/* *
- *
- * ---------------- State machine functions ----------------
- * State machine's different states (functions) starts below.
- * NO (!) other functions are allowed there!
- *
- * */
+/*===========================================================================*/
+/* Module local definitions.                                                 */
+/*===========================================================================*/
 
-/**
- * @brief              The entry point of serial data.
- * 
- * @param[in] data     Input data to be parsed.
- * @param[in] pHolder  Pointer to parser_holder_t structure.
- */
-void vStatemachineDataEntry(uint8_t data, parser_holder_t *pHolder)
-{
-    if (data == SYNC_BYTE)
-    {
-        if ((pHolder->next_state != vWaitingForSYNC) && \
-            (pHolder->next_state != vWaitingForSYNCorCMD) && \
-            (pHolder->next_state != vRxCmd))
-        {
-            pHolder->current_state = pHolder->next_state;
-            pHolder->next_state = vWaitingForSYNCorCMD;
-        }
-        else
-            pHolder->next_state(data, pHolder);
-    }
-    else
-        pHolder->next_state(data, pHolder);
-}
+static void vWaitingForSYNC(uint8_t data, parser_holder_t *pHolder);
+static void vWaitingForSYNCorCMD(uint8_t data, parser_holder_t *pHolder);
+static void vRxCmd(uint8_t data, parser_holder_t *pHolder);
+static void vRxSize(uint8_t data, parser_holder_t *pHolder);
+static void vRxCRC8(uint8_t data, parser_holder_t *pHolder);
+static void vRxData(uint8_t data, parser_holder_t *pHolder);
+static void vRxCRC16_1(uint8_t data, parser_holder_t *pHolder);
+static void vRxCRC16_2(uint8_t data, parser_holder_t *pHolder);
+
+/*===========================================================================*/
+/* Module exported variables.                                                */
+/*===========================================================================*/
+
+/*===========================================================================*/
+/* Module local variables and types.                                         */
+/*===========================================================================*/
+
+ /*===========================================================================*/
+/* Module local functions.                                                   */
+/*===========================================================================*/
 
 /**
  * @brief              Waiting for SYNC function. Will run this until a
@@ -114,7 +89,7 @@ void vStatemachineDataEntry(uint8_t data, parser_holder_t *pHolder)
  * @param[in] data     Input data to be parsed.
  * @param[in] pHolder  Pointer to parser_holder_t structure.
  */
-void vWaitingForSYNC(uint8_t data, parser_holder_t *pHolder)
+static void vWaitingForSYNC(uint8_t data, parser_holder_t *pHolder)
 {
     if (data == SYNC_BYTE)
     {
@@ -133,7 +108,7 @@ void vWaitingForSYNC(uint8_t data, parser_holder_t *pHolder)
  * @param[in] data     Input data to be parsed.
  * @param[in] pHolder  Pointer to parser_holder_t structure.
  */
-void vWaitingForSYNCorCMD(uint8_t data, parser_holder_t *pHolder)
+static void vWaitingForSYNCorCMD(uint8_t data, parser_holder_t *pHolder)
 {
     if (data == SYNC_BYTE) /* Byte with value of SYNC received,
                               send it to the function waiting for a byte */
@@ -154,7 +129,7 @@ void vWaitingForSYNCorCMD(uint8_t data, parser_holder_t *pHolder)
  * @param[in] data     Input data to be parsed.
  * @param[in] pHolder  Pointer to parser_holder_t structure.
  */
-void vRxCmd(uint8_t data, parser_holder_t *pHolder)
+static void vRxCmd(uint8_t data, parser_holder_t *pHolder)
 {
     /* 0 is not an allowed command (Cmd_None) */
     if ((data & ~ACK_BIT) > Cmd_None)
@@ -187,7 +162,7 @@ void vRxCmd(uint8_t data, parser_holder_t *pHolder)
  * @param[in] data     Input data to be parsed.
  * @param[in] pHolder  Pointer to parser_holder_t structure.
  */
-void vRxSize(uint8_t data, parser_holder_t *pHolder)
+static void vRxSize(uint8_t data, parser_holder_t *pHolder)
 {
     pHolder->next_state = vRxCRC8;
 
@@ -203,7 +178,7 @@ void vRxSize(uint8_t data, parser_holder_t *pHolder)
  * @param[in] data     Input data to be parsed.
  * @param[in] pHolder  Pointer to parser_holder_t structure.
  */
-void vRxCRC8(uint8_t data, parser_holder_t *pHolder)
+static void vRxCRC8(uint8_t data, parser_holder_t *pHolder)
 {
     if (pHolder->crc8 == data)
     {
@@ -240,7 +215,7 @@ void vRxCRC8(uint8_t data, parser_holder_t *pHolder)
  * @param[in] data     Input data to be parsed.
  * @param[in] pHolder  Pointer to parser_holder_t structure.
  */
-void vRxData(uint8_t data, parser_holder_t *pHolder)
+static void vRxData(uint8_t data, parser_holder_t *pHolder)
 {
     if (pHolder->buffer_count < (pHolder->data_length - 1))
         pHolder->next_state = vRxData;
@@ -257,7 +232,7 @@ void vRxData(uint8_t data, parser_holder_t *pHolder)
  * @param[in] data     Input data to be parsed.
  * @param[in] pHolder  Pointer to parser_holder_t structure.
  */
-void vRxCRC16_1(uint8_t data, parser_holder_t *pHolder)
+static void vRxCRC16_1(uint8_t data, parser_holder_t *pHolder)
 {
     if (data == (uint8_t)(pHolder->crc16 >> 8))
     {
@@ -277,7 +252,7 @@ void vRxCRC16_1(uint8_t data, parser_holder_t *pHolder)
  * @param[in] data     Input data to be parsed.
  * @param[in] pHolder  Pointer to parser_holder_t structure.
  */
-void vRxCRC16_2(uint8_t data, parser_holder_t *pHolder)
+static void vRxCRC16_2(uint8_t data, parser_holder_t *pHolder)
 {
     pHolder->next_state = vWaitingForSYNC;
 
@@ -297,4 +272,130 @@ void vRxCRC16_2(uint8_t data, parser_holder_t *pHolder)
         pHolder->next_state = vWaitingForSYNC;
         pHolder->rx_error++;
     }
+}
+
+
+/*===========================================================================*/
+/* Module exported functions.                                                */
+/*===========================================================================*/
+
+/**
+ * @brief                   Initializes the data holder structure.
+ * 
+ * @param[in/out] pHolder   Pointer to parser_holder_t structure.
+ * @param[in]     port      Port used for data transfers.
+ * @param[in]     buffer    Buffer used for intermediate data.
+ */
+void vInitStatemachineDataHolder(parser_holder_t *pHolder,
+                                 External_Port port,
+                                 uint8_t *buffer)
+{
+    pHolder->Port = port;
+    pHolder->buffer = buffer;
+    pHolder->current_state = NULL;
+    pHolder->next_state = vWaitingForSYNC;
+    pHolder->parser = NULL;
+    pHolder->rx_error = 0;
+}
+
+/**
+ * @brief              The entry point of serial data to the state machine.
+ * 
+ * @param[in] data     Input data to be parsed.
+ * @param[in] pHolder  Pointer to parser_holder_t structure.
+ */
+void vStatemachineDataEntry(uint8_t data, parser_holder_t *pHolder)
+{
+    if (data == SYNC_BYTE)
+    {
+        if ((pHolder->next_state != vWaitingForSYNC) && \
+            (pHolder->next_state != vWaitingForSYNCorCMD) && \
+            (pHolder->next_state != vRxCmd))
+        {
+            pHolder->current_state = pHolder->next_state;
+            pHolder->next_state = vWaitingForSYNCorCMD;
+        }
+        else
+            pHolder->next_state(data, pHolder);
+    }
+    else
+        pHolder->next_state(data, pHolder);
+}
+
+/*===============================================================*/
+/* Expansion of circular buffers required by the serial protocol */
+/*===============================================================*/
+
+/**
+ * @brief               Writes a byte to the circular buffer, if its vaule is
+ *                      SYNC: write it twice.
+ *  
+ * @param[in/out] Cbuff Pointer to the circular buffer.
+ * @param[in/out] data  Byte being written.
+ * @param[in/out] count Pointer to tracking variable for the size of the
+ *                      data being written to the circular buffer.
+ * @param[in] crc8      Pointer to the CRC8 data holder.
+ * @param[in] crc16     Pointer to the CRC16 data holder.
+ */
+void CircularBuffer_WriteNoIncrement(circular_buffer_t *Cbuff,
+                                     uint8_t data, 
+                                     int32_t *count, 
+                                     uint8_t *crc8, 
+                                     uint16_t *crc16)
+{
+    /* Check if we have an error from previous write */
+    if (*count >= 0)
+    {
+        /* Check if we have 2 bytes free, in case of data = SYNC */
+        if ((CircularBuffer_SpaceLeft(Cbuff) - *count) >= 2)
+        {
+            Cbuff->buffer[(Cbuff->head + *count) % Cbuff->size] = data;
+            *count += 1;
+
+            /* Only add CRCs of they are needed */
+            if (crc8 != NULL)
+                *crc8 = CRC8_step(data, *crc8);
+
+            if (crc16 != NULL)
+                *crc16 = CRC16_step(data, *crc16);  
+
+            if (data == SYNC_BYTE)
+            {
+                Cbuff->buffer[(Cbuff->head + *count) % Cbuff->size] = SYNC_BYTE;
+                *count += 1;
+            }
+        }
+        else
+            *count = -1;
+    }
+}
+
+/**
+ * @brief               Writes a SYNC byte to the circular buffer.
+ *                      
+ * @param[in/out] Cbuff Pointer to the circular buffer.
+ * @param[in/out] count Pointer to tracking variable for the size of the
+ *                      data being written to the circular buffer.
+ * @param[in] crc8      Pointer to the CRC8 data holder.
+ * @param[in] crc16     Pointer to the CRC16 data holder.
+ */
+void CircularBuffer_WriteSYNCNoIncrement(circular_buffer_t *Cbuff, 
+                                         int32_t *count, 
+                                         uint8_t *crc8, 
+                                         uint16_t *crc16)
+{
+    /* Check if we have 4 byte free for SYNC + Header */
+    if (CircularBuffer_SpaceLeft(Cbuff) >= 4)
+    {
+        Cbuff->buffer[(Cbuff->head + *count) % Cbuff->size] = SYNC_BYTE;
+        *count += 1;
+
+        /* When writing the SYNC CRC8 must be calculated */
+        *crc8 = CRC8_step(SYNC_BYTE, 0x00);
+
+        if (crc16 != NULL)
+            *crc16 = CRC16_step(SYNC_BYTE, 0xffff); 
+    }
+    else
+        *count = -1;
 }

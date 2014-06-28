@@ -1,7 +1,7 @@
 #ifndef __STATEMACHINE_PARSERS_H
 #define __STATEMACHINE_PARSERS_H
 
-#include "statemachine_types.h"
+#include "statemachine.h"
 
 /*===========================================================================*/
 /* Module global definitions.                                                */
