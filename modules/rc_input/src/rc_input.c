@@ -145,7 +145,9 @@ static THD_FUNCTION(ThreadRCInputFlashSave, arg)
 }
 
 /**
- * @brief               Parses CPPM inputs.
+ * @brief               Parses CPPM inputs. This function runs inside a
+ *                      osalSysLockFromISR.
+ *                      
  * 
  * @param[out] data     Pointer to RC Input data structure.
  * @param[in] capture   The value of the latest input capture.
@@ -219,7 +221,8 @@ static void ParseCPPMInput(RCInput_Data *data,
 }
 
 /**
- * @brief               Parses RSSI inputs.
+ * @brief               Parses RSSI inputs. This function runs inside a
+ *                      osalSysLockFromISR.
  * 
  * @param[out] data     Pointer to RC Input data structure.
  * @param[in] width     The value of the latest width capture.
