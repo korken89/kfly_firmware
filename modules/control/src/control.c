@@ -103,6 +103,11 @@ static THD_FUNCTION(ThreadControlArming, arg)
         /* Check the conditions for arming and disarming */
         osalThreadSleepMilliseconds(1000 / ARM_RATE);
 
+        if (controllers_armed == true)
+            palSetPad(GPIOC, GPIOC_LED_ERR);
+        else
+          palClearPad(GPIOC, GPIOC_LED_ERR);
+
         /*
          * Check all conditions for arming and disarming the system
          */
@@ -112,80 +117,87 @@ static THD_FUNCTION(ThreadControlArming, arg)
         if ((bActiveRCInputConnection() == true) &&
             (arm_settings.stick_direction != STICK_NONE))
         {
-            /* Check so the sticks are in the correct region */
-            current_region = SticksInRegion();
-
-            if (current_region == STICK_ARM_REGION)
+            /* Check emergency stop */
+            if (RCInputGetInputLevel(ROLE_AUX1) < 0.5f)
             {
-                /* Check if the required time has been reached
-                   to arm the system */
-                if ((arm_time / ARM_RATE) > arm_settings.arm_stick_time)
-                {
-                    palSetPad(GPIOC, GPIOC_LED_ERR);
-                    controllers_armed = true;
-                }
-                else
-                {
-                    arm_time++;
-                    disarm_time = 0;
-                    timeout_time = 0;
-                }
-            }
-            else if (current_region == STICK_DISARM_REGION)
-            {
-                /* Check if the required time has been reached
-                   to disarm the system*/
-                if ((disarm_time / ARM_RATE) > arm_settings.arm_stick_time)
-                {
-                    palClearPad(GPIOC, GPIOC_LED_ERR);
-                    controllers_armed = false;
-                }
-                else
-                {
-                    disarm_time++;
-                    arm_time = 0;
-                    timeout_time = 0;
-                }
+                controllers_armed = false;
+                arm_time = 0;
+                disarm_time = 0;
+                timeout_time = 0;
             }
             else
             {
+            /* Check so the sticks are in the correct region */
+                current_region = SticksInRegion();
+
+                if (current_region == STICK_ARM_REGION)
+                {
+                /* Check if the required time has been reached
+                   to arm the system */
+                    if ((arm_time / ARM_RATE) > arm_settings.arm_stick_time)
+                    {
+                        controllers_armed = true;
+                    }
+                    else
+                    {
+                        arm_time++;
+                        disarm_time = 0;
+                        timeout_time = 0;
+                    }
+                }
+                else if (current_region == STICK_DISARM_REGION)
+                {
+                /* Check if the required time has been reached
+                   to disarm the system*/
+                    if ((disarm_time / ARM_RATE) > arm_settings.arm_stick_time)
+                    {
+                        controllers_armed = false;
+                    }
+                    else
+                    {
+                        disarm_time++;
+                        arm_time = 0;
+                        timeout_time = 0;
+                    }
+                }
+                else
+                {
                 /* Sticks are not in the correct region,
                    reset timing counters */
-                arm_time = 0;
-                disarm_time = 0;
+                    arm_time = 0;
+                    disarm_time = 0;
 
                 /* Check the zero throttle timeout */
-                if (arm_settings.arm_zero_throttle_timeout != 0)
-                {
-                    if ((RCInputGetInputLevel(ROLE_THROTTLE) <=
-                        arm_settings.stick_threshold))
+                    if (arm_settings.arm_zero_throttle_timeout != 0)
                     {
+                        if ((RCInputGetInputLevel(ROLE_THROTTLE) <=
+                            arm_settings.stick_threshold))
+                        {
                         /* Check if the required time has passed to disarm due
                            to timeout, else increment the timing counter */
-                        if ((timeout_time / ARM_RATE) >
-                                        arm_settings.arm_zero_throttle_timeout)
-                        {
-                            palClearPad(GPIOC, GPIOC_LED_ERR);
-                            controllers_armed = false;
+                            if ((timeout_time / ARM_RATE) >
+                                arm_settings.arm_zero_throttle_timeout)
+                            {
+                                controllers_armed = false;
+                            }
+                            else
+                            {
+                                timeout_time++;
+                                arm_time = 0;
+                                disarm_time = 0;
+                            }
                         }
-                        else
-                        {
-                            timeout_time++;
-                            arm_time = 0;
-                            disarm_time = 0;
-                        }
-                    }
                     /* The throttle is not in the correct position,
                        reset the timing counter */
-                    else 
-                        timeout_time = 0;
+                        else 
+                            timeout_time = 0;
+                    }
                 }
             }
 
         }
         else
         {
-            palClearPad(GPIOC, GPIOC_LED_ERR);
             controllers_armed = false;
         }
     }
@@ -414,19 +426,19 @@ static void vRCInputsToControlAction(void)
         control_reference.mode = FLIGHTMODE_RATE;
 
         control_reference.rate_reference.x = control_limits.max_rate.pitch *
-            DEG2RAD * RCInputGetInputLevel(ROLE_PITCH);
+                                DEG2RAD * RCInputGetInputLevel(ROLE_PITCH);
 
         control_reference.rate_reference.y = control_limits.max_rate.pitch *
-            DEG2RAD * RCInputGetInputLevel(ROLE_ROLL);
+                                DEG2RAD * RCInputGetInputLevel(ROLE_ROLL);
 
         control_reference.rate_reference.z = control_limits.max_rate.pitch *
-            DEG2RAD * RCInputGetInputLevel(ROLE_YAW);
+                                DEG2RAD * RCInputGetInputLevel(ROLE_YAW);
 
-        throttle = RCInputGetInputLevel(ROLE_THROTTLE);
+            throttle = RCInputGetInputLevel(ROLE_THROTTLE);
 
         if (throttle < arm_settings.armed_min_throttle)
             control_reference.actuator_desired.throttle =
-                                               arm_settings.armed_min_throttle;
+                                            arm_settings.armed_min_throttle;
         else
             control_reference.actuator_desired.throttle = throttle;
     }
