@@ -187,6 +187,9 @@ static void vRxCRC8(uint8_t data, parser_holder_t *pHolder)
         {   /* If no data, parse now! */
             pHolder->next_state = vWaitingForSYNC;
 
+            /* Receive success! Increment statistics counter */
+            pHolder->rx_success++;
+
             if (pHolder->parser != NULL)
                 pHolder->parser(pHolder);
 
@@ -259,6 +262,9 @@ static void vRxCRC16_2(uint8_t data, parser_holder_t *pHolder)
 
     if (data == (uint8_t)(pHolder->crc16))
     {
+        /* Receive success! Increment statistics counter */
+        pHolder->rx_success++;
+
         /* If there is a parser for the message, execute it */
         if (pHolder->parser != NULL)
             pHolder->parser(pHolder);
@@ -296,6 +302,7 @@ void vInitStatemachineDataHolder(parser_holder_t *pHolder,
     pHolder->next_state = vWaitingForSYNC;
     pHolder->parser = NULL;
     pHolder->rx_error = 0;
+    pHolder->rx_success = 0;
 }
 
 /**

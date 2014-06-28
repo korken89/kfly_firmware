@@ -291,6 +291,10 @@ typedef struct _parser_holder
      */
     uint32_t rx_error;
     /**
+     * @brief   The number of correctly received packets.
+     */
+    uint32_t rx_success;
+    /**
      * @brief   Pointer to the current state in the state machine.
      */
     void (*current_state)(uint8_t, struct _parser_holder *);
