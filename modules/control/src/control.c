@@ -434,7 +434,7 @@ static void vRCInputsToControlAction(void)
         control_reference.rate_reference.z = control_limits.max_rate.pitch *
                                 DEG2RAD * RCInputGetInputLevel(ROLE_YAW);
 
-            throttle = RCInputGetInputLevel(ROLE_THROTTLE);
+        throttle = RCInputGetInputLevel(ROLE_THROTTLE);
 
         if (throttle < arm_settings.armed_min_throttle)
             control_reference.actuator_desired.throttle =
@@ -494,15 +494,18 @@ static void vAttitudeControl(quaternion_t *attitude_m, float dt)
     u.z = fPIUpdate(&control_data.attitude_controller[2], qerr.q3, dt);
 
     /* Send bounded control signal to the next step in the cascade */
-    control_reference.rate_reference.x = bound( control_limits.max_rate.pitch,
-                                               -control_limits.max_rate.pitch,
-                                                u.x);
-    control_reference.rate_reference.y = bound( control_limits.max_rate.roll,
-                                               -control_limits.max_rate.roll,
-                                                u.y);
-    control_reference.rate_reference.z = bound( control_limits.max_rate.yaw,
-                                               -control_limits.max_rate.yaw,
-                                                u.z);
+    control_reference.rate_reference.x = 
+                                bound( control_limits.max_rate_attitude.pitch,
+                                      -control_limits.max_rate_attitude.pitch,
+                                       u.x);
+    control_reference.rate_reference.y =
+                                bound( control_limits.max_rate_attitude.roll,
+                                      -control_limits.max_rate_attitude.roll,
+                                       u.y);
+    control_reference.rate_reference.z = 
+                                bound( control_limits.max_rate_attitude.yaw,
+                                      -control_limits.max_rate_attitude.yaw,
+                                       u.z);
 }
 
 /**
