@@ -48,6 +48,7 @@ static inline void vector_accumulate(vector3f_t *a, vector3f_t *b)
  * 
  * @param[in/out] arg   Unused.
  */
+__attribute__((noreturn))
 static THD_FUNCTION(ThreadEstimation, arg)
 {
     (void)arg;
@@ -149,8 +150,6 @@ static THD_FUNCTION(ThreadEstimation, arg)
 
         osalSysUnlock();
     }
-
-    return MSG_OK;
 }
 
 /*===========================================================================*/

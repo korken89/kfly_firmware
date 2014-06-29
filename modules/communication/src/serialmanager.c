@@ -125,6 +125,7 @@ static THD_WORKING_AREA(waAux1DataPumpTask, 128);
  *             
  * @param[in] arg       Input argument (unused).
  */
+__attribute__((noreturn))
 static THD_FUNCTION(USBSerialManagerTask, arg)
 {
     (void)arg;
@@ -144,8 +145,6 @@ static THD_FUNCTION(USBSerialManagerTask, arg)
     while(1)
         vStatemachineDataEntry(USBReadByte(TIME_INFINITE),
                                &data_holder);
-
-    return MSG_OK;
 }
 
 /**
@@ -154,6 +153,7 @@ static THD_FUNCTION(USBSerialManagerTask, arg)
  *  
  * @param[in] arg       Input argument (unused).
  */
+__attribute__((noreturn))
 static THD_FUNCTION(USBDataPumpTask, arg)
 {
     (void)arg;
@@ -181,8 +181,6 @@ static THD_FUNCTION(USBDataPumpTask, arg)
         /* We will only get here is a request to send data has been received */
         USBTransmitCircularBuffer(&data_pumps.USBTransmitBuffer);
     }
-
-    return MSG_OK;
 }
 
 /*===================================================*/
@@ -195,6 +193,7 @@ static THD_FUNCTION(USBDataPumpTask, arg)
  *             
  * @param[in] arg       Input argument (unused).
  */
+__attribute__((noreturn))
 static THD_FUNCTION(Aux1SerialManagerTask, arg)
 {
     (void)arg;
@@ -214,8 +213,6 @@ static THD_FUNCTION(Aux1SerialManagerTask, arg)
     while(1)
         vStatemachineDataEntry(sdGet(&AUX1_SERIAL_DRIVER),
                                &data_holder);
-
-    return MSG_OK;
 }
 
 /**
@@ -224,6 +221,7 @@ static THD_FUNCTION(Aux1SerialManagerTask, arg)
  *  
  * @param[in] arg       Input argument (unused).
  */
+__attribute__((noreturn))
 static THD_FUNCTION(Aux1DataPumpTask, arg)
 {
     (void)arg;
@@ -252,8 +250,6 @@ static THD_FUNCTION(Aux1DataPumpTask, arg)
         AuxTransmitCircularBuffer(&AUX1_SERIAL_DRIVER,
                                   &data_pumps.AUX1TransmitBuffer);
     }
-
-    return MSG_OK;
 }
 
 /*===================================================*/

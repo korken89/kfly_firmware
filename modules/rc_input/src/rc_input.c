@@ -114,6 +114,7 @@ CCM_MEMORY static THD_WORKING_AREA(waThreadRCInputFlashSave, 128);
  * @param[in] arg   Unused.
  * @return          Unused.
  */
+__attribute__((noreturn))
 static THD_FUNCTION(ThreadRCInputFlashSave, arg)
 {
     (void)arg;
@@ -140,8 +141,6 @@ static THD_FUNCTION(ThreadRCInputFlashSave, arg)
                         (uint8_t *)&rcinput_settings,
                         RCINPUT_SETTINGS_SIZE);
     }
-
-    return MSG_OK;
 }
 
 /**

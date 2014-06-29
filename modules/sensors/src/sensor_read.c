@@ -102,6 +102,7 @@ CCM_MEMORY static THD_WORKING_AREA(waThreadSensorReadFlashSave, 128);
  * @param[in] arg   Unused.
  * @return          Unused.
  */
+__attribute__((noreturn))
 static THD_FUNCTION(ThreadSensorReadFlashSave, arg)
 {
     (void)arg;
@@ -131,8 +132,6 @@ static THD_FUNCTION(ThreadSensorReadFlashSave, arg)
                         (uint8_t *)&imu_cal,
                         SENSOR_IMU_CALIBRATION_SIZE);
     }
-
-    return MSG_OK;
 }
 
 /**
@@ -141,6 +140,7 @@ static THD_FUNCTION(ThreadSensorReadFlashSave, arg)
  * @param[in] arg Unused.
  * @return Never arrives at the return value.
  */
+__attribute__((noreturn))
 static THD_FUNCTION(ThreadSensorRead, arg)
 {
     (void)arg;
@@ -235,8 +235,6 @@ static THD_FUNCTION(ThreadSensorRead, arg)
 
         }
     }
-
-    return MSG_OK;
 }
 
 /**

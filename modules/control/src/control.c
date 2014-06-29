@@ -88,6 +88,7 @@ CCM_MEMORY static THD_WORKING_AREA(waThreadControlFlashSave, 128);
  * @param[in] arg   Unused.
  * @return          Unused.
  */
+__attribute__((noreturn))
 static THD_FUNCTION(ThreadControlArming, arg)
 {
     (void)arg;
@@ -201,8 +202,6 @@ static THD_FUNCTION(ThreadControlArming, arg)
             controllers_armed = false;
         }
     }
-
-    return MSG_OK;
 }
 
 /**
@@ -211,6 +210,7 @@ static THD_FUNCTION(ThreadControlArming, arg)
  * @param[in] arg   Unused.
  * @return          Unused.
  */
+__attribute__((noreturn))
 static THD_FUNCTION(ThreadControl, arg)
 {
     (void)arg;
@@ -237,8 +237,6 @@ static THD_FUNCTION(ThreadControl, arg)
         /* Run control */
         vUpdateControlAction(&states->q, &states->w, ESTIMATION_DT);
     }
-
-    return MSG_OK;
 }
 
 /**
@@ -247,6 +245,7 @@ static THD_FUNCTION(ThreadControl, arg)
  * @param[in] arg   Unused.
  * @return          Unused.
  */
+__attribute__((noreturn))
 static THD_FUNCTION(ThreadControlFlashSave, arg)
 {
     (void)arg;
@@ -294,8 +293,6 @@ static THD_FUNCTION(ThreadControlFlashSave, arg)
                         (uint8_t *)&output_mixer,
                         OUTPUT_MIXER_SIZE);
     }
-
-    return MSG_OK;
 }
 
 /**
