@@ -14,6 +14,8 @@
 #include "estimation.h"
 #include "control.h"
 
+volatile assert_errors kfly_assert_errors;
+
 /* I2C interface #2 Configuration */
 static const I2CConfig i2cfg2 = {
     OPMODE_I2C,

@@ -495,6 +495,22 @@
 /* Port-specific settings (override port settings defaulted in chcore.h).    */
 /*===========================================================================*/
 
+#if !defined(_FROM_ASM_)
+typedef struct {
+  const char *reason;
+  const char *function;
+} assert_errors;
+#endif
+
+#define chDbgAssert(c, r) do {                                              \
+  if (CH_DBG_ENABLE_ASSERTS && !(c)) {                                      \
+    extern volatile assert_errors kfly_assert_errors;                       \
+    kfly_assert_errors.reason = r;                                          \
+    kfly_assert_errors.function = __func__;                                 \
+    chSysHalt(__func__);                                                    \
+  }                                                                         \
+} while (0)
+
 #endif  /* _CHCONF_H_ */
 
 /** @} */
