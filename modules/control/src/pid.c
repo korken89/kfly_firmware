@@ -64,6 +64,8 @@ void vUpdatePISettings(PI_Data *pi_settings,
 
 /**
  * @brief       Updates the PI controller with one time step.
+ * @note        The integral limits directly sets the maximum/minimum of the
+ *              integral state.
  * 
  * @param[in/out] pi_settings   PI settings ans state structure.
  * @param[in] error             Controlled variable's error.
