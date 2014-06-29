@@ -73,8 +73,10 @@ void vUpdatePISettings(PI_Data *pi_settings,
 float fPIUpdate(PI_Data *pi, float error, float dt)
 {
     /* Integration with anti-windup */
-    pi->I_state = bound(pi->I_limit, - pi->I_limit, pi->I_state + error * dt);
+    pi->I_state = bound( pi->I_limit,
+                        -pi->I_limit,
+                         pi->I_state + pi->I_gain * error * dt);
 
     /* Create control signal */
-    return ((pi->P_gain * error) + (pi->I_gain * pi->I_state));
+    return ((pi->P_gain * error) + pi->I_state);
 }
