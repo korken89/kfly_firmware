@@ -107,7 +107,7 @@ static THD_FUNCTION(ThreadControlArming, arg)
         if (controllers_armed == true)
             palSetPad(GPIOC, GPIOC_LED_ERR);
         else
-          palClearPad(GPIOC, GPIOC_LED_ERR);
+            palClearPad(GPIOC, GPIOC_LED_ERR);
 
         /*
          * Check all conditions for arming and disarming the system
@@ -418,18 +418,32 @@ static void vRCInputsToControlAction(void)
 {
     float throttle;
 
+    const Flight_Mode selector = FLIGHTMODE_ATTITUDE;
+
     if (controllers_armed == true)
     {
-        control_reference.mode = FLIGHTMODE_RATE;
+        if (selector == FLIGHTMODE_RATE)
+        {
+            control_reference.mode = FLIGHTMODE_RATE;
 
-        control_reference.rate_reference.x = control_limits.max_rate.pitch *
-                                DEG2RAD * RCInputGetInputLevel(ROLE_PITCH);
+            control_reference.rate_reference.x = control_limits.max_rate.pitch *
+                                    DEG2RAD * RCInputGetInputLevel(ROLE_PITCH);
 
-        control_reference.rate_reference.y = control_limits.max_rate.pitch *
-                                DEG2RAD * RCInputGetInputLevel(ROLE_ROLL);
+            control_reference.rate_reference.y = control_limits.max_rate.roll *
+                                    DEG2RAD * RCInputGetInputLevel(ROLE_ROLL);
+        }
+        else
+        {
+            control_reference.mode = FLIGHTMODE_ATTITUDE;
 
-        control_reference.rate_reference.z = control_limits.max_rate.pitch *
-                                DEG2RAD * RCInputGetInputLevel(ROLE_YAW);
+            euler2quat(control_limits.max_angle.pitch * DEG2RAD * RCInputGetInputLevel(ROLE_PITCH),
+                       control_limits.max_angle.roll * DEG2RAD * RCInputGetInputLevel(ROLE_ROLL),
+                       0.0f,
+                       &control_reference.attitude_reference);
+        }
+
+        control_reference.rate_reference.z = control_limits.max_rate.yaw *
+                                    DEG2RAD * RCInputGetInputLevel(ROLE_YAW);
 
         throttle = RCInputGetInputLevel(ROLE_THROTTLE);
 
@@ -473,7 +487,9 @@ static void vVelocityControl(vector3f_t *velocity_m, float dt)
  * @param[in] attitude_m    Attitude measurement.
  * @param[in] dt            Controller sampling time.
  */
-static void vAttitudeControl(quaternion_t *attitude_m, float dt)
+static void vAttitudeControl(quaternion_t *attitude_m,
+                             bool control_yaw,
+                             float dt)
 {
     vector3f_t u;
     quaternion_t qerr;
@@ -488,7 +504,8 @@ static void vAttitudeControl(quaternion_t *attitude_m, float dt)
     /* Update controllers */
     u.x = fPIUpdate(&control_data.attitude_controller[0], qerr.q1, dt);
     u.y = fPIUpdate(&control_data.attitude_controller[1], qerr.q2, dt);
-    u.z = fPIUpdate(&control_data.attitude_controller[2], qerr.q3, dt);
+    if (control_yaw == true)
+        u.z = fPIUpdate(&control_data.attitude_controller[2], qerr.q3, dt);
 
     /* Send bounded control signal to the next step in the cascade */
     control_reference.rate_reference.x = 
@@ -499,10 +516,11 @@ static void vAttitudeControl(quaternion_t *attitude_m, float dt)
                                 bound( control_limits.max_rate_attitude.roll,
                                       -control_limits.max_rate_attitude.roll,
                                        u.y);
-    control_reference.rate_reference.z = 
-                                bound( control_limits.max_rate_attitude.yaw,
-                                      -control_limits.max_rate_attitude.yaw,
-                                       u.z);
+    if (control_yaw == true)
+        control_reference.rate_reference.z = 
+                                    bound( control_limits.max_rate_attitude.yaw,
+                                          -control_limits.max_rate_attitude.yaw,
+                                           u.z);
 }
 
 /**
@@ -692,6 +710,7 @@ void vUpdateControlAction(quaternion_t *q_m, vector3f_t *omega_m, float dt)
 
         case FLIGHTMODE_ATTITUDE:
             vAttitudeControl(q_m,
+                             false,
                              dt);
 
         case FLIGHTMODE_RATE:
