@@ -40,12 +40,22 @@ static inline float fastatan2(float y, float x)
 
     if (x >= 0.0f)
     {
-        r = (x - abs_y) / (x + abs_y);
+        r = (x + abs_y);
+
+        if (fabsf(r) < 1.0e-5)
+            return 0.0f;
+
+        r = (x - abs_y) / r;
         angle = coeff_1 - coeff_1 * r;
     }
     else
     {
-        r = (x + abs_y) / (abs_y - x);
+        r = (abs_y - x);
+
+        if (fabsf(r) < 1.0e-5)
+            return 0.0f;
+
+        r = (x + abs_y) / r;
         angle = coeff_2 - coeff_1 * r;
     }
 
