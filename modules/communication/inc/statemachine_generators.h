@@ -24,6 +24,10 @@
 /*===========================================================================*/
 
 bool GenerateMessage(KFly_Command command, External_Port port);
+bool GenerateCustomMessage(KFly_Command command,
+                           uint8_t *data,
+                           uint16_t size,
+                           External_Port port);
 bool GenerateDebugMessage(uint8_t *data, 
                           uint32_t size, 
                           circular_buffer_t *Cbuff);

@@ -95,7 +95,7 @@ static const SerialConfig aux1_config =
 {
   115200,
   0,
-  USART_CR2_STOP1_BITS,
+  USART_CR2_STOP2_BITS,
   0
 };
 

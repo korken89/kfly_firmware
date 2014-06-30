@@ -68,6 +68,11 @@ typedef enum
      * @brief   Get running mode command.
      */
     Cmd_GetRunningMode              = 4,
+    /**
+     * @brief   Custom command of experiments.
+     */
+    Cmd_GetExperimentData           = 5,
+
 
     /*===============================================*/
     /* Bootloader specific commands.                 */

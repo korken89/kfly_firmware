@@ -781,6 +781,51 @@ bool GenerateMessage(KFly_Command command, External_Port port)
     return status;
 }
 
+ /**
+  * @brief              Generate a message for the ports based on the
+  *                     generators in the lookup table.
+  * 
+  * @param[in] command  The command to generate a custom message for.
+  * @param[in] data     Pointer to the data to be sent.
+  * @param[in] size     Size of the data to be sent.
+  * @param[in] port     Which port to send the data.
+  * @return             HAL_FAILED if the message didn't fit or HAL_SUCCESS
+  *                     if it did fit.
+  */
+bool GenerateCustomMessage(KFly_Command command,
+                           uint8_t *data,
+                           uint16_t size,
+                           External_Port port)
+{
+    bool status;
+    circular_buffer_t *Cbuff = NULL;
+
+    Cbuff = SerialManager_GetCircularBufferFromPort(port);
+
+    /* Check so the circular buffer address is valid */
+    if (Cbuff == NULL)
+        return HAL_FAILED;
+
+    /* Claim the circular buffer for writing */
+    CircularBuffer_Claim(Cbuff);
+    {
+        status = GenerateGenericCommand(command,
+                                        data,
+                                        size,
+                                        Cbuff);
+    }
+    /* Release the circular buffer */
+    CircularBuffer_Release(Cbuff);
+
+    /* If it was successful then start the transmission */
+    if (status == HAL_SUCCESS)
+        SerialManager_StartTransmission(port);
+    
+    return status;
+}
+
+
+
 /**
  * @brief               Generates a Debug Message.
  * 
