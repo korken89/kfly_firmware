@@ -137,10 +137,10 @@ static THD_FUNCTION(USBSerialManagerTask, arg)
     static parser_holder_t data_holder;
 
     /* Buffer for parsing serial USB commands */
-    CCM_MEMORY static uint8_t buffer[SERIAL_RECIEVE_BUFFER_SIZE]; 
+    CCM_MEMORY static uint8_t USB_in_buffer[SERIAL_RECIEVE_BUFFER_SIZE]; 
 
     /* Initialize data structure */
-    vInitStatemachineDataHolder(&data_holder, PORT_USB, buffer);
+    vInitStatemachineDataHolder(&data_holder, PORT_USB, USB_in_buffer);
 
     while(1)
         vStatemachineDataEntry(USBReadByte(TIME_INFINITE),
@@ -162,11 +162,11 @@ static THD_FUNCTION(USBDataPumpTask, arg)
     chRegSetThreadName("USB Data Pump");
 
     /* Buffer for transmitting serial USB commands */
-    CCM_MEMORY static uint8_t buffer[SERIAL_TRANSMIT_BUFFER_SIZE]; 
+    CCM_MEMORY static uint8_t USB_out_buffer[SERIAL_TRANSMIT_BUFFER_SIZE]; 
 
     /* Initialize the USB transmit circular buffer */
     CircularBuffer_Init(&data_pumps.USBTransmitBuffer,
-                        buffer,
+                        USB_out_buffer,
                         SERIAL_TRANSMIT_BUFFER_SIZE);
     CircularBuffer_InitMutex(&data_pumps.USBTransmitBuffer);
 
@@ -205,10 +205,10 @@ static THD_FUNCTION(Aux1SerialManagerTask, arg)
     static parser_holder_t data_holder;
 
     /* Buffer for parsing serial USB commands */
-    CCM_MEMORY static uint8_t buffer[SERIAL_RECIEVE_BUFFER_SIZE]; 
+    CCM_MEMORY static uint8_t AUX1_in_buffer[SERIAL_RECIEVE_BUFFER_SIZE]; 
 
     /* Initialize data structure */
-    vInitStatemachineDataHolder(&data_holder, PORT_AUX1, buffer);
+    vInitStatemachineDataHolder(&data_holder, PORT_AUX1, AUX1_in_buffer);
 
     while(1)
         vStatemachineDataEntry(sdGet(&AUX1_SERIAL_DRIVER),
@@ -230,11 +230,11 @@ static THD_FUNCTION(Aux1DataPumpTask, arg)
     chRegSetThreadName("Aux1 Data Pump");
 
     /* Buffer for transmitting serial Aux1 commands */
-    CCM_MEMORY static uint8_t buffer[SERIAL_TRANSMIT_BUFFER_SIZE]; 
+    CCM_MEMORY static uint8_t AUX1_out_buffer[SERIAL_TRANSMIT_BUFFER_SIZE]; 
 
     /* Initialize the Aux1 transmit circular buffer */
     CircularBuffer_Init(&data_pumps.AUX1TransmitBuffer,
-                        buffer,
+                        AUX1_out_buffer,
                         SERIAL_TRANSMIT_BUFFER_SIZE);
     CircularBuffer_InitMutex(&data_pumps.AUX1TransmitBuffer);
 

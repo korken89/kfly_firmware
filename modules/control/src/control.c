@@ -74,9 +74,9 @@ static const RCOutput_Configuration rcoutputcfg = {
     &pwmcfg
 };
 
-CCM_MEMORY static THD_WORKING_AREA(waThreadControlArming, 256);
-CCM_MEMORY static THD_WORKING_AREA(waThreadControl, 256);
-CCM_MEMORY static THD_WORKING_AREA(waThreadControlFlashSave, 128);
+THD_WORKING_AREA(waThreadControlArming, 256);
+THD_WORKING_AREA(waThreadControl, 256);
+THD_WORKING_AREA(waThreadControlFlashSave, 128);
 
 /*===========================================================================*/
 /* Module local functions.                                                   */

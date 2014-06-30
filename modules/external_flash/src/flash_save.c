@@ -44,7 +44,7 @@
 /*
  * External Flash configuration
  */
-static ExternalFlashData flash_data;
+ExternalFlashData flash_data;
 static const ExternalFlashConfig flashcfg = {
     &SPID1,             /* SPI driver connected to the external flash.       */
     GPIOC,              /* GPIO port where the chip select is connected.     */
@@ -54,7 +54,7 @@ static const ExternalFlashConfig flashcfg = {
     &flash_data         /* Pointer to mutex and temporary data structure.    */
 };
 
-static event_source_t save_to_flash_es;
+EVENTSOURCE_DECL(save_to_flash_es);
 
 /*===========================================================================*/
 /* Module local functions.                                                   */

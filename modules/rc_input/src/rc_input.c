@@ -26,11 +26,11 @@ static void vt_no_connection_timeout_callback(void *p);
 /*===========================================================================*/
 /* Module local variables and types.                                         */
 /*===========================================================================*/
-CCM_MEMORY static RCInput_Data rcinput_data;
-CCM_MEMORY static uint64_t role_lookup;
-static RCInput_Settings rcinput_settings;
-static event_source_t rcinput_es;
-static virtual_timer_t rcinput_timeout_vt;
+RCInput_Data rcinput_data;
+uint64_t role_lookup;
+RCInput_Settings rcinput_settings;
+EVENTSOURCE_DECL(rcinput_es);
+virtual_timer_t rcinput_timeout_vt;
 
 /* EICU Configuration for CPPM, RSSI and PWM inputs */
 static const EICU_IC_Settings cppmsettings = {
@@ -101,8 +101,8 @@ static const EICUConfig pwm_rcinputcfg_2 = {
     0
 };
 
-static uint16_t rssi_counter = 0;
-CCM_MEMORY static THD_WORKING_AREA(waThreadRCInputFlashSave, 128);
+uint16_t rssi_counter = 0;
+THD_WORKING_AREA(waThreadRCInputFlashSave, 128);
 
 /*===========================================================================*/
 /* Module local functions.                                                   */

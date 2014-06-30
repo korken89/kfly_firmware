@@ -30,10 +30,10 @@ static void HMC5983ConvertAndSave(HMC5983_Data *dh,
 /* Module local variables and types.                                         */
 /*===========================================================================*/
 /* MPU6050 calibration, data holder and configurations */
-static event_source_t new_data_es;
-CCM_MEMORY static Sensor_Calibration mpu6050cal;
-CCM_MEMORY static MPU6050_Data mpu6050data;
-CCM_MEMORY static uint32_t calibration_timestamp;
+EVENTSOURCE_DECL(new_data_es);
+Sensor_Calibration mpu6050cal;
+MPU6050_Data mpu6050data;
+uint32_t calibration_timestamp;
 static const MPU6050_Configuration mpu6050cfg = {
     MPU6050_DLPF_BW_42,             /* Digital low-pass filter config     */
     MPU6050_EXT_SYNC_DISABLED,      /* External sync config               */
@@ -53,8 +53,8 @@ static const MPU6050_Configuration mpu6050cfg = {
 };
 
 /* HMC5983 calibration, data holder and configuration */
-CCM_MEMORY static Sensor_Calibration hmc5983cal;
-CCM_MEMORY static HMC5983_Data hmc5983data;
+Sensor_Calibration hmc5983cal;
+HMC5983_Data hmc5983data;
 static const HMC5983_Configuration hmc5983cfg = {
     HMC5983_TEMPERATURE_ENABLE,     /* Enable/disable temperature sensor  */
     HMC5983_AVERAGE_8_SAMPLES,      /* Sample averaging config            */
@@ -82,15 +82,15 @@ static const Sensor_Read_Configuration sensorcfg = {
 static thread_t *thread_sensor_read_p = NULL;
 
 /* Temporary holder of sensor data */
-static uint8_t temp_data[14]; /* NOTE: This variable may NOT be placed in CCM 
+uint8_t temp_data[14]; /* NOTE: This variable may NOT be placed in CCM 
                                  memory because DMA directly accesses it. */
 
 /* Temporary holder for IMU calibration while saving to flash */
-static IMU_Calibration imu_cal;
+IMU_Calibration imu_cal;
 
 /* Working area for the sensor read thread */
-CCM_MEMORY static THD_WORKING_AREA(waThreadSensorRead, 128);
-CCM_MEMORY static THD_WORKING_AREA(waThreadSensorReadFlashSave, 128);
+THD_WORKING_AREA(waThreadSensorRead, 128);
+THD_WORKING_AREA(waThreadSensorReadFlashSave, 128);
 
 /*===========================================================================*/
 /* Module local functions.                                                   */
