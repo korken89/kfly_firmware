@@ -418,7 +418,7 @@ static void vRCInputsToControlAction(void)
 {
     float throttle;
 
-    const Flight_Mode selector = FLIGHTMODE_ATTITUDE;
+    const Flight_Mode selector = FLIGHTMODE_RATE;
 
     if (controllers_armed == true)
     {
@@ -551,9 +551,9 @@ static void vRateControl(vector3f_t *omega_m, float dt)
     u.z = fPIUpdate(&control_data.rate_controller[2], error.z, dt);
 
     /* Send control signal to the next stage */
-    control_reference.actuator_desired.pitch = u.x;
-    control_reference.actuator_desired.roll = u.y;
-    control_reference.actuator_desired.yaw = u.z;
+    control_reference.actuator_desired.pitch = bound(1.0f, -1.0f, u.x);
+    control_reference.actuator_desired.roll = bound(1.0f, -1.0f, u.y);
+    control_reference.actuator_desired.yaw = bound(1.0f, -1.0f, u.z);
     
 }
 
@@ -578,7 +578,7 @@ static void vUpdateOutputs(void)
         sum += control_reference.actuator_desired.yaw *
                output_mixer.weights[i][3];
 
-        control_reference.pwm_out[i] = sum;
+        control_reference.pwm_out[i] = bound(1.0f, -1.0f, sum);
     }
 }
 
@@ -686,6 +686,46 @@ void ControlInit(void)
                       NULL);
 }
 
+#include "sensor_read.h"
+#include "serialmanager.h"
+#include "statemachine_generators.h"
+
+Experiment_Data exp_data;
+IMU_RawData exp_imu_data;
+
+void vTransmitExperimentData(void)
+{
+    static uint8_t cnt = 0;
+
+    /* Get and format the data */
+    GetRawIMUData(&exp_imu_data);
+
+    exp_data.accelerometer[0] = exp_imu_data.accelerometer[0];
+    exp_data.accelerometer[1] = exp_imu_data.accelerometer[1];
+    exp_data.accelerometer[2] = exp_imu_data.accelerometer[2];
+
+    exp_data.gyroscope[0] = exp_imu_data.gyroscope[0];
+    exp_data.gyroscope[1] = exp_imu_data.gyroscope[1];
+    exp_data.gyroscope[2] = exp_imu_data.gyroscope[2];
+
+    exp_data.magnetometer[0] = exp_imu_data.magnetometer[0];
+    exp_data.magnetometer[1] = exp_imu_data.magnetometer[1];
+    exp_data.magnetometer[2] = exp_imu_data.magnetometer[2];
+
+    exp_data.u_throttle = (int8_t)(control_reference.actuator_desired.throttle * 100.0f);
+    exp_data.u_pitch = (int8_t)(control_reference.actuator_desired.pitch * 100.0f);
+    exp_data.u_roll = (int8_t)(control_reference.actuator_desired.roll * 100.0f);
+    exp_data.u_yaw = (int8_t)(control_reference.actuator_desired.yaw * 100.0f);
+
+    exp_data.counter = cnt++;
+
+    /* Send the data */
+    GenerateCustomMessage(Cmd_GetExperimentData,
+                          (uint8_t *)&exp_data,
+                          sizeof(Experiment_Data),
+                          PORT_AUX1);
+}
+
 /**
  * @brief       Updates all the controllers depending om current flight mode.
  * 
@@ -695,6 +735,7 @@ void ControlInit(void)
  */
 void vUpdateControlAction(quaternion_t *q_m, vector3f_t *omega_m, float dt)
 {
+    static int i = 0;
     vRCInputsToControlAction();
 
     switch (control_reference.mode)
@@ -730,6 +771,14 @@ void vUpdateControlAction(quaternion_t *q_m, vector3f_t *omega_m, float dt)
             vDisableAllOutputs();
             break;
     }
+
+    if (i > 20)
+    {
+        //vTransmitExperimentData();
+        i = 0;
+    }
+    else
+        i++;
 }
 
 /**

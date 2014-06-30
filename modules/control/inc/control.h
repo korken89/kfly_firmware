@@ -396,6 +396,18 @@ typedef struct PACKED_VAR
     PI_Parameters rate_parameters[3];
 } Control_Parameters;
 
+typedef struct PACKED_VAR
+{
+    int16_t accelerometer[3];
+    int16_t gyroscope[3];
+    int16_t magnetometer[3];
+    int8_t u_throttle;
+    int8_t u_pitch;
+    int8_t u_roll;
+    int8_t u_yaw;
+    uint8_t counter;
+} Experiment_Data;
+
 /*===========================================================================*/
 /* Module macros.                                                            */
 /*===========================================================================*/
