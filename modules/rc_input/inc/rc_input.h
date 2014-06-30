@@ -19,8 +19,8 @@
 #define RCINPUT_ROLE_TO_INDEX_BITS      4
 #define RCINPUT_ROLE_TO_INDEX_MASK      0x0f
 
-#define RCINPUT_DATA_SIZE               (10 + 2 * RCINPUT_MAX_NUMBER_OF_INPUTS)
-#define RCINPUT_SETTINGS_SIZE           (4 + 8 * RCINPUT_MAX_NUMBER_OF_INPUTS)
+#define RCINPUT_DATA_SIZE               (sizeof(RCInput_Data))
+#define RCINPUT_SETTINGS_SIZE           (sizeof(RCInput_Settings))
 
 /*===========================================================================*/
 /* Module data structures and types.                                         */
@@ -140,7 +140,7 @@ typedef enum PACKED_VAR {
 /**
  * @brief   Input capture data holder.
  */
-typedef struct {
+typedef struct PACKED_VAR {
     /**
      * @brief   Active connection indicator.
      */

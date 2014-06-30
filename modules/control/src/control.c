@@ -619,7 +619,7 @@ static void vDisableAllOutputs(void)
 void ControlInit(void)
 {
     float *p;
-    int i;
+    uint32_t i;
 
     /* Initialize the arming structures */
     controllers_armed = false;

@@ -46,10 +46,10 @@
                                                        the angle  */
 
 /* Sizes */
-#define ESTIMATION_STATES_SIZE              (10*4)
-#define ESTIMATION_ATTITUDE_STATE_SIZE      (4*4)
+#define ESTIMATION_STATES_SIZE              (sizeof(Attitude_Estimation_States))
+#define ESTIMATION_ATTITUDE_STATE_SIZE      (sizeof(quaternion_t))
 #define ESTIMATION_RATE_OFFSET              (ESTIMATION_ATTITUDE_STATE_SIZE)
-#define ESTIMATION_RATE_STATE_SIZE          (3*4)
+#define ESTIMATION_RATE_STATE_SIZE          (sizeof(vector3f_t))
 /*===========================================================================*/
 /* Module data structures and types.                                         */
 /*===========================================================================*/

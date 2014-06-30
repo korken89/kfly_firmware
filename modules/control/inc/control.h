@@ -29,13 +29,13 @@
 #define POSITION_LIMIT_COUNT                    0
 
 /* Sizes */
-#define OUTPUT_MIXER_SIZE                       (4 * 8 * 4)
-#define CONTROL_ARM_SIZE                        (4 + 4 + 3)
-#define CONTROL_LIMITS_SIZE                     (10 * 4)
-#define CONTROL_REFERENCE_SIZE                  (25 * 4 + 2)
-#define CONTROL_NUMBER_OF_CONTROLLERS           (3 * 4)
-#define CONTROL_DATA_SIZE                       (12 * PI_DATA_SIZE)
-#define CONTROL_PARAMETERS_SIZE                 (12 * 3 * 4)
+#define OUTPUT_MIXER_SIZE                       (sizeof(Output_Mixer))
+#define CONTROL_ARM_SIZE                        (sizeof(Control_Arm_Settings))
+#define CONTROL_LIMITS_SIZE                     (sizeof(Control_Limits))
+#define CONTROL_REFERENCE_SIZE                  (sizeof(Control_Reference))
+#define CONTROL_NUMBER_OF_CONTROLLERS           (12)
+#define CONTROL_DATA_SIZE                       (sizeof(Control_Data))
+#define CONTROL_PARAMETERS_SIZE                 (sizeof(Control_Parameters))
 
 /*===========================================================================*/
 /* Module data structures and types.                                         */
@@ -162,7 +162,7 @@ typedef enum PACKED_VAR
 /**
  * @brief   Settings for the arm and disarm functionality.
  */
-typedef struct
+typedef struct PACKED_VAR
 {
     /**
      * @brief   Stick threshold for the arm/disarm logic to react.
@@ -192,7 +192,7 @@ typedef struct
  * @brief   Position, velocity, attitude, rate and actuator
  *          controller references.
  */
-typedef struct
+typedef struct PACKED_VAR
 {
     /**
      * @brief   Position control reference.
@@ -248,7 +248,7 @@ typedef struct
 /**
  * @brief   Position, velocity, attitude and rate controller gains and states.
  */
-typedef struct
+typedef struct PACKED_VAR
 {
     /**
      * @brief   Position controller gains and states.
@@ -271,7 +271,7 @@ typedef struct
 /**
  * @brief   Velocity, attitude and rate control limits.
  */
-typedef struct
+typedef struct PACKED_VAR
 {
     /**
      * @brief   Holder for the rate limits.
@@ -342,7 +342,7 @@ typedef struct
 /**
  * @brief   Output mixer weights.
  */
-typedef struct
+typedef struct PACKED_VAR
 {
     /**
      * @brief   Weights.
@@ -357,7 +357,7 @@ typedef struct
 /**
  * @brief   PI controller parameters structure.
  */
-typedef struct
+typedef struct PACKED_VAR
 {
     /**
      * @brief   Controller proportional gain.
@@ -376,7 +376,7 @@ typedef struct
 /**
  * @brief   Control parameters structure for moving data.
  */
-typedef struct
+typedef struct PACKED_VAR
 {
     /**
      * @brief   Position controller parameters.

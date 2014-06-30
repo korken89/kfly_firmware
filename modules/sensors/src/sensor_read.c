@@ -130,7 +130,7 @@ static THD_FUNCTION(ThreadSensorReadFlashSave, arg)
         FlashSave_Write(FlashSave_STR2ID("SENC"),
                         true,
                         (uint8_t *)&imu_cal,
-                        SENSOR_IMU_CALIBRATION_SIZE);
+                        sizeof(IMU_Calibration));
     }
 }
 

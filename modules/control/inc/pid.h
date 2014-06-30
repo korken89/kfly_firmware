@@ -4,7 +4,7 @@
 /*===========================================================================*/
 /* Module global definitions.                                                */
 /*===========================================================================*/
-#define PI_DATA_SIZE        (4*4)
+#define PI_DATA_SIZE        (sizeof(PI_Data))
 
 /*===========================================================================*/
 /* Module data structures and types.                                         */
@@ -12,7 +12,7 @@
 /**
  * @brief   PI controller data structure.
  */
-typedef struct
+typedef struct PACKED_VAR
 {
 	/**
  	 * @brief   Controller proportional gain.

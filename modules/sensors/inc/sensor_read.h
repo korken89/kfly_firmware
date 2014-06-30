@@ -8,12 +8,12 @@
 /*===========================================================================*/
 /* Module global definitions.                                                */
 /*===========================================================================*/
-#define ACCGYRO_DATA_AVAILABLE_EVENTMASK                EVENT_MASK(0)
-#define MAG_DATA_AVAILABLE_EVENTMASK                    EVENT_MASK(1)
-#define BARO_DATA_AVAILABLE_EVENTMASK                   EVENT_MASK(2)
-#define SENSOR_IMU_DATA_SIZE                            (10*4)
-#define SENSOR_IMU_RAW_DATA_SIZE                        (10*2 + 4)
-#define SENSOR_IMU_CALIBRATION_SIZE                     (12*4 + 4)
+#define ACCGYRO_DATA_AVAILABLE_EVENTMASK            EVENT_MASK(0)
+#define MAG_DATA_AVAILABLE_EVENTMASK                EVENT_MASK(1)
+#define BARO_DATA_AVAILABLE_EVENTMASK               EVENT_MASK(2)
+#define SENSOR_IMU_DATA_SIZE                        (sizeof(IMU_Data))
+#define SENSOR_IMU_RAW_DATA_SIZE                    (sizeof(IMU_RawData))
+#define SENSOR_IMU_CALIBRATION_SIZE                 (sizeof(IMU_Calibration))
 
 /*===========================================================================*/
 /* Module data structures and types.                                         */
