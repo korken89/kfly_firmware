@@ -19,7 +19,7 @@
 /**
  * @brief   Port type identifier for serial communication.
  */
-typedef enum
+typedef enum PACKED_VAR
 {
     /**
      * @brief   USB identifier.
@@ -28,25 +28,25 @@ typedef enum
     /**
      * @brief   AUX1 identifier.
      */
-    PORT_AUX1,
+    PORT_AUX1 = 1,
     /**
      * @brief   AUX2 identifier.
      */
-    PORT_AUX2,
+    PORT_AUX2 = 2,
     /**
      * @brief   AUX3 identifier.
      */
-    PORT_AUX3,
+    PORT_AUX3 = 3,
     /**
      * @brief   AUX4 (CAN) identifier.
      */
-    PORT_AUX4
+    PORT_AUX4 = 4
 } External_Port;
 
 /**
  * @brief   All the commands for the serial protocol.
  */
-typedef enum
+typedef enum PACKED_VAR
 {
     /**
      * @brief   The zero command is not allowed.
@@ -69,9 +69,13 @@ typedef enum
      */
     Cmd_GetRunningMode              = 4,
     /**
+     * @brief   Manage Subscriptions command.
+     */
+    Cmd_ManageSubscriptions         = 5,
+    /**
      * @brief   Custom command of experiments.
      */
-    Cmd_GetExperimentData           = 5,
+    Cmd_GetExperimentData           = 6,
 
 
     /*===============================================*/
@@ -331,6 +335,18 @@ typedef bool (*generator_t)(circular_buffer_t *);
 /*===========================================================================*/
 /* Module inline functions.                                                  */
 /*===========================================================================*/
+
+static inline bool isPort(External_Port port)
+{
+    if ((port == PORT_USB) ||
+        (port == PORT_AUX1) ||
+        (port == PORT_AUX2) ||
+        (port == PORT_AUX3) ||
+        (port == PORT_AUX4))
+        return true;
+    else
+        return false;
+}
 
 /*===========================================================================*/
 /* External declarations.                                                    */

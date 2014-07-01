@@ -12,6 +12,7 @@
 #include "flash_save.h"
 #include "version_information.h"
 #include "statemachine_generators.h"
+#include "serialmanager.h"
 #include "crc.h"
 #include "pid.h"
 #include "rc_input.h"
@@ -26,6 +27,7 @@
 
 static void ParsePing(parser_holder_t *pHolder);
 static void ParseGetRunningMode(parser_holder_t *pHolder);
+static void ParseManageSubscriptions(parser_holder_t *pHolder);
 static void ParseGetDeviceInfo(parser_holder_t *pHolder);
 static void ParseSetDeviceID(parser_holder_t *pHolder);
 static void ParseSaveToFlash(parser_holder_t *pHolder);
@@ -75,7 +77,7 @@ static const parser_t parser_lookup[128] = {
     ParsePing,                        /* 2:   Cmd_Ping                        */
     NULL,                             /* 3:   Cmd_DebugMessage                */
     ParseGetRunningMode,              /* 4:   Cmd_GetRunningMode              */
-    NULL,                             /* 5:                                   */
+    ParseManageSubscriptions,         /* 5:   Cmd_ManageSubscriptions         */
     NULL,                             /* 6:                                   */
     NULL,                             /* 7:                                   */
     NULL,                             /* 8:                                   */
@@ -294,6 +296,45 @@ static void ParsePing(parser_holder_t *pHolder)
 static void ParseGetRunningMode(parser_holder_t *pHolder)
 {
     GenerateMessage(Cmd_GetRunningMode, pHolder->Port);
+}
+
+/**
+ * @brief               Parses a ManageSubscriptions command.
+ * 
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
+ */
+static void ParseManageSubscriptions(parser_holder_t *pHolder)
+{
+    /* Parsing structure for the data */
+    struct ManageSubscriptions_Parser
+    {
+        External_Port port;
+        KFly_Command command;
+        uint8_t on_off;
+        uint32_t delta_time;
+    } *p;
+
+    /* Cast the message to the parser structure */
+    p = (struct ManageSubscriptions_Parser *)pHolder->buffer;
+
+    /* Check for valid port */
+    if ((isPort(p->port) == true) || (p->port == 0xff))
+    {
+        if (p->on_off == 0)
+        {
+            /* Unsubscribe */
+            UnsubscribeFromCommand(p->command);
+        }
+        else
+        {
+            /* Subscribe to the defined port and command */
+            if (p->port == 0xff)
+                SubscribeToCommand(p->command, pHolder->Port, p->delta_time);
+            else
+                SubscribeToCommand(p->command, p->port, p->delta_time);
+        }
+    }
 }
 
 /**

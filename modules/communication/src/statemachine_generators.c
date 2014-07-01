@@ -67,7 +67,7 @@ static const generator_t generator_lookup[128] = {
     GeneratePing,                     /* 2:   Cmd_Ping                        */
     NULL,                             /* 3:   Cmd_DebugMessage                */
     GenerateGetRunningMode,           /* 4:   Cmd_GetRunningMode              */
-    NULL,                             /* 5:                                   */
+    NULL,                             /* 5:   Cmd_ManageSubscriptions         */
     NULL,                             /* 6:                                   */
     NULL,                             /* 7:                                   */
     NULL,                             /* 8:                                   */
