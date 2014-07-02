@@ -336,6 +336,12 @@ typedef bool (*generator_t)(circular_buffer_t *);
 /* Module inline functions.                                                  */
 /*===========================================================================*/
 
+/**
+ * @brief           Checks if the input is a valid port ID.
+ * 
+ * @param[in] port  Port to be checked.
+ * @return          Returns true if it is a valid port ID.
+ */
 static inline bool isPort(External_Port port)
 {
     if ((port == PORT_USB) ||
