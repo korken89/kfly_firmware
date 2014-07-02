@@ -408,6 +408,24 @@ typedef struct PACKED_VAR
     uint8_t counter;
 } Experiment_Data;
 
+typedef struct PACKED_VAR
+{
+    vector3f_t rate_reference;
+    vector3f_t rate_measured;
+    struct {
+        float pitch;
+        float roll;
+        float yaw;
+        float throttle;
+    } actuator_desired;
+    struct {
+        float m1;
+        float m2;
+        float m3;
+        float m4;
+    } pwm_to_motors;
+} Control_Debug;
+
 /*===========================================================================*/
 /* Module macros.                                                            */
 /*===========================================================================*/
