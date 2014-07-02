@@ -72,11 +72,6 @@ typedef enum PACKED_VAR
      * @brief   Manage Subscriptions command.
      */
     Cmd_ManageSubscriptions         = 5,
-    /**
-     * @brief   Custom command of experiments.
-     */
-    Cmd_GetExperimentData           = 6,
-
 
     /*===============================================*/
     /* Bootloader specific commands.                 */

@@ -720,7 +720,7 @@ void vTransmitExperimentData(void)
     exp_data.counter = cnt++;
 
     /* Send the data */
-    GenerateCustomMessage(Cmd_GetExperimentData,
+    GenerateCustomMessage(73,
                           (uint8_t *)&exp_data,
                           sizeof(Experiment_Data),
                           PORT_AUX1);
