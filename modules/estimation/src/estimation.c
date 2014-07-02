@@ -19,7 +19,7 @@
 /*===========================================================================*/
 /* Module local variables and types.                                         */
 /*===========================================================================*/
-THD_WORKING_AREA(waThreadEstimation, 512);
+THD_WORKING_AREA(waThreadEstimation, 1024);
 Attitude_Estimation_States states;
 Attitude_Estimation_Data data;
 IMU_Data imu_data;
@@ -86,38 +86,6 @@ static THD_FUNCTION(ThreadEstimation, arg)
         /* Check if there has been a request to reset the filter */
         if (chEvtWaitOneTimeout(ESTIMATION_RESET_EVENTMASK, TIME_IMMEDIATE))
         {
-//            /* Filter reset requested */
-//
-//            /* Zero the accumulation vectors */
-//            wb_init.x = acc_init.x = mag_init.x = 0.0f;
-//            wb_init.y = acc_init.y = mag_init.y = 0.0f;
-//            wb_init.z = acc_init.z = mag_init.z = 0.0f;
-//
-//            /* Sum measurements */
-//            for (i = 0; i < 50; i++)
-//            {
-//                /* Wait for new measurement data using the slowest sensor */    
-//                chEvtWaitOne(MAG_DATA_AVAILABLE_EVENTMASK);
-//
-//                /* Get sensor data */
-//                GetIMUData(&imu_data);
-//
-//                /* Sum the inertial data */
-//                vector_accumulate(&acc_init,
-//                                  (vector3f_t *)imu_data.accelerometer);
-//                vector_accumulate(&wb_init, 
-//                                  (vector3f_t *)imu_data.gyroscope);
-//                vector_accumulate(&mag_init, 
-//                                  (vector3f_t *)imu_data.magnetometer);
-//            }
-//
-//            /* Create mean value */
-//            acc_init = vector_scale(acc_init, 1.0f / ((float) i));
-//            mag_init = vector_scale(mag_init, 1.0f / ((float) i));
-//
-//            /* Generate the starting guess quaternion */
-//            GenerateStartingGuess(&acc_init, &mag_init, &q_init);
-        
             /* Initialize the estimation */
             AttitudeEstimationInit(&states, &data, &q_init, &wb_init);
         }
@@ -142,11 +110,14 @@ static THD_FUNCTION(ThreadEstimation, arg)
         osalSysLock();
 
         if (chEvtIsListeningI(&estimation_events_es))
+        {
             chEvtBroadcastFlagsI(&estimation_events_es,
                                  ESTIMATION_NEW_ESTIMATION_EVENTMASK);
 
-        /* osalOsRescheduleS() must be called after a chEvtBroadcastFlagsI() */
-        osalOsRescheduleS();
+            /* osalOsRescheduleS() must be called after a
+               chEvtBroadcastFlagsI() */
+            osalOsRescheduleS();
+        }
 
         osalSysUnlock();
     }
