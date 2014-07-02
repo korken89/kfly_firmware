@@ -143,7 +143,7 @@ void InnovateAttitudeEKF(Attitude_Estimation_States *states,
     float R[3][3];
     float w_norm, dtheta, sdtheta, cdtheta, t1, t2, t3, x_hat[6];
     quaternion_t dq_int;
-    vector3f_t w_hat, theta, mag_v, acc_v, mag_B, acc_B, y;
+    vector3f_t w_hat, theta, mag_F, acc_F, mag_B, acc_B, y;
 
     /* Cast the data for better looking code, data->Sp[1][1] is now Sp[1][1] */
     float (*Sp)[6] = data->Sp;
@@ -281,16 +281,17 @@ void InnovateAttitudeEKF(Attitude_Estimation_States *states,
      */
 
     /* Create the measurements */
-    acc_v.x = -acc[0];
-    acc_v.y = -acc[1];
-    acc_v.z = acc[2];
+    acc_B.x = -acc[0];
+    acc_B.y = -acc[1];
+    acc_B.z = acc[2];
 
-    mag_v.x = mag[0];
-    mag_v.y = mag[1];   
-    mag_v.z = mag[2];
+    mag_B.x = mag[0];
+    mag_B.y = mag[1];   
+    mag_B.z = mag[2];
 
-    acc_B = vector_rotation_transposed(R, acc_v);
-    mag_B = vector_rotation_transposed(R, mag_v);
+    /* Rotate the acceleration and magnetic vector to the fixed frame */
+    acc_F = vector_rotation_transposed(R, acc_B);
+    mag_F = vector_rotation_transposed(R, mag_B);
 
     /* Since the measurement prediction is based on the states and the 
      * states are zero, then the measurement prediction is zero and the
@@ -300,9 +301,9 @@ void InnovateAttitudeEKF(Attitude_Estimation_States *states,
      * division go towards infinity. This should not happen after
      * convergence, but is an added security.
      */
-    y.x = fastatan2(-acc_B.y, acc_B.z);
-    y.y = fastatan2( acc_B.x, acc_B.z);
-    y.z = fastatan2( mag_B.y, mag_B.x);
+    y.x = fastatan2(-acc_F.y, acc_F.z);
+    y.y = fastatan2( acc_F.x, acc_F.z);
+    y.z = fastatan2( mag_F.y, mag_F.x);
 
 
     /*
