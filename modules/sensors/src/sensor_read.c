@@ -90,7 +90,7 @@ IMU_Calibration imu_cal;
 
 /* Working area for the sensor read thread */
 THD_WORKING_AREA(waThreadSensorRead, 128);
-THD_WORKING_AREA(waThreadSensorReadFlashSave, 128);
+THD_WORKING_AREA(waThreadSensorReadFlashSave, 256);
 
 /*===========================================================================*/
 /* Module local functions.                                                   */
@@ -186,12 +186,14 @@ static THD_FUNCTION(ThreadSensorRead, arg)
             osalSysLock();
 
             if (chEvtIsListeningI(sensorcfg.new_data_es))
+            {
                 chEvtBroadcastFlagsI(sensorcfg.new_data_es,
                                      ACCGYRO_DATA_AVAILABLE_EVENTMASK);
 
-            /* osalOsRescheduleS() must be called after a
-               chEvtBroadcastFlagsI() */
-            osalOsRescheduleS();
+                /* osalOsRescheduleS() must be called after a
+                   chEvtBroadcastFlagsI() */
+                osalOsRescheduleS();
+            }
 
             osalSysUnlock();
         }
@@ -220,12 +222,14 @@ static THD_FUNCTION(ThreadSensorRead, arg)
             osalSysLock();
 
             if (chEvtIsListeningI(sensorcfg.new_data_es))
+            {
                 chEvtBroadcastFlagsI(sensorcfg.new_data_es,
                                      MAG_DATA_AVAILABLE_EVENTMASK);
 
-            /* osalOsRescheduleS() must be called after a
-               chEvtBroadcastFlagsI() */
-            osalOsRescheduleS();
+                /* osalOsRescheduleS() must be called after a
+                   chEvtBroadcastFlagsI() */
+                osalOsRescheduleS();
+            }
 
             osalSysUnlock();
         }

@@ -76,7 +76,7 @@ static const RCOutput_Configuration rcoutputcfg = {
 
 THD_WORKING_AREA(waThreadControlArming, 256);
 THD_WORKING_AREA(waThreadControl, 256);
-THD_WORKING_AREA(waThreadControlFlashSave, 128);
+THD_WORKING_AREA(waThreadControlFlashSave, 256);
 
 /*===========================================================================*/
 /* Module local functions.                                                   */
@@ -418,7 +418,7 @@ static void vRCInputsToControlAction(void)
 {
     float throttle;
 
-    const Flight_Mode selector = FLIGHTMODE_RATE;
+    const Flight_Mode selector = FLIGHTMODE_ATTITUDE;
 
     if (controllers_armed == true)
     {
@@ -502,8 +502,8 @@ static void vAttitudeControl(quaternion_t *attitude_m,
         qerr = qconj(qerr);
 
     /* Update controllers */
-    u.x = fPIUpdate(&control_data.attitude_controller[0], qerr.q1, dt);
-    u.y = fPIUpdate(&control_data.attitude_controller[1], qerr.q2, dt);
+    u.x = fPIUpdate(&control_data.attitude_controller[0], qerr.q2, dt);
+    u.y = fPIUpdate(&control_data.attitude_controller[1], qerr.q1, dt);
     if (control_yaw == true)
         u.z = fPIUpdate(&control_data.attitude_controller[2], qerr.q3, dt);
 
@@ -534,15 +534,15 @@ static void vRateControl(vector3f_t *omega_m, float dt)
     vector3f_t u, error;
 
     static float t1 = 0.0f, t2 = 0.0f, t3 = 0.0f;
-    const float alpha = 0.0909f;
+    const float alpha = 0.2f;
 
     t1 = alpha * omega_m->x + (1.0f - alpha) * t1;
     t2 = alpha * omega_m->y + (1.0f - alpha) * t2;
     t3 = alpha * omega_m->z + (1.0f - alpha) * t3;
 
     /* Calculate the errors */
-    error.x = control_reference.rate_reference.x - t1;
-    error.y = control_reference.rate_reference.y - t2;
+    error.x = control_reference.rate_reference.x - t2;
+    error.y = control_reference.rate_reference.y - t1;
     error.z = control_reference.rate_reference.z - t3;
 
     /* Update the PI controllers */
