@@ -17,13 +17,13 @@
 /* Module local definitions.                                                 */
 /*===========================================================================*/
 
-#define START_TRANSMISSION_EVENT        EVENT_MASK(0)
+#define START_TRANSMISSION_EVENT                                EVENT_MASK(0)
 
-#define AUX1_SERIAL_DRIVER              SD3
-#define AUX2_SERIAL_DRIVER              SD5
-#define AUX3_SERIAL_DRIVER              SD4
+#define AUX1_SERIAL_DRIVER                                      SD3
+#define AUX2_SERIAL_DRIVER                                      SD5
+#define AUX3_SERIAL_DRIVER                                      SD4
 
-#define MAX_NUMBER_OF_SUBSCRIPTIONS         10
+#define MAX_NUMBER_OF_SUBSCRIPTIONS                             10
 
 static bool USBTransmitCircularBuffer(circular_buffer_t *Cbuff);
 static bool AuxTransmitCircularBuffer(SerialDriver *sdp,
@@ -95,6 +95,10 @@ typedef struct
      */
     virtual_timer_t vt;
     /**
+     * @brief   Time between messages in milliseconds.
+     */
+    uint32_t delay_ms;
+    /**
      * @brief   The command to be sent at each timeout.
      */
     KFly_Command command;
@@ -102,10 +106,6 @@ typedef struct
      * @brief   The port for the message to be sent on.
      */
     External_Port port;
-    /**
-     * @brief   Time between messages in milliseconds.
-     */
-    uint32_t delay_ms;
 } subscription_slot_t;
 
 /**
@@ -121,7 +121,7 @@ typedef struct
     /**
      * @brief   Mailbox message holder.
      */
-    msg_t box[MAX_NUMBER_OF_SUBSCRIPTIONS];
+    msg_t box[2 * MAX_NUMBER_OF_SUBSCRIPTIONS];
     /**
      * @brief   Subscription slots.
      */
@@ -129,7 +129,7 @@ typedef struct
 } subscription_t;
 
 /* Instance of the data pump holder structure */
-static Serial_Datapump_Holder data_pumps = {
+Serial_Datapump_Holder data_pumps = {
     .ptrUSBDataPump = NULL,
     .ptrAUX1DataPump = NULL,
     .ptrAUX2DataPump = NULL,
@@ -147,21 +147,21 @@ static const SerialConfig aux1_config =
 };
 
 /* Subscription holder */
-static subscription_t subscriptions;
+subscription_t subscriptions;
 
 /*===================================================*/
 /* Working area for the data pump                    */
 /* and data decode threads.                          */
 /*===================================================*/
 
-static THD_WORKING_AREA(waUSBSerialManagerTask, 128);
-static THD_WORKING_AREA(waUSBDataPumpTask, 128);
+THD_WORKING_AREA(waUSBSerialManagerTask, 128);
+THD_WORKING_AREA(waUSBDataPumpTask, 128);
 
-static THD_WORKING_AREA(waAux1SerialManagerTask, 128);
-static THD_WORKING_AREA(waAux1DataPumpTask, 128);
+THD_WORKING_AREA(waAux1SerialManagerTask, 128);
+THD_WORKING_AREA(waAux1DataPumpTask, 128);
 /* TODO: Add for the rest of the communication interfaces */
 
-static THD_WORKING_AREA(waSubscriptionsTask, 128);
+THD_WORKING_AREA(waSubscriptionsTask, 128);
 
 /*===========================================================================*/
 /* Module local functions.                                                   */
@@ -172,10 +172,10 @@ static THD_WORKING_AREA(waSubscriptionsTask, 128);
 /*===================================================*/
 
 /**
- * @brief               The USB Serial Manager task will handle incoming
- *                      data and direct it for decode and processing.
+ * @brief           The USB Serial Manager task will handle incoming
+ *                  data and direct it for decode and processing.
  *             
- * @param[in] arg       Input argument (unused).
+ * @param[in] arg   Input argument (unused).
  */
 __attribute__((noreturn))
 static THD_FUNCTION(USBSerialManagerTask, arg)
@@ -200,10 +200,9 @@ static THD_FUNCTION(USBSerialManagerTask, arg)
 }
 
 /**
- * @brief               Transmits the content of the USB circular buffer
- *                      over USB.
+ * @brief           Transmits the content of the USB circular buffer over USB.
  *  
- * @param[in] arg       Input argument (unused).
+ * @param[in] arg   Input argument (unused).
  */
 __attribute__((noreturn))
 static THD_FUNCTION(USBDataPumpTask, arg)
@@ -240,10 +239,10 @@ static THD_FUNCTION(USBDataPumpTask, arg)
 /*===================================================*/
 
 /**
- * @brief               The Aux1 Serial Manager task will handle incoming
- *                      data and direct it for decode and processing.
+ * @brief           The Aux1 Serial Manager task will handle incoming
+ *                  data and direct it for decode and processing.
  *             
- * @param[in] arg       Input argument (unused).
+ * @param[in] arg   Input argument (unused).
  */
 __attribute__((noreturn))
 static THD_FUNCTION(Aux1SerialManagerTask, arg)
@@ -268,10 +267,9 @@ static THD_FUNCTION(Aux1SerialManagerTask, arg)
 }
 
 /**
- * @brief               Transmits the content of the Aux1 circular buffer
- *                      over Aux1.
+ * @brief           Transmits the content of the Aux1 circular buffer over Aux1.
  *  
- * @param[in] arg       Input argument (unused).
+ * @param[in] arg   Input argument (unused).
  */
 __attribute__((noreturn))
 static THD_FUNCTION(Aux1DataPumpTask, arg)
@@ -336,9 +334,9 @@ static THD_FUNCTION(Aux1DataPumpTask, arg)
 /*===================================================*/
 
 /**
- * @brief               Keeps track of the current subscriptions.
+ * @brief           Keeps track of the current subscriptions.
  *  
- * @param[in] arg       Input argument (unused).
+ * @param[in] arg   Input argument (unused).
  */
 __attribute__((noreturn))
 static THD_FUNCTION(SubscriptionsTask, arg)
@@ -455,7 +453,7 @@ static bool AuxTransmitCircularBuffer(SerialDriver *sdp,
 }
 
 /**
- * @brief               Initializes the subscription structures.
+ * @brief   Initializes the subscription structures.
  */
 static void SubscriptionsInit(void)
 {
@@ -464,7 +462,7 @@ static void SubscriptionsInit(void)
     /* Initialize the mailbox that passes the requested messages */
     chMBObjectInit(&subscriptions.mb,
                    subscriptions.box,
-                   MAX_NUMBER_OF_SUBSCRIPTIONS);
+                   2 * MAX_NUMBER_OF_SUBSCRIPTIONS);
 
     /* Initialize the subscription array */
     for (i = 0; i < MAX_NUMBER_OF_SUBSCRIPTIONS; i++)
@@ -493,7 +491,8 @@ static void SubscriptionCallback(void *p)
     /* Send the message to the transmission thread */
     if (chMBPostI(&subscriptions.mb, (msg_t)p) == MSG_TIMEOUT)
     {
-        /* Error! Mailbox is full! */
+        /* Error! Mailbox is full. Disable all subscriptions. */
+        UnsubscribeFromAllI();
     }
 
     osalSysUnlockFromISR();
@@ -504,7 +503,7 @@ static void SubscriptionCallback(void *p)
 /*===========================================================================*/
 
 /**
- * @brief              Initializes communication.
+ * @brief   Initializes communication.
  */
 void vSerialManagerInit(void)
 {
@@ -609,14 +608,14 @@ void SerialManager_StartTransmission(External_Port port)
 /*=====================================*/
 
 /**
- * @brief               Creates new subscription.
+ * @brief               Creates new subscription. I-class function.
  *             
  * @param[in] command   Command to subscribe to.
  * @param[in] port      Port to transmit the subscription on.
  * @param[in] delay_ms  Time between transmits.
  * @return              Return true if there was a free slot, else false.
  */
-bool SubscribeToCommand(KFly_Command command,
+bool SubscribeToCommandI(KFly_Command command,
                         External_Port port,
                         uint16_t delay_ms)
 {
@@ -633,10 +632,10 @@ bool SubscribeToCommand(KFly_Command command,
             subscriptions.slot[i].port = port;
             subscriptions.slot[i].delay_ms = delay_ms;
 
-            chVTSet(&subscriptions.slot[i].vt,
-                    MS2ST(delay_ms),
-                    SubscriptionCallback,
-                    &subscriptions.slot[i]);
+            chVTSetI(&subscriptions.slot[i].vt,
+                     MS2ST(delay_ms),
+                     SubscriptionCallback,
+                     &subscriptions.slot[i]);
 
             return true;
         }
@@ -647,24 +646,26 @@ bool SubscribeToCommand(KFly_Command command,
 }
 
 /**
- * @brief               Removes a subscription.
+ * @brief               Removes a subscription from a port. I-class function.
  *             
  * @param[in] command   Command to unsubscribe from.
+ * @param[in] port      Port to unsubscribe from.
  * @return              Returns true if the subscription was successfully
  *                      deleted. False indicates it did not find any
  *                      subscription by the specified command.
  */
-bool UnsubscribeFromCommand(KFly_Command command)
+bool UnsubscribeFromCommandI(KFly_Command command, External_Port port)
 {
     int i;
 
     /* Search for the subscription to delete */
     for (i = 0; i < MAX_NUMBER_OF_SUBSCRIPTIONS; i++)
     {
-        if (subscriptions.slot[i].command == command)
+        if ((subscriptions.slot[i].command == command) &&
+            (subscriptions.slot[i].port == port))
         {
-            /* Disable the trimer and reset the command */
-            chVTReset(&subscriptions.slot[i].vt);
+            /* Disable the timer and reset the command */
+            chVTResetI(&subscriptions.slot[i].vt);
             subscriptions.slot[i].command = Cmd_None;
 
             return true;
@@ -676,9 +677,9 @@ bool UnsubscribeFromCommand(KFly_Command command)
 }
 
 /**
- * @brief               Removes all ongoing subscriptions.
+ * @brief   Removes all ongoing subscriptions. I-class function.
  */
-void UnsubscribeFromAll(void)
+void UnsubscribeFromAllI(void)
 {
     int i;
 
@@ -688,7 +689,7 @@ void UnsubscribeFromAll(void)
         if (subscriptions.slot[i].command != Cmd_None)
         {
             /* Disable the trimer and reset the command */
-            chVTReset(&subscriptions.slot[i].vt);
+            chVTResetI(&subscriptions.slot[i].vt);
             subscriptions.slot[i].command = Cmd_None;
         }
     }
