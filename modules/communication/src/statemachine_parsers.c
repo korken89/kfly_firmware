@@ -307,32 +307,37 @@ static void ParseGetRunningMode(parser_holder_t *pHolder)
 static void ParseManageSubscriptions(parser_holder_t *pHolder)
 {
     /* Parsing structure for the data */
-    struct ManageSubscriptions_Parser
-    {
-        External_Port port;
-        KFly_Command command;
-        uint8_t on_off;
-        uint32_t delta_time;
-    } *p;
+    subscriptions_parser_t *p;
 
-    /* Cast the message to the parser structure */
-    p = (struct ManageSubscriptions_Parser *)pHolder->buffer;
-
-    /* Check for valid port */
-    if ((isPort(p->port) == true) || (p->port == 0xff))
+    /* Check so the length of the message is correct */
+    if (pHolder->data_length == sizeof(subscriptions_parser_t))
     {
-        if (p->on_off == 0)
+        /* Cast the message to the parser structure */
+        p = (subscriptions_parser_t *)pHolder->buffer;
+
+        /* Check for valid port */
+        if ((isPort(p->port) == true) || (p->port == 0xff))
         {
-            /* Unsubscribe */
-            UnsubscribeFromCommand(p->command);
-        }
-        else
-        {
-            /* Subscribe to the defined port and command */
-            if (p->port == 0xff)
-                SubscribeToCommand(p->command, pHolder->Port, p->delta_time);
+            if (p->on_off == 0)
+            {
+                /* Unsubscribe from command */
+                if (p->port == 0xff) /* Port is the one the command came on */
+                    UnsubscribeFromCommand(p->command, pHolder->Port);
+                else /* Port is is specified in the message */
+                    UnsubscribeFromCommand(p->command, p->port);
+            }
             else
-                SubscribeToCommand(p->command, p->port, p->delta_time);
+            {
+                /* Subscribe to command */
+                if (p->port == 0xff) /* Port is the one the command came on */
+                    SubscribeToCommand(p->command,
+                                       pHolder->Port,
+                                       p->delta_time);
+                else /* Port is is specified in the message */
+                    SubscribeToCommand(p->command,
+                                       p->port,
+                                       p->delta_time);
+            }
         }
     }
 }
