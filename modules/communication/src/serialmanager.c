@@ -741,7 +741,7 @@ void UnsubscribeFromAllI(void)
     /* Delete all subscriptions */
     for (i = 0; i < MAX_NUMBER_OF_SUBSCRIPTIONS; i++)
     {
-        /* Disable the trimer and reset the command */
+        /* Disable the timer and reset the command */
         chVTResetI(&subscriptions.slot[i].vt);
         subscriptions.slot[i].command = Cmd_None;
     }
