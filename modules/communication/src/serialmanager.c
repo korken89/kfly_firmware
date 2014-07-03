@@ -646,6 +646,27 @@ bool SubscribeToCommandI(KFly_Command command,
 }
 
 /**
+ * @brief               Creates new subscription.
+ *             
+ * @param[in] command   Command to subscribe to.
+ * @param[in] port      Port to transmit the subscription on.
+ * @param[in] delay_ms  Time between transmits.
+ * @return              Return true if there was a free slot, else false.
+ */
+bool SubscribeToCommand(KFly_Command command,
+                        External_Port port,
+                        uint16_t delay_ms)
+{
+    bool result;
+
+    osalSysLock();
+    result = SubscribeToCommandI(command, port, delay_ms);
+    osalSysUnlock();
+
+    return result;
+}
+
+/**
  * @brief               Removes a subscription from a port. I-class function.
  *             
  * @param[in] command   Command to unsubscribe from.
@@ -677,6 +698,26 @@ bool UnsubscribeFromCommandI(KFly_Command command, External_Port port)
 }
 
 /**
+ * @brief               Removes a subscription from a port.
+ *             
+ * @param[in] command   Command to unsubscribe from.
+ * @param[in] port      Port to unsubscribe from.
+ * @return              Returns true if the subscription was successfully
+ *                      deleted. False indicates it did not find any
+ *                      subscription by the specified command.
+ */
+bool UnsubscribeFromCommand(KFly_Command command, External_Port port)
+{
+    bool result;
+
+    osalSysLock();
+    result = UnsubscribeFromCommandI(command, port);
+    osalSysUnlock();
+
+    return result;
+}
+
+/**
  * @brief   Removes all ongoing subscriptions. I-class function.
  */
 void UnsubscribeFromAllI(void)
@@ -693,4 +734,14 @@ void UnsubscribeFromAllI(void)
             subscriptions.slot[i].command = Cmd_None;
         }
     }
+}
+
+/**
+ * @brief   Removes all ongoing subscriptions.
+ */
+void UnsubscribeFromAll(void)
+{
+    osalSysLock();
+    UnsubscribeFromAllI();
+    osalSysUnlock();
 }

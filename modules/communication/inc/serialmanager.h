@@ -11,6 +11,30 @@
 /* Module data structures and types.                                         */
 /*===========================================================================*/
 
+/**
+ * @brief   Parsing structure for the management of subscriptions.
+ */
+typedef struct PACKED_VAR
+{
+    /**
+     * @brief   The port on which the command shall be (un)subscribed.
+     */
+    External_Port port;
+    /**
+     * @brief   Which command to (un)subscribe (from)to.
+     */
+    KFly_Command command;
+    /**
+     * @brief   If the command shall be subscribed or unsubscribed.
+     *          0 denotes unsubscribe, anything else is subscribe.
+     */
+    uint8_t on_off;
+    /**
+     * @brief   The time between transmissions of the subscription in ms.
+     */
+    uint32_t delta_time;
+} subscriptions_parser_t;
+
 /*===========================================================================*/
 /* Module macros.                                                            */
 /*===========================================================================*/
@@ -18,50 +42,6 @@
 /*===========================================================================*/
 /* Module inline functions.                                                  */
 /*===========================================================================*/
-
-/**
- * @brief               Creates new subscription.
- *             
- * @param[in] command   Command to subscribe to.
- * @param[in] port      Port to transmit the subscription on.
- * @param[in] delay_ms  Time between transmits.
- * @return              Return true if there was a free slot, else false.
- */
-static inline bool SubscribeToCommand(KFly_Command command,
-                                      External_Port port,
-                                      uint16_t delay_ms)
-{
-    osalSysLock();
-    SubscribeToCommandI(command, port, delay_ms);
-    osalSysUnlock();
-}
-
-/**
- * @brief               Removes a subscription from a port.
- *             
- * @param[in] command   Command to unsubscribe from.
- * @param[in] port      Port to unsubscribe from.
- * @return              Returns true if the subscription was successfully
- *                      deleted. False indicates it did not find any
- *                      subscription by the specified command.
- */
-static inline bool UnsubscribeFromCommand(KFly_Command command,
-                                          External_Port port)
-{
-    osalSysLock();
-    UnsubscribeFromCommandI(command, port);
-    osalSysUnlock();
-}
-
-/**
- * @brief   Removes all ongoing subscriptions.
- */
-static inline void UnsubscribeFromAll(void)
-{
-    osalSysLock();
-    UnsubscribeFromAllI();
-    osalSysUnlock();
-}
 
 /*===========================================================================*/
 /* External declarations.                                                    */
@@ -71,9 +51,14 @@ void vTaskUSBSerialManager(void *);
 circular_buffer_t *SerialManager_GetCircularBufferFromPort(External_Port port);
 void SerialManager_StartTransmission(External_Port port);
 bool SubscribeToCommandI(KFly_Command command,
+                         External_Port port,
+                         uint16_t delay_ms);
+bool SubscribeToCommand(KFly_Command command,
                         External_Port port,
                         uint16_t delay_ms);
 bool UnsubscribeFromCommandI(KFly_Command command, External_Port port);
+bool UnsubscribeFromCommand(KFly_Command command, External_Port port);
 void UnsubscribeFromAllI(void);
+void UnsubscribeFromAll(void);
 
 #endif
