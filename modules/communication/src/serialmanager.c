@@ -617,14 +617,28 @@ void SerialManager_StartTransmission(External_Port port)
  */
 bool SubscribeToCommandI(KFly_Command command,
                         External_Port port,
-                        uint16_t delay_ms)
+                        uint32_t delay_ms)
 {
     int i;
 
     /* Look for a free subscription slot */
     for (i = 0; i < MAX_NUMBER_OF_SUBSCRIPTIONS; i++)
     {
-        if (subscriptions.slot[i].command == Cmd_None)
+        if ((subscriptions.slot[i].command == command) &&
+            (subscriptions.slot[i].port == port))
+        {
+            /* The subscription already exists. Change the current timebase
+               to the new subscription. */
+            subscriptions.slot[i].delay_ms = delay_ms;
+
+            chVTSetI(&subscriptions.slot[i].vt,
+                     MS2ST(delay_ms),
+                     SubscriptionCallback,
+                     &subscriptions.slot[i]);
+
+            return true;
+        }
+        else if (subscriptions.slot[i].command == Cmd_None)
         {
             /* Free subscription slot! Set the structure and initialize
                the virtual timer. */
@@ -655,7 +669,7 @@ bool SubscribeToCommandI(KFly_Command command,
  */
 bool SubscribeToCommand(KFly_Command command,
                         External_Port port,
-                        uint16_t delay_ms)
+                        uint32_t delay_ms)
 {
     bool result;
 
