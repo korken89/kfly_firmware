@@ -33,7 +33,7 @@ typedef struct PACKED_VAR
      * @brief   The time between transmissions of the subscription in ms.
      */
     uint32_t delta_time;
-} subscriptions_parser_t;
+} subscription_parser_t;
 
 /*===========================================================================*/
 /* Module macros.                                                            */

@@ -307,13 +307,13 @@ static void ParseGetRunningMode(parser_holder_t *pHolder)
 static void ParseManageSubscriptions(parser_holder_t *pHolder)
 {
     /* Parsing structure for the data */
-    subscriptions_parser_t *p;
+    subscription_parser_t *p;
 
     /* Check so the length of the message is correct */
-    if (pHolder->data_length == sizeof(subscriptions_parser_t))
+    if (pHolder->data_length == sizeof(subscription_parser_t))
     {
         /* Cast the message to the parser structure */
-        p = (subscriptions_parser_t *)pHolder->buffer;
+        p = (subscription_parser_t *)pHolder->buffer;
 
         /* Check for valid port */
         if ((isPort(p->port) == true) || (p->port == 0xff))
