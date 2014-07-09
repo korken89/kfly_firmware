@@ -38,6 +38,7 @@
 /*===========================================================================*/
 
 static Arming_Stick_Region SticksInRegion(void);
+static void vZeroControlIntegrals(void);
 
 /*===========================================================================*/
 /* Module exported variables.                                                */
@@ -436,8 +437,15 @@ static void vRCInputsToControlAction(void)
         {
             control_reference.mode = FLIGHTMODE_ATTITUDE;
 
+<<<<<<< HEAD
             control_reference.attitude_reference.x = control_limits.max_angle.pitch * DEG2RAD * RCInputGetInputLevel(ROLE_PITCH);
             control_reference.attitude_reference.y = control_limits.max_angle.roll * DEG2RAD * RCInputGetInputLevel(ROLE_ROLL);
+=======
+            euler2quat(control_limits.max_angle.pitch * DEG2RAD * RCInputGetInputLevel(ROLE_ROLL),
+                       control_limits.max_angle.roll * DEG2RAD * RCInputGetInputLevel(ROLE_PITCH),
+                       0.0f,
+                       &control_reference.attitude_reference);
+>>>>>>> origin/master
         }
 
         control_reference.rate_reference.z = control_limits.max_rate.yaw *
@@ -446,8 +454,12 @@ static void vRCInputsToControlAction(void)
         throttle = RCInputGetInputLevel(ROLE_THROTTLE);
 
         if (throttle < arm_settings.armed_min_throttle)
+        {
             control_reference.actuator_desired.throttle =
                                             arm_settings.armed_min_throttle;
+
+            vZeroControlIntegrals();
+        }
         else
             control_reference.actuator_desired.throttle = throttle;
     }
@@ -543,7 +555,7 @@ static void vRateControl(vector3f_t *omega_m, float dt)
     u.z = fPIUpdate(&control_data.rate_controller[2], error.z, dt);
 
     /* Send control signal to the next stage */
-    control_reference.actuator_desired.pitch = bound(1.0f, -1.0f, u.x);
+    control_reference.actuator_desired.pitch = bound(1.0f, -1.0f, -u.x);
     control_reference.actuator_desired.roll = bound(1.0f, -1.0f, u.y);
     control_reference.actuator_desired.yaw = bound(1.0f, -1.0f, u.z);
     
@@ -599,6 +611,21 @@ static void vDisableAllOutputs(void)
         control_reference.pwm_out[i] = 0.0f;
 
     vSendPWMCommands();
+}
+
+/**
+ * @brief   Zeros all control integrals.
+ */
+static void vZeroControlIntegrals(void)
+{
+    int i;
+
+    /* Cast the controller data into an array of PI controllers */
+    PI_Data *pi = (PI_Data *)&control_data;
+    
+    /* Zero each controllers Integral state. */
+    for (i = 0; i < CONTROL_NUMBER_OF_CONTROLLERS; i++)
+        pi[i].I_state = 0.0f;
 }
 
 /*===========================================================================*/
@@ -761,6 +788,9 @@ void vUpdateControlAction(quaternion_t *q_m, vector3f_t *omega_m, float dt)
         default:
             /* Disable all outputs */
             vDisableAllOutputs();
+
+            /* Zero all the controllers' integrators */
+            vZeroControlIntegrals();
             break;
     }
 
