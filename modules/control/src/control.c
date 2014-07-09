@@ -436,16 +436,9 @@ static void vRCInputsToControlAction(void)
         else
         {
             control_reference.mode = FLIGHTMODE_ATTITUDE;
-
-<<<<<<< HEAD
+            
             control_reference.attitude_reference.x = control_limits.max_angle.pitch * DEG2RAD * RCInputGetInputLevel(ROLE_PITCH);
             control_reference.attitude_reference.y = control_limits.max_angle.roll * DEG2RAD * RCInputGetInputLevel(ROLE_ROLL);
-=======
-            euler2quat(control_limits.max_angle.pitch * DEG2RAD * RCInputGetInputLevel(ROLE_ROLL),
-                       control_limits.max_angle.roll * DEG2RAD * RCInputGetInputLevel(ROLE_PITCH),
-                       0.0f,
-                       &control_reference.attitude_reference);
->>>>>>> origin/master
         }
 
         control_reference.rate_reference.z = control_limits.max_rate.yaw *
