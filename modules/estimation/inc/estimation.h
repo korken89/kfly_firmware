@@ -28,5 +28,9 @@ void EstimationInit(void);
 void ResetEstimation(void);
 Attitude_Estimation_States *ptrGetAttitudeEstimationStates(void);
 event_source_t *ptrGetEstimationEventSource(void);
-
+quaternion_t MadgwickAHRSupdateIMU(vector3f_t g,
+								   vector3f_t a,
+								   quaternion_t q,
+								   float beta,
+								   float dt);
 #endif
