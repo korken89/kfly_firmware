@@ -437,8 +437,8 @@ static void vRCInputsToControlAction(void)
         {
             control_reference.mode = FLIGHTMODE_ATTITUDE;
             
-            control_reference.attitude_reference.x = control_limits.max_angle.pitch * DEG2RAD * RCInputGetInputLevel(ROLE_PITCH);
-            control_reference.attitude_reference.y = control_limits.max_angle.roll * DEG2RAD * RCInputGetInputLevel(ROLE_ROLL);
+            control_reference.attitude_reference.y = control_limits.max_angle.pitch * DEG2RAD * RCInputGetInputLevel(ROLE_PITCH);
+            control_reference.attitude_reference.x = control_limits.max_angle.roll * DEG2RAD * RCInputGetInputLevel(ROLE_ROLL);
         }
 
         control_reference.rate_reference.z = control_limits.max_rate.yaw *
@@ -499,7 +499,7 @@ static void vAttitudeControl(quaternion_t *attitude_m,
 
     /* Calculate the quaternion error */
     err.x = control_reference.attitude_reference.x + atan2f(2.0f * (attitude_m->q0 * attitude_m->q1 + attitude_m->q2 * attitude_m->q3), 1.0f - 2.0f * (attitude_m->q1 * attitude_m->q1 + attitude_m->q2 * attitude_m->q2));
-    err.y = control_reference.attitude_reference.x - asinf(2.0f * (attitude_m->q0 * attitude_m->q2 - attitude_m->q1 * attitude_m->q3));
+    err.y = control_reference.attitude_reference.y - asinf(2.0f * (attitude_m->q0 * attitude_m->q2 - attitude_m->q1 * attitude_m->q3));
     err.z = 0.0f;
 
     //atan2f(2.0f * (attitude_m->q0 * attitude_m->q3 + attitude_m->q1 * attitude_m->q2), 1.0f - 2.0f * (attitude_m->q2 * attitude_m->q2 + attitude_m->q3 * attitude_m->q3)))
@@ -507,7 +507,7 @@ static void vAttitudeControl(quaternion_t *attitude_m,
 
     /* Update controllers */
     u.x = fPIUpdate(&control_data.attitude_controller[0], err.y, dt);
-    u.y = fPIUpdate(&control_data.attitude_controller[1], err.x, dt);
+    u.y = fPIUpdate(&control_data.attitude_controller[1], -err.x, dt);
 
     /* Send bounded control signal to the next step in the cascade */
     control_reference.rate_reference.x = 
@@ -548,9 +548,9 @@ static void vRateControl(vector3f_t *omega_m, float dt)
     u.z = fPIUpdate(&control_data.rate_controller[2], error.z, dt);
 
     /* Send control signal to the next stage */
-    control_reference.actuator_desired.pitch = bound(1.0f, -1.0f, -u.x);
-    control_reference.actuator_desired.roll = bound(1.0f, -1.0f, u.y);
-    control_reference.actuator_desired.yaw = bound(1.0f, -1.0f, u.z);
+    control_reference.actuator_desired.pitch = bound(1.0f, -1.0f, u.x);
+    control_reference.actuator_desired.roll = bound(1.0f, -1.0f, -u.y);
+    control_reference.actuator_desired.yaw = bound(1.0f, -1.0f, -u.z);
     
 }
 
