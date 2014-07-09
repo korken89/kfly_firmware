@@ -205,7 +205,7 @@ typedef struct PACKED_VAR
     /**
      * @brief   Attitude control reference.
      */
-    quaternion_t attitude_reference;
+    vector3f_t attitude_reference;
     /**
      * @brief   Rate control reference.
      */

@@ -436,10 +436,8 @@ static void vRCInputsToControlAction(void)
         {
             control_reference.mode = FLIGHTMODE_ATTITUDE;
 
-            euler2quat(control_limits.max_angle.pitch * DEG2RAD * RCInputGetInputLevel(ROLE_PITCH),
-                       control_limits.max_angle.roll * DEG2RAD * RCInputGetInputLevel(ROLE_ROLL),
-                       0.0f,
-                       &control_reference.attitude_reference);
+            control_reference.attitude_reference.x = control_limits.max_angle.pitch * DEG2RAD * RCInputGetInputLevel(ROLE_PITCH);
+            control_reference.attitude_reference.y = control_limits.max_angle.roll * DEG2RAD * RCInputGetInputLevel(ROLE_ROLL);
         }
 
         control_reference.rate_reference.z = control_limits.max_rate.yaw *
@@ -492,20 +490,19 @@ static void vAttitudeControl(quaternion_t *attitude_m,
                              float dt)
 {
     vector3f_t u;
-    quaternion_t qerr;
+    vector3f_t err;
 
     /* Calculate the quaternion error */
-    qerr = qmult(control_reference.attitude_reference, qconj(*attitude_m));
+    err.x = control_reference.attitude_reference.x + atan2f(2.0f * (attitude_m->q0 * attitude_m->q1 + attitude_m->q2 * attitude_m->q3), 1.0f - 2.0f * (attitude_m->q1 * attitude_m->q1 + attitude_m->q2 * attitude_m->q2));
+    err.y = control_reference.attitude_reference.x - asinf(2.0f * (attitude_m->q0 * attitude_m->q2 - attitude_m->q1 * attitude_m->q3));
+    err.z = 0.0f;
 
-    /* Check if the error represents the shortest route */
-    if (qerr.q0 < 0.0f)
-        qerr = qconj(qerr);
+    //atan2f(2.0f * (attitude_m->q0 * attitude_m->q3 + attitude_m->q1 * attitude_m->q2), 1.0f - 2.0f * (attitude_m->q2 * attitude_m->q2 + attitude_m->q3 * attitude_m->q3)))
+
 
     /* Update controllers */
-    u.x = fPIUpdate(&control_data.attitude_controller[0], qerr.q2, dt);
-    u.y = fPIUpdate(&control_data.attitude_controller[1], qerr.q1, dt);
-    if (control_yaw == true)
-        u.z = fPIUpdate(&control_data.attitude_controller[2], qerr.q3, dt);
+    u.x = fPIUpdate(&control_data.attitude_controller[0], err.y, dt);
+    u.y = fPIUpdate(&control_data.attitude_controller[1], err.x, dt);
 
     /* Send bounded control signal to the next step in the cascade */
     control_reference.rate_reference.x = 
@@ -516,11 +513,6 @@ static void vAttitudeControl(quaternion_t *attitude_m,
                                 bound( control_limits.max_rate_attitude.roll,
                                       -control_limits.max_rate_attitude.roll,
                                        u.y);
-    if (control_yaw == true)
-        control_reference.rate_reference.z = 
-                                    bound( control_limits.max_rate_attitude.yaw,
-                                          -control_limits.max_rate_attitude.yaw,
-                                           u.z);
 }
 
 /**
@@ -772,13 +764,11 @@ void vUpdateControlAction(quaternion_t *q_m, vector3f_t *omega_m, float dt)
             break;
     }
 
-    if (i > 20)
+    if (i++ > 40)
     {
         //vTransmitExperimentData();
         i = 0;
     }
-    else
-        i++;
 }
 
 /**
