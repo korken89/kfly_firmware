@@ -109,7 +109,7 @@ static THD_FUNCTION(ThreadEstimation, arg)
             chTMStopMeasurementX(&mytm);
 
             /* Some macro to extract the time */
-            dt = (float)RTC2US(168000000UL, mytm.last) / 1000000.0f;
+            dt = (float)RTC2US(STM32_SYSCLK, mytm.last) / 1000000.0f;
 
             /* Restart the measurement */
             chTMStartMeasurementX(&mytm);
