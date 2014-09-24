@@ -398,6 +398,9 @@ typedef struct PACKED_VAR
 
 typedef struct PACKED_VAR
 {
+    /*
+    // Full measurement
+
     int16_t accelerometer[3];
     int16_t gyroscope[3];
     int16_t magnetometer[3];
@@ -405,6 +408,12 @@ typedef struct PACKED_VAR
     int8_t u_pitch;
     int8_t u_roll;
     int8_t u_yaw;
+    uint8_t counter;
+    */
+
+    // Accelerometer only test
+    int16_t accelerometer[3];
+    int8_t u_throttle;
     uint8_t counter;
 } Experiment_Data;
 
