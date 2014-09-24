@@ -704,11 +704,10 @@ void ControlInit(void)
 #include "serialmanager.h"
 #include "statemachine_generators.h"
 
-Experiment_Data exp_data;
-IMU_RawData exp_imu_data;
-
 void vTransmitExperimentData(void)
 {
+    static Experiment_Data exp_data;
+    static IMU_RawData exp_imu_data;
     static uint8_t cnt = 0;
 
     /* Get and format the data */
