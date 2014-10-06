@@ -104,7 +104,6 @@ LDSCRIPT= make/STM32F405xG_CCM.ld
 # setting.
 CSRC = $(PORTSRC) \
        $(KERNSRC) \
-       $(TESTSRC) \
        $(HALSRC) \
        $(OSALSRC) \
        $(PLATFORMSRC) \
@@ -141,7 +140,7 @@ TCPPSRC =
 # List ASM source files here
 ASMSRC = $(PORTASM) $(MODULES_ASRCS)
 
-INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
+INCDIR = $(PORTINC) $(KERNINC) \
          $(HALINC) $(OSALINC) $(PLATFORMINC) $(BOARDINC) \
          $(ADRIVERSINC) $(CHIBIOS)/os/various $(MODULES_INC)
 
