@@ -568,14 +568,24 @@ static void vUpdateOutputs(void)
     /* Calculate the control signal for each PWM output */
     for (i = 0; i < 8; i++)
     {
+        /* Add the throttle weight */
         sum =  control_reference.actuator_desired.throttle *
                output_mixer.weights[i][0];
+
+        /* Add the pitch weight */
         sum += control_reference.actuator_desired.pitch *
                output_mixer.weights[i][1];
+
+        /* Add the roll weight */
         sum += control_reference.actuator_desired.roll *
                output_mixer.weights[i][2];
+
+        /* Add the yaw weight */
         sum += control_reference.actuator_desired.yaw *
                output_mixer.weights[i][3];
+
+        /* Add the channel offset */
+        sum += output_mixer.offset[i];
 
         control_reference.pwm_out[i] = bound(1.0f, 0.0f, sum);
     }
@@ -677,6 +687,22 @@ void ControlInit(void)
 
     /* Read data from flash (if available) */
     vReadControlParametersFromFlash();
+
+    /*
+     *
+     *  SUPER UGGLY HACK TO GET SERVO SUPPORT FOR NOW...
+     *  DATA STRUCTURE HIDDEN AT THE END OF Output_Mixer CONTAINS OFFSETS.
+     *
+     *  Manually add the offset to the correct channel:
+     */
+    output_mixer.offset[0] = 0.0f;
+    output_mixer.offset[1] = 0.0f;
+    output_mixer.offset[2] = 0.0f;
+    output_mixer.offset[3] = 0.0f;
+    output_mixer.offset[4] = 0.0f;
+    output_mixer.offset[5] = 0.0f;
+    output_mixer.offset[6] = 0.0f;
+    output_mixer.offset[8] = 0.0f;
 
     /* Initialize arming control thread */
     chThdCreateStatic(waThreadControlArming,

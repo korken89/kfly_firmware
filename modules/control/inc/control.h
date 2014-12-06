@@ -29,7 +29,7 @@
 #define POSITION_LIMIT_COUNT                    0
 
 /* Sizes */
-#define OUTPUT_MIXER_SIZE                       (sizeof(Output_Mixer))
+#define OUTPUT_MIXER_SIZE                       (sizeof(Output_Mixer) - 8 * sizeof(float)) /* Do not iunclude the offset for now */
 #define CONTROL_ARM_SIZE                        (sizeof(Control_Arm_Settings))
 #define CONTROL_LIMITS_SIZE                     (sizeof(Control_Limits))
 #define CONTROL_REFERENCE_SIZE                  (sizeof(Control_Reference))
@@ -348,6 +348,10 @@ typedef struct PACKED_VAR
      * @brief   Weights.
      */
     float weights[8][4];
+    /**
+     * @brief   Offsets to compensate for, as an example, the zero of an servo.
+     */
+    float offset[8];
 } Output_Mixer;
 
 /*
