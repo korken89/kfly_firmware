@@ -702,7 +702,7 @@ void ControlInit(void)
     output_mixer.offset[4] = 0.0f;
     output_mixer.offset[5] = 0.0f;
     output_mixer.offset[6] = 0.0f;
-    output_mixer.offset[8] = 0.0f;
+    output_mixer.offset[7] = 0.0f;
 
     /* Initialize arming control thread */
     chThdCreateStatic(waThreadControlArming,
