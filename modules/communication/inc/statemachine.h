@@ -254,7 +254,17 @@ typedef enum PACKED_VAR
     /**
      * @brief   Reset estimation.
      */
-    Cmd_ResetEstimation             = 53
+    Cmd_ResetEstimation             = 53,
+
+    /*===============================================*/
+    /* Estimation specific commands.                 */
+    /*===============================================*/
+
+    /**
+     * @brief   Reset estimation.
+     */
+    Cmd_ViconMeasurement            = 127
+
 } KFly_Command;
 
 /**
