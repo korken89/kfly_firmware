@@ -257,7 +257,7 @@ typedef enum PACKED_VAR
     Cmd_ResetEstimation             = 53,
 
     /*===============================================*/
-    /* Estimation specific commands.                 */
+    /* Vicon Measurement specific commands.          */
     /*===============================================*/
 
     /**
