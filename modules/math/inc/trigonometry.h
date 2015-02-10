@@ -1,36 +1,33 @@
 #ifndef __TRIGONOMETRY_H
 #define __TRIGONOMETRY_H
 
-/* Standard includes */
 #include <math.h>
 #include <stdint.h>
 
-/* System includes */
-
-/* Scheduler includes */
-
-/* KFly includes */
-
-/* Includes */
-
-/* Defines */
+/*===========================================================================*/
+/* Module global definitions.                                                */
+/*===========================================================================*/
 #define PI ( 3.14159265359f )
 
-/* Typedefs */
+/*===========================================================================*/
+/* Module data structures and types.                                         */
+/*===========================================================================*/
 
-/* Global variable defines */
+/*===========================================================================*/
+/* Module macros.                                                            */
+/*===========================================================================*/
 
-/* Global function defines */
+/*===========================================================================*/
+/* Module inline functions.                                                  */
+/*===========================================================================*/
 
-/* Includes */
-
-/* Private Defines */
-
-/* Private Typedefs */
-
-/* Global variable defines */
-
-/* Inline functions */
+/*
+ * @brief               Fast atan2 implementation.
+ *
+ * @param[in] y         First parameter.
+ * @param[in] x         Second parameter.
+ * @return              The acrtan.
+ */
 static inline float fastatan2(float y, float x)
 {
     const float coeff_1 = PI * 0.25f;
@@ -62,6 +59,12 @@ static inline float fastatan2(float y, float x)
     return y < 0.0f ? -angle : angle;
 }
 
+/*
+ * @brief               Fast 2^x implementation.
+ *
+ * @param[in] p         Input exponent.
+ * @return              The calculated power.
+ */
 static inline float fastpow2(float p)
 {
     float offset = (p < 0) ? 1.0f : 0.0f;
@@ -74,11 +77,28 @@ static inline float fastpow2(float p)
     return v.f;
 }
 
+
+/*
+ * @brief               Fast e^x implementation.
+ *
+ * @param[in] p         Input exponent.
+ * @return              The calculated power.
+ */
 static inline float fastexp(float p)
 {
     return fastpow2(1.442695040f * p);
 }
 
+
+/*
+ * @brief               Signal bounding implementation. Bounds value to be
+ *                      within the min and max.
+ *
+ * @param[in] max       Maximum limit.
+ * @param[in] min       Minimum limit.
+ * @param[in] x         Input value.
+ * @return              The bounded value.
+ */
 static inline float bound(float max, float min, float x)
 {
     if (x > max)
@@ -89,10 +109,12 @@ static inline float bound(float max, float min, float x)
         return x;
 }
 
+
 /*
- * fast_sin - Sine approximation
- * @param[in] x     Angle [rad]
- * @param[out] y    Sine
+ * @brief               Fast sine approximation
+ *
+ * @param[in] x         Input value.
+ * @return              The calculated sine value.
  */
 static inline float fast_sin(float x)
 {
@@ -111,6 +133,12 @@ static inline float fast_sin(float x)
     return y;
 }
 
+/*
+ * @brief               Fast cosine approximation
+ *
+ * @param[in] x         Input value.
+ * @return              The calculated cosine value.
+ */
 static inline float fast_cos(float x)
 {
     x += PI*0.5f;
@@ -130,6 +158,13 @@ static inline float fast_cos(float x)
     return y;
 }
 
+
+/*
+ * @brief               My floor implementation.
+ *
+ * @param[in] x         Input value.
+ * @return              The floor value.
+ */
 static inline float myfloor(float x)
 {
     if (x > 0.0f)
@@ -138,13 +173,20 @@ static inline float myfloor(float x)
         return (int)(x - 0.9999999999999999f);
 }
 
+/*
+ * @brief               My float modulus implementation.
+ *
+ * @param[in] x         Input value.
+ * @param[in] m         Input mod value.
+ * @return              The remainder of x / m.
+ */
 static inline float myfmodf(float x, float m)
 {
     return x - myfloor(x / m) * m;
 }
 
-/* Private function defines */
-
-/* Global function defines */
+/*===========================================================================*/
+/* External declarations.                                                    */
+/*===========================================================================*/
 
 #endif

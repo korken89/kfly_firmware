@@ -1,18 +1,12 @@
 #ifndef __LINEAR_ALGEBRA_H
 #define __LINEAR_ALGEBRA_H
 
-/* Standard includes */
 #include <math.h>
 
-/* Driver includes */
+/*===========================================================================*/
+/* Module global definitions.                                                */
+/*===========================================================================*/
 
-/* Scheduler includes. */
-
-/* KFly includes */
-
-/* Includes */
-
-/* Defines */
 #define SQR(a) ((a) * (a))
 #define SIGN(a, b) ((b) >= 0.0f ? fabsf(a) : -fabsf(a))
 #define A(i, j) (a[(i)*(n) + (j)])
@@ -21,11 +15,17 @@
 #define Bs(i, j, m) (b[(i)*(m) + (j)])
 #define X(i) (x[(i)])
 
-/* Typedefs */
+/*===========================================================================*/
+/* Module data structures and types.                                         */
+/*===========================================================================*/
 
-/* Global variable defines */
+/*===========================================================================*/
+/* Module macros.                                                            */
+/*===========================================================================*/
 
-/* Inline function defines */
+/*===========================================================================*/
+/* Module inline functions.                                                  */
+/*===========================================================================*/
 
 /*
  * @brief               Creates a Givens rotation to zero the lower
@@ -703,5 +703,9 @@ static inline void create_zero(float *a, const int n, const int m)
         }
     }
 }
+
+/*===========================================================================*/
+/* External declarations.                                                    */
+/*===========================================================================*/
 
 #endif
