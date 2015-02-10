@@ -86,7 +86,7 @@ $(foreach dir, $(MODULES), $(eval MODULES_CSRCS += $(wildcard $(dir)/src/*.c)))
 $(foreach dir, $(MODULES), $(eval MODULES_ASRCS += $(wildcard $(dir)/src/*.s)))
 
 # Imported source files and paths
-CHIBIOS = ../ChibiOS-RT
+CHIBIOS = ../ChibiOS
 include $(CHIBIOS)/os/hal/hal.mk
 include board/board.mk
 include drivers/drivers.mk
@@ -109,7 +109,8 @@ CSRC = $(PORTSRC) \
        $(PLATFORMSRC) \
        $(BOARDSRC) \
        $(ADRIVERSSRC) \
-       $(CHIBIOS)/os/various/chprintf.c \
+       $(CHIBIOS)/os/hal/lib/streams/memstreams.c \
+       $(CHIBIOS)/os/hal/lib/streams/chprintf.c \
        main.c \
        $(MODULES_CSRCS)
 
@@ -142,7 +143,8 @@ ASMSRC = $(PORTASM) $(MODULES_ASRCS)
 
 INCDIR = $(PORTINC) $(KERNINC) \
          $(HALINC) $(OSALINC) $(PLATFORMINC) $(BOARDINC) \
-         $(ADRIVERSINC) $(CHIBIOS)/os/various $(MODULES_INC)
+         $(ADRIVERSINC) $(CHIBIOS)/os/hal/lib/streams $(CHIBIOS)/os/various \
+         $(MODULES_INC)
 
 #
 # Project, sources and paths
