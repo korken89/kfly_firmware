@@ -17,13 +17,14 @@
 /* Module local definitions.                                                 */
 /*===========================================================================*/
 
-#define START_TRANSMISSION_EVENT                                EVENT_MASK(0)
+#define START_TRANSMISSION_EVENT            EVENT_MASK(0)
 
-#define AUX1_SERIAL_DRIVER                                      SD3
-#define AUX2_SERIAL_DRIVER                                      SD5
-#define AUX3_SERIAL_DRIVER                                      SD4
+#define AUX1_SERIAL_DRIVER                  SD3
+#define AUX2_SERIAL_DRIVER                  SD5
+#define AUX3_SERIAL_DRIVER                  SD4
 
-#define MAX_NUMBER_OF_SUBSCRIPTIONS                             10
+#define MAX_NUMBER_OF_SUBSCRIPTIONS         10
+#define SUBSCRIPTION_MAILBOX_SIZE           (MAX_NUMBER_OF_SUBSCRIPTIONS * 2)
 
 static bool USBTransmitCircularBuffer(circular_buffer_t *Cbuff);
 static bool AuxTransmitCircularBuffer(SerialDriver *sdp,
@@ -109,19 +110,19 @@ typedef struct
 } subscription_slot_t;
 
 /**
- * @brief   Subscriptions structure. Contains the subscription slots and 
+ * @brief   Subscriptions structure. Contains the subscription slots and
  *          the mailboxes.
  */
 typedef struct
 {
     /**
-     * @brief   Message transmission mailbox.
+     * @brief   Pointer to message transmission mailbox.
      */
-    mailbox_t mb;
+    mailbox_t *mb;
     /**
      * @brief   Mailbox message holder.
      */
-    msg_t box[2 * MAX_NUMBER_OF_SUBSCRIPTIONS];
+    msg_t box[SUBSCRIPTION_MAILBOX_SIZE];
     /**
      * @brief   Subscription slots.
      */
@@ -146,8 +147,13 @@ static const SerialConfig aux1_config =
   0
 };
 
-/* Subscription holder */
+/*===================================================*/
+/* Subscription mailbox and data holders             */
+/*===================================================*/
 subscription_t subscriptions;
+MAILBOX_DECL(subscription_mailbox,
+             subscriptions.box,
+             SUBSCRIPTION_MAILBOX_SIZE);
 
 /*===================================================*/
 /* Working area for the data pump                    */
@@ -352,7 +358,7 @@ static THD_FUNCTION(SubscriptionsTask, arg)
     while(1)
     {
         /* Wait for a new message */
-        chMBFetch(&subscriptions.mb, &message, TIME_INFINITE);
+        chMBFetch(subscriptions.mb, &message, TIME_INFINITE);
         slot = (subscription_slot_t *)message;
 
         /* Transmit the message */
@@ -459,10 +465,13 @@ static void SubscriptionsInit(void)
 {
     int i;
 
+    /* Link the mailbox to its pointer */
+    subscriptions.mb = &subscription_mailbox;
+
     /* Initialize the mailbox that passes the requested messages */
-    chMBObjectInit(&subscriptions.mb,
+    chMBObjectInit(subscriptions.mb,
                    subscriptions.box,
-                   2 * MAX_NUMBER_OF_SUBSCRIPTIONS);
+                   SUBSCRIPTION_MAILBOX_SIZE);
 
     /* Initialize the subscription array */
     for (i = 0; i < MAX_NUMBER_OF_SUBSCRIPTIONS; i++)
@@ -489,7 +498,7 @@ static void SubscriptionCallback(void *p)
              p);
 
     /* Send the message to the transmission thread */
-    if (chMBPostI(&subscriptions.mb, (msg_t)p) == MSG_TIMEOUT)
+    if (chMBPostI(subscriptions.mb, (msg_t)p) == MSG_TIMEOUT)
     {
         /* Error! Mailbox is full. Disable all subscriptions. */
         UnsubscribeFromAllI();
