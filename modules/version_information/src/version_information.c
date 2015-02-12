@@ -8,31 +8,72 @@
 #include "hal.h"
 #include "version_information.h"
 
-/* Global variable defines */
-__attribute__ ((used, section(".sw_version"))) const char build_version[] = KFLY_VERSION;
+/*===========================================================================*/
+/* Module local definitions.                                                 */
+/*===========================================================================*/
 
-/* Private variable defines */
+/*===========================================================================*/
+/* Module exported variables.                                                */
+/*===========================================================================*/
+
+/**
+ * @brief Save location for the KFly Version string.
+ */
+__attribute__ ((used, section(".sw_version")))
+    const char build_version[] = KFLY_VERSION;
+
+/*===========================================================================*/
+/* Module local variables and types.                                         */
+/*===========================================================================*/
+
+/**
+ * @brief User defined ID string.
+ */
 static uint8_t UserIDString[USER_ID_MAX_SIZE + 1] = "Test ID string!";
 
-/* Private function defines */
+/*===========================================================================*/
+/* Module local functions.                                                   */
+/*===========================================================================*/
 
-/* Private external functions */
+/*===========================================================================*/
+/* Module exported functions.                                                */
+/*===========================================================================*/
 
-uint8_t *ptrGetUniqueID(void)
+/**
+ * @brief               Gets the pointer to the hardware's unique ID.
+ *
+ * @return              Returns pointer to hardware's unique ID.
+ */
+const uint8_t *ptrGetUniqueID(void)
 {
-    return (uint8_t *)(UNIQUE_ID_BASE);
+    return (const uint8_t *)(UNIQUE_ID_BASE);
 }
 
-uint8_t *ptrGetBootloaderVersion(void)
+/**
+ * @brief               Gets the pointer to the bootloader's version string.
+ *
+ * @return              Returns pointer to bootloader's version string.
+ */
+const uint8_t *ptrGetBootloaderVersion(void)
 {
-    return (uint8_t *)(BOOTLOADER_BASE + SW_VERSION_OFFSET);
+    return (const uint8_t *)(BOOTLOADER_BASE + SW_VERSION_OFFSET);
 }
 
-uint8_t *ptrGetFirmwareVersion(void)
+/**
+ * @brief               Gets the pointer to firmware's version string.
+ *
+ * @return              Returns pointer to firmware's version string.
+ */
+const uint8_t *ptrGetFirmwareVersion(void)
 {
-    return (uint8_t *)(FIRMWARE_BASE + SW_VERSION_OFFSET);
+    return (const uint8_t *)(FIRMWARE_BASE + SW_VERSION_OFFSET);
 }
 
+/**
+ * @brief               Gets the pointer to the user's ID string.
+ *
+ * @return              Returns pointer to the user's ID string.
+ */
 uint8_t *ptrGetUserIDString(void)
 {
     return UserIDString;

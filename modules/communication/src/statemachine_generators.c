@@ -396,9 +396,9 @@ static bool GenerateGetDeviceInfo(circular_buffer_t *Cbuff)
     int32_t count = 0;
 
     /* The strings are at know location */
-    device_id = ptrGetUniqueID();
-    text_bl = ptrGetBootloaderVersion();
-    text_fw = ptrGetFirmwareVersion();
+    device_id = (uint8_t *)ptrGetUniqueID();
+    text_bl = (uint8_t *)ptrGetBootloaderVersion();
+    text_fw = (uint8_t *)ptrGetFirmwareVersion();
     text_usr = ptrGetUserIDString();
 
     /* Find the length of the string */
