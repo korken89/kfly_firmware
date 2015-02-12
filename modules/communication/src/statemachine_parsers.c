@@ -68,7 +68,7 @@ static void ParseViconMeasurement(parser_holder_t *pHolder);
 /*===========================================================================*/
 
 /**
- * Lookup table for all the serial parsers.
+ * @brief Lookup table for all the serial parsers.
  */
 static const parser_t parser_lookup[128] = {
     NULL,                             /* 0:   Cmd_None                        */
