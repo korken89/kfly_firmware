@@ -1,8 +1,8 @@
 /* *
  *
  * All the parsers for the different packages.
- * To expand the functionality of the serial com is just to add
- * functions here and add them to the serial com switch-statement.
+ * To expand the functionality of the serial communication is just to add
+ * functions here and add them to the parser_lookup table.
  *
  * */
 
@@ -19,6 +19,7 @@
 #include "sensor_read.h"
 #include "estimation.h"
 #include "control.h"
+#include "vicon.h"
 #include "statemachine_parsers.h"
 
 /*===========================================================================*/
@@ -56,6 +57,7 @@ static void ParseGetEstimationVelocity(parser_holder_t *pHolder);
 static void ParseGetEstimationPosition(parser_holder_t *pHolder);
 static void ParseGetEstimationAllStates(parser_holder_t *pHolder);
 static void ParseResetEstimation(parser_holder_t *pHolder);
+static void ParseViconMeasurement(parser_holder_t *pHolder);
 
 /*===========================================================================*/
 /* Module exported variables.                                                */
@@ -64,9 +66,6 @@ static void ParseResetEstimation(parser_holder_t *pHolder);
 /*===========================================================================*/
 /* Module local variables and types.                                         */
 /*===========================================================================*/
-
-/* Temporary holder for IMU calibration data */
-static IMU_Calibration imu_calibration;
 
 /**
  * Lookup table for all the serial parsers.
@@ -199,7 +198,7 @@ static const parser_t parser_lookup[128] = {
     NULL,                             /* 124:                                 */
     NULL,                             /* 125:                                 */
     NULL,                             /* 126:                                 */
-    NULL                              /* 127:                                 */
+    ParseViconMeasurement             /* 127: Cmd_ViconMeasurement            */
 };
 
 /*===========================================================================*/
@@ -636,6 +635,9 @@ static void ParseGetSensorCalibration(parser_holder_t *pHolder)
  */
 static void ParseSetSensorCalibration(parser_holder_t *pHolder)
 {
+    /* Temporary holder for IMU calibration data */
+    static IMU_Calibration imu_calibration;
+
     /* Save the data into the temporary calibration structure */
     if (pHolder->buffer_count == SENSOR_IMU_CALIBRATION_SIZE)
     {
@@ -643,13 +645,13 @@ static void ParseSetSensorCalibration(parser_holder_t *pHolder)
         GenericSaveData((uint8_t *)&imu_calibration,
                         pHolder->buffer,
                         SENSOR_IMU_CALIBRATION_SIZE);
+
+        /* Move the calibration data into the sensor structures */
+        SetIMUCalibration(&imu_calibration);
+
+        /* Reset estimation */
+        ResetEstimation();
     }
-
-    /* Move the calibration data into the sensor structures */
-    SetIMUCalibration(&imu_calibration);
-
-    /* Reset estimation */
-    ResetEstimation();
 }
 
 /**
@@ -714,6 +716,17 @@ static void ParseGetEstimationAllStates(parser_holder_t *pHolder)
  *                      about the transmission.
  */
 static void ParseResetEstimation(parser_holder_t *pHolder)
+{
+    (void)pHolder;
+}
+
+/**
+ * @brief               Parses a ViconMeasurement command.
+ *
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
+ */
+static void ParseViconMeasurement(parser_holder_t *pHolder)
 {
     (void)pHolder;
 }
