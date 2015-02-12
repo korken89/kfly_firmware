@@ -16,9 +16,7 @@
 /* Module exported variables.                                                */
 /*===========================================================================*/
 
-/**
- * @brief Save location for the KFly Version string.
- */
+/** @brief  Save location for the KFly Version string. */
 __attribute__ ((used, section(".sw_version")))
     const char build_version[] = KFLY_VERSION;
 
@@ -26,9 +24,7 @@ __attribute__ ((used, section(".sw_version")))
 /* Module local variables and types.                                         */
 /*===========================================================================*/
 
-/**
- * @brief User defined ID string.
- */
+/** @brief  User defined ID string. */
 static uint8_t UserIDString[USER_ID_MAX_SIZE + 1] = "Test ID string!";
 
 /*===========================================================================*/
