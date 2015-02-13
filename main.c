@@ -13,6 +13,7 @@
 #include "serialmanager.h"
 #include "estimation.h"
 #include "control.h"
+#include "vicon.h"
 
 volatile assert_errors kfly_assert_errors;
 
@@ -145,6 +146,14 @@ int main(void)
      */
     if (SensorReadInit() != MSG_OK)
         osalSysHalt("Sensor initialization failed.");
+
+
+    /*
+     *
+     * Start Vicon Support
+     *
+     */
+    ViconSupportInit();
 
     /*
      *

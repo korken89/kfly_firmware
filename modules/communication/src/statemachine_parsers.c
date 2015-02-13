@@ -728,7 +728,7 @@ static void ParseResetEstimation(parser_holder_t *pHolder)
  */
 static void ParseViconMeasurement(parser_holder_t *pHolder)
 {
-    (void)pHolder;
+    vParseViconDataPackage(pHolder->buffer, pHolder->buffer_count);
 }
 
 /*===========================================================================*/
