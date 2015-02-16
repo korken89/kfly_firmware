@@ -126,7 +126,14 @@ void GetCopyViconMeasurement(vicon_measurement_t *dest)
  */
 void vParseViconDataPackage(uint8_t *payload, uint8_t size)
 {
-    uint8_t expected_size = 0, current_index = 1;
+    /* Check so that at least the info byte is available,
+       else abort processing. */
+    if (size <= 1)
+      return;
+
+    /* current_index = 1 to skip the info byte, and expected_size = 1 to count
+       the info byte into the total size of the message. */
+    uint8_t expected_size = 1, current_index = 1;
     uint8_t available_data = payload[0];
 
     /* Check the expected size for the data. */
