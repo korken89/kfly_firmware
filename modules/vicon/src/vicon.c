@@ -11,9 +11,9 @@
 /*===========================================================================*/
 /* Module local definitions.                                                 */
 /*===========================================================================*/
-#define VICON_QUATERNION_SIZE               (16)
-#define VICON_POSITION_SIZE                 (12)
-#define VICON_VELOCITY_SIZE                 (12)
+#define VICON_QUATERNION_SIZE               (sizeof(quaternion_t))
+#define VICON_POSITION_SIZE                 (sizeof(vector3f_t))
+#define VICON_VELOCITY_SIZE                 (sizeof(vector3f_t))
 
 /*===========================================================================*/
 /* Module exported variables.                                                */
