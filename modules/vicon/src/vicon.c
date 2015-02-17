@@ -78,6 +78,20 @@ void ViconSupportInit(void)
 {
     /* Initialize New Vicon Data event source */
     osalEventObjectInit(&new_vicon_data_es);
+
+    /* Initialize the data structure */
+    vicon_measurement.attitude.q0 = 1.0f;
+    vicon_measurement.attitude.q1 = 0.0f;
+    vicon_measurement.attitude.q2 = 0.0f;
+    vicon_measurement.attitude.q3 = 0.0f;
+
+    vicon_measurement.position.x = 0.0f;
+    vicon_measurement.position.y = 0.0f;
+    vicon_measurement.position.z = 0.0f;
+
+    vicon_measurement.velocity.x = 0.0f;
+    vicon_measurement.velocity.y = 0.0f;
+    vicon_measurement.velocity.z = 0.0f;
 }
 
 /**
