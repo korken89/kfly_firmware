@@ -313,6 +313,34 @@ static inline quaternion_t qnormalize(quaternion_t q)
     return q;
 }
 
+/*
+ * @brief               Performs quaternion integration approximation. This
+ *                      implementation assumes that omega * dt is small.
+ *
+ * @param[in] q_curr    Current quaternion to be integrated.
+ * @param[in] omega     Angular rate.
+ * @param[in] dt        Sampling time.
+ * @return              Integrated quaternion.
+ */
+static inline quaternion_t qint(quaternion_t q_curr,
+                                vector3f_t omega,
+                                const float dt)
+{
+    quaternion_t q_step;
+    float dx, dy, dz;
+
+    dx = 0.5f * omega.x * dt;
+    dy = 0.5f * omega.y * dt;
+    dz = 0.5f * omega.z * dt;
+
+    q_step.q0 = sqrtf(1.0f - dx * dx - dy * dy - dz * dz);
+    q_step.q1 = dx;
+    q_step.q2 = dy;
+    q_step.q3 = dz;
+
+    return qmult(q_step, q_curr);
+}
+
 /*===========================================================================*/
 /* External declarations.                                                    */
 /*===========================================================================*/
