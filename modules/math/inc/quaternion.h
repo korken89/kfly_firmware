@@ -267,6 +267,24 @@ static inline quaternion_t qconj(quaternion_t q)
 }
 
 /*
+ * @brief               Negates a quaternion.
+ *
+ * @param[in] q         Quaternion to be negated.
+ * @return              Negated quaternion.
+ */
+static inline quaternion_t qneg(quaternion_t q)
+{
+    quaternion_t r;
+
+    r.q0 = - q.q0;
+    r.q1 = - q.q1;
+    r.q2 = - q.q2;
+    r.q3 = - q.q3;
+
+    return r;
+}
+
+/*
  * @brief               Calculates the norm of a quaternion.
  *
  * @param[in] q         Input quaternion.
