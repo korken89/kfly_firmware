@@ -53,11 +53,6 @@ static uint32_t myStrlen(const uint8_t *str, const uint32_t max_length);
 /* Module local variables and types.                                         */
 /*===========================================================================*/
 
-/* Temporary IMU data holders */
-static IMU_Data imu_data;
-static IMU_RawData imu_rawdata;
-static IMU_Calibration imu_calibration;
-
 /**
  * The message generation lookup table
  */
@@ -599,6 +594,10 @@ static bool GenerateGetRCValues(circular_buffer_t *Cbuff)
  */
 static bool GenerateGetSensorData(circular_buffer_t *Cbuff)
 {
+    /* Temporary IMU data holder */
+    static IMU_Data imu_data;
+
+
     GetIMUData(&imu_data);
     return GenerateGenericCommand(Cmd_GetSensorData, 
                                   (uint8_t *)&imu_data, 
@@ -615,6 +614,9 @@ static bool GenerateGetSensorData(circular_buffer_t *Cbuff)
  */
 static bool GenerateGetRawSensorData(circular_buffer_t *Cbuff)
 {
+    /* Temporary IMU data holder */
+    static IMU_RawData imu_rawdata;
+
     GetRawIMUData(&imu_rawdata);
     return GenerateGenericCommand(Cmd_GetRawSensorData, 
                                   (uint8_t *)&imu_rawdata, 
@@ -632,6 +634,9 @@ static bool GenerateGetRawSensorData(circular_buffer_t *Cbuff)
  */
 static bool GenerateGetSensorCalibration(circular_buffer_t *Cbuff)
 {
+    /* Temporary IMU data holder */
+    static IMU_Calibration imu_calibration;
+
     GetIMUCalibration(&imu_calibration);
 
     return GenerateGenericCommand(Cmd_GetSensorCalibration, 
