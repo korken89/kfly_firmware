@@ -18,6 +18,7 @@
 typedef struct
 {
     uint8_t available_data;
+    uint32_t frame_number;
     quaternion_t attitude;
     vector3f_t position;
     vector3f_t velocity;

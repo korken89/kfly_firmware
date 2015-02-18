@@ -11,6 +11,7 @@
 /*===========================================================================*/
 /* Module local definitions.                                                 */
 /*===========================================================================*/
+#define VICON_FRAME_NUMBER_SIZE             (sizeof(uint32_t))
 #define VICON_QUATERNION_SIZE               (sizeof(quaternion_t))
 #define VICON_POSITION_SIZE                 (sizeof(vector3f_t))
 #define VICON_VELOCITY_SIZE                 (sizeof(vector3f_t))
@@ -80,6 +81,9 @@ void ViconSupportInit(void)
     osalEventObjectInit(&new_vicon_data_es);
 
     /* Initialize the data structure */
+    vicon_measurement.available_data = 0;
+    vicon_measurement.frame_number = 0;
+
     vicon_measurement.attitude.q0 = 1.0f;
     vicon_measurement.attitude.q1 = 0.0f;
     vicon_measurement.attitude.q2 = 0.0f;
@@ -140,14 +144,16 @@ void GetCopyViconMeasurement(vicon_measurement_t *dest)
  */
 void vParseViconDataPackage(uint8_t *payload, uint8_t size)
 {
-    /* Check so that at least the info byte is available,
+    /* Check so that at least the info byte and frame number is available,
        else abort processing. */
-    if (size <= 1)
+    if (size <= 5)
       return;
 
-    /* current_index = 1 to skip the info byte, and expected_size = 1 to count
-       the info byte into the total size of the message. */
-    uint8_t expected_size = 1, current_index = 1;
+    /* current_index = 5 to skip the info byte and frame number, and
+       expected_size = 5 to count the info byte and frame number into
+       the total size of the message. */
+    uint8_t expected_size = 5, current_index = 5;
+
     uint8_t available_data = payload[0];
 
     /* Check the expected size for the data. */
@@ -200,7 +206,13 @@ void vParseViconDataPackage(uint8_t *payload, uint8_t size)
                             VICON_VELOCITY_SIZE);
         }
 
+        /* Save the info byte */
         vicon_measurement.available_data = available_data;
+
+        /* Save the frame number */
+        GenericSaveData((uint8_t *)&vicon_measurement.frame_number,
+                        &payload[1],
+                        VICON_FRAME_NUMBER_SIZE);
 
         vBroadcastNewViconDataAvailable();
     }
