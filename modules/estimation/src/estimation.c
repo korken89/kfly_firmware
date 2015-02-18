@@ -20,8 +20,8 @@
 /* Module local variables and types.                                         */
 /*===========================================================================*/
 THD_WORKING_AREA(waThreadEstimation, 1024);
-Attitude_Estimation_States states;
-Attitude_Estimation_Data data;
+attitude_states_t states;
+attitude_matrices_t data;
 IMU_Data imu_data;
 EVENTSOURCE_DECL(estimation_events_es);
 
@@ -195,7 +195,7 @@ void ResetEstimation(void)
  * 
  * @return Pointer to the attitude estimation states.
  */
-Attitude_Estimation_States *ptrGetAttitudeEstimationStates(void)
+attitude_states_t *ptrGetAttitudeEstimationStates(void)
 {
     return &states;
 }

@@ -46,7 +46,7 @@
                                                        the angle  */
 
 /* Sizes */
-#define ESTIMATION_STATES_SIZE              (sizeof(Attitude_Estimation_States))
+#define ESTIMATION_STATES_SIZE              (sizeof(attitude_states_t))
 #define ESTIMATION_ATTITUDE_STATE_SIZE      (sizeof(quaternion_t))
 #define ESTIMATION_RATE_OFFSET              (ESTIMATION_ATTITUDE_STATE_SIZE)
 #define ESTIMATION_RATE_STATE_SIZE          (sizeof(vector3f_t))
@@ -71,7 +71,7 @@ typedef struct
      * @brief   Angular rate bias in rad/s.
      */
     vector3f_t wb;
-} Attitude_Estimation_States;
+} attitude_states_t;
 
 /**
  * @brief   EKF matrices.
@@ -98,7 +98,7 @@ typedef struct
      * @brief   Temporary matrix 3.
      */
     float T3[3][6];
-} Attitude_Estimation_Data;
+} attitude_matrices_t;
 
 /*===========================================================================*/
 /* Module macros.                                                            */
@@ -111,15 +111,15 @@ typedef struct
 /*===========================================================================*/
 /* External declarations.                                                    */
 /*===========================================================================*/
-void AttitudeEstimationInit(Attitude_Estimation_States *states,
-                            Attitude_Estimation_Data *settings,
+void AttitudeEstimationInit(attitude_states_t *states,
+                            attitude_matrices_t *settings,
                             quaternion_t *start_attitude,
                             vector3f_t *start_bias);
 void GenerateStartingGuess(vector3f_t *acc,
                            vector3f_t *mag, 
                            quaternion_t *attitude_guess);
-void InnovateAttitudeEKF(Attitude_Estimation_States *states,
-                         Attitude_Estimation_Data *settings, 
+void InnovateAttitudeEKF(attitude_states_t *states,
+                         attitude_matrices_t *settings,
                          float gyro[3],
                          float acc[3],
                          float mag[3],

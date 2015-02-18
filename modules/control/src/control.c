@@ -220,7 +220,7 @@ static THD_FUNCTION(ThreadControl, arg)
     event_listener_t el;
 
     /* Estimation states */
-    Attitude_Estimation_States *states = ptrGetAttitudeEstimationStates();
+    attitude_states_t *states = ptrGetAttitudeEstimationStates();
 
     /* Set thread name */
     chRegSetThreadName("Control");

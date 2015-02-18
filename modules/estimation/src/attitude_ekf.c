@@ -34,8 +34,8 @@
  * @param[in] start_attitude    Pointer to the starting guess of attitude.
  * @param[in] start_bias        Pointer to the starting guess of gyro bias.
  */
-void AttitudeEstimationInit(Attitude_Estimation_States *states,
-                            Attitude_Estimation_Data *data,
+void AttitudeEstimationInit(attitude_states_t *states,
+                            attitude_matrices_t *data,
                             quaternion_t *start_attitude,
                             vector3f_t *start_bias)
 {
@@ -128,8 +128,8 @@ void GenerateStartingGuess(vector3f_t *acc,
  * @param u_sum[in]       The sum of squared control signals.
  * @param dt[in]          The size of the time step.
  */
-void InnovateAttitudeEKF(Attitude_Estimation_States *states,
-                         Attitude_Estimation_Data *data, 
+void InnovateAttitudeEKF(attitude_states_t *states,
+                         attitude_matrices_t *data,
                          float gyro[3],
                          float acc[3],
                          float mag[3],
