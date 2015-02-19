@@ -66,10 +66,13 @@ void vInnovateViconEstimator(attitude_states_t *states,
     quaternion_t q_err;
 
 
+    /* Get the current Vicon data */
+    GetCopyViconMeasurement(&vicon_data);
+
     /* 1. Remove bias from the measurement. */
     w_hat = vector_sub(array_to_vector(imu_data->gyroscope), states->wb);
 
-
+    /* Check if there was new Vicon data. */
     if ((vicon_data.frame_number > old_frame_number) &&
         (vicon_data.available_data & VICON_QUATERNION_MASK))
     {
