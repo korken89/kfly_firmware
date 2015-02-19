@@ -37,7 +37,7 @@
  * @param[out] c        Cosine output
  * @param[out] s        Sine output
  */
-static inline void givens(float a, float b, float *c, float *s)
+static inline void givens(const float a, const float b, float *c, float *s)
 {
     float r;
 
@@ -65,7 +65,7 @@ static inline void givens(float a, float b, float *c, float *s)
  * @param[in] j         Input to the j-th column/row.
  * @param[in] n         Columns in matrix
  */
-static inline void givens_mapp(float *a, float c, float s,
+static inline void givens_mapp(float *a, const float c, const float s,
                                const int i, const int j, const int n)
 {
     int k;
@@ -585,7 +585,7 @@ static inline void ul_mul(float *a, const int n)
  * @param[in] n         Number of rows and columns in matrix.
  * @return              Returns the result of the product in the second matrix.
  */
-static inline void uu_mul(float *a, float *b, const int n)
+static inline void uu_mul(const float *a, float *b, const int n)
 {
     /* *
      *

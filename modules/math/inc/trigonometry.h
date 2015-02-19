@@ -28,7 +28,7 @@
  * @param[in] x         Second parameter.
  * @return              The acrtan.
  */
-static inline float fastatan2(float y, float x)
+static inline float fastatan2(const float y, const float x)
 {
     const float coeff_1 = PI * 0.25f;
     const float coeff_2 = PI * 0.75f;
@@ -65,7 +65,7 @@ static inline float fastatan2(float y, float x)
  * @param[in] p         Input exponent.
  * @return              The calculated power.
  */
-static inline float fastpow2(float p)
+static inline float fastpow2(const float p)
 {
     float offset = (p < 0) ? 1.0f : 0.0f;
     float clipp = (p < -126) ? -126.0f : p;
@@ -84,7 +84,7 @@ static inline float fastpow2(float p)
  * @param[in] p         Input exponent.
  * @return              The calculated power.
  */
-static inline float fastexp(float p)
+static inline float fastexp(const float p)
 {
     return fastpow2(1.442695040f * p);
 }
@@ -99,7 +99,7 @@ static inline float fastexp(float p)
  * @param[in] x         Input value.
  * @return              The bounded value.
  */
-static inline float bound(float max, float min, float x)
+static inline float bound(const float max, const float min, const float x)
 {
     if (x > max)
         return max;
@@ -165,7 +165,7 @@ static inline float fast_cos(float x)
  * @param[in] x         Input value.
  * @return              The floor value.
  */
-static inline float myfloor(float x)
+static inline float myfloor(const float x)
 {
     if (x > 0.0f)
         return (int)x;
@@ -180,7 +180,7 @@ static inline float myfloor(float x)
  * @param[in] m         Input mod value.
  * @return              The remainder of x / m.
  */
-static inline float myfmodf(float x, float m)
+static inline float myfmodf(const float x, const float m)
 {
     return x - myfloor(x / m) * m;
 }

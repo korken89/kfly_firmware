@@ -69,7 +69,7 @@ typedef struct
  * @param[in] w         Second vector to be added. 
  * @return              The sum of the two vectors.
  */
-static inline vector3f_t vector_add(vector3f_t v, vector3f_t w)
+static inline vector3f_t vector_add(const vector3f_t v, const vector3f_t w)
 {
     vector3f_t r;
 
@@ -87,7 +87,7 @@ static inline vector3f_t vector_add(vector3f_t v, vector3f_t w)
  * @param[in] w         Second vector to be subtraced. 
  * @return              The difference of the two vectors.
  */
-static inline vector3f_t vector_sub(vector3f_t v, vector3f_t w)
+static inline vector3f_t vector_sub(const vector3f_t v, const vector3f_t w)
 {
     vector3f_t r;
 
@@ -105,7 +105,7 @@ static inline vector3f_t vector_sub(vector3f_t v, vector3f_t w)
  * @param[in] scale     Scaling constant.
  * @return              The scaled vector.
  */
-static inline vector3f_t vector_scale(vector3f_t v, float scale)
+static inline vector3f_t vector_scale(const vector3f_t v, const float scale)
 {
     vector3f_t r;
 
@@ -123,7 +123,7 @@ static inline vector3f_t vector_scale(vector3f_t v, float scale)
  * @param[in] w         Second vector to be dotted. 
  * @return              The dot product of the two vectors.
  */
-static inline float vector_dot_product(vector3f_t v, vector3f_t w)
+static inline float vector_dot_product(const vector3f_t v, const vector3f_t w)
 {
     float r;
 
@@ -139,7 +139,8 @@ static inline float vector_dot_product(vector3f_t v, vector3f_t w)
  * @param[in] w         Second vector to be crossed. 
  * @return              The cross product of the two vectors.
  */
-static inline vector3f_t vector_cross_product(vector3f_t v, vector3f_t w)
+static inline vector3f_t vector_cross_product(const vector3f_t v,
+                                              const vector3f_t w)
 {
     vector3f_t r;
 
@@ -157,7 +158,7 @@ static inline vector3f_t vector_cross_product(vector3f_t v, vector3f_t w)
  * @param[in] v         Vector to be rotated. 
  * @return              The rotated vector.
  */
-static inline vector3f_t vector_rotation(float R[3][3], vector3f_t v)
+static inline vector3f_t vector_rotation(float R[3][3], const vector3f_t v)
 {
     vector3f_t rot;
 
@@ -175,7 +176,8 @@ static inline vector3f_t vector_rotation(float R[3][3], vector3f_t v)
  * @param[in] v         Vector to be rotated. 
  * @return              The rotated vector.
  */
-static inline vector3f_t vector_rotation_transposed(float R[3][3], vector3f_t v)
+static inline vector3f_t vector_rotation_transposed(float R[3][3],
+                                                    const vector3f_t v)
 {
     vector3f_t rot;
 
@@ -192,7 +194,7 @@ static inline vector3f_t vector_rotation_transposed(float R[3][3], vector3f_t v)
  * @param[in] v         Input vector. 
  * @return              The vector norm.
  */
-static inline float vector_norm(vector3f_t v)
+static inline float vector_norm(const vector3f_t v)
 {
     return sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
 }
@@ -206,7 +208,9 @@ static inline float vector_norm(vector3f_t v)
  * @param[in] f         Second scaling constant.
  * @return              Converted quaternion.
  */
-static inline quaternion_t grp2q(vector3f_t p, const float a, const float f)
+static inline quaternion_t grp2q(const vector3f_t p,
+                                 const float a,
+                                 const float f)
 {
     float sq, inv;
     quaternion_t q;
@@ -230,7 +234,7 @@ static inline quaternion_t grp2q(vector3f_t p, const float a, const float f)
  * @param[in] b         Second quaternion to be multiplied.
  * @return              Multiplied quaternion.
  */
-static inline quaternion_t qmult(quaternion_t a, quaternion_t b)
+static inline quaternion_t qmult(const quaternion_t a, const quaternion_t b)
 {
     /**
      * q = [a(1)*b(1) - a(2)*b(2) - a(3)*b(3) - a(4)*b(4);
@@ -254,7 +258,7 @@ static inline quaternion_t qmult(quaternion_t a, quaternion_t b)
  * @param[in] q         Quaternion to be conjugated.
  * @return              Conjugated quaternion.
  */
-static inline quaternion_t qconj(quaternion_t q)
+static inline quaternion_t qconj(const quaternion_t q)
 {
     quaternion_t r;
 
@@ -272,7 +276,7 @@ static inline quaternion_t qconj(quaternion_t q)
  * @param[in] q         Quaternion to be negated.
  * @return              Negated quaternion.
  */
-static inline quaternion_t qneg(quaternion_t q)
+static inline quaternion_t qneg(const quaternion_t q)
 {
     quaternion_t r;
 
@@ -290,7 +294,7 @@ static inline quaternion_t qneg(quaternion_t q)
  * @param[in] q         Input quaternion.
  * @return              Quaternion norm.
  */
-static inline float qnorm(quaternion_t q)
+static inline float qnorm(const quaternion_t q)
 {
     return sqrtf(q.q0*q.q0 + q.q1*q.q1 + q.q2*q.q2 + q.q3*q.q3);
 }
@@ -301,16 +305,17 @@ static inline float qnorm(quaternion_t q)
  * @param[in] q         Quaternion to be normalized.
  * @return              Normalized quaternion.
  */
-static inline quaternion_t qnormalize(quaternion_t q)
+static inline quaternion_t qnormalize(const quaternion_t q)
 {
+    quaternion_t r;
     float invNorm = 1.0f / sqrtf(q.q0*q.q0 + q.q1*q.q1 + q.q2*q.q2 + q.q3*q.q3);
 
-    q.q0 *= invNorm;
-    q.q1 *= invNorm;
-    q.q2 *= invNorm;
-    q.q3 *= invNorm;
+    r.q0 = q.q0 * invNorm;
+    r.q1 = q.q1 * invNorm;
+    r.q2 = q.q2 * invNorm;
+    r.q3 = q.q3 * invNorm;
 
-    return q;
+    return r;
 }
 
 /*
@@ -322,8 +327,8 @@ static inline quaternion_t qnormalize(quaternion_t q)
  * @param[in] dt        Sampling time.
  * @return              Integrated quaternion.
  */
-static inline quaternion_t qint(quaternion_t q_curr,
-                                vector3f_t omega,
+static inline quaternion_t qint(const quaternion_t q_curr,
+                                const vector3f_t omega,
                                 const float dt)
 {
     quaternion_t q_step;
@@ -344,7 +349,7 @@ static inline quaternion_t qint(quaternion_t q_curr,
 /*===========================================================================*/
 /* External declarations.                                                    */
 /*===========================================================================*/
-void euler2quat(float, float, float, quaternion_t *);
+void euler2quat(float roll, float pitch, float yaw, quaternion_t *q);
 void q2dcm(float R[3][3], quaternion_t *q);
 
 #endif
