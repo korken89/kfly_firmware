@@ -63,6 +63,23 @@ typedef struct
 /*===========================================================================*/
 
 /*
+ * @brief               Converts an 3-element float array to a vector.
+ *
+ * @param[in] a         Array to be converted.
+ * @return              The converted vector.
+ */
+static inline vector3f_t array_to_vector(float a[3])
+{
+    vector3f_t r;
+
+    r.x = a[0];
+    r.y = a[1];
+    r.z = a[2];
+
+    return r;
+}
+
+/*
  * @brief               Adds two vectors.
  *
  * @param[in] v         First vector to be added. 
