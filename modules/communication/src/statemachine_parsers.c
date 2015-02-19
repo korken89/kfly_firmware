@@ -636,7 +636,7 @@ static void ParseGetSensorCalibration(parser_holder_t *pHolder)
 static void ParseSetSensorCalibration(parser_holder_t *pHolder)
 {
     /* Temporary holder for IMU calibration data */
-    static IMU_Calibration imu_calibration;
+    static imu_calibration_t imu_calibration;
 
     /* Save the data into the temporary calibration structure */
     if (pHolder->buffer_count == SENSOR_IMU_CALIBRATION_SIZE)

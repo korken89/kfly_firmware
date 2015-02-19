@@ -733,7 +733,7 @@ void ControlInit(void)
 void vTransmitExperimentData(void)
 {
     static Experiment_Data exp_data;
-    static IMU_RawData exp_imu_data;
+    static imu_raw_data_t exp_imu_data;
     static uint8_t cnt = 0;
 
     /* Get and format the data */
@@ -815,7 +815,7 @@ void vUpdateControlAction(quaternion_t *q_m, vector3f_t *omega_m, float dt)
             break;
     }
 
-    vTransmitExperimentData();
+    //vTransmitExperimentData();
 }
 
 /**

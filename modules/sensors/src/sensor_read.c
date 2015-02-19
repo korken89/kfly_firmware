@@ -13,7 +13,7 @@
 /* Module local definitions.                                                 */
 /*===========================================================================*/
 static int16_t twoscomplement2signed(uint8_t msb, uint8_t lsb);
-static void ApplyCalibration(Sensor_Calibration *cal,
+static void ApplyCalibration(sensor_calibration_t *cal,
                              int16_t raw_data[3], 
                              float calibrated_data[3],
                              float sensor_gain);
@@ -31,7 +31,7 @@ static void HMC5983ConvertAndSave(HMC5983_Data *dh,
 /*===========================================================================*/
 /* MPU6050 calibration, data holder and configurations */
 EVENTSOURCE_DECL(new_data_es);
-Sensor_Calibration mpu6050cal;
+sensor_calibration_t mpu6050cal;
 MPU6050_Data mpu6050data;
 uint32_t calibration_timestamp;
 static const MPU6050_Configuration mpu6050cfg = {
@@ -53,7 +53,7 @@ static const MPU6050_Configuration mpu6050cfg = {
 };
 
 /* HMC5983 calibration, data holder and configuration */
-Sensor_Calibration hmc5983cal;
+sensor_calibration_t hmc5983cal;
 HMC5983_Data hmc5983data;
 static const HMC5983_Configuration hmc5983cfg = {
     HMC5983_TEMPERATURE_ENABLE,     /* Enable/disable temperature sensor  */
@@ -69,7 +69,7 @@ static const HMC5983_Configuration hmc5983cfg = {
     &I2CD2                          /* Pointer to I2C Driver              */
 };
 /* Private pointers to sensor configurations */
-static const Sensor_Read_Configuration sensorcfg = {
+static const sensor_read_configuration_t sensorcfg = {
     &mpu6050cfg,
     &hmc5983cfg,
     &mpu6050cal,
@@ -86,7 +86,7 @@ uint8_t temp_data[14]; /* NOTE: This variable may NOT be placed in CCM
                                  memory because DMA directly accesses it. */
 
 /* Temporary holder for IMU calibration while saving to flash */
-IMU_Calibration imu_cal;
+imu_calibration_t imu_cal;
 
 /* Working area for the sensor read thread */
 THD_WORKING_AREA(waThreadSensorRead, 128);
@@ -130,7 +130,7 @@ static THD_FUNCTION(ThreadSensorReadFlashSave, arg)
         FlashSave_Write(FlashSave_STR2ID("SENC"),
                         true,
                         (uint8_t *)&imu_cal,
-                        sizeof(IMU_Calibration));
+                        sizeof(imu_calibration_t));
     }
 }
 
@@ -265,7 +265,7 @@ static int16_t twoscomplement2signed(uint8_t msb, uint8_t lsb)
  * @param[out] calibrated_data Pointer to the calibrated data array.
  * @param[in] sensor_gain The gain of the sensor after calibration.
  */
-static void ApplyCalibration(Sensor_Calibration *cal,
+static void ApplyCalibration(sensor_calibration_t *cal,
                              int16_t raw_data[3], 
                              float calibrated_data[3],
                              float sensor_gain)
@@ -575,9 +575,9 @@ float *ptrGetMagnetometerData(void)
 
 /**
  * @brief       Get all the IMU data.
- * @param[out]  data  Pointer to IMU_Data structure in which to save the data.
+ * @param[out]  data  Pointer to imu_data_t structure in which to save the data.
  */
-void GetIMUData(IMU_Data *data)
+void GetIMUData(imu_data_t *data)
 {
     int i;
 
@@ -603,10 +603,10 @@ void GetIMUData(IMU_Data *data)
 
 /**
  * @brief       Get all the raw IMU data.
- * @param[out]  data  Pointer to IMU_RawData structure in which to
+ * @param[out]  data  Pointer to imu_raw_data_t structure in which to
  *                    save the data.
  */
-void GetRawIMUData(IMU_RawData *data)
+void GetRawIMUData(imu_raw_data_t *data)
 {
     int i;
 
@@ -635,10 +635,10 @@ void GetRawIMUData(IMU_RawData *data)
 
 /**
  * @brief       Get the IMU calibration data.
- * @param[out]  data  Pointer to IMU_Calibration structure in which to
+ * @param[out]  data  Pointer to imu_calibration_t structure in which to
  *                    save the data.
  */
-void GetIMUCalibration(IMU_Calibration *cal)
+void GetIMUCalibration(imu_calibration_t *cal)
 {
     int i;
 
@@ -662,10 +662,10 @@ void GetIMUCalibration(IMU_Calibration *cal)
 
 /**
  * @brief       Set the IMU calibration data.
- * @param[in]  data   Pointer to IMU_Calibration structure from which to
+ * @param[in]  data   Pointer to imu_calibration_t structure from which to
  *                    read the data.
  */
-void SetIMUCalibration(IMU_Calibration *cal)
+void SetIMUCalibration(imu_calibration_t *cal)
 {
     int i;
 
@@ -739,7 +739,7 @@ void UnlockSensorCalibration(void)
  * 
  * @return  Pointer to the accelerometer calibration.
  */
-Sensor_Calibration *ptrGetAccelerometerCalibration(void)
+sensor_calibration_t *ptrGetAccelerometerCalibration(void)
 {
     return &mpu6050cal;
 }
@@ -749,7 +749,7 @@ Sensor_Calibration *ptrGetAccelerometerCalibration(void)
  * 
  * @return  Pointer to the magnetometer calibration.
  */
-Sensor_Calibration *ptrGetMagnetometerCalibration(void)
+sensor_calibration_t *ptrGetMagnetometerCalibration(void)
 {
     return &hmc5983cal;
 }

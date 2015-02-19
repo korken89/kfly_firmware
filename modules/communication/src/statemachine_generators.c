@@ -595,7 +595,7 @@ static bool GenerateGetRCValues(circular_buffer_t *Cbuff)
 static bool GenerateGetSensorData(circular_buffer_t *Cbuff)
 {
     /* Temporary IMU data holder */
-    static IMU_Data imu_data;
+    static imu_data_t imu_data;
 
 
     GetIMUData(&imu_data);
@@ -615,7 +615,7 @@ static bool GenerateGetSensorData(circular_buffer_t *Cbuff)
 static bool GenerateGetRawSensorData(circular_buffer_t *Cbuff)
 {
     /* Temporary IMU data holder */
-    static IMU_RawData imu_rawdata;
+    static imu_raw_data_t imu_rawdata;
 
     GetRawIMUData(&imu_rawdata);
     return GenerateGenericCommand(Cmd_GetRawSensorData, 
@@ -635,7 +635,7 @@ static bool GenerateGetRawSensorData(circular_buffer_t *Cbuff)
 static bool GenerateGetSensorCalibration(circular_buffer_t *Cbuff)
 {
     /* Temporary IMU data holder */
-    static IMU_Calibration imu_calibration;
+    static imu_calibration_t imu_calibration;
 
     GetIMUCalibration(&imu_calibration);
 

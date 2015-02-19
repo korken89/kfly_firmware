@@ -22,7 +22,7 @@
 THD_WORKING_AREA(waThreadEstimation, 1024);
 attitude_states_t states;
 attitude_matrices_t data;
-IMU_Data imu_data;
+imu_data_t imu_data;
 EVENTSOURCE_DECL(estimation_events_es);
 
 static thread_t *tp;

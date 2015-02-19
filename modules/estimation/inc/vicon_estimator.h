@@ -5,6 +5,7 @@
 #include "quaternion.h"
 #include "linear_algebra.h"
 #include "trigonometry.h"
+#include "sensor_read.h"
 #include "attitude_ekf.h"
 #include "vicon.h"
 
@@ -29,7 +30,7 @@
 /*===========================================================================*/
 void vInitializeViconEstimator(attitude_states_t *states);
 void vInnovateViconEstimator(attitude_states_t *states,
-                             vector3f_t gyro_rate,
+                             imu_data_t *imu_data,
                              const float dt,
                              const float gyro_lpf);
 

@@ -11,7 +11,7 @@ typedef struct
     float bias[3];
     float gain[3];
     mutex_t lock;
-} Sensor_Calibration;
+} sensor_calibration_t;
 
 /* Global function defines */
 

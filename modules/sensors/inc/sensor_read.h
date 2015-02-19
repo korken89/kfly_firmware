@@ -11,9 +11,9 @@
 #define ACCGYRO_DATA_AVAILABLE_EVENTMASK            EVENT_MASK(0)
 #define MAG_DATA_AVAILABLE_EVENTMASK                EVENT_MASK(1)
 #define BARO_DATA_AVAILABLE_EVENTMASK               EVENT_MASK(2)
-#define SENSOR_IMU_DATA_SIZE                        (sizeof(IMU_Data))
-#define SENSOR_IMU_RAW_DATA_SIZE                    (sizeof(IMU_RawData))
-#define SENSOR_IMU_CALIBRATION_SIZE                 (sizeof(IMU_Calibration))
+#define SENSOR_IMU_DATA_SIZE                        (sizeof(imu_data_t))
+#define SENSOR_IMU_RAW_DATA_SIZE                    (sizeof(imu_raw_data_t))
+#define SENSOR_IMU_CALIBRATION_SIZE                 (sizeof(imu_calibration_t))
 
 /*===========================================================================*/
 /* Module data structures and types.                                         */
@@ -34,11 +34,11 @@ typedef struct
     /**
      * @brief   Pointer to MPU6050 calibration.
      */
-    Sensor_Calibration *mpu6050cal;
+    sensor_calibration_t *mpu6050cal;
     /**
      * @brief   Pointer to HMC5983 calibration.
      */
-    Sensor_Calibration *hmc5983cal;
+    sensor_calibration_t *hmc5983cal;
     /**
      * @brief   Pointer to calibration time stamp.
      */
@@ -47,7 +47,7 @@ typedef struct
      * @brief   Pointer to the new data event source.
      */
     event_source_t *new_data_es;
-} Sensor_Read_Configuration;
+} sensor_read_configuration_t;
 
 /**
  * @brief   Calibrated IMU data structure.
@@ -70,7 +70,7 @@ typedef struct
      * @brief   Temperature of the accelerometer and gyroscope.
      */
     float temperature;
-} IMU_Data;
+} imu_data_t;
 
 /**
  * @brief   Raw IMU data structure.
@@ -97,7 +97,7 @@ typedef struct
      * @brief   Raw pressure of the barometer.
      */
     uint32_t pressure;
-} IMU_RawData;
+} imu_raw_data_t;
 
 /**
  * @brief   IMU calibration data structure.
@@ -124,7 +124,7 @@ typedef struct
      * @brief   Calibration time stamp.
      */
     uint32_t timestamp;
-} IMU_Calibration;
+} imu_calibration_t;
 
 /*===========================================================================*/
 /* Module macros.                                                            */
@@ -149,15 +149,15 @@ int16_t GetRawGyroscopeTemperature(void);
 float GetGyroscopeTemperature(void);
 int16_t *ptrGetRawMagnetometerData(void);
 float *ptrGetMagnetometerData(void);
-void GetIMUData(IMU_Data *data);
-void GetRawIMUData(IMU_RawData *data);
-void GetIMUCalibration(IMU_Calibration *cal);
-void SetIMUCalibration(IMU_Calibration *cal);
+void GetIMUData(imu_data_t *data);
+void GetRawIMUData(imu_raw_data_t *data);
+void GetIMUCalibration(imu_calibration_t *cal);
+void SetIMUCalibration(imu_calibration_t *cal);
 void LockSensorStructures(void);
 void UnlockSensorStructures(void);
 void LockSensorCalibration(void);
 void UnlockSensorCalibration(void);
-Sensor_Calibration *ptrGetAccelerometerCalibration(void);
-Sensor_Calibration *ptrGetMagnetometerCalibration(void);
+sensor_calibration_t *ptrGetAccelerometerCalibration(void);
+sensor_calibration_t *ptrGetMagnetometerCalibration(void);
 
 #endif
