@@ -98,7 +98,7 @@ void vInnovateViconEstimator(attitude_states_t *states,
         states->q = qint(states->q, w_hat, dt);
     }
 
-    /* 6. Apply low-pass filtering of gyro data. */
+    /* 6. Apply low-pass filtering of gyro data and save it. */
 
 
 
