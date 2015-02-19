@@ -1,7 +1,9 @@
 #ifndef __HMC5983_H
 #define __HMC5983_H
 
-/* Defines */
+/*===========================================================================*/
+/* Module global definitions.                                                */
+/*===========================================================================*/
 #define HMC5983_ADDRESS                     0x1E
 
 #define HMC5983_RA_CONFIG_A                 0x00
@@ -80,9 +82,9 @@
 #define HMC5983_LOW_POWER_ENABLE            (1 << HMC5983_MR5_BIT)
 #define HMC5983_LOW_POWER_DISABLE           (0 << HMC5983_MR5_BIT)
 
-/* Global variable defines */
-
-/* Typedefs */
+/*===========================================================================*/
+/* Module data structures and types.                                         */
+/*===========================================================================*/
 typedef struct
 {
     int16_t raw_mag_data[3];    /* Magnetometer raw data holder         */
@@ -106,7 +108,17 @@ typedef struct
     I2CDriver *i2cp;
 } HMC5983_Configuration;
 
-/* Global function defines */
+/*===========================================================================*/
+/* Module macros.                                                            */
+/*===========================================================================*/
+
+/*===========================================================================*/
+/* Module inline functions.                                                  */
+/*===========================================================================*/
+
+/*===========================================================================*/
+/* External declarations.                                                    */
+/*===========================================================================*/
 msg_t HMC5983Init(const HMC5983_Configuration *cfg);
 msg_t HMC5983GetID(const HMC5983_Configuration *cfg, uint8_t id[3]);
 msg_t HMC5983ReadData(const HMC5983_Configuration *cfg, uint8_t data[6]);

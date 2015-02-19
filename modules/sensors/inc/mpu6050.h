@@ -1,8 +1,9 @@
 #ifndef __MPU6050_H
 #define __MPU6050_H
 
-/* Defines */
-
+/*===========================================================================*/
+/* Module global definitions.                                                */
+/*===========================================================================*/
 /* Conversions */
 #define MPU6050_DPS250_TO_RADPS             (0.0174532925f / 131.0f)
 #define MPU6050_DPS500_TO_RADPS             (0.0174532925f / 65.5f)
@@ -228,7 +229,9 @@
 #define MPU6050_CLK_EXT_HSE_REFERENCE       5
 #define MPU6050_CLK_RESET                   7
 
-/* Typedefs */
+/*===========================================================================*/
+/* Module data structures and types.                                         */
+/*===========================================================================*/
 typedef struct
 {
     int16_t raw_accel_data[3];  /* Accelerometer raw data holder        */
@@ -257,9 +260,17 @@ typedef struct
     I2CDriver *i2cp;
 } MPU6050_Configuration;
 
-/* Global variable defines */
+/*===========================================================================*/
+/* Module macros.                                                            */
+/*===========================================================================*/
 
-/* Global function defines */
+/*===========================================================================*/
+/* Module inline functions.                                                  */
+/*===========================================================================*/
+
+/*===========================================================================*/
+/* External declarations.                                                    */
+/*===========================================================================*/
 msg_t MPU6050Init(const MPU6050_Configuration *cfg);
 msg_t MPU6050DeviceReset(const MPU6050_Configuration *cfg);
 msg_t MPU6050GetID(const MPU6050_Configuration *cfg, uint8_t id[1]);
