@@ -32,6 +32,7 @@ void vInitializeViconEstimator(attitude_states_t *states);
 void vInnovateViconEstimator(attitude_states_t *states,
                              imu_data_t *imu_data,
                              const float dt,
+                             const float wb_gain,
                              const float gyro_lpf);
 
 #endif /* __VICON_ESTIMATOR_H */

@@ -7,6 +7,7 @@
 #include "hal.h"
 #include "estimation.h"
 #include "sensor_read.h"
+#include "vicon_estimator.h"
 
 /*===========================================================================*/
 /* Module local definitions.                                                 */
@@ -61,8 +62,8 @@ static THD_FUNCTION(ThreadEstimation, arg)
 
     /* Initialization data */
     //uint32_t i;
-    quaternion_t q_init = {1.0f, 0.0f, 0.0f, 0.0f};
-    vector3f_t am, wb_init = {0.0f, 0.0f, 0.0f}; //, acc_init, mag_init;
+    //quaternion_t q_init = {1.0f, 0.0f, 0.0f, 0.0f};
+    //vector3f_t am, wb_init = {0.0f, 0.0f, 0.0f}; //, acc_init, mag_init;
     bool first_time = true;
 
 
@@ -78,20 +79,22 @@ static THD_FUNCTION(ThreadEstimation, arg)
 
     /* Force an initialization of the estimation */
     //chEvtAddEvents(ESTIMATION_RESET_EVENTMASK);
-    AttitudeEstimationInit(&states, &data, &q_init, &wb_init);
+
+    //AttitudeEstimationInit(&states, &data, &q_init, &wb_init);
+    vInitializeViconEstimator(&states);
 
     while(1)
     {
-        if (isnan(states.q.q0) || isnan(states.q.q1) || isnan(states.q.q2) || isnan(states.q.q3) ||
-            isnan(states.w.x) || isnan(states.w.y) || isnan(states.w.z) ||
-            isnan(states.wb.x) || isnan(states.wb.y) || isnan(states.wb.z))
-            AttitudeEstimationInit(&states, &data, &q_init, &wb_init);
+        //if (isnan(states.q.q0) || isnan(states.q.q1) || isnan(states.q.q2) || isnan(states.q.q3) ||
+        //    isnan(states.w.x) || isnan(states.w.y) || isnan(states.w.z) ||
+        //    isnan(states.wb.x) || isnan(states.wb.y) || isnan(states.wb.z))
+        //    AttitudeEstimationInit(&states, &data, &q_init, &wb_init);
         
         /* Check if there has been a request to reset the filter */
         if (chEvtWaitOneTimeout(ESTIMATION_RESET_EVENTMASK, TIME_IMMEDIATE))
         {
             /* Initialize the estimation */
-            AttitudeEstimationInit(&states, &data, &q_init, &wb_init);
+            //AttitudeEstimationInit(&states, &data, &q_init, &wb_init);
         }
 
         /* Wait for new measurement data */ 
@@ -118,7 +121,14 @@ static THD_FUNCTION(ThreadEstimation, arg)
             /* Get sensor data */
             GetIMUData(&imu_data);
 
-            /* Runs estimation */
+            /* Run estimation */
+            vInnovateViconEstimator(&states,
+                                    &imu_data,
+                                    dt,
+                                    0.1f,
+                                    0.2f);
+
+
             /*InnovateAttitudeEKF(&states,
                             &data, 
                             imu_data.gyroscope,
@@ -128,19 +138,19 @@ static THD_FUNCTION(ThreadEstimation, arg)
                             0.0f,
                             ESTIMATION_DT);*/
 
-            states.w.x = -imu_data.gyroscope[0];
-            states.w.y = -imu_data.gyroscope[1];
-            states.w.z = imu_data.gyroscope[2];
+            //states.w.x = -imu_data.gyroscope[0];
+            //states.w.y = -imu_data.gyroscope[1];
+            //states.w.z = imu_data.gyroscope[2];
     
-            am.x = -imu_data.accelerometer[0];
-            am.y = -imu_data.accelerometer[1];
-            am.z = imu_data.accelerometer[2];
+            //am.x = -imu_data.accelerometer[0];
+            //am.y = -imu_data.accelerometer[1];
+            //am.z = imu_data.accelerometer[2];
     
-            states.q = MadgwickAHRSupdateIMU(states.w,
-                                             am,
-                                             states.q,
-                                             0.15f,
-                                             dt);
+            //states.q = MadgwickAHRSupdateIMU(states.w,
+            //                                 am,
+            //                                 states.q,
+            //                                 0.15f,
+             //                                dt);
     
             /* Broadcast new estimation available */
             osalSysLock();
