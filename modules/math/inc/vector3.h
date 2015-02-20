@@ -192,6 +192,27 @@ static inline float vector_norm(const vector3f_t v)
     return sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
 }
 
+/*
+ * @brief                   Simple low-pass filter for a vector data structure.
+ *                          Applies filtering to all elements of the vector.
+ *
+ * @param[in] input         Input vector.
+ * @param[in] old_output    Old output vector (memory).
+ * @param[in] lpf_gain      The gain of the filter: 0 < gain < 1.
+ * @return                  The filtered vector.
+ */
+static inline    vector3f_t vector_lowpassfilter(const vector3f_t input,
+                                              const vector3f_t old_output,
+                                              const float lpf_gain)
+{
+    /* output = gain * input + (1 - gain) * old_output */
+
+    return vector_add(
+        vector_scale(input, lpf_gain),
+        vector_scale(old_output, 1.0f - lpf_gain)
+    );
+}
+
 /*===========================================================================*/
 /* External declarations.                                                    */
 /*===========================================================================*/
