@@ -60,8 +60,6 @@ void vInnovateViconEstimator(attitude_states_t *states,
                              const float wb_gain,
                              const float gyro_lpf)
 {
-    (void)gyro_lpf;
-
     vector3f_t w_hat, wb_step;
     quaternion_t q_err;
 
