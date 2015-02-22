@@ -31,21 +31,7 @@ static thread_t *tp;
 /*===========================================================================*/
 /* Module local functions.                                                   */
 /*===========================================================================*/
-/**
- * @brief       Accumulates (sums) vectors.
- * 
- * @param[in/out] a     Accumulation vector.
- * @param[in] b         Vector to be accumulated.
- */
-static inline void vector_accumulate(vector3f_t *a, vector3f_t *b)
-{
-    a->x += b->x;
-    a->y += b->y;
-    a->z += b->z;
-}
 
-time_measurement_t mytm;
-float dt;
 /**
  * @brief Main estimation thread.
  * 
@@ -55,6 +41,9 @@ __attribute__((noreturn))
 static THD_FUNCTION(ThreadEstimation, arg)
 {
     (void)arg;
+
+    float dt;
+    time_measurement_t mytm;
 
     chRegSetThreadName("Estimation");
 
