@@ -125,7 +125,7 @@ static THD_FUNCTION(ThreadEstimation, arg)
             vInnovateViconEstimator(&states,
                                     &imu_data,
                                     dt,
-                                    0.1f,
+                                    0.2f,
                                     0.2f);
 
 

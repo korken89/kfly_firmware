@@ -70,7 +70,9 @@ void vInnovateViconEstimator(attitude_states_t *states,
     GetCopyViconMeasurement(&vicon_data);
 
     /* 1. Remove bias from the measurement. */
-    w_hat = vector_sub(array_to_vector(imu_data->gyroscope), states->wb);
+    w_hat   = array_to_vector(imu_data->gyroscope);
+    w_hat.z = - w_hat.z;
+    w_hat   = vector_sub(w_hat, states->wb);
 
     /* Check if there was new Vicon data. */
     if ((vicon_data.frame_number > old_frame_number) &&
@@ -102,9 +104,5 @@ void vInnovateViconEstimator(attitude_states_t *states,
     }
 
     /* 6. Apply low-pass filtering of gyro data and save it. */
-
-
-
-    /* 7. Save the omega. */
-    states->w = w_hat;
+    states->w = vector_lowpassfilter(w_hat, states->w, gyro_lpf);
 }
