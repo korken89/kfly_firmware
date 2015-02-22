@@ -202,8 +202,8 @@ static inline float vector_norm(const vector3f_t v)
  * @return                  The filtered vector.
  */
 static inline    vector3f_t vector_lowpassfilter(const vector3f_t input,
-                                              const vector3f_t old_output,
-                                              const float lpf_gain)
+                                                 const vector3f_t old_output,
+                                                 const float lpf_gain)
 {
     /* output = gain * input + (1 - gain) * old_output */
 
