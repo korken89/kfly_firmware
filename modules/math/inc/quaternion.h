@@ -191,6 +191,24 @@ static inline quaternion_t qint(const quaternion_t q_curr,
     return qmult(q_step, q_curr);
 }
 
+/*
+ * @brief               Converts an 4-element float array to a quaternion.
+ *
+ * @param[in] a         Array to be converted.
+ * @return              The converted vector.
+ */
+static inline quaternion_t array2q(float a[4])
+{
+    quaternion_t q;
+
+    q.q0 = a[0];
+    q.q1 = a[1];
+    q.q2 = a[2];
+    q.q3 = a[3];
+
+    return q;
+}
+
 /*===========================================================================*/
 /* External declarations.                                                    */
 /*===========================================================================*/
