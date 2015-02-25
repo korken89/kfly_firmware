@@ -73,6 +73,37 @@ static inline quaternion_t grp2q(const vector3f_t p,
 }
 
 /*
+ * @brief               Converts a quaternion to a Direction Cosine Matrix.
+ *
+ * @param[out] R        Pointer to the first element in the R matrix.
+ * @param[in] q         Input quaternion.
+ */
+static inline void q2dcm(float R[3][3], const quaternion_t q)
+{
+    /*
+      R = [q(1)^2+q(2)^2-q(3)^2-q(4)^2,       2*(q(2)*q(3)-q(1)*q(4)),       2*(q(2)*q(4)+q(1)*q(3));
+               2*(q(2)*q(3)+q(1)*q(4)),   q(1)^2-q(2)^2+q(3)^2-q(4)^2,       2*(q(3)*q(4)-q(1)*q(2));
+               2*(q(2)*q(4)-q(1)*q(3)),       2*(q(3)*q(4)+q(1)*q(2)),   q(1)^2-q(2)^2-q(3)^2+q(4)^2];
+    */
+    const float q0sq = q.q0 * q.q0;
+    const float q1sq = q.q1 * q.q1;
+    const float q2sq = q.q2 * q.q2;
+    const float q3sq = q.q3 * q.q3;
+
+    R[0][0] = q0sq + q1sq - q2sq - q3sq;
+    R[0][1] = 2.0f * (q.q1 * q.q2 - q.q0 * q.q3);
+    R[0][2] = 2.0f * (q.q1 * q.q3 + q.q0 * q.q2);
+
+    R[1][0] = 2.0f * (q.q1 * q.q2 + q.q0 * q.q3);
+    R[1][1] = q0sq - q1sq + q2sq - q3sq;
+    R[1][2] = 2.0f * (q.q2 * q.q3 - q.q0 * q.q1);
+
+    R[2][0] = 2.0f * (q.q1 * q.q3 - q.q0 * q.q2);
+    R[2][1] = 2.0f * (q.q2 * q.q3 + q.q0 * q.q1);
+    R[2][2] = q0sq - q1sq - q2sq + q3sq;
+}
+
+/*
  * @brief               Performs quaternion multiplication.
  *
  * @param[in] a         First quaternion to be multiplied.
@@ -212,7 +243,9 @@ static inline quaternion_t array2q(float a[4])
 /*===========================================================================*/
 /* External declarations.                                                    */
 /*===========================================================================*/
-void euler2quat(float roll, float pitch, float yaw, quaternion_t *q);
-void q2dcm(float R[3][3], quaternion_t *q);
+void euler2quat(const float roll,
+                const float pitch,
+                const float yaw,
+                quaternion_t *q);
 
 #endif

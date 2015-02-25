@@ -185,7 +185,7 @@ void InnovateAttitudeEKF(attitude_states_t *states,
     theta.z = w_hat.z * dt;
 
     /* Convert the current quaternion to a DCM */
-    q2dcm(R, &states->q);
+    q2dcm(R, states->q);
 
 
     /****************************
