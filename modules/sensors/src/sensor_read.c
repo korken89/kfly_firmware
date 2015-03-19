@@ -35,21 +35,21 @@ sensor_calibration_t mpu6050cal;
 MPU6050_Data mpu6050data;
 uint32_t calibration_timestamp;
 static const MPU6050_Configuration mpu6050cfg = {
-    MPU6050_DLPF_BW_42,             /* Digital low-pass filter config     */
-    MPU6050_EXT_SYNC_DISABLED,      /* External sync config               */
-    MPU6050_GYRO_FS_2000,           /* Gyro range config                  */
-    MPU6050_ACCEL_FS_16,            /* Accel range config                 */
-    MPU6050_FIFO_DISABLED,          /* FIFO config                        */
+    MPU6050_DLPF_BW_256,            /* Digital low-pass filter config: off    */
+    MPU6050_EXT_SYNC_DISABLED,      /* External sync config                   */
+    MPU6050_GYRO_FS_2000,           /* Gyro range config: 2000 dps            */
+    MPU6050_ACCEL_FS_16,            /* Accel range config: 16 g               */
+    MPU6050_FIFO_DISABLED,          /* FIFO config                            */
     MPU6050_INTMODE_ACTIVEHIGH |
     MPU6050_INTDRIVE_PUSHPULL  |
     MPU6050_INTLATCH_50USPULSE |
-    MPU6050_INTCLEAR_ANYREAD,       /* Interrupt config                   */
-    MPU6050_INTDRDY_ENABLE,         /* Interrupt enable config            */
-    MPU6050_ADDRESS_AD0_HIGH,       /* MPU6050 address                    */
-    MPU6050_CLK_X_REFERENCE,        /* Clock reference                    */
-    4,                              /* Sample rate divider                */
-    &mpu6050data,                   /* Pointer to data holder             */
-    &I2CD2                          /* Pointer to I2C Driver              */
+    MPU6050_INTCLEAR_ANYREAD,       /* Interrupt config                       */
+    MPU6050_INTDRDY_ENABLE,         /* Interrupt enable config                */
+    MPU6050_ADDRESS_AD0_HIGH,       /* MPU6050 address                        */
+    MPU6050_CLK_X_REFERENCE,        /* Clock reference                        */
+    11,                             /* Sample rate divider: 8k/12 = 666 Hz    */
+    &mpu6050data,                   /* Pointer to data holder                 */
+    &I2CD2                          /* Pointer to I2C Driver                  */
 };
 
 /* HMC5983 calibration, data holder and configuration */
