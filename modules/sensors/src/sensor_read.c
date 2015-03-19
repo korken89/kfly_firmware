@@ -183,19 +183,8 @@ static THD_FUNCTION(ThreadSensorRead, arg)
             chMtxUnlock(&sensorcfg.mpu6050cfg->data_holder->read_lock);
 
             /* Broadcast new data available */
-            osalSysLock();
-
-            if (chEvtIsListeningI(sensorcfg.new_data_es))
-            {
-                chEvtBroadcastFlagsI(sensorcfg.new_data_es,
-                                     ACCGYRO_DATA_AVAILABLE_EVENTMASK);
-
-                /* osalOsRescheduleS() must be called after a
-                   chEvtBroadcastFlagsI() */
-                osalOsRescheduleS();
-            }
-
-            osalSysUnlock();
+            chEvtBroadcastFlags(sensorcfg.new_data_es,
+                                ACCGYRO_DATA_AVAILABLE_EVENTMASK);
         }
 
         if (events & MAG_DATA_AVAILABLE_EVENTMASK)
@@ -219,19 +208,8 @@ static THD_FUNCTION(ThreadSensorRead, arg)
             chMtxUnlock(&sensorcfg.hmc5983cfg->data_holder->read_lock);
 
             /* Broadcast new data available */
-            osalSysLock();
-
-            if (chEvtIsListeningI(sensorcfg.new_data_es))
-            {
-                chEvtBroadcastFlagsI(sensorcfg.new_data_es,
-                                     MAG_DATA_AVAILABLE_EVENTMASK);
-
-                /* osalOsRescheduleS() must be called after a
-                   chEvtBroadcastFlagsI() */
-                osalOsRescheduleS();
-            }
-
-            osalSysUnlock();
+            chEvtBroadcastFlags(sensorcfg.new_data_es,
+                                MAG_DATA_AVAILABLE_EVENTMASK);
         }
 
         if (events & BARO_DATA_AVAILABLE_EVENTMASK)

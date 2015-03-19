@@ -329,18 +329,7 @@ FlashSave_Status FlashSave_Read(uint32_t uid,
 void vBroadcastFlashSaveEvent(void)
 {
     //vFlashSaveEraseSettings();
-    
-    osalSysLock();
-
-    if (chEvtIsListeningI(&save_to_flash_es))
-    {
-        chEvtBroadcastFlagsI(&save_to_flash_es, FLASHSAVE_SAVE_EVENTMASK);
-
-        /* osalOsRescheduleS() must be called after a chEvtBroadcastFlagsI() */
-        osalOsRescheduleS();
-    }
-
-    osalSysUnlock();
+    chEvtBroadcastFlags(&save_to_flash_es, FLASHSAVE_SAVE_EVENTMASK);
 }
 
 /**

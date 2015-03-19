@@ -172,9 +172,7 @@ static void ParseCPPMInput(RCInput_Data *data,
                      MS2ST(RCINPUT_NO_CON_TIMEOUT_MS),
                      vt_no_connection_timeout_callback,
                      NULL);
-
-            if (chEvtIsListeningI(&rcinput_es))
-                chEvtBroadcastFlagsI(&rcinput_es, RCINPUT_NEWINPUT_EVENTMASK);
+            chEvtBroadcastFlagsI(&rcinput_es, RCINPUT_NEWINPUT_EVENTMASK);
         }
         else
         {
@@ -186,9 +184,7 @@ static void ParseCPPMInput(RCInput_Data *data,
 
                 /* Disable timeout timer and broadcast connection lost */
                 chVTResetI(&rcinput_timeout_vt);
-
-                if (chEvtIsListeningI(&rcinput_es))
-                    chEvtBroadcastFlagsI(&rcinput_es, RCINPUT_LOST_EVENTMASK);
+                chEvtBroadcastFlagsI(&rcinput_es, RCINPUT_LOST_EVENTMASK);
             }
             else
             {
@@ -213,9 +209,7 @@ static void ParseCPPMInput(RCInput_Data *data,
                  MS2ST(RCINPUT_NO_CON_TIMEOUT_MS),
                  vt_no_connection_timeout_callback,
                  NULL);
-
-        if (chEvtIsListeningI(&rcinput_es))
-            chEvtBroadcastFlagsI(&rcinput_es, RCINPUT_ACTIVE_EVENTMASK);
+        chEvtBroadcastFlagsI(&rcinput_es, RCINPUT_ACTIVE_EVENTMASK);
     }
 }
 
@@ -250,9 +244,7 @@ static void ParseRSSIInput(RCInput_Data *data,
 
                 /* Disable timeout timer and broadcast connection lost */
                 chVTResetI(&rcinput_timeout_vt);
-
-                if (chEvtIsListeningI(&rcinput_es))
-                    chEvtBroadcastFlagsI(&rcinput_es, RCINPUT_LOST_EVENTMASK);
+                chEvtBroadcastFlagsI(&rcinput_es, RCINPUT_LOST_EVENTMASK);
             }
             else
                 rssi_counter++;
@@ -337,9 +329,7 @@ static void vt_no_connection_timeout_callback(void *p)
 
     rcinput_data.active_connection = FALSE;
     chVTResetI(&rcinput_timeout_vt);
-
-    if (chEvtIsListeningI(&rcinput_es))
-        chEvtBroadcastFlagsI(&rcinput_es, RCINPUT_LOST_EVENTMASK);
+    chEvtBroadcastFlagsI(&rcinput_es, RCINPUT_LOST_EVENTMASK);
 
     osalSysUnlockFromISR();
 }

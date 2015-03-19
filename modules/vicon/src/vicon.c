@@ -57,13 +57,10 @@ static void vBroadcastNewViconDataAvailable(void)
 {
     /* The lock is called in ParseViconDataPackage() */
 
-    if (chEvtIsListeningI(&new_vicon_data_es))
-    {
-        chEvtBroadcastFlagsI(&new_vicon_data_es, VICON_DATA_EVENTMASK);
+    chEvtBroadcastFlagsI(&new_vicon_data_es, VICON_DATA_EVENTMASK);
 
-        /* osalOsRescheduleS() must be called after a chEvtBroadcastFlagsI() */
-        osalOsRescheduleS();
-    }
+    /* osalOsRescheduleS() must be called after a chEvtBroadcastFlagsI() */
+    osalOsRescheduleS();
 
     osalSysUnlock();
 }
