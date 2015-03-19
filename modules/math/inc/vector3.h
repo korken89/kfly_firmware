@@ -223,16 +223,14 @@ static inline vector3f_t vector_lowpassfilter(const vector3f_t input,
  */
 static inline float fc2lpf_gain(const float fc, const float dt)
 {
-    const float adt = fabsf(dt);
-
-    /* Calculate the time constant */
-    const float rc = 1.0f / (2.0f * (float)M_PI * fabsf(fc));
+    /* From: http://en.wikipedia.org/wiki/Low-pass_filter */
+    const float tmp = 2.0f * (float)M_PI * fabsf(dt) * fabsf(fc);
 
     /* Return the low pass filter gain */
-    if (1.0f / adt < fc)
+    if (1.0f / fabsf(dt) < fc)
         return 1.0f;
     else
-        return adt / (adt + rc);
+        return tmp / (tmp + 1.0f);
 }
 
 /*===========================================================================*/
