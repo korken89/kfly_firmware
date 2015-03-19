@@ -228,7 +228,7 @@ static inline float fc2lpf_gain(const float fc, const float dt)
 
     /* Return the low pass filter gain */
     if (1.0f / fabsf(dt) < fc)
-        return 1.0f;
+        return 1.0f; /* In case of fc > fs, return safe value. */
     else
         return tmp / (tmp + 1.0f);
 }
