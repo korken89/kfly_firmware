@@ -115,8 +115,7 @@ static THD_FUNCTION(ThreadEstimation, arg)
                                     &imu_data,
                                     dt,
                                     0.2f,
-                                    0.2f);
-
+                                    fc2lpf_gain(45, dt)); /* LPF ~ 45 Hz */
 
             /*InnovateAttitudeEKF(&states,
                             &data, 
