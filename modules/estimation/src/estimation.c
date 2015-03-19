@@ -141,19 +141,8 @@ static THD_FUNCTION(ThreadEstimation, arg)
              //                                dt);
     
             /* Broadcast new estimation available */
-            osalSysLock();
-    
-            if (chEvtIsListeningI(&estimation_events_es))
-            {
-                chEvtBroadcastFlagsI(&estimation_events_es,
-                                     ESTIMATION_NEW_ESTIMATION_EVENTMASK);
-    
-                /* osalOsRescheduleS() must be called after a
-                   chEvtBroadcastFlagsI() */
-                osalOsRescheduleS();
-            }
-
-            osalSysUnlock();
+            chEvtBroadcastFlags(&estimation_events_es,
+                                ESTIMATION_NEW_ESTIMATION_EVENTMASK);
         }
     }
 }
