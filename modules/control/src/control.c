@@ -532,17 +532,10 @@ static void vRateControl(vector3f_t *omega_m, float dt)
 {
     vector3f_t u, error;
 
-    static float t1 = 0.0f, t2 = 0.0f, t3 = 0.0f;
-    const float alpha = 0.2f;
-
-    t1 = alpha * omega_m->x + (1.0f - alpha) * t1;
-    t2 = alpha * omega_m->y + (1.0f - alpha) * t2;
-    t3 = alpha * omega_m->z + (1.0f - alpha) * t3;
-
     /* Calculate the errors */
-    error.x = control_reference.rate_reference.x - t2;
-    error.y = control_reference.rate_reference.y - t1;
-    error.z = control_reference.rate_reference.z - t3;
+    error.x = control_reference.rate_reference.x - omega_m->y;
+    error.y = control_reference.rate_reference.y - omega_m->x;
+    error.z = control_reference.rate_reference.z - omega_m->z;
 
     /* Update the PI controllers */
     u.x = fPIUpdate(&control_data.rate_controller[0], error.x, dt);
