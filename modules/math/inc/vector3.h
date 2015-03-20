@@ -215,7 +215,9 @@ static inline vector3f_t vector_lowpassfilter(const vector3f_t input,
 
 /*
  * @brief           Converts cutoff frequency and sampling time to
- *                  low pass filter gain.
+ *                  low pass filter gain alpha:
+ *                  x(k+1) = alpha * u(k) + (1 - alpha) * x(k)
+ *                  where u is the input to the filter.
  *
  * @param[in] fc    Cutoff frequency in Hertz.
  * @param[in] dt    Sampling time in seconds.
