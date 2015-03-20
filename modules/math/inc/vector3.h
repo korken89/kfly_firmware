@@ -217,14 +217,14 @@ static inline vector3f_t vector_lowpassfilter(const vector3f_t input,
  * @brief           Converts cutoff frequency and sampling time to
  *                  low pass filter gain.
  *
- * @param[in] fc    Cutoff frequency in hertz.
+ * @param[in] fc    Cutoff frequency in Hertz.
  * @param[in] dt    Sampling time in seconds.
  * @return          The gain of the filter.
  */
 static inline float fc2lpf_gain(const float fc, const float dt)
 {
     /* From: http://en.wikipedia.org/wiki/Low-pass_filter */
-    const float tmp = 2.0f * (float)M_PI * fabsf(dt) * fabsf(fc);
+    const float tmp = fabsf(dt) * fabsf(fc);
 
     /* Return the low pass filter gain */
     if (1.0f / fabsf(dt) < fc)
