@@ -251,20 +251,20 @@ static THD_FUNCTION(ThreadControlFlashSave, arg)
 {
     (void)arg;
 
-    /* Event registration for new estimation */
+    /* Event registration for flash save event */
     event_listener_t el;
 
     /* Set thread name */
     chRegSetThreadName("Control FlashSave");
 
-    /* Register to new estimation */
+    /* Register to flash save event */
     chEvtRegisterMask(ptrGetFlashSaveEventSource(),
                       &el,
                       FLASHSAVE_SAVE_EVENTMASK);
 
     while (1)
     {
-        /* Wait for new estimation */ 
+        /* Wait for flash save event */
         chEvtWaitOne(FLASHSAVE_SAVE_EVENTMASK);
 
         /* Save Control Parameters */
@@ -419,7 +419,7 @@ static void vRCInputsToControlAction(void)
 {
     float throttle;
 
-    const Flight_Mode selector = FLIGHTMODE_ATTITUDE;
+    const Flight_Mode selector = FLIGHTMODE_RATE;
 
     if (controllers_armed == true)
     {
@@ -427,7 +427,7 @@ static void vRCInputsToControlAction(void)
         {
             control_reference.mode = FLIGHTMODE_RATE;
 
-            control_reference.rate_reference.x = control_limits.max_rate.pitch *
+            control_reference.rate_reference.x = -control_limits.max_rate.pitch *
                                     DEG2RAD * RCInputGetInputLevel(ROLE_PITCH);
 
             control_reference.rate_reference.y = control_limits.max_rate.roll *
@@ -438,10 +438,10 @@ static void vRCInputsToControlAction(void)
             control_reference.mode = FLIGHTMODE_ATTITUDE;
             
             control_reference.attitude_reference.y = control_limits.max_angle.pitch * DEG2RAD * RCInputGetInputLevel(ROLE_PITCH);
-            control_reference.attitude_reference.x = control_limits.max_angle.roll * DEG2RAD * RCInputGetInputLevel(ROLE_ROLL);
+            control_reference.attitude_reference.x = -control_limits.max_angle.roll * DEG2RAD * RCInputGetInputLevel(ROLE_ROLL);
         }
 
-        control_reference.rate_reference.z = control_limits.max_rate.yaw *
+        control_reference.rate_reference.z = -control_limits.max_rate.yaw *
                                     DEG2RAD * RCInputGetInputLevel(ROLE_YAW);
 
         throttle = RCInputGetInputLevel(ROLE_THROTTLE);
@@ -500,15 +500,15 @@ static void vAttitudeControl(quaternion_t *attitude_m,
     vector3f_t err;
 
     /* Calculate the quaternion error */
-    err.x = control_reference.attitude_reference.x + atan2f(2.0f * (attitude_m->q0 * attitude_m->q1 + attitude_m->q2 * attitude_m->q3), 1.0f - 2.0f * (attitude_m->q1 * attitude_m->q1 + attitude_m->q2 * attitude_m->q2));
     err.y = control_reference.attitude_reference.y - asinf(2.0f * (attitude_m->q0 * attitude_m->q2 - attitude_m->q1 * attitude_m->q3));
+    err.x = control_reference.attitude_reference.x + atan2f(2.0f * (attitude_m->q0 * attitude_m->q1 + attitude_m->q2 * attitude_m->q3), 1.0f - 2.0f * (attitude_m->q1 * attitude_m->q1 + attitude_m->q2 * attitude_m->q2));
     err.z = 0.0f;
 
     //atan2f(2.0f * (attitude_m->q0 * attitude_m->q3 + attitude_m->q1 * attitude_m->q2), 1.0f - 2.0f * (attitude_m->q2 * attitude_m->q2 + attitude_m->q3 * attitude_m->q3)))
 
 
     /* Update controllers */
-    u.x = fPIUpdate(&control_data.attitude_controller[0], err.y, dt);
+    u.x = fPIUpdate(&control_data.attitude_controller[0], -err.y, dt);
     u.y = fPIUpdate(&control_data.attitude_controller[1], -err.x, dt);
 
     /* Send bounded control signal to the next step in the cascade */
@@ -538,9 +538,9 @@ static void vRateControl(vector3f_t *omega_m, float dt)
     error.z = control_reference.rate_reference.z - omega_m->z;
 
     /* Update the PI controllers */
-    u.x = fPIUpdate(&control_data.rate_controller[0], error.x, dt);
-    u.y = fPIUpdate(&control_data.rate_controller[1], error.y, dt);
-    u.z = fPIUpdate(&control_data.rate_controller[2], error.z, dt);
+    u.x = fPIUpdate(&control_data.rate_controller[0], -error.x, dt);
+    u.y = fPIUpdate(&control_data.rate_controller[1], -error.y, dt);
+    u.z = fPIUpdate(&control_data.rate_controller[2], -error.z, dt);
 
     /* Send control signal to the next stage */
     control_reference.actuator_desired.pitch = bound(1.0f, -1.0f, u.x);
