@@ -111,7 +111,7 @@ CSRC = $(PORTSRC) \
        $(ADRIVERSSRC) \
        $(CHIBIOS)/os/hal/lib/streams/memstreams.c \
        $(CHIBIOS)/os/hal/lib/streams/chprintf.c \
-       main.c \
+       main.c system_init.c \
        $(MODULES_CSRCS)
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
@@ -144,7 +144,7 @@ ASMSRC = $(PORTASM) $(MODULES_ASRCS)
 INCDIR = $(PORTINC) $(KERNINC) \
          $(HALINC) $(OSALINC) $(PLATFORMINC) $(BOARDINC) \
          $(ADRIVERSINC) $(CHIBIOS)/os/hal/lib/streams $(CHIBIOS)/os/various \
-         $(MODULES_INC)
+         $(MODULES_INC) ./
 
 #
 # Project, sources and paths
