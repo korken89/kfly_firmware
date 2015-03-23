@@ -5,16 +5,20 @@
 /* Module global definitions.                                                */
 /*===========================================================================*/
 
+/** @brief Key for the system shutdown. */
 #define SYSTEM_SHUTDOWN_KEY				0xdeadbeef
 
 /*===========================================================================*/
 /* Module data structures and types.                                         */
 /*===========================================================================*/
 
+/** @brief Structure for critical task subscription. */
 typedef struct _system_critical_subscription
 {
+    /** @brief Pointer to the next critical task structure. */
     struct _system_critical_subscription *next;
-    thread_t thread;
+    /** @brief Pointer to the critical task. */
+    thread_t *thread;
 } system_critical_subscription_t;
 
 /*===========================================================================*/
