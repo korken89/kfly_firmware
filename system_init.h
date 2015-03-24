@@ -14,11 +14,11 @@
  */
 #define DFU_BASE_ADDRESS        0x1FFF0000
 /**
- * @brief Key for the system shutdown.
+ * @brief Address to the DFU's starting value of the MSP.
  */
 #define DFU_MSP_ADDRESS         DFU_BASE_ADDRESS
 /**
- * @brief Key for the system shutdown.
+ * @brief Address to the DFU's reset vector.
  */
 #define DFU_RESET_ADDRESS       (DFU_BASE_ADDRESS + 4)
 
