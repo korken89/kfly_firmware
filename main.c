@@ -1,69 +1,10 @@
 #include "ch.h"
 #include "hal.h"
-#include "eicu.h"
-#include "myusb.h"
-#include "mpu6050.h"
-#include "hmc5983.h"
-#include "flash_save.h"
-#include "sensor_calibration.h"
-#include "sensor_read.h"
-#include "rc_output.h"
-#include "rc_input.h"
-#include "chprintf.h"
-#include "serialmanager.h"
-#include "estimation.h"
-#include "control.h"
-#include "vicon.h"
+#include "system_init.h"
 
 volatile assert_errors kfly_assert_errors;
 
-/* I2C interface #2 Configuration */
-static const I2CConfig i2cfg2 = {
-    OPMODE_I2C,
-    400000,
-    FAST_DUTY_CYCLE_2,
-};
 
-/* SPI1 Configuration */
-static const SPIConfig spi1cfg = {
-  NULL,
-  GPIOA,
-  GPIOA_RF_SEL,
-  SPI_CR1_BR_1 | SPI_CR1_BR_0 | SPI_CR1_CPHA | SPI_CR1_CPOL
-};
-
-/* External interrupt configuration */
-static const EXTConfig extcfg = {
-    {
-        {EXT_CH_MODE_DISABLED, NULL},
-        {EXT_CH_MODE_DISABLED, NULL},
-        {EXT_CH_MODE_DISABLED, NULL},
-        {EXT_CH_MODE_DISABLED, NULL},
-        {EXT_CH_MODE_DISABLED, NULL},
-        {EXT_CH_MODE_DISABLED, NULL},
-        {EXT_CH_MODE_DISABLED, NULL},
-        {EXT_CH_MODE_DISABLED, NULL},
-        {EXT_CH_MODE_DISABLED, NULL},
-        {EXT_CH_MODE_DISABLED, NULL},
-        {EXT_CH_MODE_DISABLED, NULL},
-        {EXT_CH_MODE_DISABLED, NULL},
-        {EXT_CH_MODE_DISABLED, NULL},
-        {EXT_CH_MODE_FALLING_EDGE    |
-         EXT_CH_MODE_AUTOSTART      |
-         EXT_MODE_GPIOC, HMC5983cb},    /* 13: HMC5983 IRQ      */
-        {EXT_CH_MODE_RISING_EDGE   |
-         EXT_CH_MODE_AUTOSTART      |
-         EXT_MODE_GPIOC, MPU6050cb},    /* 14: MPU6050 IRQ      */
-        {EXT_CH_MODE_DISABLED, NULL},   /* 15: RF Module IRQ    */
-        {EXT_CH_MODE_DISABLED, NULL},
-        {EXT_CH_MODE_DISABLED, NULL},
-        {EXT_CH_MODE_DISABLED, NULL},
-        {EXT_CH_MODE_DISABLED, NULL},
-        {EXT_CH_MODE_DISABLED, NULL},
-        {EXT_CH_MODE_DISABLED, NULL},
-        {EXT_CH_MODE_DISABLED, NULL}
-    }
-};
 
 int main(void)
 {
@@ -79,107 +20,39 @@ int main(void)
 
     /*
      *
-     * Initializes a serial-over-USB CDC driver.
-     * 
-     */
-    sduObjectInit(&SDU1);
-    sduStart(&SDU1, &serusbcfg);
-
-    /*
-     *
-     * Activates the USB driver and then the USB bus pull-up on D+.
-     * 
-     */
-    usbDisconnectBus(serusbcfg.usbp);
-    chThdSleepMilliseconds(500);
-    usbStart(serusbcfg.usbp, &usbcfg);
-    usbConnectBus(serusbcfg.usbp);
-
-    /*
-     *
-     * Start the I2C for the sensors
-     * 
-     */
-    i2cStart(&I2CD2, &i2cfg2);
-
-    /*
-     *
-     * Start the SPI for the external flash and the RF module
-     * 
-     */
-    spiStart(&SPID1, &spi1cfg);
-
-    /*
-     *
-     * Start the external interrupts
+     * Initialize all drivers and modules.
      *
      */
-    extStart(&EXTD1, &extcfg);
+    vSystemInit();
 
-    /*
-     *
-     * Start the extended input capture module for RC inputs
-     *
-     */
-    eicuInit();
-
-    /*
-     *
-     * Initialize the external flash and save to flash functionality.
-     * Note: Must be initialized before any module that uses the save to or 
-     *       read from flash functionality.
-     *
-     */
-    FlashSaveInit();
-
-    /*
-     *
-     * Initialize RC inputs
-     *
-     */
-    RCInputInit();
-
-    /*
-     *
-     * Initialize sensors and read out threads
-     *
-     */
-    if (SensorReadInit() != MSG_OK)
-        osalSysHalt("Sensor initialization failed.");
-
-
-    /*
-     *
-     * Start Vicon Support
-     *
-     */
-    ViconSupportInit();
-
-    /*
-     *
-     * Start Serial Manager
-     *
-     */
-    vSerialManagerInit();
-
-    /*
-     *
-     * Initialize the estimation
-     *
-     */
-    EstimationInit();
-
-    /*
-     *
-     * Initialize the controllers
-     *
-     */
-    ControlInit();
-
-
-    while(1)
+    while(bSystemShutdownRequested() == false)
     {
         palTogglePad(GPIOC, GPIOC_LED_USR);
         chThdSleepMilliseconds(200);
     }
+
+    /*
+     *
+     * Deinitialize all drivers and modules.
+     *
+     */
+    vSystemDeinit();
+
+   /*
+    *
+    * All threads, drivers, interrupts and SysTick are now disabled.
+    * The main function is now just a "normal" function again.
+    *
+    */
+
+    /*
+     *
+     * Start the DFU bootloader.
+     * This can be replaced if a custom bootloader is available.
+     *
+     */
+    vSystemStartDFUBootloader();
+
+    /* In case of error get stuck here */
+    while (1);
 }

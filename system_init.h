@@ -12,12 +12,18 @@
 /* Module data structures and types.                                         */
 /*===========================================================================*/
 
-/** @brief Structure for critical task subscription. */
+/**
+ * @brief Structure for critical task subscription.
+ */
 typedef struct _system_critical_subscription
 {
-    /** @brief Pointer to the next critical task structure. */
+    /**
+     * @brief Pointer to the next critical task structure.
+     */
     struct _system_critical_subscription *next;
-    /** @brief Pointer to the critical task. */
+    /**
+     * @brief Pointer to the critical task.
+     */
     thread_t *thread;
 } system_critical_subscription_t;
 
@@ -33,5 +39,11 @@ typedef struct _system_critical_subscription
 /* External declarations.                                                    */
 /*===========================================================================*/
 
+void vSystemInit(void);
+void vSystemDeinit(void);
+bool bSystemShutdownRequested(void);
+void vSystemRequestShutdown(uint32_t key);
+void vSystemCriticalTaskSubscribe(system_critical_subscription_t *sub);
+void vSystemStartDFUBootloader(void);
 
 #endif
