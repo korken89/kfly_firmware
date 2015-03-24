@@ -5,8 +5,22 @@
 /* Module global definitions.                                                */
 /*===========================================================================*/
 
-/** @brief Key for the system shutdown. */
+/**
+ * @brief Key for the system shutdown.
+ */
 #define SYSTEM_SHUTDOWN_KEY				0xdeadbeef
+/**
+ * @brief Base address for the DFU in memory: Table 21, AN2606 for STM32.
+ */
+#define DFU_BASE_ADDRESS        0x1FFF0000
+/**
+ * @brief Key for the system shutdown.
+ */
+#define DFU_MSP_ADDRESS         DFU_BASE_ADDRESS
+/**
+ * @brief Key for the system shutdown.
+ */
+#define DFU_RESET_ADDRESS       (DFU_BASE_ADDRESS + 4)
 
 /*===========================================================================*/
 /* Module data structures and types.                                         */

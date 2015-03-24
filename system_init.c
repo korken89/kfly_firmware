@@ -419,9 +419,9 @@ void vSystemStartDFUBootloader(void)
     __set_PRIMASK(1);
 
     /* Set MSP to default value */
-    __set_MSP(0x20001000);
+    __set_MSP(*(uint32_t *) DFU_MSP_ADDRESS);
 
     /* Start DFU bootloader */
-    JumpToDFU = (void (*) (void)) (*(uint32_t *) 0x1fff0004);
+    JumpToDFU = (void (*) (void)) (*(uint32_t *) DFU_RESET_ADDRESS);
     JumpToDFU();
 }
