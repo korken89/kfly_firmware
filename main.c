@@ -2,9 +2,10 @@
 #include "hal.h"
 #include "system_init.h"
 
+/**
+ * @brief Placeholder for error messages.
+ */
 volatile assert_errors kfly_assert_errors;
-
-
 
 int main(void)
 {
@@ -25,6 +26,11 @@ int main(void)
      */
     vSystemInit();
 
+    /*
+     *
+     * Idle task loop.
+     *
+     */
     while(bSystemShutdownRequested() == false)
     {
         palTogglePad(GPIOC, GPIOC_LED_USR);
