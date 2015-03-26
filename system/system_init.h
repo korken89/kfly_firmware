@@ -9,18 +9,6 @@
  * @brief Key for the system shutdown.
  */
 #define SYSTEM_SHUTDOWN_KEY				0xdeadbeef
-/**
- * @brief Base address for the DFU in memory: Table 21, AN2606 for STM32.
- */
-#define DFU_BASE_ADDRESS                0x1FFF0000
-/**
- * @brief Address to the DFU's starting value of the MSP.
- */
-#define DFU_MSP_ADDRESS                 DFU_BASE_ADDRESS
-/**
- * @brief Address to the DFU's reset vector.
- */
-#define DFU_RESET_ADDRESS               (DFU_BASE_ADDRESS + 4)
 
 /*===========================================================================*/
 /* Module data structures and types.                                         */
@@ -58,6 +46,5 @@ void vSystemDeinit(void);
 bool bSystemShutdownRequested(void);
 void vSystemRequestShutdown(uint32_t key);
 void vSystemCriticalTaskSubscribe(system_critical_subscription_t *sub);
-void vSystemStartDFUBootloader(void);
 
 #endif

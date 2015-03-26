@@ -1,6 +1,7 @@
 #include "ch.h"
 #include "hal.h"
 #include "system_init.h"
+#include "bootloader.h"
 
 /**
  * @brief Placeholder for error messages.
@@ -57,7 +58,7 @@ int main(void)
      * This can be replaced if a custom bootloader is available.
      *
      */
-    vSystemStartDFUBootloader();
+    vBootloaderResetAndStartDFU();
 
     /* In case of error get stuck here */
     while (1);

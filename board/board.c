@@ -17,6 +17,7 @@
 #include "ch.h"
 #include "hal.h"
 #include "board.h"
+#include "bootloader.h"
 
 #if HAL_USE_PAL || defined(__DOXYGEN__)
 /**
@@ -53,6 +54,8 @@ const PALConfig pal_default_config =
  *          and before any other initialization.
  */
 void __early_init(void) {
+
+  vBootloaderStartupCheck();
 
   stm32_clock_init();
 }
