@@ -236,6 +236,16 @@ static void vSystemDeinitList(void)
      * Add all driver and module deinitializations here!
      *
      */
+
+    /*
+     *
+     * Disables the serial-over-USB CDC driver.
+     *
+     */
+    usbDisconnectBus(serusbcfg.usbp);
+    usbStop(serusbcfg.usbp);
+    sduStop(&SDU1);
+
 }
 
 /*
@@ -251,7 +261,7 @@ static void vSystemTerminateCriticalTasks(void)
         system_critical_subscription_t *tmp_sub = base_subscription;
 
         /* Set all critical thread to terminate */
-        while (tmp_sub->next != NULL)
+        while (tmp_sub != NULL)
         {
             chThdTerminate(tmp_sub->thread);
             tmp_sub = tmp_sub->next;
@@ -259,7 +269,7 @@ static void vSystemTerminateCriticalTasks(void)
 
         /* All threads signaled, wait for termination */
         tmp_sub = base_subscription;
-        while (tmp_sub->next != NULL)
+        while (tmp_sub != NULL)
         {
             chThdWait(tmp_sub->thread);
             tmp_sub = tmp_sub->next;

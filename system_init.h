@@ -12,15 +12,15 @@
 /**
  * @brief Base address for the DFU in memory: Table 21, AN2606 for STM32.
  */
-#define DFU_BASE_ADDRESS        0x1FFF0000
+#define DFU_BASE_ADDRESS                0x1FFF0000
 /**
  * @brief Address to the DFU's starting value of the MSP.
  */
-#define DFU_MSP_ADDRESS         DFU_BASE_ADDRESS
+#define DFU_MSP_ADDRESS                 DFU_BASE_ADDRESS
 /**
  * @brief Address to the DFU's reset vector.
  */
-#define DFU_RESET_ADDRESS       (DFU_BASE_ADDRESS + 4)
+#define DFU_RESET_ADDRESS               (DFU_BASE_ADDRESS + 4)
 
 /*===========================================================================*/
 /* Module data structures and types.                                         */
