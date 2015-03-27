@@ -8,6 +8,68 @@
  */
 volatile assert_errors kfly_assert_errors;
 
+static system_critical_subscription_t testSub1;
+
+THD_WORKING_AREA(waThreadTest1, 256);
+static THD_FUNCTION(ThreadTest1, arg)
+{
+    (void)arg;
+
+    int i;
+
+    chRegSetThreadName("Test1");
+
+    testSub1.thread = chThdGetSelfX();
+
+    vSystemCriticalTaskSubscribe(&testSub1);
+
+    while(chThdShouldTerminateX() == false)
+    {
+        palTogglePad(GPIOC, GPIOC_LED_ERR);
+        chThdSleepMilliseconds(100);
+    }
+
+    for (i = 0; i < 6; i++)
+    {
+        palTogglePad(GPIOC, GPIOC_LED_ERR);
+        chThdSleepMilliseconds(500);
+    }
+
+    return 0;
+}
+
+
+
+static system_critical_subscription_t testSub2;
+
+THD_WORKING_AREA(waThreadTest2, 256);
+static THD_FUNCTION(ThreadTest2, arg)
+{
+    (void)arg;
+
+    int i;
+
+    chRegSetThreadName("Test2");
+
+    testSub2.thread = chThdGetSelfX();
+
+    vSystemCriticalTaskSubscribe(&testSub2);
+
+    while(chThdShouldTerminateX() == false)
+    {
+        palTogglePad(GPIOC, GPIOC_LED_USR);
+        chThdSleepMilliseconds(100);
+    }
+
+    for (i = 0; i < 6; i++)
+    {
+        palTogglePad(GPIOC, GPIOC_LED_USR);
+        chThdSleepMilliseconds(500);
+    }
+
+    return 0;
+}
+
 int main(void)
 {
     /*
@@ -27,6 +89,18 @@ int main(void)
      */
     vSystemInit();
 
+    chThdCreateStatic(waThreadTest1,
+                      sizeof(waThreadTest1),
+                      NORMALPRIO,
+                      ThreadTest1,
+                      NULL);
+
+    chThdCreateStatic(waThreadTest2,
+                      sizeof(waThreadTest2),
+                      NORMALPRIO,
+                      ThreadTest2,
+                      NULL);
+
     /*
      *
      * Idle task loop.
@@ -34,8 +108,9 @@ int main(void)
      */
     while(bSystemShutdownRequested() == false)
     {
-        palTogglePad(GPIOC, GPIOC_LED_USR);
-        chThdSleepMilliseconds(200);
+        //palTogglePad(GPIOC, GPIOC_LED_USR);
+        chThdSleepMilliseconds(5000);
+        vSystemRequestShutdown(SYSTEM_SHUTDOWN_KEY);
     }
 
     /*

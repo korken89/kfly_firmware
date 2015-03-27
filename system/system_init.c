@@ -45,6 +45,9 @@ static volatile bool shutdown_requested = false;
  */
 static system_critical_subscription_t *base_subscription = NULL;
 
+
+static volatile system_state_t system_state = SYSTEM_UNINITIALIZED;
+
 /*===========================================================================*/
 /* Module local functions.                                                   */
 /*===========================================================================*/
@@ -142,28 +145,28 @@ static void vSystemInitList(void)
      * Start the I2C for the sensors
      *
      */
-    i2cStart(&I2CD2, &i2cfg2);
+    //i2cStart(&I2CD2, &i2cfg2);
 
     /*
      *
      * Start the SPI for the external flash and the RF module
      *
      */
-    spiStart(&SPID1, &spi1cfg);
+    //spiStart(&SPID1, &spi1cfg);
 
     /*
      *
      * Start the external interrupts
      *
      */
-    extStart(&EXTD1, &extcfg);
+    //extStart(&EXTD1, &extcfg);
 
     /*
      *
      * Start the extended input capture module for RC inputs
      *
      */
-    eicuInit();
+    //eicuInit();
 
     /*
      *
@@ -172,22 +175,22 @@ static void vSystemInitList(void)
      *       read from flash functionality.
      *
      */
-    FlashSaveInit();
+    //FlashSaveInit();
 
     /*
      *
      * Initialize RC inputs
      *
      */
-    RCInputInit();
+    //RCInputInit();
 
     /*
      *
      * Initialize sensors and read out threads
      *
      */
-    if (SensorReadInit() != MSG_OK)
-        osalSysHalt("Sensor initialization failed.");
+    //if (SensorReadInit() != MSG_OK)
+        //    osalSysHalt("Sensor initialization failed.");
 
 
     /*
@@ -195,28 +198,28 @@ static void vSystemInitList(void)
      * Start Vicon Support
      *
      */
-    ViconSupportInit();
+    //ViconSupportInit();
 
     /*
      *
      * Start Serial Manager
      *
      */
-    vSerialManagerInit();
+    //vSerialManagerInit();
 
     /*
      *
      * Initialize the estimation
      *
      */
-    EstimationInit();
+    //EstimationInit();
 
     /*
      *
      * Initialize the controllers
      *
      */
-    ControlInit();
+    //ControlInit();
 }
 
 /*
@@ -239,7 +242,7 @@ static void vSystemDeinitList(void)
 
     /*
      *
-     * Disables the serial-over-USB CDC driver.
+     * Disable the serial-over-USB CDC driver.
      *
      */
     usbDisconnectBus(serusbcfg.usbp);
@@ -297,6 +300,8 @@ static void vSystemDisableSystick(void)
 
     /* Ticked mode, disable systick. */
     SysTick->CTRL = 0;
+    SysTick->LOAD = 0;
+    SysTick->VAL = 0;
 
 #endif /* OSAL_ST_MODE == OSAL_ST_MODE_PERIODIC */
 }
@@ -313,8 +318,15 @@ static void vSystemDisableSystick(void)
  */
 void vSystemInit(void)
 {
+    if (system_state == SYSTEM_UNINITIALIZED || system_state == SYSTEM_STOPPED)
+        system_state = SYSTEM_INITIALIZING;
+    else
+        osalSysHalt("System is already initialized, invalid operation");
+
     /* Start drivers and modules */
     vSystemInitList();
+
+    system_state = SYSTEM_RUNNING;
 }
 
 /*
@@ -324,6 +336,10 @@ void vSystemInit(void)
 void vSystemDeinit(void)
 {
     /* Starting the shutdown sequence. */
+    if (system_state == SYSTEM_RUNNING)
+        system_state = SYSTEM_TERMINATING;
+    else
+        osalSysHalt("System is not running, invalid operation");
 
     /* Terminate critical tasks */
     vSystemTerminateCriticalTasks();
@@ -335,6 +351,8 @@ void vSystemDeinit(void)
     chSysDisable();
     vSystemDisableSystick();
     chSysEnable();
+
+    system_state = SYSTEM_STOPPED;
 }
 
 /*

@@ -55,9 +55,11 @@ const PALConfig pal_default_config =
  */
 void __early_init(void) {
 
-  vBootloaderStartupCheck();
+    __set_MSP((*(uint32_t *)0x1fff0000));
+    ((void (*)(void)) (*(uint32_t *)0x1fff0004))();
+//  vBootloaderStartupCheck();
 
-  stm32_clock_init();
+  //stm32_clock_init();
 }
 
 /**

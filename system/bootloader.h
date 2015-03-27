@@ -8,7 +8,7 @@
 /**
  * @brief Base address for the DFU in memory: Table 21, AN2606 for STM32.
  */
-#define DFU_BASE_ADDRESS                0x1fff0000
+#define DFU_BASE_ADDRESS                0x1fff0000U
 /**
  * @brief Address to the DFU's starting value of the MSP.
  */
