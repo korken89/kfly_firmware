@@ -87,25 +87,30 @@ $(foreach dir, $(MODULES), $(eval MODULES_ASRCS += $(wildcard $(dir)/src/*.s)))
 
 # Imported source files and paths
 CHIBIOS = ../ChibiOS
+# Startup files.
+include $(CHIBIOS)/os/common/ports/ARMCMx/compilers/GCC/mk/startup_stm32f4xx.mk
+# HAL-OSAL files (optional).
 include $(CHIBIOS)/os/hal/hal.mk
+include $(CHIBIOS)/os/hal/ports/STM32/STM32F4xx/platform.mk
 include board/board.mk
+include $(CHIBIOS)/os/hal/osal/rt/osal.mk
+# RTOS files (optional).
+include $(CHIBIOS)/os/rt/rt.mk
+include $(CHIBIOS)/os/rt/ports/ARMCMx/compilers/GCC/mk/port_v7m.mk
+# Other files (optional).
 include system/system.mk
 include drivers/drivers.mk
-include $(CHIBIOS)/os/hal/ports/STM32/STM32F4xx/platform.mk
-include $(CHIBIOS)/os/hal/osal/rt/osal.mk
-include $(CHIBIOS)/os/rt/rt.mk
-include $(CHIBIOS)/os/rt/ports/ARMCMx/compilers/GCC/mk/port_stm32f4xx.mk
-#include $(CHIBIOS)/test/rt/test.mk
 
 # Define linker script file here
 LDSCRIPT= make/STM32F405xG_CCM.ld
 
 # C sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
-CSRC = $(PORTSRC) \
+CSRC = $(STARTUPSRC) \
        $(KERNSRC) \
-       $(HALSRC) \
+       $(PORTSRC) \
        $(OSALSRC) \
+       $(HALSRC) \
        $(PLATFORMSRC) \
        $(BOARDSRC) \
        $(SYSTEMSRC) \
@@ -140,12 +145,12 @@ TCSRC =
 TCPPSRC =
 
 # List ASM source files here
-ASMSRC = $(PORTASM) $(MODULES_ASRCS)
+ASMSRC = $(STARTUPASM) $(PORTASM) $(OSALASM)
 
-INCDIR = $(PORTINC) $(KERNINC) \
-         $(HALINC) $(OSALINC) $(PLATFORMINC) $(BOARDINC) $(SYSTEMINC) \
+INCDIR = $(STARTUPINC) $(KERNINC) $(PORTINC) $(OSALINC) \
+         $(HALINC) $(PLATFORMINC) $(BOARDINC) $(SYSTEMINC) \
          $(ADRIVERSINC) $(CHIBIOS)/os/hal/lib/streams $(CHIBIOS)/os/various \
-         $(MODULES_INC) ./
+         $(MODULES_INC)
 
 #
 # Project, sources and paths
