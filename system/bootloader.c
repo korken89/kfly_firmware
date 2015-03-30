@@ -15,11 +15,11 @@
 /*
  * @brief   Symbol for the end of the RAM.
  */
-extern uint32_t __ram_end__;
+extern uint32_t __heap_end__;
 /*
  * @brief   Bootloader's magic value location.
  */
-#define BOOTLOADER_MAGIC_POSITION           (((uint32_t)&(__ram_end__)) - 4)
+#define BOOTLOADER_MAGIC_POSITION           (((uint32_t)&(__heap_end__)) - 4)
 /*
  * @brief   Bootloader's magic value for entering.
  */

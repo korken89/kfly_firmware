@@ -37,7 +37,7 @@
 
 #define STM32F4xx_MCUCONF
 
-#define CCM_MEMORY                          __attribute__ ((section(".ccm")))
+#define CCM_MEMORY                          __attribute__ ((section(".ram4")))
 
 /*
  * HAL driver system settings.

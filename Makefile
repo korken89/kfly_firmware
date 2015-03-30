@@ -102,7 +102,7 @@ include system/system.mk
 include drivers/drivers.mk
 
 # Define linker script file here
-LDSCRIPT= make/STM32F405xG_CCM.ld
+LDSCRIPT = make/STM32F405xG.ld
 
 # C sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
@@ -145,7 +145,7 @@ TCSRC =
 TCPPSRC =
 
 # List ASM source files here
-ASMSRC = $(STARTUPASM) $(PORTASM) $(OSALASM)
+ASMSRC = $(STARTUPASM) $(PORTASM) $(OSALASM) $(MODULES_ASRCS)
 
 INCDIR = $(STARTUPINC) $(KERNINC) $(PORTINC) $(OSALINC) \
          $(HALINC) $(PLATFORMINC) $(BOARDINC) $(SYSTEMINC) \
