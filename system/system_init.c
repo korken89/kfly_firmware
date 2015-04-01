@@ -145,28 +145,28 @@ static void vSystemInitList(void)
      * Start the I2C for the sensors
      *
      */
-    //i2cStart(&I2CD2, &i2cfg2);
+    i2cStart(&I2CD2, &i2cfg2);
 
     /*
      *
      * Start the SPI for the external flash and the RF module
      *
      */
-    //spiStart(&SPID1, &spi1cfg);
+    spiStart(&SPID1, &spi1cfg);
 
     /*
      *
      * Start the external interrupts
      *
      */
-    //extStart(&EXTD1, &extcfg);
+    extStart(&EXTD1, &extcfg);
 
     /*
      *
      * Start the extended input capture module for RC inputs
      *
      */
-    //eicuInit();
+    eicuInit();
 
     /*
      *
@@ -175,22 +175,22 @@ static void vSystemInitList(void)
      *       read from flash functionality.
      *
      */
-    //FlashSaveInit();
+    FlashSaveInit();
 
     /*
      *
      * Initialize RC inputs
      *
      */
-    //RCInputInit();
+    RCInputInit();
 
     /*
      *
      * Initialize sensors and read out threads
      *
      */
-    //if (SensorReadInit() != MSG_OK)
-        //    osalSysHalt("Sensor initialization failed.");
+    if (SensorReadInit() != MSG_OK)
+        osalSysHalt("Sensor initialization failed.");
 
 
     /*
@@ -198,28 +198,28 @@ static void vSystemInitList(void)
      * Start Vicon Support
      *
      */
-    //ViconSupportInit();
+    ViconSupportInit();
 
     /*
      *
      * Start Serial Manager
      *
      */
-    //vSerialManagerInit();
+    vSerialManagerInit();
 
     /*
      *
      * Initialize the estimation
      *
      */
-    //EstimationInit();
+    EstimationInit();
 
     /*
      *
      * Initialize the controllers
      *
      */
-    //ControlInit();
+    ControlInit();
 }
 
 /*
