@@ -128,7 +128,7 @@ static void vSystemInitList(void)
 
     /*
      *
-     * Initializes a serial-over-USB CDC driver.
+     * Initializes the serial-over-USB CDC driver.
      *
      */
     sduObjectInit(&SDU1);
@@ -142,28 +142,28 @@ static void vSystemInitList(void)
 
     /*
      *
-     * Start the I2C for the sensors
+     * Start the I2C for the sensors.
      *
      */
     i2cStart(&I2CD2, &i2cfg2);
 
     /*
      *
-     * Start the SPI for the external flash and the RF module
+     * Start the SPI for the external flash and the RF module.
      *
      */
     spiStart(&SPID1, &spi1cfg);
 
     /*
      *
-     * Start the external interrupts
+     * Start the external interrupts.
      *
      */
     extStart(&EXTD1, &extcfg);
 
     /*
      *
-     * Start the extended input capture module for RC inputs
+     * Start the extended input capture module for RC inputs.
      *
      */
     eicuInit();
@@ -179,14 +179,14 @@ static void vSystemInitList(void)
 
     /*
      *
-     * Initialize RC inputs
+     * Initialize the RC inputs.
      *
      */
     RCInputInit();
 
     /*
      *
-     * Initialize sensors and read out threads
+     * Initialize the sensors and read out threads.
      *
      */
     if (SensorReadInit() != MSG_OK)
@@ -195,28 +195,28 @@ static void vSystemInitList(void)
 
     /*
      *
-     * Start Vicon Support
+     * Start the Vicon Support.
      *
      */
     ViconSupportInit();
 
     /*
      *
-     * Start Serial Manager
+     * Start the Serial Manager.
      *
      */
     vSerialManagerInit();
 
     /*
      *
-     * Initialize the estimation
+     * Initialize the estimation.
      *
      */
     EstimationInit();
 
     /*
      *
-     * Initialize the controllers
+     * Initialize the controllers.
      *
      */
     ControlInit();
@@ -239,6 +239,28 @@ static void vSystemDeinitList(void)
      * Add all driver and module deinitializations here!
      *
      */
+
+
+    /*
+     *
+     * Stop the external interrupts.
+     *
+     */
+    extStop(&EXTD1);
+
+    /*
+     *
+     * Stop the SPI for the external flash and the RF module.
+     *
+     */
+    spiStop(&SPID1);
+
+    /*
+     *
+     * Stop the I2C for the sensors.
+     *
+     */
+    i2cStop(&I2CD2);
 
     /*
      *
