@@ -43,7 +43,6 @@ static THD_FUNCTION(ThreadEstimation, arg)
     (void)arg;
 
     float dt;
-    time_measurement_t mytm;
 
     chRegSetThreadName("Estimation");
 
@@ -53,8 +52,6 @@ static THD_FUNCTION(ThreadEstimation, arg)
     //uint32_t i;
     //quaternion_t q_init = {1.0f, 0.0f, 0.0f, 0.0f};
     //vector3f_t am, wb_init = {0.0f, 0.0f, 0.0f}; //, acc_init, mag_init;
-    bool first_time = true;
-
 
     /* Event registration for new sensor data */
     event_listener_t el;
@@ -80,44 +77,29 @@ static THD_FUNCTION(ThreadEstimation, arg)
         //    AttitudeEstimationInit(&states, &data, &q_init, &wb_init);
         
         /* Check if there has been a request to reset the filter */
-        if (chEvtWaitOneTimeout(ESTIMATION_RESET_EVENTMASK, TIME_IMMEDIATE))
-        {
+        //if (chEvtWaitOneTimeout(ESTIMATION_RESET_EVENTMASK, TIME_IMMEDIATE))
+       // {
             /* Initialize the estimation */
             //AttitudeEstimationInit(&states, &data, &q_init, &wb_init);
-        }
+        //}
 
         /* Wait for new measurement data */ 
         chEvtWaitOne(ACCGYRO_DATA_AVAILABLE_EVENTMASK);
 
-        if (first_time == true) {
-            /* Initialize the measurements */
-            first_time = false;
-            chTMObjectInit(&mytm);
-            chTMStartMeasurementX(&mytm);
-        } 
-        else
-        {
-            /* Stop and read the time */
-            chTMStopMeasurementX(&mytm);
+        /* Get the correct sampling time */
+        dt = ((float)rtGetLatestAccelerometerSamplingTimeUS()) / 1000000.0f;
 
-            /* Some macro to extract the time */
-            dt = (float)RTC2US(STM32_SYSCLK, mytm.last) / 1000000.0f;
+        /* Get sensor data */
+        GetIMUData(&imu_data);
 
-            /* Restart the measurement */
-            chTMStartMeasurementX(&mytm);
+        /* Run estimation */
+        vInnovateViconEstimator(&states,
+                                &imu_data,
+                                dt,
+                                0.2f,
+                                fc2lpf_gain(45, 0.0015f)); /* LPF ~ 45 Hz */
 
-
-            /* Get sensor data */
-            GetIMUData(&imu_data);
-
-            /* Run estimation */
-            vInnovateViconEstimator(&states,
-                                    &imu_data,
-                                    dt,
-                                    0.2f,
-                                    fc2lpf_gain(45, dt)); /* LPF ~ 45 Hz */
-
-            /*InnovateAttitudeEKF(&states,
+        /*InnovateAttitudeEKF(&states,
                             &data, 
                             imu_data.gyroscope,
                             imu_data.accelerometer,
@@ -126,24 +108,23 @@ static THD_FUNCTION(ThreadEstimation, arg)
                             0.0f,
                             ESTIMATION_DT);*/
 
-            //states.w.x = -imu_data.gyroscope[0];
-            //states.w.y = -imu_data.gyroscope[1];
-            //states.w.z = imu_data.gyroscope[2];
+        //states.w.x = -imu_data.gyroscope[0];
+        //states.w.y = -imu_data.gyroscope[1];
+        //states.w.z = imu_data.gyroscope[2];
     
-            //am.x = -imu_data.accelerometer[0];
-            //am.y = -imu_data.accelerometer[1];
-            //am.z = imu_data.accelerometer[2];
+        //am.x = -imu_data.accelerometer[0];
+        //am.y = -imu_data.accelerometer[1];
+        //am.z = imu_data.accelerometer[2];
     
-            //states.q = MadgwickAHRSupdateIMU(states.w,
-            //                                 am,
-            //                                 states.q,
-            //                                 0.15f,
-             //                                dt);
+        //states.q = MadgwickAHRSupdateIMU(states.w,
+        //                                 am,
+        //                                 states.q,
+        //                                 0.15f,
+        //                                 dt);
     
-            /* Broadcast new estimation available */
-            chEvtBroadcastFlags(&estimation_events_es,
-                                ESTIMATION_NEW_ESTIMATION_EVENTMASK);
-        }
+        /* Broadcast new estimation available */
+        chEvtBroadcastFlags(&estimation_events_es,
+                            ESTIMATION_NEW_ESTIMATION_EVENTMASK);
     }
 }
 
