@@ -88,6 +88,10 @@ uint8_t temp_data[14]; /* NOTE: This variable may NOT be placed in CCM
 /* Temporary holder for IMU calibration while saving to flash */
 imu_calibration_t imu_cal;
 
+/* Time measurement */
+time_measurement_t tm_accgyro;
+rtcnt_t tm_delta;
+
 /* Working area for the sensor read thread */
 THD_WORKING_AREA(waThreadSensorRead, 128);
 THD_WORKING_AREA(waThreadSensorReadFlashSave, 256);
@@ -336,6 +340,10 @@ msg_t SensorReadInit(void)
     if ((sensorcfg.mpu6050cfg == NULL) || (sensorcfg.hmc5983cfg == NULL))
         return MSG_RESET; /* Error! */
 
+    /* Initialize the time measurement */
+    chTMObjectInit(&tm_accgyro);
+    chTMStartMeasurementX(&tm_accgyro);
+
     /* Initialize Accelerometer and Gyroscope */
     if (MPU6050Init(sensorcfg.mpu6050cfg) != MSG_OK)
         return MSG_RESET; /* Initialization failed */
@@ -403,9 +411,17 @@ void MPU6050cb(EXTDriver *extp, expchannel_t channel)
 
     if (thread_sensor_read_p != NULL)
     {
-        /* Wakes up the sensor read thread */
+
         chSysLockFromISR();
+
+        /* Stop and read the time, save and restart */
+        chTMStopMeasurementX(&tm_accgyro);
+        tm_delta = RTC2US(STM32_SYSCLK, tm_accgyro.last);
+        chTMStartMeasurementX(&tm_accgyro);
+
+        /* Wakes up the sensor read thread */
         chEvtSignalI(thread_sensor_read_p, ACCGYRO_DATA_AVAILABLE_EVENTMASK);
+
         chSysUnlockFromISR();
     }
 }
@@ -431,14 +447,25 @@ void HMC5983cb(EXTDriver *extp, expchannel_t channel)
 }
 
 /**
- * @brief       Get the new data event source.
+ * @brief   Get the new data event source.
  * 
- * @return      Pointer to the event source.
- *          
+ * @return  Pointer to the event source.
  */
 event_source_t *ptrGetNewDataEventSource(void)
 {
     return sensorcfg.new_data_es;
+}
+
+/**
+ * @brief   Get the latest sampling time in microseconds.
+ *
+ * @return  The latest sampling time.
+ *
+ * @note    The first sample from the sensor has an offset, discard that sample.
+ */
+rtcnt_t rtGetLatestAccelerometerSamplingTimeUS(void)
+{
+    return tm_delta;
 }
 
 /**
