@@ -79,12 +79,6 @@ endif
 # Define project name here
 PROJECT = kfly
 
-# Create include paths and find sources of all the modules
-MODULES = $(wildcard ./modules/*)
-$(foreach dir, $(MODULES) , $(eval MODULES_INC += $(dir)/inc))
-$(foreach dir, $(MODULES), $(eval MODULES_CSRCS += $(wildcard $(dir)/src/*.c)))
-$(foreach dir, $(MODULES), $(eval MODULES_ASRCS += $(wildcard $(dir)/src/*.s)))
-
 # Imported source files and paths
 CHIBIOS = ../ChibiOS
 # Startup files.
@@ -100,6 +94,8 @@ include $(CHIBIOS)/os/rt/ports/ARMCMx/compilers/GCC/mk/port_v7m.mk
 # Other files (optional).
 include system/system.mk
 include drivers/drivers.mk
+# Modules
+include modules/modules.mk
 
 # Define linker script file here
 LDSCRIPT = make/STM32F405xG.ld
@@ -118,7 +114,7 @@ CSRC = $(STARTUPSRC) \
        $(CHIBIOS)/os/hal/lib/streams/memstreams.c \
        $(CHIBIOS)/os/hal/lib/streams/chprintf.c \
        main.c \
-       $(MODULES_CSRCS)
+       $(MODULES_SRC)
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
@@ -145,7 +141,7 @@ TCSRC =
 TCPPSRC =
 
 # List ASM source files here
-ASMSRC = $(STARTUPASM) $(PORTASM) $(OSALASM) $(MODULES_ASRCS)
+ASMSRC = $(STARTUPASM) $(PORTASM) $(OSALASM)
 
 INCDIR = $(STARTUPINC) $(KERNINC) $(PORTINC) $(OSALINC) \
          $(HALINC) $(PLATFORMINC) $(BOARDINC) $(SYSTEMINC) \
