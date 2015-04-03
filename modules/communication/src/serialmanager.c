@@ -183,7 +183,6 @@ THD_WORKING_AREA(waSubscriptionsTask, 128);
  *             
  * @param[in] arg   Input argument (unused).
  */
-__attribute__((noreturn))
 static THD_FUNCTION(USBSerialManagerTask, arg)
 {
     (void)arg;
@@ -210,7 +209,6 @@ static THD_FUNCTION(USBSerialManagerTask, arg)
  *  
  * @param[in] arg   Input argument (unused).
  */
-__attribute__((noreturn))
 static THD_FUNCTION(USBDataPumpTask, arg)
 {
     (void)arg;
@@ -250,7 +248,6 @@ static THD_FUNCTION(USBDataPumpTask, arg)
  *             
  * @param[in] arg   Input argument (unused).
  */
-__attribute__((noreturn))
 static THD_FUNCTION(Aux1SerialManagerTask, arg)
 {
     (void)arg;
@@ -277,7 +274,6 @@ static THD_FUNCTION(Aux1SerialManagerTask, arg)
  *  
  * @param[in] arg   Input argument (unused).
  */
-__attribute__((noreturn))
 static THD_FUNCTION(Aux1DataPumpTask, arg)
 {
     (void)arg;
@@ -344,7 +340,6 @@ static THD_FUNCTION(Aux1DataPumpTask, arg)
  *  
  * @param[in] arg   Input argument (unused).
  */
-__attribute__((noreturn))
 static THD_FUNCTION(SubscriptionsTask, arg)
 {
     (void)arg;

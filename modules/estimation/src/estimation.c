@@ -37,7 +37,6 @@ static thread_t *tp;
  * 
  * @param[in/out] arg   Unused.
  */
-__attribute__((noreturn))
 static THD_FUNCTION(ThreadEstimation, arg)
 {
     (void)arg;

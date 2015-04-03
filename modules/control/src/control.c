@@ -89,7 +89,6 @@ THD_WORKING_AREA(waThreadControlFlashSave, 256);
  * @param[in] arg   Unused.
  * @return          Unused.
  */
-__attribute__((noreturn))
 static THD_FUNCTION(ThreadControlArming, arg)
 {
     (void)arg;
@@ -211,7 +210,6 @@ static THD_FUNCTION(ThreadControlArming, arg)
  * @param[in] arg   Unused.
  * @return          Unused.
  */
-__attribute__((noreturn))
 static THD_FUNCTION(ThreadControl, arg)
 {
     (void)arg;
@@ -246,7 +244,6 @@ static THD_FUNCTION(ThreadControl, arg)
  * @param[in] arg   Unused.
  * @return          Unused.
  */
-__attribute__((noreturn))
 static THD_FUNCTION(ThreadControlFlashSave, arg)
 {
     (void)arg;

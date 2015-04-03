@@ -114,7 +114,6 @@ THD_WORKING_AREA(waThreadRCInputFlashSave, 256);
  * @param[in] arg   Unused.
  * @return          Unused.
  */
-__attribute__((noreturn))
 static THD_FUNCTION(ThreadRCInputFlashSave, arg)
 {
     (void)arg;
