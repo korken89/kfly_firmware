@@ -34,71 +34,71 @@ virtual_timer_t rcinput_timeout_vt;
 
 /* EICU Configuration for CPPM, RSSI and PWM inputs */
 static const EICU_IC_Settings cppmsettings = {
-    EICU_INPUT_ACTIVE_LOW,
-    cppm_callback
+    EICU_INPUT_ACTIVE_LOW,      /* Edge detection setting */
+    cppm_callback               /* Detection callback */
 };
 static const EICUConfig cppm_rcinputcfg = {
-    EICU_INPUT_EDGE,
-    RCINPUT_CAPTURE_TIMER_RATE,
+    EICU_INPUT_EDGE,            /* Input type configuration */
+    RCINPUT_CAPTURE_TIMER_RATE, /* Timer clock in Hz */
     {
-        &cppmsettings,
-        NULL,
-        NULL,
-        NULL
+        &cppmsettings,          /* Input capture settings pointer 1 */
+        NULL,                   /* Input capture settings pointer 2 */
+        NULL,                   /* Input capture settings pointer 3 */
+        NULL                    /* Input capture settings pointer 4 */
     },
-    NULL,
-    NULL,
-    0
+    NULL,                       /* Period capture callback */
+    NULL,                       /* Overflow capture callback */
+    0                           /* DEIR init data */
 };
 
 static const EICU_IC_Settings rssisettings = {
-    EICU_INPUT_ACTIVE_HIGH,
-    NULL
+    EICU_INPUT_ACTIVE_HIGH,     /* Edge detection setting */
+    NULL                        /* Detection callback */
 };
 static const EICUConfig rssi_rcinputcfg = {
-    EICU_INPUT_PWM,
-    RCINPUT_CAPTURE_TIMER_RATE,
+    EICU_INPUT_PWM,             /* Input type configuration */
+    RCINPUT_CAPTURE_TIMER_RATE, /* Timer clock in Hz */
     {
-        NULL,
-        &rssisettings,
-        NULL,
-        NULL
+        NULL,                   /* Input capture settings pointer 1 */
+        &rssisettings,          /* Input capture settings pointer 2 */
+        NULL,                   /* Input capture settings pointer 3 */
+        NULL                    /* Input capture settings pointer 4 */
     },
-    rssi_callback,
-    NULL,
-    0
+    rssi_callback,              /* Period capture callback */
+    NULL,                       /* Overflow capture callback */
+    0                           /* DEIR init data */
 };
 
 static const EICU_IC_Settings pwmsettings = {
-    EICU_INPUT_ACTIVE_HIGH,
-    pwm_callback
+    EICU_INPUT_ACTIVE_HIGH,     /* Edge detection setting */
+    pwm_callback                /* Detection callback */
 };
 static const EICUConfig pwm_rcinputcfg_1 = {
-    EICU_INPUT_PULSE,
-    RCINPUT_CAPTURE_TIMER_RATE,
+    EICU_INPUT_PULSE,           /* Input type configuration */
+    RCINPUT_CAPTURE_TIMER_RATE, /* Timer clock in Hz */
     {
-        &pwmsettings,
-        &pwmsettings,
-        NULL,
-        NULL
+        &pwmsettings,           /* Input capture settings pointer 1 */
+        &pwmsettings,           /* Input capture settings pointer 2 */
+        NULL,                   /* Input capture settings pointer 3 */
+        NULL                    /* Input capture settings pointer 4 */
     },
-    NULL,
-    NULL,
-    0
+    NULL,                       /* Period capture callback */
+    NULL,                       /* Overflow capture callback */
+    0                           /* DEIR init data */
 };
 
 static const EICUConfig pwm_rcinputcfg_2 = {
-    EICU_INPUT_PULSE,
-    RCINPUT_CAPTURE_TIMER_RATE,
+    EICU_INPUT_PULSE,           /* Input type configuration */
+    RCINPUT_CAPTURE_TIMER_RATE, /* Timer clock in Hz */
     {
-        NULL,
-        NULL,
-        &pwmsettings,
-        &pwmsettings
+        NULL,                   /* Input capture settings pointer 1 */
+        NULL,                   /* Input capture settings pointer 2 */
+        &pwmsettings,           /* Input capture settings pointer 3 */
+        &pwmsettings            /* Input capture settings pointer 4 */
     },
-    NULL,
-    NULL,
-    0
+    NULL,                       /* Period capture callback */
+    NULL,                       /* Overflow capture callback */
+    0                           /* DEIR init data */
 };
 
 uint16_t rssi_counter = 0;
