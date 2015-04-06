@@ -495,6 +495,11 @@
 /* Port-specific settings (override port settings defaulted in chcore.h).    */
 /*===========================================================================*/
 
+/**
+ * @brief   Offset of the Vector table to compensate for the bootloader.
+ */
+//#define CORTEX_VTOR_INIT        0x8000  /* 32kB offset */
+
 #if !defined(_FROM_ASM_)
 typedef struct {
   const char *reason;
