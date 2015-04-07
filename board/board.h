@@ -49,12 +49,6 @@
 #define STM32_VDD                   330
 
 /*
- * MCU type as defined in the ST header.
- */
-//#define STM32F40_41xxx
-#define STM32F405xx
-
-/*
  * IO pins assignments.
  */
 #define GPIOA_AUX3_TX               0
