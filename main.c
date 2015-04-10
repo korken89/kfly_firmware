@@ -29,7 +29,7 @@ int main(void)
 
     /*
      *
-     * Idle task loop.
+     * Main task loop.
      *
      */
     while(bSystemShutdownRequested() == false)
