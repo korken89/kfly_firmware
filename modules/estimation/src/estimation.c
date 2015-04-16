@@ -41,8 +41,6 @@ static THD_FUNCTION(ThreadEstimation, arg)
 {
     (void)arg;
 
-    float dt;
-
     chRegSetThreadName("Estimation");
 
     tp = chThdGetSelfX();
@@ -85,18 +83,15 @@ static THD_FUNCTION(ThreadEstimation, arg)
         /* Wait for new measurement data */ 
         chEvtWaitOne(ACCGYRO_DATA_AVAILABLE_EVENTMASK);
 
-        /* Get the correct sampling time */
-        dt = ((float)rtGetLatestAccelerometerSamplingTimeUS()) / 1000000.0f;
-
         /* Get sensor data */
         GetIMUData(&imu_data);
 
         /* Run estimation */
         vInnovateViconEstimator(&states,
                                 &imu_data,
-                                dt,
+                                SENSOR_ACCGYRO_DT,
                                 0.2f,
-                                fc2lpf_gain(45, 0.0015f)); /* LPF ~ 45 Hz */
+                                fc2lpf_gain(45, SENSOR_ACCGYRO_DT)); /* LPF ~ 45 Hz */
 
         /*InnovateAttitudeEKF(&states,
                             &data, 
