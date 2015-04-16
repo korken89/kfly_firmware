@@ -407,15 +407,14 @@ void MPU6050cb(EXTDriver *extp, expchannel_t channel)
     (void)extp;
     (void)channel;
 
+    /* Stop and read the time, save and restart */
+    chTMStopMeasurementX(&tm_accgyro);
+    tm_delta = RTC2US(STM32_SYSCLK, tm_accgyro.last);
+    chTMStartMeasurementX(&tm_accgyro);
+
     if (thread_sensor_read_p != NULL)
     {
-
         chSysLockFromISR();
-
-        /* Stop and read the time, save and restart */
-        chTMStopMeasurementX(&tm_accgyro);
-        tm_delta = RTC2US(STM32_SYSCLK, tm_accgyro.last);
-        chTMStartMeasurementX(&tm_accgyro);
 
         /* Wakes up the sensor read thread */
         chEvtSignalI(thread_sensor_read_p, ACCGYRO_DATA_AVAILABLE_EVENTMASK);
