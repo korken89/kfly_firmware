@@ -52,5 +52,10 @@ void vUpdatePISettings(PI_Data *pi_settings,
                        float I_gain,
                        float I_limit);
 float fPIUpdate(PI_Data *pi, float error, float dt);
+float fPIUpdate_BackCalculationSaturation(PI_Data *pi,
+                                          float error,
+                                          float u_max,
+                                          float u_min,
+                                          float dt);
 
 #endif
