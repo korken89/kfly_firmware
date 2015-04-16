@@ -108,6 +108,7 @@ float fPIUpdate_BackCalculationSaturation(PI_Data *pi,
 
     /* Calculate the proportional state . */
     P_state = pi->P_gain * error;
+
     /* Calculate the unsaturated control signal. */ 
     u = P_state + pi->I_state;
 
