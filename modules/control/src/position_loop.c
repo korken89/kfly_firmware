@@ -32,11 +32,10 @@ position_control_package_t position_control_package;
 
 void vParseComputerControlPackage(uint8_t *payload, uint8_t size)
 {
-    (void)payload;
-
     if (size == POSITION_CONTROL_MESSAGE_SIZE)
     {
-        memcpy(&position_control_package, payload, POSITION_CONTROL_MESSAGE_SIZE);
-        __BKPT(0);
+        memcpy(&position_control_package,
+               payload,
+               POSITION_CONTROL_MESSAGE_SIZE);
     }
 }
