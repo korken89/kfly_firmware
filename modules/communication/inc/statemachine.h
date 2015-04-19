@@ -257,6 +257,15 @@ typedef enum PACKED_VAR
     Cmd_ResetEstimation             = 53,
 
     /*===============================================*/
+    /* Computer control specific commands.           */
+    /*===============================================*/
+
+    /**
+     * @brief   New control reference from the PC side.
+     */
+    Cmd_ComputerControlReference    = 126,
+
+    /*===============================================*/
     /* Vicon Measurement specific commands.          */
     /*===============================================*/
 

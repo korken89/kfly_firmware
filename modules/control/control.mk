@@ -2,6 +2,7 @@
 CONTROL_SRCS = $(MODULE_DIR)/control/src/control.c \
                $(MODULE_DIR)/control/src/rate_loop.c \
                $(MODULE_DIR)/control/src/attitude_loop.c \
+               $(MODULE_DIR)/control/src/position_loop.c \
                $(MODULE_DIR)/control/src/arming.c \
                $(MODULE_DIR)/control/src/pid.c
 

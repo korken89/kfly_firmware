@@ -19,6 +19,7 @@
 #include "sensor_read.h"
 #include "estimation.h"
 #include "control.h"
+#include "position_loop.h"
 #include "vicon.h"
 #include "statemachine_parsers.h"
 
@@ -57,6 +58,7 @@ static void ParseGetEstimationVelocity(parser_holder_t *pHolder);
 static void ParseGetEstimationPosition(parser_holder_t *pHolder);
 static void ParseGetEstimationAllStates(parser_holder_t *pHolder);
 static void ParseResetEstimation(parser_holder_t *pHolder);
+static void ParseComputerControlReference(parser_holder_t *pHolder);
 static void ParseViconMeasurement(parser_holder_t *pHolder);
 
 /*===========================================================================*/
@@ -197,7 +199,7 @@ static const parser_t parser_lookup[128] = {
     NULL,                             /* 123:                                 */
     NULL,                             /* 124:                                 */
     NULL,                             /* 125:                                 */
-    NULL,                             /* 126:                                 */
+    ParseComputerControlReference,    /* 126: Cmd_ComputerControlReference    */
     ParseViconMeasurement             /* 127: Cmd_ViconMeasurement            */
 };
 
@@ -718,6 +720,11 @@ static void ParseGetEstimationAllStates(parser_holder_t *pHolder)
 static void ParseResetEstimation(parser_holder_t *pHolder)
 {
     (void)pHolder;
+}
+
+static void ParseComputerControlReference(parser_holder_t *pHolder)
+{
+    vParseComputerControlPackage(pHolder->buffer, pHolder->buffer_count);
 }
 
 /**
