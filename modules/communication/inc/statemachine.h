@@ -261,7 +261,7 @@ typedef enum PACKED_VAR
     /*===============================================*/
 
     /**
-     * @brief   Reset estimation.
+     * @brief   New vicon measurement.
      */
     Cmd_ViconMeasurement            = 127
 
