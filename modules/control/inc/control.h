@@ -131,7 +131,11 @@ typedef enum PACKED_VAR
     /**
      * @brief   Position control with position hold.
      */
-    FLIGHTMODE_POSITION_HOLD
+    FLIGHTMODE_POSITION_HOLD,
+    /**
+     * @brief   Position control with position hold.
+     */
+    FLIGHTMODE_COMPUTER_CONTROL
 } Flight_Mode;
 
 /**
@@ -402,22 +406,12 @@ typedef struct PACKED_VAR
 
 typedef struct PACKED_VAR
 {
-    /*
-    // Full measurement
-
-    int16_t accelerometer[3];
-    int16_t gyroscope[3];
-    int16_t magnetometer[3];
-    int8_t u_throttle;
-    int8_t u_pitch;
-    int8_t u_roll;
-    int8_t u_yaw;
-    uint8_t counter;
-    */
-
-    // Accelerometer only test
-    int16_t accelerometer[3];
-    int8_t u_throttle;
+    int16_t gyro[2];
+    int16_t gyro_bias[2];
+    int16_t control_ref[2];
+    int16_t control_istate[2];
+    int16_t control_output[2];
+    uint16_t u_throttle;
     uint8_t counter;
 } Experiment_Data;
 

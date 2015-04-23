@@ -32,6 +32,9 @@
 #include "control.h"
 #include "rc_input.h"
 #include "rc_output.h"
+#include "rate_loop.h"
+#include "attitude_loop.h"
+#include "position_loop.h"
 
 /*===========================================================================*/
 /* Module local definitions.                                                 */
@@ -93,8 +96,8 @@ static THD_FUNCTION(ThreadControlArming, arg)
 {
     (void)arg;
 
-    uint16_t arm_time = 0, disarm_time = 0, timeout_time = 0;
-    Arming_Stick_Region current_region;
+    //uint16_t arm_time = 0, disarm_time = 0, timeout_time = 0;
+    //Arming_Stick_Region current_region;
 
     /* Set thread name */
     chRegSetThreadName("Arm Control");
@@ -118,83 +121,90 @@ static THD_FUNCTION(ThreadControlArming, arg)
         if ((bActiveRCInputConnection() == true) &&
             (arm_settings.stick_direction != STICK_NONE))
         {
-            /* Check emergency stop */
             if (RCInputGetInputLevel(ROLE_AUX1) < 0.5f)
-            {
                 controllers_armed = false;
-                arm_time = 0;
-                disarm_time = 0;
-                timeout_time = 0;
-            }
             else
-            {
-            /* Check so the sticks are in the correct region */
-                current_region = SticksInRegion();
+                controllers_armed = true;
 
-                if (current_region == STICK_ARM_REGION)
-                {
-                /* Check if the required time has been reached
-                   to arm the system */
-                    if ((arm_time / ARM_RATE) > arm_settings.arm_stick_time)
-                    {
-                        controllers_armed = true;
-                    }
-                    else
-                    {
-                        arm_time++;
-                        disarm_time = 0;
-                        timeout_time = 0;
-                    }
-                }
-                else if (current_region == STICK_DISARM_REGION)
-                {
-                /* Check if the required time has been reached
-                   to disarm the system*/
-                    if ((disarm_time / ARM_RATE) > arm_settings.arm_stick_time)
-                    {
-                        controllers_armed = false;
-                    }
-                    else
-                    {
-                        disarm_time++;
-                        arm_time = 0;
-                        timeout_time = 0;
-                    }
-                }
-                else
-                {
-                /* Sticks are not in the correct region,
-                   reset timing counters */
-                    arm_time = 0;
-                    disarm_time = 0;
 
-                /* Check the zero throttle timeout */
-                    if (arm_settings.arm_zero_throttle_timeout != 0)
-                    {
-                        if ((RCInputGetInputLevel(ROLE_THROTTLE) <=
-                            arm_settings.stick_threshold))
-                        {
-                        /* Check if the required time has passed to disarm due
-                           to timeout, else increment the timing counter */
-                            if ((timeout_time / ARM_RATE) >
-                                arm_settings.arm_zero_throttle_timeout)
-                            {
-                                controllers_armed = false;
-                            }
-                            else
-                            {
-                                timeout_time++;
-                                arm_time = 0;
-                                disarm_time = 0;
-                            }
-                        }
-                    /* The throttle is not in the correct position,
-                       reset the timing counter */
-                        else 
-                            timeout_time = 0;
-                    }
-                }
-            }
+
+            /* Check emergency stop */
+//            if (RCInputGetInputLevel(ROLE_AUX1) < 0.5f)
+//            {
+//                controllers_armed = false;
+//                arm_time = 0;
+//                disarm_time = 0;
+//                timeout_time = 0;
+//            }
+//            else
+//            {
+//                /* Check so the sticks are in the correct region */
+//                current_region = SticksInRegion();
+//
+//                if (current_region == STICK_ARM_REGION)
+//                {
+//                    /* Check if the required time has been reached
+//                       to arm the system */
+//                    if ((arm_time / ARM_RATE) > arm_settings.arm_stick_time)
+//                    {
+//                        controllers_armed = true;
+//                    }
+//                    else
+//                    {
+//                        arm_time++;
+//                        disarm_time = 0;
+//                        timeout_time = 0;
+//                    }
+//                }
+//                else if (current_region == STICK_DISARM_REGION)
+//                {
+//                    /* Check if the required time has been reached
+//                       to disarm the system*/
+//                    if ((disarm_time / ARM_RATE) > arm_settings.arm_stick_time)
+//                    {
+//                        controllers_armed = false;
+//                    }
+//                    else
+//                    {
+//                        disarm_time++;
+//                        arm_time = 0;
+//                        timeout_time = 0;
+//                    }
+//                }
+//                else
+//                {
+//                    /* Sticks are not in the correct region,
+//                       reset timing counters */
+//                    arm_time = 0;
+//                    disarm_time = 0;
+//
+//                    /* Check the zero throttle timeout */
+//                    if (arm_settings.arm_zero_throttle_timeout != 0)
+//                    {
+//                        if ((RCInputGetInputLevel(ROLE_THROTTLE) <=
+//                            arm_settings.stick_threshold))
+//                        {
+//                            /* Check if the required time has passed to disarm due
+//                               to timeout, else increment the timing counter */
+//                            if ((timeout_time / ARM_RATE) >
+//                                arm_settings.arm_zero_throttle_timeout)
+//                            {
+//                                controllers_armed = false;
+//                            }
+//                            else
+//                            {
+//                                timeout_time++;
+//                                arm_time = 0;
+//                                disarm_time = 0;
+//                            }
+//                        }
+//                        /* The throttle is not in the correct position,
+//                           reset the timing counter */
+//                        else
+//                            timeout_time = 0;
+//                    }
+//                }
+//            }
 
         }
         else
@@ -420,28 +430,35 @@ static void vRCInputsToControlAction(void)
 
     if (controllers_armed == true)
     {
-        if (selector == FLIGHTMODE_RATE)
+        if (selector == FLIGHTMODE_COMPUTER_CONTROL)
+        {
+            control_reference.mode = FLIGHTMODE_ATTITUDE;
+
+            throttle = RCInputGetInputLevel(ROLE_THROTTLE);
+            control_reference.attitude_reference.y = control_limits.max_angle.pitch * DEG2RAD * RCInputGetInputLevel(ROLE_PITCH);
+            control_reference.attitude_reference.x = control_limits.max_angle.roll * DEG2RAD * RCInputGetInputLevel(ROLE_ROLL);
+            control_reference.rate_reference.z = -fGetComputerControlYaw();
+        }
+        else if (selector == FLIGHTMODE_RATE)
         {
             control_reference.mode = FLIGHTMODE_RATE;
 
-            control_reference.rate_reference.x = -control_limits.max_rate.pitch *
-                                    DEG2RAD * RCInputGetInputLevel(ROLE_PITCH);
-
-            control_reference.rate_reference.y = control_limits.max_rate.roll *
-                                    DEG2RAD * RCInputGetInputLevel(ROLE_ROLL);
+            throttle = RCInputGetInputLevel(ROLE_THROTTLE);
+            control_reference.rate_reference.x = -control_limits.max_rate.pitch * DEG2RAD * RCInputGetInputLevel(ROLE_PITCH);
+            control_reference.rate_reference.y = control_limits.max_rate.roll * DEG2RAD * RCInputGetInputLevel(ROLE_ROLL);
+            control_reference.rate_reference.z = -control_limits.max_rate.yaw * DEG2RAD * RCInputGetInputLevel(ROLE_YAW);
         }
-        else
+        else if (selector == FLIGHTMODE_ATTITUDE)
         {
             control_reference.mode = FLIGHTMODE_ATTITUDE;
             
+            throttle = RCInputGetInputLevel(ROLE_THROTTLE);
             control_reference.attitude_reference.y = control_limits.max_angle.pitch * DEG2RAD * RCInputGetInputLevel(ROLE_PITCH);
-            control_reference.attitude_reference.x = -control_limits.max_angle.roll * DEG2RAD * RCInputGetInputLevel(ROLE_ROLL);
+            control_reference.attitude_reference.x = control_limits.max_angle.roll * DEG2RAD * RCInputGetInputLevel(ROLE_ROLL);
+            control_reference.rate_reference.z = -control_limits.max_rate.yaw * DEG2RAD * RCInputGetInputLevel(ROLE_YAW);
         }
 
-        control_reference.rate_reference.z = -control_limits.max_rate.yaw *
-                                    DEG2RAD * RCInputGetInputLevel(ROLE_YAW);
 
-        throttle = RCInputGetInputLevel(ROLE_THROTTLE);
 
         if (throttle < arm_settings.armed_min_throttle)
         {
@@ -506,7 +523,7 @@ static void vAttitudeControl(quaternion_t *attitude_m,
 
     /* Update controllers */
     u.x = fPIUpdate(&control_data.attitude_controller[0], -err.y, dt);
-    u.y = fPIUpdate(&control_data.attitude_controller[1], -err.x, dt);
+    u.y = fPIUpdate(&control_data.attitude_controller[1], err.x, dt);
 
     /* Send bounded control signal to the next step in the cascade */
     control_reference.rate_reference.x = 
@@ -716,46 +733,6 @@ void ControlInit(void)
                       NULL);
 }
 
-#include "sensor_read.h"
-#include "serialmanager.h"
-#include "statemachine_generators.h"
-
-void vTransmitExperimentData(void)
-{
-    static Experiment_Data exp_data;
-    static imu_raw_data_t exp_imu_data;
-    static uint8_t cnt = 0;
-
-    /* Get and format the data */
-    GetRawIMUData(&exp_imu_data);
-
-    exp_data.accelerometer[0] = exp_imu_data.accelerometer[0];
-    exp_data.accelerometer[1] = exp_imu_data.accelerometer[1];
-    exp_data.accelerometer[2] = exp_imu_data.accelerometer[2];
-
-    /*
-    exp_data.gyroscope[0] = exp_imu_data.gyroscope[0];
-    exp_data.gyroscope[1] = exp_imu_data.gyroscope[1];
-    exp_data.gyroscope[2] = exp_imu_data.gyroscope[2];
-
-    exp_data.magnetometer[0] = exp_imu_data.magnetometer[0];
-    exp_data.magnetometer[1] = exp_imu_data.magnetometer[1];
-    exp_data.magnetometer[2] = exp_imu_data.magnetometer[2];
-    */
-
-    exp_data.u_throttle = (int8_t)(control_reference.actuator_desired.throttle * 100.0f);
-    //exp_data.u_pitch = (int8_t)(control_reference.actuator_desired.pitch * 100.0f);
-    //exp_data.u_roll = (int8_t)(control_reference.actuator_desired.roll * 100.0f);
-    //exp_data.u_yaw = (int8_t)(control_reference.actuator_desired.yaw * 100.0f);
-
-    exp_data.counter = cnt++;
-
-    /* Send the data */
-    GenerateCustomMessage(73,
-                          (uint8_t *)&exp_data,
-                          sizeof(Experiment_Data),
-                          PORT_AUX1);
-}
 
 /**
  * @brief       Updates all the controllers depending om current flight mode.
@@ -805,7 +782,17 @@ void vUpdateControlAction(quaternion_t *q_m, vector3f_t *omega_m, float dt)
             break;
     }
 
-    //vTransmitExperimentData();
+
+    void vTransmitExperimentData(void);
+    static int cnt = 0;
+
+    if (cnt >= 5) // Every 6th measurement
+    {
+        cnt = 0;
+        //vTransmitExperimentData();
+    }
+    else
+        cnt++;
 }
 
 /**
@@ -919,4 +906,55 @@ void SetControlParameters(Control_Parameters *param)
         for (j = 0; j < 3; j++)
             f_pi[j] = f_par[j];
     }
+}
+
+
+
+
+
+
+
+
+#include "sensor_read.h"
+#include "serialmanager.h"
+#include "statemachine_generators.h"
+
+void vTransmitExperimentData(void)
+{
+    static Experiment_Data exp_data;
+    static attitude_states_t *estimation;
+    static uint8_t cnt = 0;
+
+    estimation = ptrGetAttitudeEstimationStates();
+
+    /* Gyro data */
+    exp_data.gyro[0] = (int16_t)(estimation->w.x * 10000.0f);
+    exp_data.gyro[1] = (int16_t)(estimation->w.y * 10000.0f);
+
+    /* Gyro bias */
+    exp_data.gyro_bias[0] = (int16_t)(estimation->wb.x * 10000.0f);
+    exp_data.gyro_bias[1] = (int16_t)(estimation->wb.y * 10000.0f);
+
+    /* Control references */
+    exp_data.control_ref[0] = (int16_t)(control_reference.rate_reference.x * 10000.0f);
+    exp_data.control_ref[1] = (int16_t)(control_reference.rate_reference.y * 10000.0f);
+
+    /* Integral state */
+    exp_data.control_istate[0] = (int16_t)(control_data.rate_controller[0].I_state * 10000.0f);
+    exp_data.control_istate[1] = (int16_t)(control_data.rate_controller[1].I_state * 10000.0f);
+
+    /* Controller outputs */
+    exp_data.control_output[0] = (int16_t)(control_reference.actuator_desired.pitch * 10000.0f);
+    exp_data.control_output[1] = (int16_t)(control_reference.actuator_desired.roll * 10000.0f);
+
+    /* Throttle */
+    exp_data.u_throttle = (uint16_t)(control_reference.actuator_desired.throttle * 10000.0f);
+
+    exp_data.counter = cnt++;
+
+    /* Send the data */
+    GenerateCustomMessage(73,
+                          (uint8_t *)&exp_data,
+                          sizeof(Experiment_Data),
+                          PORT_AUX1);
 }
