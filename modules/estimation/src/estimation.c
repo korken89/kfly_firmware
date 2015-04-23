@@ -90,7 +90,7 @@ static THD_FUNCTION(ThreadEstimation, arg)
         vInnovateViconEstimator(&states,
                                 &imu_data,
                                 SENSOR_ACCGYRO_DT,
-                                0.2f,
+                                0.0005f,
                                 fc2lpf_gain(45, SENSOR_ACCGYRO_DT)); /* LPF ~ 45 Hz */
 
         /*InnovateAttitudeEKF(&states,
