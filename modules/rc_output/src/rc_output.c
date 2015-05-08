@@ -55,15 +55,15 @@ msg_t RCOutputInit(const RCOutput_Configuration *cfg)
     pwmStart(rcoutput_cfg->pwmp_highbank, rcoutput_cfg->pwmcfg);
 
     /* Initialize with lowest output width */
-    pwmEnableChannel(rcoutput_cfg->pwmp_lowbank, 0, 1000);
-    pwmEnableChannel(rcoutput_cfg->pwmp_lowbank, 1, 1000);
-    pwmEnableChannel(rcoutput_cfg->pwmp_lowbank, 2, 1000);
-    pwmEnableChannel(rcoutput_cfg->pwmp_lowbank, 3, 1000);
+    pwmEnableChannel(rcoutput_cfg->pwmp_lowbank, 0, 0);
+    pwmEnableChannel(rcoutput_cfg->pwmp_lowbank, 1, 0);
+    pwmEnableChannel(rcoutput_cfg->pwmp_lowbank, 2, 0);
+    pwmEnableChannel(rcoutput_cfg->pwmp_lowbank, 3, 0);
 
-    pwmEnableChannel(rcoutput_cfg->pwmp_highbank, 0, 1000);
-    pwmEnableChannel(rcoutput_cfg->pwmp_highbank, 1, 1000);
-    pwmEnableChannel(rcoutput_cfg->pwmp_highbank, 2, 1000);
-    pwmEnableChannel(rcoutput_cfg->pwmp_highbank, 3, 1000);
+    pwmEnableChannel(rcoutput_cfg->pwmp_highbank, 0, 0);
+    pwmEnableChannel(rcoutput_cfg->pwmp_highbank, 1, 0);
+    pwmEnableChannel(rcoutput_cfg->pwmp_highbank, 2, 0);
+    pwmEnableChannel(rcoutput_cfg->pwmp_highbank, 3, 0);
 
     return status;
 }
