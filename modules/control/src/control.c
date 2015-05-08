@@ -620,7 +620,7 @@ static void vDisableAllOutputs(void)
     int i;
 
     for (i = 0; i < 8; i++)
-        control_reference.pwm_out[i] = 0.0f;
+        control_reference.pwm_out[i] = output_mixer.offset[i];
 
     vSendPWMCommands();
 }
@@ -710,6 +710,8 @@ void ControlInit(void)
     output_mixer.offset[5] = 0.0f;
     output_mixer.offset[6] = 0.0f;
     output_mixer.offset[7] = 0.0f;
+
+    vDisableAllOutputs();
 
     /* Initialize arming control thread */
     chThdCreateStatic(waThreadControlArming,
