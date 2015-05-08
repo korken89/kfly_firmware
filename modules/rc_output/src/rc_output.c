@@ -8,12 +8,30 @@
 #include "hal.h"
 #include "rc_output.h"
 
-/* Global variable defines */
+/*===========================================================================*/
+/* Module local definitions.                                                 */
+/*===========================================================================*/
 
-/* Private function defines */
-static RCOutput_Configuration *rcoutput_cfg = NULL;
+/*===========================================================================*/
+/* Module exported variables.                                                */
+/*===========================================================================*/
 
-/* Private external functions */
+/*===========================================================================*/
+/* Module local variables and types.                                         */
+/*===========================================================================*/
+
+/**
+ * @brief Holder for the RC output configuration structure.
+ */
+static const RCOutput_Configuration *rcoutput_cfg = NULL;
+
+/*===========================================================================*/
+/* Module local functions.                                                   */
+/*===========================================================================*/
+
+/*===========================================================================*/
+/* Module exported functions.                                                */
+/*===========================================================================*/
 
 /**
  * @brief Initializes RC outputs
@@ -25,7 +43,7 @@ msg_t RCOutputInit(const RCOutput_Configuration *cfg)
 {
     msg_t status = MSG_OK;
 
-    rcoutput_cfg = (RCOutput_Configuration *)cfg;
+    rcoutput_cfg = cfg;
 
     pwmStart(rcoutput_cfg->pwmp_lowbank, rcoutput_cfg->pwmcfg);
     pwmStart(rcoutput_cfg->pwmp_highbank, rcoutput_cfg->pwmcfg);

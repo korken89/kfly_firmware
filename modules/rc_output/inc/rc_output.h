@@ -1,18 +1,26 @@
 #ifndef __RC_OUTPUT_H
 #define __RC_OUTPUT_H
 
-/* Defines */
-#define RCOUTPUT_1MHZ_CLOCK_FREQUENCY       1000000
+/*===========================================================================*/
+/* Module global definitions.                                                */
+/*===========================================================================*/
 
-/* Global variable defines */
+/*===========================================================================*/
+/* Module data structures and types.                                         */
+/*===========================================================================*/
 
-/* Typedefs */
+/**
+ * @brief Enum for selecting the rate of the output PPM.
+ */
 typedef enum
 {
     RCOUTPUT_400HZ = 2500,
     RCOUTPUT_50HZ = 20000
 } RCOutput_Rate_Selector;
 
+/**
+ * @brief Enum for defining the RC output channels.
+ */
 typedef enum
 {
     RCOUTPUT_CHANNEL_1 = 0,
@@ -25,20 +33,45 @@ typedef enum
     RCOUTPUT_CHANNEL_8 = 7
 } RCOutput_Channel_Selector;
 
+/**
+ * @brief Enum for defining which outputs belong to which PWM bank.
+ */
 typedef enum
 {
     RCOUTPUT_BANK_1_4 = 0,
     RCOUTPUT_BANK_5_8 = 1
 } RCOutput_Bank_Selector;
 
+/**
+ * @brief Configuration structure for RC ouput.
+ */
 typedef struct
 {
+    /**
+     * @brief PWM driver for the low (1 to 4) bank.
+     */
     PWMDriver *pwmp_lowbank;
+    /**
+     * @brief PWM driver for the high (5 to 8) bank.
+     */
     PWMDriver *pwmp_highbank;
+    /**
+     * @brief PWM configuration structure.
+     */
     const PWMConfig *pwmcfg;
 } RCOutput_Configuration;
 
-/* Global function defines */
+/*===========================================================================*/
+/* Module macros.                                                            */
+/*===========================================================================*/
+
+/*===========================================================================*/
+/* Module inline functions.                                                  */
+/*===========================================================================*/
+
+/*===========================================================================*/
+/* External declarations.                                                    */
+/*===========================================================================*/
 msg_t RCOutputInit(const RCOutput_Configuration *cfg);
 msg_t RCOutputSetChannelWidthUs(RCOutput_Channel_Selector sel,
                                 pwmcnt_t width_us);
