@@ -34,10 +34,10 @@ static const RCOutput_Configuration *rcoutput_cfg = NULL;
 /*===========================================================================*/
 
 /**
- * @brief Initializes RC outputs
+ * @brief           Initializes RC outputs
  * 
- * @param[in] cfg Pointer to configuration structure
- * @return RDY_OK if the initialization was successful
+ * @param[in] cfg   Pointer to configuration structure
+ * @return          MSG_OK if the initialization was successful
  */
 msg_t RCOutputInit(const RCOutput_Configuration *cfg)
 {
@@ -64,11 +64,12 @@ msg_t RCOutputInit(const RCOutput_Configuration *cfg)
 
 
 /**
- * @brief Set output channel width in microseconds
+ * @brief               Set output channel width in microseconds.
  * 
- * @param[in] sel Channel selector
- * @param[in] width_us New width in microseconds
- * @return RDY_OK if the change was successful
+ * @param[in] sel       Channel selector.
+ * @param[in] width_us  New width in microseconds.
+ * @return              MSG_OK if the change was successful or MSG_RESET if the
+ *                      RC outputs are not initialized.
  */
 msg_t RCOutputSetChannelWidthUs(RCOutput_Channel_Selector sel,
                                 pwmcnt_t width_us)
@@ -76,7 +77,7 @@ msg_t RCOutputSetChannelWidthUs(RCOutput_Channel_Selector sel,
     static const uint32_t pwmchannellut[8] = {0, 1, 2, 3, 3, 2, 1, 0};
 
     if (rcoutput_cfg == NULL)
-        osalSysHalt("RCInputs not initialized.");
+        return MSG_RESET;
 
     if (sel > RCOUTPUT_CHANNEL_8)
         return MSG_RESET;
@@ -94,18 +95,19 @@ msg_t RCOutputSetChannelWidthUs(RCOutput_Channel_Selector sel,
 }
 
 /**
- * @brief Set relative output channel width
- * @details Set the width from 1 to 2 milliseconds using 0% to 100%.
+ * @brief               Set relative output channel width
+ * @details             Set the width from 1 to 2 milliseconds using 0% to 100%.
  * 
- * @param[in] sel Channel selector
- * @param[in] width New width in 0.0 to 1.0
- * @return RDY_OK if the change was successful
+ * @param[in] sel       Channel selector.
+ * @param[in] width     New width in 0.0 to 1.0.
+ * @return              MSG_OK if the change was successful or MSG_RESET if the
+ *                      RC outputs are not initialized.
  */
 msg_t RCOutputSetChannelWidthRelativePositive(RCOutput_Channel_Selector sel,
                                               float width)
 {
     if (rcoutput_cfg == NULL)
-        osalSysHalt("RCInputs not initialized.");
+        return MSG_RESET;
 
     if (sel > RCOUTPUT_CHANNEL_8)
         return MSG_RESET;
@@ -122,18 +124,20 @@ msg_t RCOutputSetChannelWidthRelativePositive(RCOutput_Channel_Selector sel,
 }
 
 /**
- * @brief Set relative output channel width
- * @details Set the width from 1 to 2 milliseconds using -100% to 100%.
+ * @brief               Set relative output channel width.
+ * @details             Set the width from 1 to 2 milliseconds using -100% to
+ *                      100%.
  * 
- * @param[in] sel Channel selector
- * @param[in] width New width in -1.0 to 1.0
- * @return RDY_OK if the change was successful
+ * @param[in] sel       Channel selector.
+ * @param[in] width     New width in -1.0 to 1.0.
+ * @return              MSG_OK if the change was successful or MSG_RESET if the
+ *                      RC outputs are not initialized.
  */
 msg_t RCOutputSetChannelWidthRelative(RCOutput_Channel_Selector sel,
                                       float width)
 {
     if (rcoutput_cfg == NULL)
-        osalSysHalt("RCInputs not initialized.");
+        return MSG_RESET;
 
     if (sel > RCOUTPUT_CHANNEL_8)
         return MSG_RESET;
@@ -150,18 +154,18 @@ msg_t RCOutputSetChannelWidthRelative(RCOutput_Channel_Selector sel,
 }
 
 /**
- * @brief Change the output rate of one output bank
- * @details [long description]
+ * @brief           Change the output rate of one output bank.
  * 
- * @param[in] sel Bank selector
- * @param[in] rate Rate 
- * @return RDY_OK if the change was successful
+ * @param[in] sel   Bank selector.
+ * @param[in] rate  New output rate.
+ * @return          MSG_OK if the change was successful or MSG_RESET if the RC
+ *                  outputs are not initialized.
  */
 msg_t RCOutputSetChannelPeriod(RCOutput_Bank_Selector sel,
                                RCOutput_Rate_Selector rate)
 {
     if (rcoutput_cfg == NULL)
-        osalSysHalt("RCInputs not initialized.");
+        return MSG_RESET;
 
     if ((sel > RCOUTPUT_BANK_5_8) ||
         (rate != RCOUTPUT_400HZ) ||
