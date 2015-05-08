@@ -43,6 +43,12 @@ msg_t RCOutputInit(const RCOutput_Configuration *cfg)
 {
     msg_t status = MSG_OK;
 
+    if (cfg->pwmcfg == NULL        ||
+        cfg->pwmp_highbank == NULL ||
+        cfg->pwmp_lowbank == NULL)
+        osalSysHalt("RC Output configuration error.");
+
+    /* Save the configuration structure. */
     rcoutput_cfg = cfg;
 
     pwmStart(rcoutput_cfg->pwmp_lowbank, rcoutput_cfg->pwmcfg);
