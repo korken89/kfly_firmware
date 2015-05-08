@@ -126,6 +126,26 @@ static void vSystemInitList(void)
         }
     };
 
+    /* RC Output Configuration */
+    static const PWMConfig pwmcfg = {
+        RCOUTPUT_1MHZ_CLOCK_FREQUENCY,      /* 1 MHz PWM clock frequency    */
+        RCOUTPUT_400HZ,                     /* Initial PWM period: 400 Hz   */
+        NULL,                               /* No callback */
+        {
+            {PWM_OUTPUT_ACTIVE_HIGH, NULL}, /* Active high, no callback     */
+            {PWM_OUTPUT_ACTIVE_HIGH, NULL}, /* Active high, no callback     */
+            {PWM_OUTPUT_ACTIVE_HIGH, NULL}, /* Active high, no callback     */
+            {PWM_OUTPUT_ACTIVE_HIGH, NULL}  /* Active high, no callback     */
+        },
+        0,
+        0
+    };
+    static const RCOutput_Configuration rcoutputcfg = {
+        &PWMD4,
+        &PWMD8,
+        &pwmcfg
+    };
+
     /*
      *
      * Initializes the serial-over-USB CDC driver.
@@ -183,6 +203,13 @@ static void vSystemInitList(void)
      *
      */
     RCInputInit();
+
+    /*
+     *
+     * Initialize the RC Outputs
+     *
+     */
+    RCOutputInit(&rcoutputcfg);
 
     /*
      *

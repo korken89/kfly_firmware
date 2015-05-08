@@ -40,17 +40,13 @@ typedef struct
 
 /* Global function defines */
 msg_t RCOutputInit(const RCOutput_Configuration *cfg);
-msg_t RCOutputSetChannelWidthUs(const RCOutput_Configuration *cfg,
-                                RCOutput_Channel_Selector sel, 
+msg_t RCOutputSetChannelWidthUs(RCOutput_Channel_Selector sel,
                                 pwmcnt_t width_us);
-msg_t RCOutputSetChannelWidthRelativePositive(const RCOutput_Configuration *cfg,
-                                              RCOutput_Channel_Selector sel, 
+msg_t RCOutputSetChannelWidthRelativePositive(RCOutput_Channel_Selector sel,
                                               float width);
-msg_t RCOutputSetChannelWidthRelative(const RCOutput_Configuration *cfg,
-                                      RCOutput_Channel_Selector sel, 
+msg_t RCOutputSetChannelWidthRelative(RCOutput_Channel_Selector sel,
                                       float width);
-msg_t RCOutputSetChannelPeriod(const RCOutput_Configuration *cfg,
-                               RCOutput_Bank_Selector sel,
+msg_t RCOutputSetChannelPeriod(RCOutput_Bank_Selector sel,
                                RCOutput_Rate_Selector rate);
 
 

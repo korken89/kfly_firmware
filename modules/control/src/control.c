@@ -57,26 +57,7 @@ static Control_Limits control_limits;
 static Output_Mixer output_mixer;
 static Control_Parameters flash_save_control_parameters;
 static volatile bool controllers_armed;
-    
-/* RC Output Configuration */
-static const PWMConfig pwmcfg = {
-    RCOUTPUT_1MHZ_CLOCK_FREQUENCY,      /* 1 MHz PWM clock frequency    */
-    RCOUTPUT_400HZ,                     /* Initial PWM period: 400 Hz   */
-    NULL,                               /* No callback */
-    {
-        {PWM_OUTPUT_ACTIVE_HIGH, NULL}, /* Active high, no callback     */
-        {PWM_OUTPUT_ACTIVE_HIGH, NULL}, /* Active high, no callback     */
-        {PWM_OUTPUT_ACTIVE_HIGH, NULL}, /* Active high, no callback     */
-        {PWM_OUTPUT_ACTIVE_HIGH, NULL}  /* Active high, no callback     */
-    },
-    0,
-    0
-};
-static const RCOutput_Configuration rcoutputcfg = {
-    &PWMD4,
-    &PWMD8,
-    &pwmcfg
-};
+
 
 THD_WORKING_AREA(waThreadControlArming, 256);
 THD_WORKING_AREA(waThreadControl, 256);
@@ -607,8 +588,7 @@ static void vSendPWMCommands(void)
     int i;
 
     for (i = 0; i < 8; i++)
-        RCOutputSetChannelWidthRelativePositive(&rcoutputcfg,
-                                                i,
+        RCOutputSetChannelWidthRelativePositive(i,
                                                 control_reference.pwm_out[i]);
 }
 
@@ -660,10 +640,6 @@ void ControlInit(void)
     arm_settings.stick_direction = STICK_NONE;
     arm_settings.arm_stick_time = 5;
     arm_settings.arm_zero_throttle_timeout = 30;
-
-    /* Initialize the RC Outputs */
-    if (RCOutputInit(&rcoutputcfg) != MSG_OK)
-        osalSysHalt("RC output init failed"); /* Initialization failed */
 
     /* Initialize all references to 0 and disarm controllers */
     p = (float *)&control_reference;
