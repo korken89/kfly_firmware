@@ -54,7 +54,7 @@ msg_t RCOutputSetChannelWidthUs(const RCOutput_Configuration *cfg,
                                 RCOutput_Channel_Selector sel, 
                                 pwmcnt_t width_us)
 {
-    static const uint32_t pwmchannellut[8] = {3, 2, 1, 0, 3, 2, 1, 0};
+    static const uint32_t pwmchannellut[8] = {0, 1, 2, 3, 3, 2, 1, 0};
 
     if (sel > RCOUTPUT_CHANNEL_8)
         return MSG_RESET;
