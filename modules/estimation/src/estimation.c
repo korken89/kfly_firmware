@@ -91,7 +91,7 @@ static THD_FUNCTION(ThreadEstimation, arg)
                                 &imu_data,
                                 SENSOR_ACCGYRO_DT,
                                 0.0005f,
-                                fc2lpf_gain(45, SENSOR_ACCGYRO_DT)); /* LPF ~ 45 Hz */
+                                fc2lpf_gain(20, SENSOR_ACCGYRO_DT)); /* LPF ~ 45 Hz */
 
         /*InnovateAttitudeEKF(&states,
                             &data, 
