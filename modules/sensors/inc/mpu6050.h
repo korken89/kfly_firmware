@@ -239,7 +239,7 @@ typedef struct
     int16_t raw_temperature;    /* Temperature raw data holder          */
     float accel_data[3];        /* Accelerometer calibrated data holder */
     float gyro_data[3];         /* Gyroscope calibrated data holder     */
-    float temperature;          /* Temperature calibrated data holder   */
+    float temperature;          /* Temperature deg C data holder        */
     mutex_t read_lock;          /* Keep listeners from reading if
                                    new data is being written            */
 } MPU6050_Data;
