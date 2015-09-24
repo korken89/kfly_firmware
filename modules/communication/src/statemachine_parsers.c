@@ -13,6 +13,7 @@
 #include "version_information.h"
 #include "statemachine_generators.h"
 #include "serialmanager.h"
+#include "subscriptions.h"
 #include "crc.h"
 #include "pid.h"
 #include "rc_input.h"
@@ -323,21 +324,21 @@ static void ParseManageSubscriptions(parser_holder_t *pHolder)
             {
                 /* Unsubscribe from command */
                 if (p->port == 0xff) /* Port is the one the command came on */
-                    UnsubscribeFromCommand(p->command, pHolder->Port);
+                    bUnsubscribeFromCommand(p->command, pHolder->Port);
                 else /* Port is is specified in the message */
-                    UnsubscribeFromCommand(p->command, p->port);
+                    bUnsubscribeFromCommand(p->command, p->port);
             }
             else
             {
                 /* Subscribe to command */
                 if (p->port == 0xff) /* Port is the one the command came on */
-                    SubscribeToCommand(p->command,
-                                       pHolder->Port,
-                                       p->delta_time);
+                    bSubscribeToCommand(p->command,
+                                        pHolder->Port,
+                                        p->delta_time);
                 else /* Port is is specified in the message */
-                    SubscribeToCommand(p->command,
-                                       p->port,
-                                       p->delta_time);
+                    bSubscribeToCommand(p->command,
+                                        p->port,
+                                        p->delta_time);
             }
         }
     }
