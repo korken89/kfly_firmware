@@ -759,18 +759,6 @@ void vUpdateControlAction(quaternion_t *q_m, vector3f_t *omega_m, float dt)
             vZeroControlIntegrals();
             break;
     }
-
-
-    void vTransmitExperimentData(void);
-    static int cnt = 0;
-
-    if (cnt >= 5) // Every 6th measurement
-    {
-        cnt = 0;
-        //vTransmitExperimentData();
-    }
-    else
-        cnt++;
 }
 
 /**
@@ -884,55 +872,4 @@ void SetControlParameters(Control_Parameters *param)
         for (j = 0; j < 3; j++)
             f_pi[j] = f_par[j];
     }
-}
-
-
-
-
-
-
-
-
-#include "sensor_read.h"
-#include "serialmanager.h"
-#include "statemachine_generators.h"
-
-void vTransmitExperimentData(void)
-{
-    static Experiment_Data exp_data;
-    static attitude_states_t *estimation;
-    static uint8_t cnt = 0;
-
-    estimation = ptrGetAttitudeEstimationStates();
-
-    /* Gyro data */
-    exp_data.gyro[0] = (int16_t)(estimation->w.x * 10000.0f);
-    exp_data.gyro[1] = (int16_t)(estimation->w.y * 10000.0f);
-
-    /* Gyro bias */
-    exp_data.gyro_bias[0] = (int16_t)(estimation->wb.x * 10000.0f);
-    exp_data.gyro_bias[1] = (int16_t)(estimation->wb.y * 10000.0f);
-
-    /* Control references */
-    exp_data.control_ref[0] = (int16_t)(control_reference.rate_reference.x * 10000.0f);
-    exp_data.control_ref[1] = (int16_t)(control_reference.rate_reference.y * 10000.0f);
-
-    /* Integral state */
-    exp_data.control_istate[0] = (int16_t)(control_data.rate_controller[0].I_state * 10000.0f);
-    exp_data.control_istate[1] = (int16_t)(control_data.rate_controller[1].I_state * 10000.0f);
-
-    /* Controller outputs */
-    exp_data.control_output[0] = (int16_t)(control_reference.actuator_desired.pitch * 10000.0f);
-    exp_data.control_output[1] = (int16_t)(control_reference.actuator_desired.roll * 10000.0f);
-
-    /* Throttle */
-    exp_data.u_throttle = (uint16_t)(control_reference.actuator_desired.throttle * 10000.0f);
-
-    exp_data.counter = cnt++;
-
-    /* Send the data */
-    GenerateCustomMessage(73,
-                          (uint8_t *)&exp_data,
-                          sizeof(Experiment_Data),
-                          PORT_AUX1);
 }

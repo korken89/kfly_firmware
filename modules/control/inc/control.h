@@ -404,35 +404,6 @@ typedef struct PACKED_VAR
     PI_Parameters rate_parameters[3];
 } Control_Parameters;
 
-typedef struct PACKED_VAR
-{
-    int16_t gyro[2];
-    int16_t gyro_bias[2];
-    int16_t control_ref[2];
-    int16_t control_istate[2];
-    int16_t control_output[2];
-    uint16_t u_throttle;
-    uint8_t counter;
-} Experiment_Data;
-
-typedef struct PACKED_VAR
-{
-    vector3f_t rate_reference;
-    vector3f_t rate_measured;
-    struct {
-        float pitch;
-        float roll;
-        float yaw;
-        float throttle;
-    } actuator_desired;
-    struct {
-        float m1;
-        float m2;
-        float m3;
-        float m4;
-    } pwm_to_motors;
-} Control_Debug;
-
 /*===========================================================================*/
 /* Module macros.                                                            */
 /*===========================================================================*/
