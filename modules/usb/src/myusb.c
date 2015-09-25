@@ -98,7 +98,6 @@ static const USBEndpointConfig ep2config = {
  * Handles the USB driver global events.
  */
 static void usb_event(USBDriver *usbp, usbevent_t event) {
-
   switch (event) {
   case USB_EVENT_RESET:
     return;
@@ -119,6 +118,12 @@ static void usb_event(USBDriver *usbp, usbevent_t event) {
     chSysUnlockFromISR();
     return;
   case USB_EVENT_SUSPEND:
+    chSysLockFromISR();
+
+    /* Disconnection event on suspend.*/
+    sduDisconnectI(&SDU1);
+
+    chSysUnlockFromISR();
     return;
   case USB_EVENT_WAKEUP:
     return;
@@ -150,7 +155,7 @@ const SerialUSBConfig serusbcfg = {
 
 bool isUSBActive(void)
 {
-	if (serusbcfg.usbp->state == USB_ACTIVE)
+	if (SDU1.config->usbp->state == USB_ACTIVE)
 		return true;
 	else
 		return false;
@@ -170,6 +175,11 @@ size_t USBSendData(uint8_t *data, size_t size, systime_t timeout)
   return sent;
 }
 
+/**
+ *
+ * Does not wait internally if the USB is not available.
+ *
+ */
 size_t USBReadByte(systime_t timeout)
 {
   return chnGetTimeout(&SDU1, timeout);

@@ -156,7 +156,7 @@ static void vSystemInitList(void)
 
     /* Activates the USB driver and then the USB bus pull-up on D+. */
     usbDisconnectBus(serusbcfg.usbp);
-    chThdSleepMilliseconds(500);
+    chThdSleepMilliseconds(1500);
     usbStart(serusbcfg.usbp, &usbcfg);
     usbConnectBus(serusbcfg.usbp);
 
