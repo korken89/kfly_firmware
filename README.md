@@ -2,24 +2,24 @@
 
 ### Hardware Specifications
 
-All PCB follow the standard 36 x 36 mm PCBs with 30.5 x 30.5 mm mounting holes if nothing else is stated.
+All PCBs follow the standard 36 x 36 mm outline with 30.5 x 30.5 mm mounting holes, unless nothing else is stated.
 
 #### KFly PCB version 3:
-* ST's STM32F405 CPU: 32-bit ARM Cortex-M4F with 32-bit FPU and DSP @ 168 MHz
-* Invensense'sMPU-6050 accelerometer / gyroscope
-* HMC5983's magnetometer
-* Meas. Spec.'s MS5611-01BA03 pressure sensor
+* ST's **STM32F405** CPU: 32-bit ARM Cortex-M4F with 32-bit FPU and DSP @ 168 MHz
+* Invensense's **MPU-6050** accelerometer / gyroscope
+* Honeywell's **HMC5983** magnetometer
+* Meas. Spec.'s **MS5611** pressure sensor
 * 8 outputs (50 Hz / 400 Hz / Oneshot125)
 * 4 expansion connectors (3 UARTs & 1 CAN)
 * 6 slot RC input connector with support for (C)PPM up to 8 channels in and signal strength
 * 433 MHz RF link
 
 #### KFly PCB version 4:
-* ST's STM32F746 CPU: 32-bit ARM Cortex-M7F with 32-bit FPU and DSP @ 216 MHz
+* ST's **STM32F746** CPU: 32-bit ARM Cortex-M7F with 32-bit FPU and DSP @ 216 MHz
 * Separate analog and digital power supply with 16 V max input voltage
-* ST's LSM6DS3 accelerometer / gyroscope
-* Honeywell's HMC5983 magnetometer
-* ST's LPS25H pressure sensor
+* ST's **LSM6DS3** accelerometer / gyroscope
+* Honeywell's **HMC5983** magnetometer
+* ST's **LPS25H** pressure sensor
 * 8 outputs (50 Hz / 400 Hz / Oneshot125)
 * 4 expansion connectors (3 UARTs & 1 CAN)
 * 6 slot RC input connector with support for (C)PPM up to 8 channels in and signal strength
