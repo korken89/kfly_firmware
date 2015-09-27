@@ -145,8 +145,13 @@ static THD_FUNCTION(USBSerialManagerTask, arg)
     vInitStatemachineDataHolder(&data_holder, PORT_USB, USB_in_buffer);
 
     while(1)
-        vStatemachineDataEntry(USBReadByte(TIME_INFINITE),
-                               &data_holder);
+    {
+        /* Check so the USB is available, else wait a little */
+        while (isUSBActive() == false)
+            chThdSleepMilliseconds(200);
+
+        vStatemachineDataEntry(USBReadByte(TIME_INFINITE), &data_holder);
+    }
 }
 
 /**

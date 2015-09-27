@@ -291,7 +291,8 @@ static void MPU6050ConvertAndSave(MPU6050_Data *dh, uint8_t data[14])
     dh->raw_accel_data[1] = -twoscomplement2signed(data[0], data[1]);
     dh->raw_accel_data[2] = twoscomplement2signed(data[4], data[5]);
 
-    dh->temperature = twoscomplement2signed(data[6], data[7]);
+    dh->raw_temperature = twoscomplement2signed(data[6], data[7]);
+    dh->temperature = ((float)dh->raw_temperature  + 12412.0f) / 340.0f;
 
     dh->raw_gyro_data[0] = twoscomplement2signed(data[10], data[11]);
     dh->raw_gyro_data[1] = -twoscomplement2signed(data[8], data[9]);
