@@ -1,6 +1,11 @@
 #################
 ## Sublime Project Files
 #################
+tags
+
+#################
+## Sublime Project Files
+#################
 
 *.sublime-project
 *.sublime-workspace
