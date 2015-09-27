@@ -110,6 +110,9 @@ size_t USBSendData(uint8_t *data, size_t size, systime_t timeout)
  * 
  * @param[in] timeout  Timeout for the reception.
  * @return             The byte read.
+ *
+ * @note               The USB must be active for the timeout to work. If there
+ *                     is no connection it will return directly. 
  */
 size_t USBReadByte(systime_t timeout)
 {
