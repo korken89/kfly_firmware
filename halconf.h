@@ -115,6 +115,13 @@
 #endif
 
 /**
+ * @brief   Enables the EPWM subsystem.
+ */
+#if !defined(HAL_USE_EPWM) || defined(__DOXYGEN__)
+#define HAL_USE_EPWM                FALSE
+#endif
+
+/**
  * @brief   Enables the RTC subsystem.
  */
 #if !defined(HAL_USE_RTC) || defined(__DOXYGEN__)
