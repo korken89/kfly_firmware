@@ -167,6 +167,7 @@ CPPC = $(TRGT)g++
 #       runtime support makes code size explode.
 LD   = $(TRGT)gcc
 #LD   = $(TRGT)g++
+GDB  = $(TRGT)gdb
 CP   = $(TRGT)objcopy
 AS   = $(TRGT)gcc -x assembler-with-cpp
 OD   = $(TRGT)objdump
@@ -259,3 +260,20 @@ ULIBS =
 
 RULESPATH = $(CHIBIOS)/os/common/ports/ARMCMx/compilers/GCC
 include $(RULESPATH)/rules.mk
+
+##############################################################################
+# Start of GDB section
+#
+
+OCD_TARGET = stm32f4x
+OCD_INTERFFACE = stlink-v2.cfg
+OPENOCD = openocd
+
+GDB_FLAGS = -ex "target remote | $(OPENOCD) -c \"gdb_port pipe; log_output openocd.log\" -f interface/$(OCD_INTERFFACE) -f target/$(OCD_TARGET).cfg" -ex "load" -ex "monitor reset halt"
+
+gdb: build/$(PROJECT).elf
+	$(GDB) build/$(PROJECT).elf $(GDB_FLAGS)
+
+#
+# End of GDB section
+##############################################################################
