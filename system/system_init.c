@@ -9,7 +9,7 @@
 
 /* All includes from modules */
 #include "eicu.h"
-#include "myusb.h"
+#include "usb_access.h"
 #include "mpu6050.h"
 #include "hmc5983.h"
 #include "flash_save.h"
@@ -151,14 +151,12 @@ static void vSystemInitList(void)
      * Initializes the serial-over-USB CDC driver.
      *
      */
-    sduObjectInit(&SDU1);
-    sduStart(&SDU1, &serusbcfg);
+    USBInit();
 
     /* Activates the USB driver and then the USB bus pull-up on D+. */
-    usbDisconnectBus(serusbcfg.usbp);
+    USBDisconnect();
     chThdSleepMilliseconds(500);
-    usbStart(serusbcfg.usbp, &usbcfg);
-    usbConnectBus(serusbcfg.usbp);
+    USBConnect();
 
     /*
      *
@@ -294,10 +292,8 @@ static void vSystemDeinitList(void)
      * Disable the serial-over-USB CDC driver.
      *
      */
-    usbDisconnectBus(serusbcfg.usbp);
-    usbStop(serusbcfg.usbp);
-    sduStop(&SDU1);
-
+    USBDisconnect();
+    USBDeinit();
 }
 
 /*

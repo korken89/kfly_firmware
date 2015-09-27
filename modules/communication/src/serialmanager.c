@@ -7,7 +7,7 @@
 
 #include "ch.h"
 #include "hal.h"
-#include "myusb.h"
+#include "usb_access.h"
 #include "statemachine.h"
 #include "statemachine_generators.h"
 #include "crc.h"

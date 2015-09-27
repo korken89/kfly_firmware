@@ -6,7 +6,7 @@
 
 #include "ch.h"
 #include "hal.h"
-#include "myusb.h"
+#include "usbcfg.h"
 #include "usb_desc.h"
 
 /* Global variable defines */
@@ -16,8 +16,6 @@
 /* Private function defines */
 
 /* Private external functions */
-
-mutex_t USB_write_lock;
 
 /*
  * Serial over USB Driver structure.
@@ -148,29 +146,3 @@ const SerialUSBConfig serusbcfg = {
   USBD1_INTERRUPT_REQUEST_EP
 };
 
-bool isUSBActive(void)
-{
-	if (serusbcfg.usbp->state == USB_ACTIVE)
-		return true;
-	else
-		return false;
-}
-
-void USBMutexInit(void)
-{
-    chMtxObjectInit(&USB_write_lock);
-}
-
-size_t USBSendData(uint8_t *data, size_t size, systime_t timeout)
-{
-  size_t sent;
-
-  sent = chnWriteTimeout(&SDU1, data, size, timeout);
-
-  return sent;
-}
-
-size_t USBReadByte(systime_t timeout)
-{
-  return chnGetTimeout(&SDU1, timeout);
-}

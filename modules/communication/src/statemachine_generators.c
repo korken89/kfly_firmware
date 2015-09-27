@@ -6,7 +6,7 @@
 
 #include "ch.h"
 #include "hal.h"
-#include "myusb.h"
+#include "usb_access.h"
 #include "version_information.h"
 #include "serialmanager.h"
 #include "crc.h"
