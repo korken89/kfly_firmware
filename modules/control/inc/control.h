@@ -29,6 +29,7 @@
 #define POSITION_LIMIT_COUNT                    0
 
 /* Sizes */
+// TODO: Fix this ugly hack...
 #define OUTPUT_MIXER_SIZE                       (sizeof(Output_Mixer) - 8 * sizeof(float)) /* Do not iunclude the offset for now */
 #define CONTROL_ARM_SIZE                        (sizeof(Control_Arm_Settings))
 #define CONTROL_LIMITS_SIZE                     (sizeof(Control_Limits))

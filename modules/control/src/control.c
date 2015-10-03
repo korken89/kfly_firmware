@@ -69,7 +69,7 @@ THD_WORKING_AREA(waThreadControlFlashSave, 256);
 
 /**
  * @brief           Thread for the arm and disarm functionality.
- * 
+ *
  * @param[in] arg   Unused.
  * @return          Unused.
  */
@@ -197,7 +197,7 @@ static THD_FUNCTION(ThreadControlArming, arg)
 
 /**
  * @brief           Thread for the entire control structure.
- * 
+ *
  * @param[in] arg   Unused.
  * @return          Unused.
  */
@@ -221,7 +221,7 @@ static THD_FUNCTION(ThreadControl, arg)
 
     while (1)
     {
-        /* Wait for new estimation */ 
+        /* Wait for new estimation */
         chEvtWaitOne(ESTIMATION_NEW_ESTIMATION_EVENTMASK);
 
         /* Run control */
@@ -231,7 +231,7 @@ static THD_FUNCTION(ThreadControl, arg)
 
 /**
  * @brief           Thread for the flash save operation.
- * 
+ *
  * @param[in] arg   Unused.
  * @return          Unused.
  */
@@ -319,7 +319,7 @@ static void vReadControlParametersFromFlash(void)
 /**
  * @brief           Checks if the sticks are in the correct position for Arm
  *                  Disarm access and returns the current region of the sticks.
- * 
+ *
  * @return          Returns the current region the sticks are in.
  */
 static Arming_Stick_Region SticksInRegion(void)
@@ -372,7 +372,7 @@ static Arming_Stick_Region SticksInRegion(void)
 
         }
 
-        /* Calculate the threshold value. The *2 comes from the fact that the 
+        /* Calculate the threshold value. The *2 comes from the fact that the
            throttle has half the span of the other sticks so double the
            threshold is needed to the same relative threshold. */
         threshold = 1.0f - 2.0f * threshold;
@@ -432,7 +432,7 @@ static void vRCInputsToControlAction(void)
         else if (selector == FLIGHTMODE_ATTITUDE)
         {
             control_reference.mode = FLIGHTMODE_ATTITUDE;
-            
+
             throttle = RCInputGetInputLevel(ROLE_THROTTLE);
             control_reference.attitude_reference.y = control_limits.max_angle.pitch * DEG2RAD * RCInputGetInputLevel(ROLE_PITCH);
             control_reference.attitude_reference.x = control_limits.max_angle.roll * DEG2RAD * RCInputGetInputLevel(ROLE_ROLL);
@@ -457,7 +457,7 @@ static void vRCInputsToControlAction(void)
 
 /**
  * @brief           Implements the position controller.
- * 
+ *
  * @param[in] position_m    Position measurement.
  * @param[in] dt            Controller sampling time.
  */
@@ -469,7 +469,7 @@ static void vPositionControl(vector3f_t *position_m, float dt)
 
 /**
  * @brief           Implements the velocity controller.
- * 
+ *
  * @param[in] velocity_m    Velocity measurement.
  * @param[in] dt            Controller sampling time.
  */
@@ -481,7 +481,7 @@ static void vVelocityControl(vector3f_t *velocity_m, float dt)
 
 /**
  * @brief           Implements the attitude controller.
- * 
+ *
  * @param[in] attitude_m    Attitude measurement.
  * @param[in] dt            Controller sampling time.
  */
@@ -490,7 +490,7 @@ static void vAttitudeControl(quaternion_t *attitude_m,
                              float dt)
 {
     (void)control_yaw;
-    
+
     vector3f_t u;
     vector3f_t err;
 
@@ -507,7 +507,7 @@ static void vAttitudeControl(quaternion_t *attitude_m,
     u.y = fPIUpdate(&control_data.attitude_controller[1], err.x, dt);
 
     /* Send bounded control signal to the next step in the cascade */
-    control_reference.rate_reference.x = 
+    control_reference.rate_reference.x =
                                 bound( control_limits.max_rate_attitude.pitch,
                                       -control_limits.max_rate_attitude.pitch,
                                        u.x);
@@ -519,7 +519,7 @@ static void vAttitudeControl(quaternion_t *attitude_m,
 
 /**
  * @brief           Implements the rate controller.
- * 
+ *
  * @param[in] omega_m   Rate measurement.
  * @param[in] dt        Controller sampling time.
  */
@@ -541,7 +541,7 @@ static void vRateControl(vector3f_t *omega_m, float dt)
     control_reference.actuator_desired.pitch = bound(1.0f, -1.0f, u.x);
     control_reference.actuator_desired.roll = bound(1.0f, -1.0f, -u.y);
     control_reference.actuator_desired.yaw = bound(1.0f, -1.0f, -u.z);
-    
+
 }
 
 /**
@@ -614,7 +614,7 @@ static void vZeroControlIntegrals(void)
 
     /* Cast the controller data into an array of PI controllers */
     PI_Data *pi = (PI_Data *)&control_data;
-    
+
     /* Zero each controllers Integral state. */
     for (i = 0; i < CONTROL_NUMBER_OF_CONTROLLERS; i++)
         pi[i].I_state = 0.0f;
@@ -672,6 +672,7 @@ void ControlInit(void)
     vReadControlParametersFromFlash();
 
     /*
+     *  TODO: Remove and fix this...
      *
      *  SUPER UGGLY HACK TO GET SERVO SUPPORT FOR NOW...
      *  DATA STRUCTURE HIDDEN AT THE END OF Output_Mixer CONTAINS OFFSETS.
@@ -714,7 +715,7 @@ void ControlInit(void)
 
 /**
  * @brief       Updates all the controllers depending om current flight mode.
- * 
+ *
  * @param[in] q_m       Attitude measurement.
  * @param[in] omega_m   Rate measurement.
  * @param[in] dt        Controller sampling rate.
@@ -773,7 +774,7 @@ void vControlForceDisarm(uint32_t key)
 
 /**
  * @brief       Return the pointer to the controller arm structure.
- * 
+ *
  * @return      Pointer to the controller arm structure.
  */
 Control_Arm_Settings *ptrGetControlArmSettings(void)
@@ -783,7 +784,7 @@ Control_Arm_Settings *ptrGetControlArmSettings(void)
 
 /**
  * @brief       Return the pointer to the control reference structure.
- * 
+ *
  * @return      Pointer to the control reference structure.
  */
 Control_Reference *ptrGetControlReferences(void)
@@ -793,7 +794,7 @@ Control_Reference *ptrGetControlReferences(void)
 
 /**
  * @brief       Return the pointer to the control data structure.
- * 
+ *
  * @return      Pointer to the control data structure.
  */
 Control_Data *ptrGetControlData(void)
@@ -803,7 +804,7 @@ Control_Data *ptrGetControlData(void)
 
 /**
  * @brief       Return the pointer to the control limits structure.
- * 
+ *
  * @return      Pointer to the control limits structure.
  */
 Control_Limits *ptrGetControlLimits(void)
@@ -813,7 +814,7 @@ Control_Limits *ptrGetControlLimits(void)
 
 /**
  * @brief       Return the pointer to the output mixer structure.
- * 
+ *
  * @return      Pointer to the output mixer structure.
  */
 Output_Mixer *ptrGetOutputMixer(void)
