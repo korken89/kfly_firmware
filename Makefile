@@ -5,12 +5,12 @@
 
 # Compiler options here.
 ifeq ($(USE_OPT),)
-  USE_OPT = -Og -ggdb -fomit-frame-pointer -falign-functions=16 
+  USE_OPT = -Og -ggdb -fomit-frame-pointer -falign-functions=16  -fdiagnostics-color
 endif
 
 # C specific options here (added to USE_OPT).
 ifeq ($(USE_COPT),)
-  USE_COPT = 
+  USE_COPT =
 endif
 
 # C++ specific options here (added to USE_OPT).
