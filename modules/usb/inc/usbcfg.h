@@ -9,8 +9,8 @@
 /* Typedefs */
 
 /* Global variables */
-extern SerialUSBDriver SDU1;
 extern const USBConfig usbcfg;
+extern SerialUSBDriver SDU1;
 extern const SerialUSBConfig serusbcfg;
 
 #endif
