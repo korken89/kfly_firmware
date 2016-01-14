@@ -1,3 +1,6 @@
 [submodule "drivers"]
 	path = drivers
 	url = https://github.com/korken89/ChibiOS-Custom-Drivers.git
+[submodule "ChibiOS"]
+	path = ChibiOS
+	url = https://github.com/ChibiOS/ChibiOS.git
