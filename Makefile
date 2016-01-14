@@ -86,7 +86,7 @@ endif
 PROJECT = kfly
 
 # Imported source files and paths
-CHIBIOS = ../ChibiOS
+CHIBIOS = ./ChibiOS
 # Startup files.
 include $(CHIBIOS)/os/common/ports/ARMCMx/compilers/GCC/mk/startup_stm32f4xx.mk
 # HAL-OSAL files (optional).
