@@ -31,13 +31,13 @@
 
 /**
  * @brief                   Initializes a circular buffer except the mutex.
- * 
+ *
  * @param[in] Cbuff         Pointer to the circular buffer.
  * @param[in] buffer        Pointer to where the circular buffer data is stored.
  * @param[in] buffer_size   Size of the circular buffer in bytes.
  */
 void CircularBuffer_Init(circular_buffer_t *Cbuff,
-                         uint8_t *buffer, 
+                         uint8_t *buffer,
                          uint32_t buffer_size)
 {
     Cbuff->head = 0;
@@ -48,7 +48,7 @@ void CircularBuffer_Init(circular_buffer_t *Cbuff,
 
 /**
  * @brief               Initializes the circular buffer mutex.
- * 
+ *
  * @param[in] Cbuff     Pointer to the circular buffer.
  */
 void CircularBuffer_InitMutex(circular_buffer_t *Cbuff)
@@ -56,39 +56,10 @@ void CircularBuffer_InitMutex(circular_buffer_t *Cbuff)
     chMtxObjectInit(&Cbuff->write_lock);
 }
 
-/**
- * @brief               Claims a circular buffer using the mutex.
- * 
- * @param[in] Cbuff     Pointer to the circular buffer.
- */
-void CircularBuffer_Claim(circular_buffer_t *Cbuff)
-{
-    chMtxLock(&Cbuff->write_lock);
-}
-
-/**
- * @brief               Releases a circular buffer using the mutex.
- * 
- * @param[in] Cbuff     Pointer to the circular buffer.
- */
-void CircularBuffer_Release(circular_buffer_t *Cbuff)
-{
-    chMtxUnlock(&Cbuff->write_lock);
-}
-
-/**
- * @brief               Calculates the space left in a circular buffer.
- * 
- * @param[in] Cbuff     Pointer to the circular buffer.
- */
-uint32_t CircularBuffer_SpaceLeft(circular_buffer_t *Cbuff)
-{
-    return (Cbuff->tail + Cbuff->size - Cbuff->head - 1) % Cbuff->size;
-}
 
 /**
  * @brief               Writes a byte to a circular buffer.
- * 
+ *
  * @param[in] Cbuff     Pointer to the circular buffer.
  */
 void CircularBuffer_WriteSingle(circular_buffer_t *Cbuff, uint8_t data)
@@ -101,13 +72,13 @@ void CircularBuffer_WriteSingle(circular_buffer_t *Cbuff, uint8_t data)
  * @brief               Writes a chunk of data to a circular buffer.
  * @note                This algorithm assumes you have checked that the
  *                      data will fit inside the buffer.
- *                      
+ *
  * @param[in/out] Cbuff Pointer to the circular buffer.
  * @param[in] data      Pointer to the data being written.
  * @param[in] count     Size of the data being written in bytes.
  */
-void CircularBuffer_WriteChunk(circular_buffer_t *Cbuff, 
-                               uint8_t *data, 
+void CircularBuffer_WriteChunk(circular_buffer_t *Cbuff,
+                               uint8_t *data,
                                const uint32_t count)
 {
     uint32_t i, head, from_bot, to_top;
@@ -141,7 +112,7 @@ void CircularBuffer_WriteChunk(circular_buffer_t *Cbuff,
 
 /**
  * @brief               Reads a byte from a circular buffer.
- *  
+ *
  * @param[in/out] Cbuff Pointer to the circular buffer.
  */
 uint8_t CircularBuffer_ReadSingle(circular_buffer_t *Cbuff)
@@ -156,13 +127,13 @@ uint8_t CircularBuffer_ReadSingle(circular_buffer_t *Cbuff)
 
 /**
  * @brief               Reads a chunk of data from a circular buffer.
- *  
+ *
  * @param[in/out] Cbuff Pointer to the circular buffer.
  * @param[out] data     Pointer to write the data.
  * @param[in] count     Number of bytes to read.
  */
-void CircularBuffer_ReadChunk(circular_buffer_t *Cbuff, 
-                              uint8_t *data, 
+void CircularBuffer_ReadChunk(circular_buffer_t *Cbuff,
+                              uint8_t *data,
                               uint32_t count)
 {
     (void)Cbuff;
@@ -173,7 +144,7 @@ void CircularBuffer_ReadChunk(circular_buffer_t *Cbuff,
 /**
  * @brief               Increment the circular buffer pointer to math the
  *                      number of bytes written.
- *  
+ *
  * @param[in/out] Cbuff Pointer to the circular buffer.
  * @param[in] count     Number of bytes to increment the pointer.
  */
@@ -193,7 +164,7 @@ bool CircularBuffer_Increment(circular_buffer_t *Cbuff, int32_t count)
  * @brief               Generates a pointer to the tail byte and returns a size
  *                      which for how many bytes can be read from the circular
  *                      buffer.
- *  
+ *
  * @param[in/out] Cbuff Pointer to the circular buffer.
  * @param[out] size     Pointer to the size holder.
  * @return              Pointer to the buffer with offset.
@@ -213,7 +184,3 @@ uint8_t *CircularBuffer_GetReadPointer(circular_buffer_t *Cbuff,
     return p;
 }
 
-void CircularBuffer_IncrementTail(circular_buffer_t *Cbuff, int32_t count)
-{
-    Cbuff->tail = ((Cbuff->tail + count) % Cbuff->size);
-}
