@@ -263,6 +263,20 @@ void InitSLIPParser(slip_parser_holder_t *p,
 }
 
 /**
+ * @brief                       Resets the slip_parser_holder_t structure.
+ *
+ * @param[in/out] p             Pointer to slip_parser_holder_t structure.
+ */
+void ResetSLIPParser(slip_parser_holder_t *p)
+{
+    p->buffer_count = 0;
+    p->buffer_overrun = 0;
+    p->rx_error = 0;
+    p->rx_success = 0;
+    p->state = SLIP_STATE_AWAITING_START;
+}
+
+/**
  * @brief              The entry point of serial data to the state machine.
  *                     When a finished SLIP packet is detected the parser
  *                     function will be called to handle the next level of

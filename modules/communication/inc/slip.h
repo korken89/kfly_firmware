@@ -110,6 +110,7 @@ void InitSLIPParser(slip_parser_holder_t *p,
                     uint8_t *buffer,
                     const uint16_t buffer_size,
                     void (*parser)(slip_parser_holder_t *));
+void ResetSLIPParser(slip_parser_holder_t *p);
 void ParseSLIP(uint8_t data, slip_parser_holder_t *p);
 
 /*===========================================================================*/
