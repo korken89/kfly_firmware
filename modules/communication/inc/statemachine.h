@@ -205,7 +205,7 @@ typedef enum PACKED_VAR
      * @brief   Get RC values.
      */
     Cmd_GetRCValues                 = 43,
-    
+
     /*===============================================*/
     /* Sensor specific commands.                     */
     /*===============================================*/
@@ -352,17 +352,17 @@ typedef bool (*generator_t)(circular_buffer_t *);
 
 /**
  * @brief           Checks if the input is a valid port ID.
- * 
+ *
  * @param[in] port  Port to be checked.
  * @return          Returns true if it is a valid port ID.
  */
 static inline bool isPort(External_Port port)
 {
     if ((port == PORT_USB) ||
-        (port == PORT_AUX1) ||
-        (port == PORT_AUX2) ||
-        (port == PORT_AUX3) ||
-        (port == PORT_AUX4))
+            (port == PORT_AUX1) ||
+            (port == PORT_AUX2) ||
+            (port == PORT_AUX3) ||
+            (port == PORT_AUX4))
         return true;
     else
         return false;
@@ -376,14 +376,14 @@ void vInitStatemachineDataHolder(parser_holder_t *pHolder,
                                  External_Port port,
                                  uint8_t *buffer);
 void vStatemachineDataEntry(uint8_t data, parser_holder_t *pHolder);
-void CircularBuffer_WriteSYNCNoIncrement(circular_buffer_t *Cbuff, 
-										 int32_t *count, 
-										 uint8_t *crc8, 
-										 uint16_t *crc16);
+void CircularBuffer_WriteSYNCNoIncrement(circular_buffer_t *Cbuff,
+                                         int32_t *count,
+                                         uint8_t *crc8,
+                                         uint16_t *crc16);
 void CircularBuffer_WriteNoIncrement(circular_buffer_t *Cbuff,
-                                     uint8_t data, 
-                                     int32_t *count, 
-                                     uint8_t *crc8, 
+                                     uint8_t data,
+                                     int32_t *count,
+                                     uint8_t *crc8,
                                      uint16_t *crc16);
 
 #endif
