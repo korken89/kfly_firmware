@@ -106,11 +106,11 @@ bool GenerateSLIP_HBT(uint8_t *head,
                       uint8_t *tail,
                       const uint32_t t_size,
                       circular_buffer_t *cb);
-void InitSLIPParser(slip_parser_holder_t *pHolder,
+void InitSLIPParser(slip_parser_holder_t *p,
                     uint8_t *buffer,
                     const uint16_t buffer_size,
                     void (*parser)(slip_parser_holder_t *));
-void ParseSLIP(uint8_t data, slip_parser_holder_t *pHolder);
+void ParseSLIP(uint8_t data, slip_parser_holder_t *p);
 
 /*===========================================================================*/
 /* Module inline functions.                                                  */

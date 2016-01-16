@@ -242,24 +242,24 @@ bool GenerateSLIP_HBT(uint8_t *head,
 /**
  * @brief                       Initializes the slip_parser_holder_t structure.
  *
- * @param[in/out] pHolder       Pointer to slip_parser_holder_t structure.
+ * @param[in/out] p             Pointer to slip_parser_holder_t structure.
  * @param[in]     buffer        Buffer used for intermediate data.
  * @param[in]     buffer_size   Buffer size.
  * @param[in]     parser        Pointer to the parser of the passed data.
  */
-void InitSLIPParser(slip_parser_holder_t *pHolder,
+void InitSLIPParser(slip_parser_holder_t *p,
                     uint8_t *buffer,
                     const uint16_t buffer_size,
                     void (*parser)(slip_parser_holder_t *))
 {
-    pHolder->buffer = buffer;
-    pHolder->buffer_size = buffer_size;
-    pHolder->buffer_count = 0;
-    pHolder->buffer_overrun = 0;
-    pHolder->rx_error = 0;
-    pHolder->rx_success = 0;
-    pHolder->state = SLIP_STATE_AWAITING_START;
-    pHolder->parser = parser;
+    p->buffer = buffer;
+    p->buffer_size = buffer_size;
+    p->buffer_count = 0;
+    p->buffer_overrun = 0;
+    p->rx_error = 0;
+    p->rx_success = 0;
+    p->state = SLIP_STATE_AWAITING_START;
+    p->parser = parser;
 }
 
 /**
@@ -269,28 +269,28 @@ void InitSLIPParser(slip_parser_holder_t *pHolder,
  *                     parsing.
  *
  * @param[in] data     Input data to be parsed.
- * @param[in] pHolder  Pointer to slip_parser_holder_t structure.
+ * @param[in] p        Pointer to slip_parser_holder_t structure.
  */
-void ParseSLIP(uint8_t data, slip_parser_holder_t *pHolder)
+void ParseSLIP(uint8_t data, slip_parser_holder_t *p)
 {
 
     /* Check for buffer overrun. */
-    if (pHolder->buffer_count >= pHolder->buffer_size)
+    if (p->buffer_count >= p->buffer_size)
     {
-        pHolder->state = SLIP_STATE_AWAITING_START;
-        pHolder->rx_error++;
-        pHolder->buffer_count = 0;
+        p->state = SLIP_STATE_AWAITING_START;
+        p->rx_error++;
+        p->buffer_count = 0;
     }
 
-    switch (pHolder->state)
+    switch (p->state)
     {
     case SLIP_STATE_AWAITING_START:
 
         if (data == SLIP_END)
         {
             /* Start of data detected, change state and clear buffer. */
-            pHolder->state = SLIP_STATE_RECEIVING;
-            pHolder->buffer_count = 0;
+            p->state = SLIP_STATE_RECEIVING;
+            p->buffer_count = 0;
         }
 
         break;
@@ -300,33 +300,33 @@ void ParseSLIP(uint8_t data, slip_parser_holder_t *pHolder)
         if (data == SLIP_ESC)
         {
             /* Escape sequence incoming. */
-            pHolder->state = SLIP_STATE_AWAITING_ESC;
+            p->state = SLIP_STATE_AWAITING_ESC;
         }
         else if (data == SLIP_END)
         {
             /* If two END bytes come in a row (payload size is 0), assume
                re-start to not have empty packets and to guarantee that
                the packet structure is not corrupted. */
-            if (pHolder->buffer_count > 0)
+            if (p->buffer_count > 0)
             {
                 /* There is a payload, send it to next parsing stage. */
-                pHolder->state = SLIP_STATE_AWAITING_START;
-                pHolder->rx_success++;
+                p->state = SLIP_STATE_AWAITING_START;
+                p->rx_success++;
 
-                pHolder->parser(pHolder);
+                p->parser(p);
             }
         }
         else
         {
             /* Check for buffer overrun. */
-            if (pHolder->buffer_count >= pHolder->buffer_size)
+            if (p->buffer_count >= p->buffer_size)
             {
-                pHolder->state = SLIP_STATE_AWAITING_START;
-                pHolder->rx_error++;
-                pHolder->buffer_overrun++;
+                p->state = SLIP_STATE_AWAITING_START;
+                p->rx_error++;
+                p->buffer_overrun++;
             }
             else
-                pHolder->buffer[pHolder->buffer_count++] = data;
+                p->buffer[p->buffer_count++] = data;
         }
 
         break;
@@ -337,40 +337,40 @@ void ParseSLIP(uint8_t data, slip_parser_holder_t *pHolder)
         if (data == SLIP_ESC_END)
         {
             /* Check for buffer overrun. */
-            if (pHolder->buffer_count >= pHolder->buffer_size)
+            if (p->buffer_count >= p->buffer_size)
             {
-                pHolder->state = SLIP_STATE_AWAITING_START;
-                pHolder->rx_error++;
-                pHolder->buffer_overrun++;
+                p->state = SLIP_STATE_AWAITING_START;
+                p->rx_error++;
+                p->buffer_overrun++;
             }
             else
-                pHolder->buffer[pHolder->buffer_count++] = SLIP_END;
+                p->buffer[p->buffer_count++] = SLIP_END;
         }
         else if (data == SLIP_ESC_ESC)
         {
             /* Check for buffer overrun. */
-            if (pHolder->buffer_count >= pHolder->buffer_size)
+            if (p->buffer_count >= p->buffer_size)
             {
-                pHolder->state = SLIP_STATE_AWAITING_START;
-                pHolder->rx_error++;
-                pHolder->buffer_overrun++;
+                p->state = SLIP_STATE_AWAITING_START;
+                p->rx_error++;
+                p->buffer_overrun++;
             }
             else
-                pHolder->buffer[pHolder->buffer_count++] = SLIP_ESC;
+                p->buffer[p->buffer_count++] = SLIP_ESC;
         }
         else
         {
             /* Package error, reset parser. */
-            pHolder->state = SLIP_STATE_AWAITING_START;
-            pHolder->rx_error++;
+            p->state = SLIP_STATE_AWAITING_START;
+            p->rx_error++;
         }
         break;
 
     default:
 
         /* Should never come here. */
-        pHolder->state = SLIP_STATE_AWAITING_START;
-        pHolder->rx_error++;
+        p->state = SLIP_STATE_AWAITING_START;
+        p->rx_error++;
 
     }
 }
