@@ -296,6 +296,7 @@ void ParseSLIP(uint8_t data, slip_parser_holder_t *p)
         p->buffer_count = 0;
     }
 
+    /* Parse the data based on the current state. */
     switch (p->state)
     {
     case SLIP_STATE_AWAITING_START:
@@ -378,6 +379,7 @@ void ParseSLIP(uint8_t data, slip_parser_holder_t *p)
             p->state = SLIP_STATE_AWAITING_START;
             p->rx_error++;
         }
+
         break;
 
     default:
