@@ -263,7 +263,7 @@ void InitSLIPParser(slip_parser_holder_t *pHolder,
 }
 
 /**
- * @brief              The entry point of serial data to the statemachine.
+ * @brief              The entry point of serial data to the state machine.
  *                     When a finished SLIP packet is detected the parser
  *                     function will be called to handle the next level of
  *                     parsing.

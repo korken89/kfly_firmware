@@ -1,6 +1,8 @@
 #ifndef __SLIP_H
 #define __SLIP_H
 
+#include "circularbuffer.h"
+
 /*===========================================================================*/
 /* Module global definitions.                                                */
 /*===========================================================================*/
@@ -27,7 +29,7 @@
 /*===========================================================================*/
 
 /**
- * @brief   Possible states of the SLIP statemachine..
+ * @brief   Possible states of the SLIP state machine.
  */
 typedef enum
 {
@@ -47,7 +49,7 @@ typedef enum
 
 /**
  * @brief   The structure to keep track of the states and data through the
- *          SLIP statemachine.
+ *          SLIP state machine.
  */
 typedef struct _slip_parser_holder
 {
@@ -76,7 +78,7 @@ typedef struct _slip_parser_holder
      */
     uint32_t rx_success;
     /**
-     * @brief   Current state of the statemachine.
+     * @brief   Current state of the state machine.
      */
     slip_state_t state;
     /**
