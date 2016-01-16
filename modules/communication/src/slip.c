@@ -36,32 +36,6 @@
 /*===============================================================*/
 
 /**
- * @brief               Writes a byte to the circular buffer, if its vaule is
- *                      reserved - escape it.
- *
- * @param[in/out] cb    Pointer to the circular buffer.
- * @param[in/out] data  Byte being written.
- * @param[in/out] count Pointer to tracking variable for the buffer.
- */
-static void CircularBuffer_SLIPWriteNoInc(circular_buffer_t *cb,
-                                          uint8_t data,
-                                          int32_t *count)
-{
-    /* Check if we have an error from previous write */
-    if (*count >= 0)
-    {
-        /* Check if we have 2 bytes free, in case of data = reserved */
-        if ((CircularBuffer_SpaceLeft(cb) - *count) >= 2)
-        {
-            cb->buffer[(cb->head + *count) % cb->size] = data;
-            *count += 1;
-        }
-        else
-            *count = -1;
-    }
-}
-
-/**
  * @brief               Writes an SLIP_END to the buffer without encodeing it.
  *
  * @param[in/out] cb    Pointer to the circular buffer.
