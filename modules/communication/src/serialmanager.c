@@ -82,10 +82,10 @@ typedef struct
      * @brief   AUX4 data pump circular transmit buffer.
      */
     circular_buffer_t AUX4TransmitBuffer;
-} Serial_Datapump_Holder;
+} serial_datapump_holder_t;
 
 /* Instance of the data pump holder structure */
-Serial_Datapump_Holder data_pumps = {
+serial_datapump_holder_t data_pumps = {
     .ptrUSBDataPump = NULL,
     .ptrAUX1DataPump = NULL,
     .ptrAUX2DataPump = NULL,
@@ -230,7 +230,7 @@ static THD_FUNCTION(Aux1SerialManagerTask, arg)
     }
 
     /* Buffer for parsing serial commands */
-    CCM_MEMORY static uint8_t AUX1_in_buffer[16];
+    static uint8_t AUX1_in_buffer[16];
 
     /* Initialize data structures */
     InitSLIPParser(&slip_data_holder,
