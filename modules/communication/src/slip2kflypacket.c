@@ -111,7 +111,7 @@ void ParseKFlyPacketFromSLIP(slip_parser_t *slip, kfly_parser_t *p)
 {
     uint8_t cmd;
     uint16_t crc16;
-    const uint16_t size = slip->buffer_size;
+    const uint16_t size = slip->buffer_count;
     uint8_t *buffer = slip->buffer;
 
     /*
