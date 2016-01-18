@@ -287,15 +287,6 @@ void ResetSLIPParser(slip_parser_holder_t *p)
  */
 void ParseSLIP(uint8_t data, slip_parser_holder_t *p)
 {
-
-    /* Check for buffer overrun. */
-    if (p->buffer_count >= p->buffer_size)
-    {
-        p->state = SLIP_STATE_AWAITING_START;
-        p->rx_error++;
-        p->buffer_count = 0;
-    }
-
     /* Parse the data based on the current state. */
     switch (p->state)
     {
@@ -359,7 +350,10 @@ void ParseSLIP(uint8_t data, slip_parser_holder_t *p)
                 p->buffer_overrun++;
             }
             else
+            {
+                p->state = SLIP_STATE_RECEIVING;
                 p->buffer[p->buffer_count++] = SLIP_END;
+            }
         }
         else if (data == SLIP_ESC_ESC)
         {
@@ -371,7 +365,10 @@ void ParseSLIP(uint8_t data, slip_parser_holder_t *p)
                 p->buffer_overrun++;
             }
             else
+            {
+                p->state = SLIP_STATE_RECEIVING;
                 p->buffer[p->buffer_count++] = SLIP_ESC;
+            }
         }
         else
         {
