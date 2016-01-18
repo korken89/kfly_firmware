@@ -8,6 +8,7 @@
 #include "ch.h"
 #include "hal.h"
 #include "usb_access.h"
+#include "slip.h"
 #include "statemachine.h"
 #include "statemachine_generators.h"
 #include "crc.h"
@@ -125,7 +126,7 @@ THD_WORKING_AREA(waAux1DataPumpTask, 128);
 /**
  * @brief           The USB Serial Manager task will handle incoming
  *                  data and direct it for decode and processing.
- *             
+ *
  * @param[in] arg   Input argument (unused).
  */
 static THD_FUNCTION(USBSerialManagerTask, arg)
@@ -139,7 +140,7 @@ static THD_FUNCTION(USBSerialManagerTask, arg)
     static parser_holder_t data_holder;
 
     /* Buffer for parsing serial USB commands */
-    CCM_MEMORY static uint8_t USB_in_buffer[SERIAL_RECIEVE_BUFFER_SIZE]; 
+    CCM_MEMORY static uint8_t USB_in_buffer[SERIAL_RECIEVE_BUFFER_SIZE];
 
     /* Initialize data structure */
     vInitStatemachineDataHolder(&data_holder, PORT_USB, USB_in_buffer);
@@ -156,7 +157,7 @@ static THD_FUNCTION(USBSerialManagerTask, arg)
 
 /**
  * @brief           Transmits the content of the USB circular buffer over USB.
- *  
+ *
  * @param[in] arg   Input argument (unused).
  */
 static THD_FUNCTION(USBDataPumpTask, arg)
@@ -167,7 +168,7 @@ static THD_FUNCTION(USBDataPumpTask, arg)
     chRegSetThreadName("USB Data Pump");
 
     /* Buffer for transmitting serial USB commands */
-    CCM_MEMORY static uint8_t USB_out_buffer[SERIAL_TRANSMIT_BUFFER_SIZE]; 
+    CCM_MEMORY static uint8_t USB_out_buffer[SERIAL_TRANSMIT_BUFFER_SIZE];
 
     /* Initialize the USB transmit circular buffer */
     CircularBuffer_Init(&data_pumps.USBTransmitBuffer,
@@ -192,10 +193,15 @@ static THD_FUNCTION(USBDataPumpTask, arg)
 /* AUX1 Communication threads.                       */
 /*===================================================*/
 
+static void test_parser(slip_parser_holder_t* pHolder)
+{
+    (void) pHolder;
+}
+
 /**
  * @brief           The Aux1 Serial Manager task will handle incoming
  *                  data and direct it for decode and processing.
- *             
+ *
  * @param[in] arg   Input argument (unused).
  */
 static THD_FUNCTION(Aux1SerialManagerTask, arg)
@@ -206,22 +212,23 @@ static THD_FUNCTION(Aux1SerialManagerTask, arg)
     chRegSetThreadName("Aux1 Serial Manager");
 
     /* Data structure for communication */
-    static parser_holder_t data_holder;
+    static slip_parser_holder_t data_holder;
 
     /* Buffer for parsing serial USB commands */
-    CCM_MEMORY static uint8_t AUX1_in_buffer[SERIAL_RECIEVE_BUFFER_SIZE]; 
+    CCM_MEMORY static uint8_t AUX1_in_buffer[16];
 
     /* Initialize data structure */
-    vInitStatemachineDataHolder(&data_holder, PORT_AUX1, AUX1_in_buffer);
+    InitSLIPParser(&data_holder, AUX1_in_buffer, 16, test_parser);
+    //vInitStatemachineDataHolder(&data_holder, PORT_AUX1, AUX1_in_buffer);
 
     while(1)
-        vStatemachineDataEntry(sdGet(&AUX1_SERIAL_DRIVER),
-                               &data_holder);
+        ParseSLIP(sdGet(&AUX1_SERIAL_DRIVER), &data_holder);
+        //vStatemachineDataEntry(sdGet(&AUX1_SERIAL_DRIVER), &data_holder);
 }
 
 /**
  * @brief           Transmits the content of the Aux1 circular buffer over Aux1.
- *  
+ *
  * @param[in] arg   Input argument (unused).
  */
 static THD_FUNCTION(Aux1DataPumpTask, arg)
@@ -232,7 +239,7 @@ static THD_FUNCTION(Aux1DataPumpTask, arg)
     chRegSetThreadName("Aux1 Data Pump");
 
     /* Buffer for transmitting serial Aux1 commands */
-    CCM_MEMORY static uint8_t AUX1_out_buffer[SERIAL_TRANSMIT_BUFFER_SIZE]; 
+    CCM_MEMORY static uint8_t AUX1_out_buffer[SERIAL_TRANSMIT_BUFFER_SIZE];
 
     /* Initialize the Aux1 transmit circular buffer */
     CircularBuffer_Init(&data_pumps.AUX1TransmitBuffer,
@@ -284,7 +291,7 @@ static THD_FUNCTION(Aux1DataPumpTask, arg)
 
 /**
  * @brief               Transmits a circular buffer over the USB interface.
- *             
+ *
  * @param[in] Cbuff     Circular buffer to transmit.
  * @return              Returns HAL_FAILED if it did not succeed to transmit
  *                      the buffer, else HAL_SUCCESS is returned.
@@ -332,7 +339,7 @@ static bool USBTransmitCircularBuffer(circular_buffer_t *Cbuff)
 /**
  * @brief               Transmits a circular buffer over the UART (Aux)
  *                      interface.
- *             
+ *
  * @param[in] sdp       Pointer to the Serial Driver to transmit the data over.
  * @param[in] Cbuff     Circular buffer to transmit.
  * @return              Returns HAL_FAILED if it did not succeed to transmit
@@ -419,11 +426,11 @@ void vSerialManagerInit(void)
 }
 
 /**
- * @brief               Return the circular buffer of corresponding 
+ * @brief               Return the circular buffer of corresponding
  *                      communication port.
- *             
+ *
  * @param[in] port      Port parameter.
- * @return              Returns the pointer to the corresponding port's 
+ * @return              Returns the pointer to the corresponding port's
  *                      circular buffer.
  */
 circular_buffer_t *SerialManager_GetCircularBufferFromPort(External_Port port)
@@ -449,7 +456,7 @@ circular_buffer_t *SerialManager_GetCircularBufferFromPort(External_Port port)
 
 /**
  * @brief               Signal the data pump thread to start transmission.
- *             
+ *
  * @param[in] port      Port parameter.
  */
 void SerialManager_StartTransmission(External_Port port)
