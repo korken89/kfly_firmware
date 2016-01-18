@@ -121,8 +121,9 @@ void ParseKFlyPacketFromSLIP(slip_parser_t *slip, kfly_parser_t *p)
     /* Remove the last 2 as they are the CRC. */
     crc16 = CRC16(buffer, size - 2);
 
-    if (((uint8_t)(crc16 >> 8) != buffer[size - 2]) ||
-        ((uint8_t)(crc16) != buffer[size - 1]))
+    /* CRC comes LSB first. */
+    if (((uint8_t)(crc16 >> 8) != buffer[size - 1]) ||
+        ((uint8_t)(crc16) != buffer[size - 2]))
     {
         p->rx_crc_error++;
         return;
@@ -157,10 +158,10 @@ void ParseKFlyPacketFromSLIP(slip_parser_t *slip, kfly_parser_t *p)
      * Save the size and run parsers.
      */
 
-    if (size == buffer[1])
+    if ((size >= 4) && ((size - 4) == buffer[1]))
     {
         /* Receive success! Increment statistics counter. */
-        p->data_length = size - 2;
+        p->data_length = size - 4;
 
         p->rx_success++;
 
