@@ -2,12 +2,12 @@
 #define __STATEMACHINE_H
 
 #include "circularbuffer.h"
+#include "slip.h"
 
 /*===========================================================================*/
 /* Module global definitions.                                                */
 /*===========================================================================*/
 
-#define SYNC_BYTE                     (0xa6)
 #define ACK_BIT                       (0x80)
 #define SERIAL_RECIEVE_BUFFER_SIZE    (256)
 #define SERIAL_TRANSMIT_BUFFER_SIZE   (1024)
@@ -41,7 +41,7 @@ typedef enum PACKED_VAR
      * @brief   AUX4 (CAN) identifier.
      */
     PORT_AUX4 = 4
-} External_Port;
+} external_port_t;
 
 /**
  * @brief   All the commands for the serial protocol.
@@ -274,73 +274,61 @@ typedef enum PACKED_VAR
      */
     Cmd_ViconMeasurement            = 127
 
-} KFly_Command;
+} kfly_command_t;
 
 /**
  * @brief   The structure to keep track of transfers through the state machine.
  */
-typedef struct _parser_holder
+typedef struct _kfly_parser
 {
     /**
      * @brief   Which port the data came from.
      */
-    External_Port Port;
+    external_port_t port;
     /**
      * @brief   If an ACK was requested.
      */
-    bool AckRequested;
+    bool ack;
+    /**
+     * @brief   The location of the data.
+     */
+    uint8_t *buffer;
     /**
      * @brief   The length of the data.
      */
     uint8_t data_length;
     /**
-     * @brief   Pointer to the buffer storing the data.
+     * @brief   The number of receive errors with invalid command.
      */
-    uint8_t *buffer;
+    uint32_t rx_cmd_error;
     /**
-     * @brief   The current location in the buffer.
+     * @brief   The number of receive errors with invalid size.
      */
-    uint16_t buffer_count;
+    uint32_t rx_size_error;
     /**
-     * @brief   The current CRC8 calculation.
+     * @brief   The number of receive errors with invalid CRC.
      */
-    uint8_t crc8;
-    /**
-     * @brief   The current CRC16 calculation.
-     */
-    uint16_t crc16;
-    /**
-     * @brief   The number of receive errors.
-     */
-    uint32_t rx_error;
+    uint32_t rx_crc_error;
     /**
      * @brief   The number of correctly received packets.
      */
     uint32_t rx_success;
     /**
-     * @brief   Pointer to the current state in the state machine.
-     */
-    void (*current_state)(uint8_t, struct _parser_holder *);
-    /**
-     * @brief   Pointer to the next state in the state machine.
-     */
-    void (*next_state)(uint8_t, struct _parser_holder *);
-    /**
      * @brief    Pointer to the parser to parse the data after a
      *           successful transfer.
      */
-    void (*parser)(struct _parser_holder *);
-} parser_holder_t;
+    void (*parser)(struct _kfly_parser *);
+} kfly_parser_t;
 
 /**
  * @brief   Function pointer definition for the Message Parser lookup table.
  */
-typedef void (*parser_t)(struct _parser_holder *);
+typedef void (*kfly_data_parser_t)(struct _kfly_parser *);
 
 /**
  * @brief   Function pointer definition for the Message Generator lookup table.
  */
-typedef bool (*generator_t)(circular_buffer_t *);
+typedef bool (*kfly_generator_t)(circular_buffer_t *);
 
 /*===========================================================================*/
 /* Module macros.                                                            */
@@ -356,13 +344,13 @@ typedef bool (*generator_t)(circular_buffer_t *);
  * @param[in] port  Port to be checked.
  * @return          Returns true if it is a valid port ID.
  */
-static inline bool isPort(External_Port port)
+static inline bool isPort(external_port_t port)
 {
     if ((port == PORT_USB) ||
-            (port == PORT_AUX1) ||
-            (port == PORT_AUX2) ||
-            (port == PORT_AUX3) ||
-            (port == PORT_AUX4))
+        (port == PORT_AUX1) ||
+        (port == PORT_AUX2) ||
+        (port == PORT_AUX3) ||
+        (port == PORT_AUX4))
         return true;
     else
         return false;
@@ -372,18 +360,9 @@ static inline bool isPort(External_Port port)
 /* External declarations.                                                    */
 /*===========================================================================*/
 
-void vInitStatemachineDataHolder(parser_holder_t *pHolder,
-                                 External_Port port,
-                                 uint8_t *buffer);
-void vStatemachineDataEntry(uint8_t data, parser_holder_t *pHolder);
-void CircularBuffer_WriteSYNCNoIncrement(circular_buffer_t *Cbuff,
-                                         int32_t *count,
-                                         uint8_t *crc8,
-                                         uint16_t *crc16);
-void CircularBuffer_WriteNoIncrement(circular_buffer_t *Cbuff,
-                                     uint8_t data,
-                                     int32_t *count,
-                                     uint8_t *crc8,
-                                     uint16_t *crc16);
+void InitKFlyPacketParser(kfly_parser_t *p,
+                          external_port_t port,
+                          uint8_t *buffer);
+void ParseKFlyPacketFromSLIP(slip_parser_t *slip, kfly_parser_t *p);
 
 #endif

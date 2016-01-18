@@ -240,17 +240,17 @@ bool GenerateSLIP_HBT(uint8_t *head,
 /*============================*/
 
 /**
- * @brief                       Initializes the slip_parser_holder_t structure.
+ * @brief                       Initializes the slip_parser_t structure.
  *
- * @param[in/out] p             Pointer to slip_parser_holder_t structure.
+ * @param[in/out] p             Pointer to slip_parser_t structure.
  * @param[in]     buffer        Buffer used for intermediate data.
  * @param[in]     buffer_size   Buffer size.
  * @param[in]     parser        Pointer to the parser of the passed data.
  */
-void InitSLIPParser(slip_parser_holder_t *p,
+void InitSLIPParser(slip_parser_t *p,
                     uint8_t *buffer,
                     const uint16_t buffer_size,
-                    void (*parser)(slip_parser_holder_t *))
+                    void (*parser)(slip_parser_t *))
 {
     p->buffer = buffer;
     p->buffer_size = buffer_size;
@@ -263,11 +263,11 @@ void InitSLIPParser(slip_parser_holder_t *p,
 }
 
 /**
- * @brief                       Resets the slip_parser_holder_t structure.
+ * @brief                       Resets the slip_parser_t structure.
  *
- * @param[in/out] p             Pointer to slip_parser_holder_t structure.
+ * @param[in/out] p             Pointer to slip_parser_t structure.
  */
-void ResetSLIPParser(slip_parser_holder_t *p)
+void ResetSLIPParser(slip_parser_t *p)
 {
     p->buffer_count = 0;
     p->buffer_overrun = 0;
@@ -283,9 +283,9 @@ void ResetSLIPParser(slip_parser_holder_t *p)
  *                     parsing.
  *
  * @param[in] data     Input data to be parsed.
- * @param[in] p        Pointer to slip_parser_holder_t structure.
+ * @param[in] p        Pointer to slip_parser_t structure.
  */
-void ParseSLIP(uint8_t data, slip_parser_holder_t *p)
+void ParseSLIP(uint8_t data, slip_parser_t *p)
 {
     /* Parse the data based on the current state. */
     switch (p->state)

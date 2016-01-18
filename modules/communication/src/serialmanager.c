@@ -9,8 +9,8 @@
 #include "hal.h"
 #include "usb_access.h"
 #include "slip.h"
-#include "statemachine.h"
-#include "statemachine_generators.h"
+#include "slip2kflypacket.h"
+#include "kflypacket_generators.h"
 #include "crc.h"
 #include "serialmanager.h"
 #include "subscriptions.h"
@@ -137,13 +137,25 @@ static THD_FUNCTION(USBSerialManagerTask, arg)
     chRegSetThreadName("USB Serial Manager");
 
     /* Data structure for communication */
-    static parser_holder_t data_holder;
+    static slip_parser_t slip_data_holder;
+    static kfly_parser_t kfly_data_holder;
+
+    /* Anonymous function for connecting the SLIP parser to the KFly parser. */
+    void bind(slip_parser_t *p)
+    {
+        ParseKFlyPacketFromSLIP(p, &kfly_data_holder);
+    }
 
     /* Buffer for parsing serial USB commands */
-    CCM_MEMORY static uint8_t USB_in_buffer[SERIAL_RECIEVE_BUFFER_SIZE];
+    static uint8_t USB_in_buffer[SERIAL_RECIEVE_BUFFER_SIZE];
 
-    /* Initialize data structure */
-    vInitStatemachineDataHolder(&data_holder, PORT_USB, USB_in_buffer);
+    /* Initialize data structures */
+    InitSLIPParser(&slip_data_holder,
+                   USB_in_buffer,
+                   SERIAL_RECIEVE_BUFFER_SIZE,
+                   bind);
+
+    InitKFlyPacketParser(&kfly_data_holder, PORT_USB, USB_in_buffer);
 
     while(1)
     {
@@ -151,7 +163,8 @@ static THD_FUNCTION(USBSerialManagerTask, arg)
         while (isUSBActive() == false)
             chThdSleepMilliseconds(200);
 
-        vStatemachineDataEntry(USBReadByte(TIME_INFINITE), &data_holder);
+        /* Pump data into the SLIP parser. */
+        ParseSLIP(USBReadByte(TIME_INFINITE), &slip_data_holder);
     }
 }
 
@@ -193,11 +206,6 @@ static THD_FUNCTION(USBDataPumpTask, arg)
 /* AUX1 Communication threads.                       */
 /*===================================================*/
 
-static void test_parser(slip_parser_holder_t* pHolder)
-{
-    (void) pHolder;
-}
-
 /**
  * @brief           The Aux1 Serial Manager task will handle incoming
  *                  data and direct it for decode and processing.
@@ -212,18 +220,31 @@ static THD_FUNCTION(Aux1SerialManagerTask, arg)
     chRegSetThreadName("Aux1 Serial Manager");
 
     /* Data structure for communication */
-    static slip_parser_holder_t data_holder;
+    static slip_parser_t slip_data_holder;
+    static kfly_parser_t kfly_data_holder;
 
-    /* Buffer for parsing serial USB commands */
+    /* Anonymous function for connecting the SLIP parser to the KFly parser. */
+    void bind(slip_parser_t *p)
+    {
+        ParseKFlyPacketFromSLIP(p, &kfly_data_holder);
+    }
+
+    /* Buffer for parsing serial commands */
     CCM_MEMORY static uint8_t AUX1_in_buffer[16];
 
-    /* Initialize data structure */
-    InitSLIPParser(&data_holder, AUX1_in_buffer, 16, test_parser);
-    //vInitStatemachineDataHolder(&data_holder, PORT_AUX1, AUX1_in_buffer);
+    /* Initialize data structures */
+    InitSLIPParser(&slip_data_holder,
+                   AUX1_in_buffer,
+                   16,
+                   bind);
+
+    InitKFlyPacketParser(&kfly_data_holder, PORT_AUX1, AUX1_in_buffer);
 
     while(1)
-        ParseSLIP(sdGet(&AUX1_SERIAL_DRIVER), &data_holder);
-        //vStatemachineDataEntry(sdGet(&AUX1_SERIAL_DRIVER), &data_holder);
+    {
+        /* Pump data into the SLIP parser. */
+        ParseSLIP(sdGet(&AUX1_SERIAL_DRIVER), &slip_data_holder);
+    }
 }
 
 /**
@@ -433,7 +454,7 @@ void vSerialManagerInit(void)
  * @return              Returns the pointer to the corresponding port's
  *                      circular buffer.
  */
-circular_buffer_t *SerialManager_GetCircularBufferFromPort(External_Port port)
+circular_buffer_t *SerialManager_GetCircularBufferFromPort(external_port_t port)
 {
     if (port == PORT_USB)
         return &data_pumps.USBTransmitBuffer;
@@ -459,7 +480,7 @@ circular_buffer_t *SerialManager_GetCircularBufferFromPort(External_Port port)
  *
  * @param[in] port      Port parameter.
  */
-void SerialManager_StartTransmission(External_Port port)
+void SerialManager_StartTransmission(external_port_t port)
 {
     if ((port == PORT_USB) && (data_pumps.ptrUSBDataPump != NULL))
         chEvtSignal(data_pumps.ptrUSBDataPump, START_TRANSMISSION_EVENT);

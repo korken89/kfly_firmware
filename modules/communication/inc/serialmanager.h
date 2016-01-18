@@ -1,7 +1,7 @@
 #ifndef __SERIALMANAGER_H
 #define __SERIALMANAGER_H
 
-#include "statemachine.h"
+#include "slip2kflypacket.h"
 
 /*===========================================================================*/
 /* Module global definitions.                                                */
@@ -23,8 +23,8 @@
 /* External declarations.                                                    */
 /*===========================================================================*/
 void vSerialManagerInit(void);
-circular_buffer_t *SerialManager_GetCircularBufferFromPort(External_Port port);
-void SerialManager_StartTransmission(External_Port port);
+circular_buffer_t *SerialManager_GetCircularBufferFromPort(external_port_t port);
+void SerialManager_StartTransmission(external_port_t port);
 
 
 #endif

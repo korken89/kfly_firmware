@@ -1,7 +1,7 @@
-#ifndef __STATEMACHINE_PARSERS_H
-#define __STATEMACHINE_PARSERS_H
+#ifndef __KFLYPACKET_PARSERS_H
+#define __KFLYPACKET_PARSERS_H
 
-#include "statemachine.h"
+#include "slip2kflypacket.h"
 
 /*===========================================================================*/
 /* Module global definitions.                                                */
@@ -19,11 +19,11 @@ typedef struct PACKED_VAR
     /**
      * @brief   The port on which the command shall be (un)subscribed.
      */
-    External_Port port;
+    external_port_t port;
     /**
      * @brief   Which command to (un)subscribe (from)to.
      */
-    KFly_Command command;
+    kfly_command_t command;
     /**
      * @brief   If the command shall be subscribed or unsubscribed.
      *          0 denotes unsubscribe, anything else is subscribe.
@@ -46,6 +46,6 @@ typedef struct PACKED_VAR
 /*===========================================================================*/
 /* External declarations.                                                    */
 /*===========================================================================*/
-parser_t GetParser(KFly_Command command);
+kfly_data_parser_t GetParser(kfly_command_t command);
 
 #endif

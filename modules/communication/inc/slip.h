@@ -51,7 +51,7 @@ typedef enum
  * @brief   The structure to keep track of the states and data through the
  *          SLIP state machine.
  */
-typedef struct _slip_parser_holder
+typedef struct _slip_parser
 {
     /**
      * @brief   Pointer to the buffer storing the data.
@@ -85,8 +85,8 @@ typedef struct _slip_parser_holder
      * @brief    Pointer to the parser to parse the data after a
      *           successful transfer.
      */
-    void (*parser)(struct _slip_parser_holder *);
-} slip_parser_holder_t;
+    void (*parser)(struct _slip_parser *);
+} slip_parser_t;
 
 /*===========================================================================*/
 /* Module macros.                                                            */
@@ -106,12 +106,12 @@ bool GenerateSLIP_HBT(uint8_t *head,
                       uint8_t *tail,
                       const uint32_t t_size,
                       circular_buffer_t *cb);
-void InitSLIPParser(slip_parser_holder_t *p,
+void InitSLIPParser(slip_parser_t *p,
                     uint8_t *buffer,
                     const uint16_t buffer_size,
-                    void (*parser)(slip_parser_holder_t *));
-void ResetSLIPParser(slip_parser_holder_t *p);
-void ParseSLIP(uint8_t data, slip_parser_holder_t *p);
+                    void (*parser)(slip_parser_t *));
+void ResetSLIPParser(slip_parser_t *p);
+void ParseSLIP(uint8_t data, slip_parser_t *p);
 
 /*===========================================================================*/
 /* Module inline functions.                                                  */

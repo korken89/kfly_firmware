@@ -1,7 +1,7 @@
-#ifndef __STATEMACHINE_GENERATORS_H
-#define __STATEMACHINE_GENERATORS_H
+#ifndef __KFLYPACKET_GENERATORS_H
+#define __KFLYPACKET_GENERATORS_H
 
-#include "statemachine.h"
+#include "slip2kflypacket.h"
 
 /*===========================================================================*/
 /* Module global definitions.                                                */
@@ -23,13 +23,13 @@
 /* External declarations.                                                    */
 /*===========================================================================*/
 
-bool GenerateMessage(KFly_Command command, External_Port port);
-bool GenerateCustomMessage(KFly_Command command,
+bool GenerateMessage(kfly_command_t command, external_port_t port);
+bool GenerateCustomMessage(kfly_command_t command,
                            uint8_t *data,
                            uint16_t size,
-                           External_Port port);
-bool GenerateDebugMessage(uint8_t *data, 
-                          uint32_t size, 
+                           external_port_t port);
+bool GenerateDebugMessage(uint8_t *data,
+                          uint32_t size,
                           circular_buffer_t *Cbuff);
 
 #endif

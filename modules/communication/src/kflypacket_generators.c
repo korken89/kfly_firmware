@@ -16,8 +16,8 @@
 #include "estimation.h"
 #include "control.h"
 #include "rc_input.h"
-#include "statemachine_parsers.h"
-#include "statemachine_generators.h"
+#include "kflypacket_parsers.h"
+#include "kflypacket_generators.h"
 
 /*===========================================================================*/
 /* Module local definitions.                                                 */
@@ -57,7 +57,7 @@ static uint32_t myStrlen(const uint8_t *str, const uint32_t max_length);
 /**
  * The message generation lookup table
  */
-static const generator_t generator_lookup[128] = {
+static const kfly_generator_t generator_lookup[128] = {
     NULL,                             /* 0:   Cmd_None                        */
     GenerateACK,                      /* 1:   Cmd_ACK                         */
     GeneratePing,                     /* 2:   Cmd_Ping                        */
@@ -204,67 +204,74 @@ static const generator_t generator_lookup[128] = {
  * @return                  HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                          if it did fit.
  */
-static bool GenerateGenericGetControllerData(KFly_Command command,
+static bool GenerateGenericGetControllerData(kfly_command_t command,
                                              const uint32_t pi_offset,
                                              const uint32_t limit_offset,
                                              const uint32_t limit_count,
                                              circular_buffer_t *Cbuff)
 {
-    PI_Data *PI_settings;
-    uint8_t *CL_settings;
-    uint8_t *data;
-    uint8_t crc8;
-    uint16_t crc16;
-    int32_t i, j;
+    (void) command;
+    (void) pi_offset;
+    (void) limit_offset;
+    (void) limit_count;
+    (void) Cbuff;
 
-    /* The PI data is always 3 Controllers, with 3 gains plus
-       the limit structure */
-    const int32_t data_count = (3*3*4) + limit_count;
-    int32_t count = 0;
-
-    /* Check if the "best case" won't fit in the buffer */
-    if (CircularBuffer_SpaceLeft(Cbuff) < (uint32_t)(data_count + 6))
-        return HAL_FAILED;
-
-    /* Add the header */
-    /* Write the starting SYNC (without doubling it) */
-    CircularBuffer_WriteSYNCNoIncrement(Cbuff, &count, &crc8, &crc16);
-
-    /* Add all of the header to the message */
-    CircularBuffer_WriteNoIncrement(Cbuff, command,    &count, &crc8, &crc16);
-    CircularBuffer_WriteNoIncrement(Cbuff, data_count, &count, &crc8, &crc16);
-    CircularBuffer_WriteNoIncrement(Cbuff, crc8,       &count, NULL,  &crc16);
-
-    /* Cast the control data to an array of PI_Data_ to access each
-       PI controller */
-    PI_settings = (PI_Data *)ptrGetControlData();
-
-    /* Cast the settings into bytes for read out */
-    CL_settings = (uint8_t *)ptrGetControlLimits();
-
-    /* Get only the PI coefficients */
-    for (i = 0; i < 3; i++)
-    {
-        data = (uint8_t *)&PI_settings[pi_offset + i];
-
-        for (j = 0; j < 12; j++)
-            CircularBuffer_WriteNoIncrement(Cbuff, data[j], &count, NULL,
-                                                                    &crc16);
-    }
-
-    /* Get only the controller constraints */
-    for (i = 0; i < (int32_t)limit_count; i++)
-        CircularBuffer_WriteNoIncrement(Cbuff, CL_settings[limit_offset + i],
-                                        &count, NULL,  &crc16);
-
-    /* Add the CRC16 */
-    CircularBuffer_WriteNoIncrement(Cbuff, (uint8_t)(crc16 >> 8), &count, NULL,
-                                                                          NULL);
-    CircularBuffer_WriteNoIncrement(Cbuff, (uint8_t)(crc16),      &count, NULL,
-                                                                          NULL);
-
-    /* Check if the message fit inside the buffer */
-    return CircularBuffer_Increment(Cbuff, count);
+    return true;
+//    PI_Data *PI_settings;
+//    uint8_t *CL_settings;
+//    uint8_t *data;
+//    uint8_t crc8;
+//    uint16_t crc16;
+//    int32_t i, j;
+//
+//    /* The PI data is always 3 Controllers, with 3 gains plus
+//       the limit structure */
+//    const int32_t data_count = (3*3*4) + limit_count;
+//    int32_t count = 0;
+//
+//    /* Check if the "best case" won't fit in the buffer */
+//    if (CircularBuffer_SpaceLeft(Cbuff) < (uint32_t)(data_count + 6))
+//        return HAL_FAILED;
+//
+//    /* Add the header */
+//    /* Write the starting SYNC (without doubling it) */
+//    CircularBuffer_WriteSYNCNoIncrement(Cbuff, &count, &crc8, &crc16);
+//
+//    /* Add all of the header to the message */
+//    CircularBuffer_WriteNoIncrement(Cbuff, command,    &count, &crc8, &crc16);
+//    CircularBuffer_WriteNoIncrement(Cbuff, data_count, &count, &crc8, &crc16);
+//    CircularBuffer_WriteNoIncrement(Cbuff, crc8,       &count, NULL,  &crc16);
+//
+//    /* Cast the control data to an array of PI_Data_ to access each
+//       PI controller */
+//    PI_settings = (PI_Data *)ptrGetControlData();
+//
+//    /* Cast the settings into bytes for read out */
+//    CL_settings = (uint8_t *)ptrGetControlLimits();
+//
+//    /* Get only the PI coefficients */
+//    for (i = 0; i < 3; i++)
+//    {
+//        data = (uint8_t *)&PI_settings[pi_offset + i];
+//
+//        for (j = 0; j < 12; j++)
+//            CircularBuffer_WriteNoIncrement(Cbuff, data[j], &count, NULL,
+//                                                                    &crc16);
+//    }
+//
+//    /* Get only the controller constraints */
+//    for (i = 0; i < (int32_t)limit_count; i++)
+//        CircularBuffer_WriteNoIncrement(Cbuff, CL_settings[limit_offset + i],
+//                                        &count, NULL,  &crc16);
+//
+//    /* Add the CRC16 */
+//    CircularBuffer_WriteNoIncrement(Cbuff, (uint8_t)(crc16 >> 8), &count, NULL,
+//                                                                          NULL);
+//    CircularBuffer_WriteNoIncrement(Cbuff, (uint8_t)(crc16),      &count, NULL,
+//                                                                          NULL);
+//
+//    /* Check if the message fit inside the buffer */
+//    return CircularBuffer_Increment(Cbuff, count);
 }
 
 /**
@@ -275,7 +282,7 @@ static bool GenerateGenericGetControllerData(KFly_Command command,
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-static bool GenerateHeaderOnlyCommand(KFly_Command command,
+static bool GenerateHeaderOnlyCommand(kfly_command_t command,
                                       circular_buffer_t *Cbuff)
 {
     uint16_t crc16;
@@ -283,8 +290,7 @@ static bool GenerateHeaderOnlyCommand(KFly_Command command,
 
 
     /* Calculate the CRC. */
-    crc16 = CRC16_step((uint8_t)command, 0xffff);
-    crc16 = CRC16_step(0, crc16);
+    crc16 = CRC16(header, 2);
 
     /* Apply SLIP encoding on the fly and return the result. */
     return GenerateSLIP_HBT(header, 2, NULL, 0, (uint8_t *)&crc16, 2,
@@ -301,7 +307,7 @@ static bool GenerateHeaderOnlyCommand(KFly_Command command,
  * @return             HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                     if it did fit.
  */
-static bool GenerateGenericCommand(KFly_Command command,
+static bool GenerateGenericCommand(kfly_command_t command,
                                    uint8_t *data,
                                    const uint32_t size,
                                    circular_buffer_t *Cbuff)
@@ -370,80 +376,83 @@ static bool GenerateGetRunningMode(circular_buffer_t *Cbuff)
  */
 static bool GenerateGetDeviceInfo(circular_buffer_t *Cbuff)
 {
-    uint8_t *device_id, *text_fw, *text_bl, *text_usr;
-    uint32_t length_fw, length_bl, length_usr, data_count, i = 0;
-    uint8_t crc8;
-    uint16_t crc16;
-    int32_t count = 0;
+    (void) Cbuff;
 
-    /* The strings are at know location */
-    device_id = (uint8_t *)ptrGetUniqueID();
-    text_bl = (uint8_t *)ptrGetBootloaderVersion();
-    text_fw = (uint8_t *)ptrGetFirmwareVersion();
-    text_usr = ptrGetUserIDString();
-
-    /* Find the length of the string */
-    length_bl = myStrlen(text_bl, VERSION_MAX_SIZE);
-    length_fw = myStrlen(text_fw, VERSION_MAX_SIZE);
-    length_usr = myStrlen(text_usr, USER_ID_MAX_SIZE);
-
-    /* The 3 comes from the 3 null bytes */
-    data_count = UNIQUE_ID_SIZE + length_bl + length_fw + length_usr + 3;
-
-    /* Check if the "best case" won't fit in the buffer */
-    if (CircularBuffer_SpaceLeft(Cbuff) < (data_count + 6))
-        return HAL_FAILED;
-
-    /* Add the header */
-    /* Write the starting SYNC (without doubling it) */
-    CircularBuffer_WriteSYNCNoIncrement(                Cbuff, &count, &crc8,
-                                                                       &crc16);
-
-    /* Add all of the header to the message */
-    CircularBuffer_WriteNoIncrement(Cbuff, Cmd_GetDeviceInfo, &count, &crc8,
-                                                                       &crc16);
-    CircularBuffer_WriteNoIncrement(Cbuff, data_count,        &count, &crc8,
-                                                                       &crc16);
-    CircularBuffer_WriteNoIncrement(Cbuff, crc8,              &count, NULL,
-                                                                       &crc16);
-
-    /* Get the Device ID */
-    for (i = 0; i < UNIQUE_ID_SIZE; i++)
-        CircularBuffer_WriteNoIncrement(Cbuff, device_id[i], &count, NULL,
-                                                                       &crc16);
-
-    /* Get the Bootloader Version string */
-    for (i = 0; i < length_bl; i++)
-        CircularBuffer_WriteNoIncrement(Cbuff, text_bl[i], &count, NULL,
-                                                                       &crc16);
-
-    CircularBuffer_WriteNoIncrement(Cbuff, 0x00, &count, NULL,
-                                                                       &crc16);
-
-    /* Get the Firmware Version string */
-    for (i = 0; i < length_fw; i++)
-        CircularBuffer_WriteNoIncrement(Cbuff, text_fw[i], &count, NULL,
-                                                                       &crc16);
-
-    CircularBuffer_WriteNoIncrement(Cbuff, 0x00, &count, NULL,
-                                                                       &crc16);
-
-    /* Get the User string */
-    for (i = 0; i < length_usr; i++)
-        CircularBuffer_WriteNoIncrement(Cbuff, text_usr[i], &count, NULL,
-                                                                       &crc16);
-
-    CircularBuffer_WriteNoIncrement(Cbuff, 0x00, &count, NULL,
-                                                                       &crc16);
-
-    /* Add the CRC16 */
-    CircularBuffer_WriteNoIncrement(Cbuff, (uint8_t)(crc16 >> 8), &count, NULL,
-                                                                          NULL);
-    CircularBuffer_WriteNoIncrement(Cbuff, (uint8_t)(crc16),      &count, NULL,
-                                                                          NULL);
-
-    /* Check if the message fit inside the buffer */
-    return CircularBuffer_Increment(Cbuff, count);
+    return true;
+//    uint8_t *device_id, *text_fw, *text_bl, *text_usr;
+//    uint32_t length_fw, length_bl, length_usr, data_count, i = 0;
+//    uint8_t crc8;
+//    uint16_t crc16;
+//    int32_t count = 0;
+//
+//    /* The strings are at know location */
+//    device_id = (uint8_t *)ptrGetUniqueID();
+//    text_bl = (uint8_t *)ptrGetBootloaderVersion();
+//    text_fw = (uint8_t *)ptrGetFirmwareVersion();
+//    text_usr = ptrGetUserIDString();
+//
+//    /* Find the length of the string */
+//    length_bl = myStrlen(text_bl, VERSION_MAX_SIZE);
+//    length_fw = myStrlen(text_fw, VERSION_MAX_SIZE);
+//    length_usr = myStrlen(text_usr, USER_ID_MAX_SIZE);
+//
+//    /* The 3 comes from the 3 null bytes */
+//    data_count = UNIQUE_ID_SIZE + length_bl + length_fw + length_usr + 3;
+//
+//    /* Check if the "best case" won't fit in the buffer */
+//    if (CircularBuffer_SpaceLeft(Cbuff) < (data_count + 6))
+//        return HAL_FAILED;
+//
+//    /* Add the header */
+//    /* Write the starting SYNC (without doubling it) */
+//    CircularBuffer_WriteSYNCNoIncrement(                Cbuff, &count, &crc8,
+//                                                                       &crc16);
+//
+//    /* Add all of the header to the message */
+//    CircularBuffer_WriteNoIncrement(Cbuff, Cmd_GetDeviceInfo, &count, &crc8,
+//                                                                       &crc16);
+//    CircularBuffer_WriteNoIncrement(Cbuff, data_count,        &count, &crc8,
+//                                                                       &crc16);
+//    CircularBuffer_WriteNoIncrement(Cbuff, crc8,              &count, NULL,
+//                                                                       &crc16);
+//
+//    /* Get the Device ID */
+//    for (i = 0; i < UNIQUE_ID_SIZE; i++)
+//        CircularBuffer_WriteNoIncrement(Cbuff, device_id[i], &count, NULL,
+//                                                                       &crc16);
+//
+//    /* Get the Bootloader Version string */
+//    for (i = 0; i < length_bl; i++)
+//        CircularBuffer_WriteNoIncrement(Cbuff, text_bl[i], &count, NULL,
+//                                                                       &crc16);
+//
+//    CircularBuffer_WriteNoIncrement(Cbuff, 0x00, &count, NULL,
+//                                                                       &crc16);
+//
+//    /* Get the Firmware Version string */
+//    for (i = 0; i < length_fw; i++)
+//        CircularBuffer_WriteNoIncrement(Cbuff, text_fw[i], &count, NULL,
+//                                                                       &crc16);
+//
+//    CircularBuffer_WriteNoIncrement(Cbuff, 0x00, &count, NULL,
+//                                                                       &crc16);
+//
+//    /* Get the User string */
+//    for (i = 0; i < length_usr; i++)
+//        CircularBuffer_WriteNoIncrement(Cbuff, text_usr[i], &count, NULL,
+//                                                                       &crc16);
+//
+//    CircularBuffer_WriteNoIncrement(Cbuff, 0x00, &count, NULL,
+//                                                                       &crc16);
+//
+//    /* Add the CRC16 */
+//    CircularBuffer_WriteNoIncrement(Cbuff, (uint8_t)(crc16 >> 8), &count, NULL,
+//                                                                          NULL);
+//    CircularBuffer_WriteNoIncrement(Cbuff, (uint8_t)(crc16),      &count, NULL,
+//                                                                          NULL);
+//
+//    /* Check if the message fit inside the buffer */
+//    return CircularBuffer_Increment(Cbuff, count);
 }
 
 /**
@@ -740,7 +749,7 @@ uint32_t myStrlen(const uint8_t *str, const uint32_t max_length)
   * @return             HAL_FAILED if the message didn't fit or HAL_SUCCESS
   *                     if it did fit.
   */
-bool GenerateMessage(KFly_Command command, External_Port port)
+bool GenerateMessage(kfly_command_t command, external_port_t port)
 {
     bool status;
     circular_buffer_t *Cbuff = NULL;
@@ -783,10 +792,10 @@ bool GenerateMessage(KFly_Command command, External_Port port)
   * @return             HAL_FAILED if the message didn't fit or HAL_SUCCESS
   *                     if it did fit.
   */
-bool GenerateCustomMessage(KFly_Command command,
+bool GenerateCustomMessage(kfly_command_t command,
                            uint8_t *data,
                            uint16_t size,
-                           External_Port port)
+                           external_port_t port)
 {
     bool status;
     circular_buffer_t *Cbuff = NULL;
