@@ -236,8 +236,19 @@ bool GenerateSLIP_HBT(uint8_t *head,
     return CircularBuffer_Increment(cb, count);
 }
 
+/**
+ * @brief               Encodes multiple chunks of data from a list of pointers
+ *                      with the full SLIP protocol.
+ *
+ * @param[in]  ptr_list     Pointer to the list of pointers, pointing to data
+ *                          chunks.
+ * @param[in]  length_list  List of lengths for each chunk.
+ * @param[in]  size         Size of the lists.
+ * @param[out] cb           Pointer to the circular buffer where the data will
+ *                          be stored.
+ */
 bool GenerateSLIP_MultiChunk(uint8_t *ptr_list[],
-                             uint32_t *length_list,
+                             uint32_t length_list[],
                              uint32_t size,
                              circular_buffer_t *cb)
 {
