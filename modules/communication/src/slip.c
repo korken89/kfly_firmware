@@ -121,6 +121,7 @@ static void CircularBuffer_SLIPWriteChunkNoInc(circular_buffer_t *cb,
                 {
                     cb->buffer[(cb->head + *count) % cb->size] = data[p_sp];
                     *count += 1;
+                    i++;
                 }
                 else if (data[p_sp] == SLIP_END)
                 {
@@ -128,7 +129,7 @@ static void CircularBuffer_SLIPWriteChunkNoInc(circular_buffer_t *cb,
                     *count += 1;
                     cb->buffer[(cb->head + *count) % cb->size] = SLIP_ESC_END;
                     *count += 1;
-                    i++;
+                    i += 2;
                 }
                 else
                 {
@@ -136,7 +137,7 @@ static void CircularBuffer_SLIPWriteChunkNoInc(circular_buffer_t *cb,
                     *count += 1;
                     cb->buffer[(cb->head + *count) % cb->size] = SLIP_ESC_ESC;
                     *count += 1;
-                    i++;
+                    i += 2;
                 }
 
                 /* Increment the buffer index. */
@@ -227,6 +228,38 @@ bool GenerateSLIP_HBT(uint8_t *head,
 
     if (tail != NULL)
         CircularBuffer_SLIPWriteChunkNoInc(cb, tail, t_size, &count);
+
+    /* Add stop byte. */
+    CircularBuffer_SLIPWriteENDNoInc(cb, &count);
+
+    /* Increment the buffer pointer */
+    return CircularBuffer_Increment(cb, count);
+}
+
+bool GenerateSLIP_MultiChunk(uint8_t *ptr_list[],
+                             uint32_t *length_list,
+                             uint32_t size,
+                             circular_buffer_t *cb)
+{
+    int32_t count = 0;
+    uint32_t i, total_length = 0;
+
+    for (i = 0; i < size; i++)
+        total_length += length_list[i];
+
+    /* Check if the "best case" will fit. */
+    if (CircularBuffer_SpaceLeft(cb) < (total_length + 2))
+        return HAL_FAILED;
+
+    /* Add start byte. */
+    CircularBuffer_SLIPWriteENDNoInc(cb, &count);
+
+    /* Encode and send the data. */
+    for (i = 0; i < size; i++)
+    {
+        CircularBuffer_SLIPWriteChunkNoInc(cb, ptr_list[i],
+                                           length_list[i], &count);
+    }
 
     /* Add stop byte. */
     CircularBuffer_SLIPWriteENDNoInc(cb, &count);
