@@ -97,7 +97,7 @@ static const kfly_generator_t generator_lookup[128] = {
     NULL,                             /* 35:  Cmd_SetVelocityControllerData   */
     GenerateGetPositionControllerData,/* 36:  Cmd_GetPositionControllerData   */
     NULL,                             /* 37:  Cmd_SetPositionControllerData   */
-    NULL,                             /* 38:  RESERVED                        */
+    NULL,                             /* 38:                                  */
     GenerateGetChannelMix,            /* 39:  Cmd_GetChannelMix               */
     NULL,                             /* 40:  Cmd_SetChannelMix               */
     GenerateGetRCCalibration,         /* 41:  Cmd_GetRCCalibration            */

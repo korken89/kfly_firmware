@@ -182,12 +182,6 @@ typedef enum PACKED_VAR
      * @brief   Set position controller data.
      */
     Cmd_SetPositionControllerData   = 37,
-
-    /*=======================================*/
-    /* 38 is reserved! Command 38 + ACK will */
-    /* become SYNC which is forbidden.       */
-    /*=======================================*/
-
     /**
      * @brief   Get channel mixer.
      */

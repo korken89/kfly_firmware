@@ -114,7 +114,7 @@ static const kfly_data_parser_t parser_lookup[128] = {
     ParseSetVelocityControllerData,   /* 35:  Cmd_SetVelocityControllerData   */
     ParseGetPositionControllerData,   /* 36:  Cmd_GetPositionControllerData   */
     ParseSetPositionControllerData,   /* 37:  Cmd_SetPositionControllerData   */
-    NULL,                             /* 38:  RESERVED                        */
+    NULL,                             /* 38:                                  */
     ParseGetChannelMix,               /* 39:  Cmd_GetChannelMix               */
     ParseSetChannelMix,               /* 40:  Cmd_SetChannelMix               */
     ParseGetRCCalibration,            /* 41:  Cmd_GetRCCalibration            */
