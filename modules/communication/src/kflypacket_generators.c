@@ -376,83 +376,41 @@ static bool GenerateGetRunningMode(circular_buffer_t *Cbuff)
  */
 static bool GenerateGetDeviceInfo(circular_buffer_t *Cbuff)
 {
-    (void) Cbuff;
+    uint8_t header[2];
+    uint8_t *ptr_list[6];
+    uint32_t len_list[6];
+    uint32_t data_count, i;
+    uint16_t crc16;
 
-    return true;
-//    uint8_t *device_id, *text_fw, *text_bl, *text_usr;
-//    uint32_t length_fw, length_bl, length_usr, data_count, i = 0;
-//    uint8_t crc8;
-//    uint16_t crc16;
-//    int32_t count = 0;
-//
-//    /* The strings are at know location */
-//    device_id = (uint8_t *)ptrGetUniqueID();
-//    text_bl = (uint8_t *)ptrGetBootloaderVersion();
-//    text_fw = (uint8_t *)ptrGetFirmwareVersion();
-//    text_usr = ptrGetUserIDString();
-//
-//    /* Find the length of the string */
-//    length_bl = myStrlen(text_bl, VERSION_MAX_SIZE);
-//    length_fw = myStrlen(text_fw, VERSION_MAX_SIZE);
-//    length_usr = myStrlen(text_usr, USER_ID_MAX_SIZE);
-//
-//    /* The 3 comes from the 3 null bytes */
-//    data_count = UNIQUE_ID_SIZE + length_bl + length_fw + length_usr + 3;
-//
-//    /* Check if the "best case" won't fit in the buffer */
-//    if (CircularBuffer_SpaceLeft(Cbuff) < (data_count + 6))
-//        return HAL_FAILED;
-//
-//    /* Add the header */
-//    /* Write the starting SYNC (without doubling it) */
-//    CircularBuffer_WriteSYNCNoIncrement(                Cbuff, &count, &crc8,
-//                                                                       &crc16);
-//
-//    /* Add all of the header to the message */
-//    CircularBuffer_WriteNoIncrement(Cbuff, Cmd_GetDeviceInfo, &count, &crc8,
-//                                                                       &crc16);
-//    CircularBuffer_WriteNoIncrement(Cbuff, data_count,        &count, &crc8,
-//                                                                       &crc16);
-//    CircularBuffer_WriteNoIncrement(Cbuff, crc8,              &count, NULL,
-//                                                                       &crc16);
-//
-//    /* Get the Device ID */
-//    for (i = 0; i < UNIQUE_ID_SIZE; i++)
-//        CircularBuffer_WriteNoIncrement(Cbuff, device_id[i], &count, NULL,
-//                                                                       &crc16);
-//
-//    /* Get the Bootloader Version string */
-//    for (i = 0; i < length_bl; i++)
-//        CircularBuffer_WriteNoIncrement(Cbuff, text_bl[i], &count, NULL,
-//                                                                       &crc16);
-//
-//    CircularBuffer_WriteNoIncrement(Cbuff, 0x00, &count, NULL,
-//                                                                       &crc16);
-//
-//    /* Get the Firmware Version string */
-//    for (i = 0; i < length_fw; i++)
-//        CircularBuffer_WriteNoIncrement(Cbuff, text_fw[i], &count, NULL,
-//                                                                       &crc16);
-//
-//    CircularBuffer_WriteNoIncrement(Cbuff, 0x00, &count, NULL,
-//                                                                       &crc16);
-//
-//    /* Get the User string */
-//    for (i = 0; i < length_usr; i++)
-//        CircularBuffer_WriteNoIncrement(Cbuff, text_usr[i], &count, NULL,
-//                                                                       &crc16);
-//
-//    CircularBuffer_WriteNoIncrement(Cbuff, 0x00, &count, NULL,
-//                                                                       &crc16);
-//
-//    /* Add the CRC16 */
-//    CircularBuffer_WriteNoIncrement(Cbuff, (uint8_t)(crc16 >> 8), &count, NULL,
-//                                                                          NULL);
-//    CircularBuffer_WriteNoIncrement(Cbuff, (uint8_t)(crc16),      &count, NULL,
-//                                                                          NULL);
-//
-//    /* Check if the message fit inside the buffer */
-//    return CircularBuffer_Increment(Cbuff, count);
+    /* The strings are at know location */
+    ptr_list[0] = header;
+    ptr_list[1] = (uint8_t *)ptrGetUniqueID();
+    ptr_list[2] = (uint8_t *)ptrGetBootloaderVersion();
+    ptr_list[3] = (uint8_t *)ptrGetFirmwareVersion();
+    ptr_list[4] = ptrGetUserIDString();
+    ptr_list[5] = (uint8_t *)&crc16;
+
+    /* Find the length of the strings, + 1 for the null byte. */
+    len_list[0] = 2;
+    len_list[1] = UNIQUE_ID_SIZE;
+    len_list[2] = myStrlen(ptr_list[2], VERSION_MAX_SIZE) + 1;
+    len_list[3] = myStrlen(ptr_list[3], VERSION_MAX_SIZE) + 1;
+    len_list[4] = myStrlen(ptr_list[4], USER_ID_MAX_SIZE) + 1;
+    len_list[5] = 2;
+
+    /* The 3 comes from the 3 null bytes */
+    data_count = UNIQUE_ID_SIZE + len_list[2] + len_list[3] + len_list[4] + 3;
+
+    /* Fill header and build the CRC. */
+    header[0] = Cmd_GetDeviceInfo;
+    header[1] = (uint8_t) data_count;
+
+    crc16 = CRC16_START_VALUE;
+
+    for (i = 1; i < 5; i++)
+        crc16 = CRC16_chunk(ptr_list[i], len_list[i], crc16);
+
+    return GenerateSLIP_MultiChunk(ptr_list, len_list, 6, Cbuff);
 }
 
 /**
