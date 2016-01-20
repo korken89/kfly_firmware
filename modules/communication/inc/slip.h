@@ -106,6 +106,10 @@ bool GenerateSLIP_HBT(uint8_t *head,
                       uint8_t *tail,
                       const uint32_t t_size,
                       circular_buffer_t *cb);
+bool GenerateSLIP_MultiChunk(uint8_t *ptr_list[],
+                             uint32_t length_list[],
+                             const uint32_t size,
+                             circular_buffer_t *cb);
 void InitSLIPParser(slip_parser_t *p,
                     uint8_t *buffer,
                     const uint16_t buffer_size,

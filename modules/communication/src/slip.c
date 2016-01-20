@@ -249,7 +249,7 @@ bool GenerateSLIP_HBT(uint8_t *head,
  */
 bool GenerateSLIP_MultiChunk(uint8_t *ptr_list[],
                              uint32_t length_list[],
-                             uint32_t size,
+                             const uint32_t size,
                              circular_buffer_t *cb)
 {
     int32_t count = 0;
