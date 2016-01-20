@@ -238,7 +238,7 @@ static bool GenerateGenericGetControllerData(kfly_command_t command,
 
     crc16 = CRC16_START_VALUE;
 
-    for (i = 1; i < 4; i++)
+    for (i = 0; i < 4; i++)
         crc16 = CRC16_chunk(ptr_list[i], len_list[i], crc16);
 
     return GenerateSLIP_MultiChunk(ptr_list, len_list, 6, Cbuff);
