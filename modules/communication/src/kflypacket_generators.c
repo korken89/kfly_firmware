@@ -27,6 +27,7 @@ static bool GenerateACK(circular_buffer_t *Cbuff);
 static bool GeneratePing(circular_buffer_t *Cbuff);
 static bool GenerateGetRunningMode(circular_buffer_t *Cbuff);
 static bool GenerateGetDeviceInfo(circular_buffer_t *Cbuff);
+static bool GenerateGetControllerLimits(circular_buffer_t *Cbuff);
 static bool GenerateGetArmSettings(circular_buffer_t *Cbuff);
 static bool GenerateGetRateControllerData(circular_buffer_t *Cbuff);
 static bool GenerateGetAttitudeControllerData(circular_buffer_t *Cbuff);
@@ -84,8 +85,8 @@ static const kfly_generator_t generator_lookup[128] = {
     NULL,                             /* 23:                                  */
     NULL,                             /* 24:                                  */
     NULL,                             /* 25:                                  */
-    NULL,                             /* 26:                                  */
-    NULL,                             /* 27:                                  */
+    GenerateGetControllerLimits,      /* 26:  Cmd_GetControllerLimits         */
+    NULL,                             /* 27:  Cmd_SetControllerLimits         */
     GenerateGetArmSettings,           /* 28:  Cmd_GetArmSettings              */
     NULL,                             /* 29:  Cmd_SetArmSettings              */
     GenerateGetRateControllerData,    /* 30:  Cmd_GetRateControllerData       */
@@ -411,6 +412,20 @@ static bool GenerateGetDeviceInfo(circular_buffer_t *Cbuff)
         crc16 = CRC16_chunk(ptr_list[i], len_list[i], crc16);
 
     return GenerateSLIP_MultiChunk(ptr_list, len_list, 6, Cbuff);
+}
+
+/**
+ * @brief               Generates the message for controller limits.
+ *
+ * @param Cbuff[out]    Pointer to the circular buffer to put the data in.
+ * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
+ *                      if it did fit.
+ */
+static bool GenerateGetControllerLimits(circular_buffer_t *Cbuff)
+{
+    (void) Cbuff;
+
+    return HAL_FAILED;
 }
 
 /**

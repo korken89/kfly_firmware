@@ -135,6 +135,14 @@ typedef enum PACKED_VAR
     /*===============================================*/
 
     /**
+     * @brief   Get contreller settings.
+     */
+    Cmd_GetControllerLimits         = 26,
+    /**
+     * @brief   Set controller settings.
+     */
+    Cmd_SetControllerLimits         = 27,
+    /**
      * @brief   Get Arm Settings.
      */
     Cmd_GetArmSettings              = 28,

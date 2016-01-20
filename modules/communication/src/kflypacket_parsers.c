@@ -34,6 +34,8 @@ static void ParseManageSubscriptions(kfly_parser_t *pHolder);
 static void ParseGetDeviceInfo(kfly_parser_t *pHolder);
 static void ParseSetDeviceID(kfly_parser_t *pHolder);
 static void ParseSaveToFlash(kfly_parser_t *pHolder);
+static void ParseSetControllerLimits(kfly_parser_t *pHolder);
+static void ParseGetControllerLimits(kfly_parser_t *pHolder);
 static void ParseSetArmSettings(kfly_parser_t *pHolder);
 static void ParseGetArmSettings(kfly_parser_t *pHolder);
 static void ParseGetRateControllerData(kfly_parser_t *pHolder);
@@ -100,8 +102,8 @@ static const kfly_data_parser_t parser_lookup[128] = {
     NULL,                             /* 23:                                  */
     NULL,                             /* 24:                                  */
     NULL,                             /* 25:                                  */
-    NULL,                             /* 26:                                  */
-    NULL,                             /* 27:                                  */
+    ParseSetControllerLimits,         /* 26:  Cmd_SetControllerLimits         */
+    ParseGetControllerLimits,         /* 27:  Cmd_GetControllerLimits         */
     ParseGetArmSettings,              /* 28:  Cmd_GetArmSettings              */
     ParseSetArmSettings,              /* 29:  Cmd_SetArmSettings              */
     ParseGetRateControllerData,       /* 30:  Cmd_GetRateControllerData       */
@@ -392,6 +394,28 @@ static void ParseSaveToFlash(kfly_parser_t *pHolder)
 
     /* Broadcast the Save to Flash event */
     vBroadcastFlashSaveEvent();
+}
+
+/**
+ * @brief               Parses a SetControllerLimits command.
+ *
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
+ */
+static void ParseSetControllerLimits(kfly_parser_t *pHolder)
+{
+    (void)pHolder;
+}
+
+/**
+ * @brief               Parses a GetControllerLimits command.
+ *
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
+ */
+static void ParseGetControllerLimits(kfly_parser_t *pHolder)
+{
+    (void)pHolder;
 }
 
 /**
