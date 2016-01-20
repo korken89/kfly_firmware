@@ -207,9 +207,10 @@ static bool GenerateGenericGetControllerData(kfly_command_t command,
                                              const uint32_t pi_offset,
                                              circular_buffer_t *Cbuff)
 {
+    const int size = 5;
     uint8_t header[2];
-    uint8_t *ptr_list[5];
-    uint32_t len_list[5];
+    uint8_t *ptr_list[size];
+    uint32_t len_list[size];
     uint32_t i;
     uint16_t crc16;
     pi_data_t *pi_list;
@@ -238,10 +239,10 @@ static bool GenerateGenericGetControllerData(kfly_command_t command,
 
     crc16 = CRC16_START_VALUE;
 
-    for (i = 0; i < 4; i++)
+    for (i = 0; i < size - 1; i++)
         crc16 = CRC16_chunk(ptr_list[i], len_list[i], crc16);
 
-    return GenerateSLIP_MultiChunk(ptr_list, len_list, 6, Cbuff);
+    return GenerateSLIP_MultiChunk(ptr_list, len_list, size, Cbuff);
 }
 
 /**
@@ -346,9 +347,10 @@ static bool GenerateGetRunningMode(circular_buffer_t *Cbuff)
  */
 static bool GenerateGetDeviceInfo(circular_buffer_t *Cbuff)
 {
+    const int size = 6;
     uint8_t header[2];
-    uint8_t *ptr_list[6];
-    uint32_t len_list[6];
+    uint8_t *ptr_list[size];
+    uint32_t len_list[size];
     uint32_t data_count, i;
     uint16_t crc16;
 
@@ -369,7 +371,7 @@ static bool GenerateGetDeviceInfo(circular_buffer_t *Cbuff)
     len_list[5] = 2;
 
     /* Calculate data size. */
-    data_count = UNIQUE_ID_SIZE + len_list[2] + len_list[3] + len_list[4];
+    data_count = UNIQUE_ID_SIZE + len_list[2] + len_list[3] + len_list[4] ;
 
     /* Fill header and build the CRC. */
     header[0] = Cmd_GetDeviceInfo;
@@ -377,10 +379,10 @@ static bool GenerateGetDeviceInfo(circular_buffer_t *Cbuff)
 
     crc16 = CRC16_START_VALUE;
 
-    for (i = 0; i < 5; i++)
+    for (i = 0; i < size - 1; i++)
         crc16 = CRC16_chunk(ptr_list[i], len_list[i], crc16);
 
-    return GenerateSLIP_MultiChunk(ptr_list, len_list, 6, Cbuff);
+    return GenerateSLIP_MultiChunk(ptr_list, len_list, size, Cbuff);
 }
 
 /**
