@@ -368,8 +368,8 @@ static bool GenerateGetDeviceInfo(circular_buffer_t *Cbuff)
     len_list[4] = myStrlen(ptr_list[4], USER_ID_MAX_SIZE) + 1;
     len_list[5] = 2;
 
-    /* The 3 comes from the 3 null bytes. */
-    data_count = UNIQUE_ID_SIZE + len_list[2] + len_list[3] + len_list[4] + 3;
+    /* Calculate data size. */
+    data_count = UNIQUE_ID_SIZE + len_list[2] + len_list[3] + len_list[4];
 
     /* Fill header and build the CRC. */
     header[0] = Cmd_GetDeviceInfo;
