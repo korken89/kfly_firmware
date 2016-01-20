@@ -5,6 +5,7 @@
 /* Module global definitions.                                                */
 /*===========================================================================*/
 #define PI_DATA_SIZE        (sizeof(pi_data_t))
+#define PI_SETTINGS_SIZE    (3*sizeof(float))
 
 /*===========================================================================*/
 /* Module data structures and types.                                         */

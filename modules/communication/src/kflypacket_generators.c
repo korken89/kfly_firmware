@@ -199,80 +199,49 @@ static const kfly_generator_t generator_lookup[128] = {
  *
  * @param[in] command       Command to generate message for.
  * @param[in] pi_offset     Offset to the correct PI controller.
- * @param[in] limit_offset  Offset to the correct part of the Limits structure.
- * @param[in] limit_count   Number of bytes in Limit structure to read.
  * @param[out] Cbuff        Pointer to the circular buffer to put the data in.
  * @return                  HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                          if it did fit.
  */
 static bool GenerateGenericGetControllerData(kfly_command_t command,
                                              const uint32_t pi_offset,
-                                             const uint32_t limit_offset,
-                                             const uint32_t limit_count,
                                              circular_buffer_t *Cbuff)
 {
-    (void) command;
-    (void) pi_offset;
-    (void) limit_offset;
-    (void) limit_count;
-    (void) Cbuff;
+    uint8_t header[2];
+    uint8_t *ptr_list[5];
+    uint32_t len_list[5];
+    uint32_t i;
+    uint16_t crc16;
+    pi_data_t *pi_list;
 
-    return true;
-//    pi_data_t *PI_settings;
-//    uint8_t *CL_settings;
-//    uint8_t *data;
-//    uint8_t crc8;
-//    uint16_t crc16;
-//    int32_t i, j;
-//
-//    /* The PI data is always 3 Controllers, with 3 gains plus
-//       the limit structure */
-//    const int32_t data_count = (3*3*4) + limit_count;
-//    int32_t count = 0;
-//
-//    /* Check if the "best case" won't fit in the buffer */
-//    if (CircularBuffer_SpaceLeft(Cbuff) < (uint32_t)(data_count + 6))
-//        return HAL_FAILED;
-//
-//    /* Add the header */
-//    /* Write the starting SYNC (without doubling it) */
-//    CircularBuffer_WriteSYNCNoIncrement(Cbuff, &count, &crc8, &crc16);
-//
-//    /* Add all of the header to the message */
-//    CircularBuffer_WriteNoIncrement(Cbuff, command,    &count, &crc8, &crc16);
-//    CircularBuffer_WriteNoIncrement(Cbuff, data_count, &count, &crc8, &crc16);
-//    CircularBuffer_WriteNoIncrement(Cbuff, crc8,       &count, NULL,  &crc16);
-//
-//    /* Cast the control data to an array of pi_data_t to access each
-//       PI controller */
-//    PI_settings = (pi_data_t *)ptrGetControlData();
-//
-//    /* Cast the settings into bytes for read out */
-//    CL_settings = (uint8_t *)ptrGetControlLimits();
-//
-//    /* Get only the PI coefficients */
-//    for (i = 0; i < 3; i++)
-//    {
-//        data = (uint8_t *)&PI_settings[pi_offset + i];
-//
-//        for (j = 0; j < 12; j++)
-//            CircularBuffer_WriteNoIncrement(Cbuff, data[j], &count, NULL,
-//                                                                    &crc16);
-//    }
-//
-//    /* Get only the controller constraints */
-//    for (i = 0; i < (int32_t)limit_count; i++)
-//        CircularBuffer_WriteNoIncrement(Cbuff, CL_settings[limit_offset + i],
-//                                        &count, NULL,  &crc16);
-//
-//    /* Add the CRC16 */
-//    CircularBuffer_WriteNoIncrement(Cbuff, (uint8_t)(crc16 >> 8), &count, NULL,
-//                                                                          NULL);
-//    CircularBuffer_WriteNoIncrement(Cbuff, (uint8_t)(crc16),      &count, NULL,
-//                                                                          NULL);
-//
-//    /* Check if the message fit inside the buffer */
-//    return CircularBuffer_Increment(Cbuff, count);
+    /* Select the correct set of PI controllers. */
+    pi_list = (pi_data_t *)ptrGetControlData();
+    pi_list = &pi_list[pi_offset];
+
+    /* The strings are at known locations. */
+    ptr_list[0] = header;
+    ptr_list[1] = (uint8_t *)&pi_list[0];
+    ptr_list[2] = (uint8_t *)&pi_list[1];
+    ptr_list[3] = (uint8_t *)&pi_list[2];
+    ptr_list[4] = (uint8_t *)&crc16;
+
+    /* Find the length of the strings, + 1 for the null byte. */
+    len_list[0] = 2;
+    len_list[1] = PI_SETTINGS_SIZE;
+    len_list[2] = PI_SETTINGS_SIZE;
+    len_list[3] = PI_SETTINGS_SIZE;
+    len_list[4] = 2;
+
+    /* Fill header and build the CRC. */
+    header[0] = command;
+    header[1] = 4 + 3*PI_SETTINGS_SIZE;
+
+    crc16 = CRC16_START_VALUE;
+
+    for (i = 1; i < 4; i++)
+        crc16 = CRC16_chunk(ptr_list[i], len_list[i], crc16);
+
+    return GenerateSLIP_MultiChunk(ptr_list, len_list, 6, Cbuff);
 }
 
 /**
@@ -408,7 +377,7 @@ static bool GenerateGetDeviceInfo(circular_buffer_t *Cbuff)
 
     crc16 = CRC16_START_VALUE;
 
-    for (i = 1; i < 5; i++)
+    for (i = 0; i < 5; i++)
         crc16 = CRC16_chunk(ptr_list[i], len_list[i], crc16);
 
     return GenerateSLIP_MultiChunk(ptr_list, len_list, 6, Cbuff);
@@ -423,9 +392,10 @@ static bool GenerateGetDeviceInfo(circular_buffer_t *Cbuff)
  */
 static bool GenerateGetControllerLimits(circular_buffer_t *Cbuff)
 {
-    (void) Cbuff;
-
-    return HAL_FAILED;
+    return GenerateGenericCommand(Cmd_GetControllerLimits,
+                                  (uint8_t *)ptrGetControlLimits(),
+                                  CONTROL_LIMITS_SIZE,
+                                  Cbuff);
 }
 
 /**
@@ -454,8 +424,6 @@ static bool GenerateGetRateControllerData(circular_buffer_t *Cbuff)
 {
     return GenerateGenericGetControllerData(Cmd_GetRateControllerData,
                                             RATE_PI_OFFSET,
-                                            RATE_LIMIT_OFFSET,
-                                            RATE_LIMIT_COUNT,
                                             Cbuff);
 }
 
@@ -471,8 +439,6 @@ static bool GenerateGetAttitudeControllerData(circular_buffer_t *Cbuff)
 {
     return GenerateGenericGetControllerData(Cmd_GetAttitudeControllerData,
                                             ATTITUDE_PI_OFFSET,
-                                            ATTITUDE_LIMIT_OFFSET,
-                                            ATTITUDE_LIMIT_COUNT,
                                             Cbuff);
 }
 
@@ -487,8 +453,6 @@ static bool GenerateGetVelocityControllerData(circular_buffer_t *Cbuff)
 {
     return GenerateGenericGetControllerData(Cmd_GetVelocityControllerData,
                                             VELOCITY_PI_OFFSET,
-                                            VELOCITY_LIMIT_OFFSET,
-                                            VELOCITY_LIMIT_COUNT,
                                             Cbuff);
 }
 
@@ -503,8 +467,6 @@ static bool GenerateGetPositionControllerData(circular_buffer_t *Cbuff)
 {
     return GenerateGenericGetControllerData(Cmd_GetPositionControllerData,
                                             POSITION_PI_OFFSET,
-                                            POSITION_LIMIT_OFFSET,
-                                            POSITION_LIMIT_COUNT,
                                             Cbuff);
 }
 
