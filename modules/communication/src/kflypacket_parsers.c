@@ -250,16 +250,16 @@ static void ParseGenericSetControllerData(const uint32_t pi_offset,
                                           const uint32_t limit_count,
                                           uint8_t *data)
 {
-    PI_Data *PI_settings;
+    pi_data_t *PI_settings;
     uint8_t *save_location;
     uint32_t i, j;
 
     /* Lock while saving the data */
     osalSysLock();
 
-    /* Cast the control data to an array of PI_Data
+    /* Cast the control data to an array of pi_data_t
     to access each PI controller */
-    PI_settings = (PI_Data *)ptrGetControlData();
+    PI_settings = (pi_data_t *)ptrGetControlData();
 
     /* Write only the PI coefficients */
     for (i = 0; i < 3; i++)

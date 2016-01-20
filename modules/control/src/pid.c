@@ -26,14 +26,14 @@
 /* Module exported functions.                                                */
 /*===========================================================================*/
 /**
- * @brief       Initializes the state and sets the gains of a PI controller. 
- * 
+ * @brief       Initializes the state and sets the gains of a PI controller.
+ *
  * @param[in/out] pi_settings   PI settings ans state structure.
  * @param[in] P_gain            Controller P gain.
  * @param[in] I_gain            Controller I gain.
  * @param[in] I_limit           Controller I limit.
  */
-void vInitPIController(PI_Data *pi_settings,
+void vInitPIController(pi_data_t *pi_settings,
                        float P_gain,
                        float I_gain,
                        float I_limit)
@@ -45,14 +45,14 @@ void vInitPIController(PI_Data *pi_settings,
 }
 
 /**
- * @brief       Updates the gains of a PI controller. 
- * 
+ * @brief       Updates the gains of a PI controller.
+ *
  * @param[in/out] pi_settings   PI settings ans state structure.
  * @param[in] P_gain            Controller P gain.
  * @param[in] I_gain            Controller I gain.
  * @param[in] I_limit           Controller I limit.
  */
-void vUpdatePISettings(PI_Data *pi_settings,
+void vUpdatePISettings(pi_data_t *pi_settings,
                        float P_gain,
                        float I_gain,
                        float I_limit)
@@ -66,13 +66,13 @@ void vUpdatePISettings(PI_Data *pi_settings,
  * @brief       Updates the PI controller with one time step.
  * @note        The integral limits directly sets the maximum/minimum of the
  *              integral state.
- * 
+ *
  * @param[in/out] pi_settings   PI settings and state structure.
  * @param[in] error             Controlled variable's error.
  * @param[in] dt                Time step size in seconds.
  * @return      The outputted control signal of the PI controller.
  */
-float fPIUpdate(PI_Data *pi, float error, float dt)
+float fPIUpdate(pi_data_t *pi, float error, float dt)
 {
     /* Integration with anti-windup */
     pi->I_state = bound( pi->I_limit,
@@ -87,7 +87,7 @@ float fPIUpdate(PI_Data *pi, float error, float dt)
  * @brief       Updates the PI controller with one time step.
  * @note        The integral is limited using back calculation to not need
  *              need limits on the integral itself.
- * 
+ *
  * @param[in/out] pi_settings   PI settings and state structure.
  * @param[in] error             Controlled variable's error.
  * @param[in] u_max             Max saturation limit.
@@ -95,7 +95,7 @@ float fPIUpdate(PI_Data *pi, float error, float dt)
  * @param[in] dt                Time step size in seconds.
  * @return      The outputted control signal of the PI controller.
  */
-float fPIUpdate_BackCalculationSaturation(PI_Data *pi,
+float fPIUpdate_BackCalculationSaturation(pi_data_t *pi,
                                           float error,
                                           float u_max,
                                           float u_min,
@@ -109,7 +109,7 @@ float fPIUpdate_BackCalculationSaturation(PI_Data *pi,
     /* Calculate the proportional state . */
     P_state = pi->P_gain * error;
 
-    /* Calculate the unsaturated control signal. */ 
+    /* Calculate the unsaturated control signal. */
     u = P_state + pi->I_state;
 
     /* Check the saturation and compensate with the integral if necessary. */

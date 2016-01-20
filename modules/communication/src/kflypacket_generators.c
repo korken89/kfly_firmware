@@ -218,7 +218,7 @@ static bool GenerateGenericGetControllerData(kfly_command_t command,
     (void) Cbuff;
 
     return true;
-//    PI_Data *PI_settings;
+//    pi_data_t *PI_settings;
 //    uint8_t *CL_settings;
 //    uint8_t *data;
 //    uint8_t crc8;
@@ -243,9 +243,9 @@ static bool GenerateGenericGetControllerData(kfly_command_t command,
 //    CircularBuffer_WriteNoIncrement(Cbuff, data_count, &count, &crc8, &crc16);
 //    CircularBuffer_WriteNoIncrement(Cbuff, crc8,       &count, NULL,  &crc16);
 //
-//    /* Cast the control data to an array of PI_Data_ to access each
+//    /* Cast the control data to an array of pi_data_t to access each
 //       PI controller */
-//    PI_settings = (PI_Data *)ptrGetControlData();
+//    PI_settings = (pi_data_t *)ptrGetControlData();
 //
 //    /* Cast the settings into bytes for read out */
 //    CL_settings = (uint8_t *)ptrGetControlLimits();

@@ -4,7 +4,7 @@
 /*===========================================================================*/
 /* Module global definitions.                                                */
 /*===========================================================================*/
-#define PI_DATA_SIZE        (sizeof(PI_Data))
+#define PI_DATA_SIZE        (sizeof(pi_data_t))
 
 /*===========================================================================*/
 /* Module data structures and types.                                         */
@@ -30,7 +30,7 @@ typedef struct PACKED_VAR
  	 * @brief   Current controller integral state.
  	 */
     float I_state;
-} PI_Data;
+} pi_data_t;
 
 /*===========================================================================*/
 /* Module macros.                                                            */
@@ -43,16 +43,16 @@ typedef struct PACKED_VAR
 /*===========================================================================*/
 /* External declarations.                                                    */
 /*===========================================================================*/
-void vInitPIController(PI_Data *pi_settings,
+void vInitPIController(pi_data_t *pi_settings,
                        float P_gain,
                        float I_gain,
                        float I_limit);
-void vUpdatePISettings(PI_Data *pi_settings,
+void vUpdatePISettings(pi_data_t *pi_settings,
                        float P_gain,
                        float I_gain,
                        float I_limit);
-float fPIUpdate(PI_Data *pi, float error, float dt);
-float fPIUpdate_BackCalculationSaturation(PI_Data *pi,
+float fPIUpdate(pi_data_t *pi, float error, float dt);
+float fPIUpdate_BackCalculationSaturation(pi_data_t *pi,
                                           float error,
                                           float u_max,
                                           float u_min,

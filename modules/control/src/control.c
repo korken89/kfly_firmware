@@ -613,7 +613,7 @@ static void vZeroControlIntegrals(void)
     int i;
 
     /* Cast the controller data into an array of PI controllers */
-    PI_Data *pi = (PI_Data *)&control_data;
+    pi_data_t *pi = (pi_data_t *)&control_data;
 
     /* Zero each controllers Integral state. */
     for (i = 0; i < CONTROL_NUMBER_OF_CONTROLLERS; i++)
@@ -832,7 +832,7 @@ void GetControlParameters(Control_Parameters *param)
     float *f_pi, *f_par;
 
     /* Cast parameters and PI controller to arrays of respective kind */
-    PI_Data *pi = (PI_Data *)&control_data;
+    pi_data_t *pi = (pi_data_t *)&control_data;
     PI_Parameters *par = (PI_Parameters *)param;
 
     for (i = 0; i < CONTROL_NUMBER_OF_CONTROLLERS; i++)
@@ -859,7 +859,7 @@ void SetControlParameters(Control_Parameters *param)
     float *f_pi, *f_par;
 
     /* Cast parameters and PI controller to arrays of respective kind */
-    PI_Data *pi = (PI_Data *)&control_data;
+    pi_data_t *pi = (pi_data_t *)&control_data;
     PI_Parameters *par = (PI_Parameters *)param;
 
     for (i = 0; i < CONTROL_NUMBER_OF_CONTROLLERS; i++)

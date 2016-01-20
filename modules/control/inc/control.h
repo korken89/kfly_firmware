@@ -258,19 +258,19 @@ typedef struct PACKED_VAR
     /**
      * @brief   Position controller gains and states.
      */
-    PI_Data position_controller[3];
+    pi_data_t position_controller[3];
     /**
      * @brief   Velocity controller gains and states.
      */
-    PI_Data velocity_controller[3];
+    pi_data_t velocity_controller[3];
     /**
      * @brief   Attitude controller gains and states.
      */
-    PI_Data attitude_controller[3];
+    pi_data_t attitude_controller[3];
     /**
      * @brief   Rate controller gains and states.
      */
-    PI_Data rate_controller[3];
+    pi_data_t rate_controller[3];
 } Control_Data;
 
 /**
