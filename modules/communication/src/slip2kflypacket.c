@@ -136,6 +136,7 @@ void ParseKFlyPacketFromSLIP(slip_parser_t *slip, kfly_parser_t *p)
     else
     {
         p->rx_cmd_error++;
+        return;
     }
 
 
