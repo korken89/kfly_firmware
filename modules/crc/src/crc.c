@@ -102,7 +102,7 @@ static const uint8_t crc8_table[256] = {
 
 /**
  * @brief                   Calculates a CRC8 based of an array of data.
- *  
+ *
  * @param[in] data          Pointer to the data array.
  * @param[in] data_len      Number of bytes in the data array.
  * @return                  CRC8 byte.
@@ -126,7 +126,7 @@ uint8_t CRC8(uint8_t *data, uint32_t data_len)
 /**
  * @brief                   Calculates a CRC8 base of an old CRC8 to continue
  *                          with.
- *  
+ *
  * @param[in] data          Input data byte.
  * @param[in] crc           Old CRC8.
  * @return                  CRC8 byte.
@@ -143,7 +143,7 @@ uint8_t CRC8_step(uint8_t data, uint8_t crc)
 
 /**
  * @brief                   Calculates a CRC16-CCITT based of an array of data.
- *  
+ *
  * @param[in] data          Pointer to the data array.
  * @param[in] data_len      Number of bytes in the data array.
  * @return                  CRC16 byte.
@@ -165,9 +165,33 @@ uint16_t CRC16(uint8_t *data, uint32_t data_len) /* CRC-CCITT */
 }
 
 /**
+ * @brief                   Calculates a CRC16-CCITT based of an array of data
+ *                          with a set starting CRC.
+ *
+ * @param[in] data          Pointer to the data array.
+ * @param[in] data_len      Number of bytes in the data array.
+ * @return                  CRC16 byte.
+ */
+uint16_t CRC16_chunk(uint8_t *data, uint32_t data_len, const uint16_t crc_in)
+{
+    uint32_t tbl_idx;
+    uint16_t crc = crc_in;
+
+    while (data_len--)
+    {
+        tbl_idx = ((crc >> 8) ^ *data) & 0xff;
+        crc = crc16_table[tbl_idx] ^ (crc << 8);
+
+        data++;
+    }
+
+    return crc;
+}
+
+/**
  * @brief                   Calculates a CRC16-CCITT base of an old CRC16
  *                          to continue with.
- *  
+ *
  * @param[in] data          Input data byte.
  * @param[in] crc           Old CRC16.
  * @return                  CRC16 halfword.
