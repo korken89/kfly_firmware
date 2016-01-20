@@ -382,7 +382,7 @@ static bool GenerateGetDeviceInfo(circular_buffer_t *Cbuff)
     uint32_t data_count, i;
     uint16_t crc16;
 
-    /* The strings are at know location */
+    /* The strings are at known locations. */
     ptr_list[0] = header;
     ptr_list[1] = (uint8_t *)ptrGetUniqueID();
     ptr_list[2] = (uint8_t *)ptrGetBootloaderVersion();
@@ -398,7 +398,7 @@ static bool GenerateGetDeviceInfo(circular_buffer_t *Cbuff)
     len_list[4] = myStrlen(ptr_list[4], USER_ID_MAX_SIZE) + 1;
     len_list[5] = 2;
 
-    /* The 3 comes from the 3 null bytes */
+    /* The 3 comes from the 3 null bytes. */
     data_count = UNIQUE_ID_SIZE + len_list[2] + len_list[3] + len_list[4] + 3;
 
     /* Fill header and build the CRC. */
