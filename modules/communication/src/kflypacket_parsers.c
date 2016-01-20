@@ -6,6 +6,7 @@
  *
  * */
 
+#include "string.h"
 #include "ch.h"
 #include "hal.h"
 #include "usb_access.h"
@@ -219,18 +220,15 @@ static const kfly_data_parser_t parser_lookup[128] = {
  * @param[in] buffer        Pointer to the buffer where to save from.
  * @param[in] data_length   Number of bytes to save
  */
-static void GenericSaveData(uint8_t *save_location,
-                            uint8_t *buffer,
-                            uint32_t data_length)
+static inline void GenericSaveData(uint8_t *save_location,
+                                   uint8_t *buffer,
+                                   const uint32_t data_length)
 {
-    uint32_t i;
-
-    /* Lock while saving the data */
+    /* Lock while saving the data. */
     osalSysLock();
 
-    /* Save the string */
-    for (i = 0; i < data_length; i++)
-            save_location[i] = buffer[i];
+    /* Save the data. */
+    memcpy(save_location, buffer, data_length);
 
     osalSysUnlock();
 }
@@ -246,36 +244,26 @@ static void GenericSaveData(uint8_t *save_location,
  * @param[in] data          Input data so save.
  */
 static void ParseGenericSetControllerData(const uint32_t pi_offset,
-                                          const uint32_t limit_offset,
-                                          const uint32_t limit_count,
                                           uint8_t *data)
 {
-    pi_data_t *PI_settings;
-    uint8_t *save_location;
-    uint32_t i, j;
+    pi_data_t *pi_list;
+    uint32_t i;
 
     /* Lock while saving the data */
     osalSysLock();
 
     /* Cast the control data to an array of pi_data_t
     to access each PI controller */
-    PI_settings = (pi_data_t *)ptrGetControlData();
+    pi_list = (pi_data_t *)ptrGetControlData();
+    pi_list = &pi_list[pi_offset];
 
     /* Write only the PI coefficients */
     for (i = 0; i < 3; i++)
     {
-        save_location = (uint8_t *)&PI_settings[pi_offset + i];
-
-        for (j = 0; j < 12; j++)
-            save_location[j] = data[(i*12) + j];
+        memcpy(&data[i * PI_SETTINGS_SIZE], // Offset in the data package
+               (uint8_t *)&pi_list[i],      // Settings save location
+               PI_SETTINGS_SIZE);           // Settings size
     }
-
-    /* Cast the settings into bytes for saving */
-    save_location = (uint8_t *)ptrGetControlLimits();
-
-    /* Write only the controller constraints */
-    for (i = 0; i < limit_count; i++)
-        save_location[limit_offset + i] = data[(3*3*4) + i];
 
     osalSysUnlock();
 }
@@ -404,7 +392,13 @@ static void ParseSaveToFlash(kfly_parser_t *pHolder)
  */
 static void ParseSetControllerLimits(kfly_parser_t *pHolder)
 {
-    (void)pHolder;
+    if (pHolder->data_length == CONTROL_LIMITS_SIZE)
+    {
+        /* Save the data */
+        GenericSaveData((uint8_t *)ptrGetControlLimits(),
+                        pHolder->buffer,
+                        CONTROL_LIMITS_SIZE);
+    }
 }
 
 /**
@@ -415,7 +409,7 @@ static void ParseSetControllerLimits(kfly_parser_t *pHolder)
  */
 static void ParseGetControllerLimits(kfly_parser_t *pHolder)
 {
-    (void)pHolder;
+    GenerateMessage(Cmd_GetControllerLimits, pHolder->port);
 }
 
 /**
@@ -465,10 +459,8 @@ static void ParseGetRateControllerData(kfly_parser_t *pHolder)
  */
 static void ParseSetRateControllerData(kfly_parser_t *pHolder)
 {
-    if (pHolder->data_length == (36 + RATE_LIMIT_COUNT))
+    if (pHolder->data_length == (3 * PI_SETTINGS_SIZE))
         ParseGenericSetControllerData(RATE_PI_OFFSET,
-                                      RATE_LIMIT_OFFSET,
-                                      RATE_LIMIT_COUNT,
                                       pHolder->buffer);
 }
 
@@ -491,10 +483,8 @@ static void ParseGetAttitudeControllerData(kfly_parser_t *pHolder)
  */
 static void ParseSetAttitudeControllerData(kfly_parser_t *pHolder)
 {
-    if (pHolder->data_length == (36 + ATTITUDE_LIMIT_COUNT))
+    if (pHolder->data_length == (3 * PI_SETTINGS_SIZE))
         ParseGenericSetControllerData(ATTITUDE_PI_OFFSET,
-                                      ATTITUDE_LIMIT_OFFSET,
-                                      ATTITUDE_LIMIT_COUNT,
                                       pHolder->buffer);
 }
 
@@ -517,11 +507,8 @@ static void ParseGetVelocityControllerData(kfly_parser_t *pHolder)
  */
 static void ParseSetVelocityControllerData(kfly_parser_t *pHolder)
 {
-    (void)pHolder;
-    if (pHolder->data_length == (36 + VELOCITY_LIMIT_COUNT))
+    if (pHolder->data_length == (3 * PI_SETTINGS_SIZE))
         ParseGenericSetControllerData(VELOCITY_PI_OFFSET,
-                                      VELOCITY_LIMIT_OFFSET,
-                                      VELOCITY_LIMIT_COUNT,
                                       pHolder->buffer);
 }
 
@@ -544,10 +531,8 @@ static void ParseGetPositionControllerData(kfly_parser_t *pHolder)
  */
 static void ParseSetPositionControllerData(kfly_parser_t *pHolder)
 {
-    if (pHolder->data_length == (36 + POSITION_LIMIT_COUNT))
+    if (pHolder->data_length == (3 * PI_SETTINGS_SIZE))
         ParseGenericSetControllerData(POSITION_PI_OFFSET,
-                                      POSITION_LIMIT_OFFSET,
-                                      POSITION_LIMIT_COUNT,
                                       pHolder->buffer);
 }
 
