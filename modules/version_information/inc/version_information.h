@@ -25,7 +25,7 @@
 #define BOOTLOADER_BASE         0x08000000
 
 /** @brief  Offset from the FIRMWARE_BASE to the software version string. */
-#define SW_VERSION_OFFSET       0x1c0
+#define SW_VERSION_OFFSET       0x200
 
 
 /** @brief  Date definition. */
