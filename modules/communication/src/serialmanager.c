@@ -155,7 +155,8 @@ static THD_FUNCTION(USBSerialManagerTask, arg)
                    SERIAL_RECIEVE_BUFFER_SIZE,
                    bind);
 
-    InitKFlyPacketParser(&kfly_data_holder, PORT_USB, USB_in_buffer);
+    /* Cut away the header. */
+    InitKFlyPacketParser(&kfly_data_holder, PORT_USB, &USB_in_buffer[2]);
 
     while(1)
     {
@@ -238,7 +239,8 @@ static THD_FUNCTION(Aux1SerialManagerTask, arg)
                    16,
                    bind);
 
-    InitKFlyPacketParser(&kfly_data_holder, PORT_AUX1, AUX1_in_buffer);
+    /* Cut away the header. */
+    InitKFlyPacketParser(&kfly_data_holder, PORT_AUX1, &AUX1_in_buffer[2]);
 
     while(1)
     {

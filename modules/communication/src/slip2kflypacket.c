@@ -69,7 +69,8 @@
  *
  * @param[in/out] p         Pointer to kfly_parser_t structure.
  * @param[in]     port      Port used for data transfers.
- * @param[in]     buffer    Buffer where the data is saved (from the SLIP).
+ * @param[in]     buffer    Buffer where the data is saved (from the SLIP),
+ *                          without header.
  */
 void InitKFlyPacketParser(kfly_parser_t *p,
                           external_port_t port,
