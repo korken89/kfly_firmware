@@ -231,7 +231,7 @@ static THD_FUNCTION(Aux1SerialManagerTask, arg)
     }
 
     /* Buffer for parsing serial commands */
-    static uint8_t AUX1_in_buffer[16];
+    static uint8_t AUX1_in_buffer[SERIAL_RECIEVE_BUFFER_SIZE];
 
     /* Initialize data structures */
     InitSLIPParser(&slip_data_holder,
