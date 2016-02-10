@@ -219,14 +219,14 @@ static bool GenerateGenericGetControllerData(kfly_command_t command,
     pi_list = (pi_data_t *)ptrGetControlData();
     pi_list = &pi_list[pi_offset];
 
-    /* The strings are at known locations. */
+    /* Add the placements of the data. */
     ptr_list[0] = header;
     ptr_list[1] = (uint8_t *)&pi_list[0];
     ptr_list[2] = (uint8_t *)&pi_list[1];
     ptr_list[3] = (uint8_t *)&pi_list[2];
     ptr_list[4] = (uint8_t *)&crc16;
 
-    /* Find the length of the strings, + 1 for the null byte. */
+    /* Add the length of each chunk. */
     len_list[0] = 2;
     len_list[1] = PI_SETTINGS_SIZE;
     len_list[2] = PI_SETTINGS_SIZE;
@@ -235,7 +235,7 @@ static bool GenerateGenericGetControllerData(kfly_command_t command,
 
     /* Fill header and build the CRC. */
     header[0] = command;
-    header[1] = 4 + 3*PI_SETTINGS_SIZE;
+    header[1] = 3*PI_SETTINGS_SIZE;
 
     crc16 = CRC16_START_VALUE;
 
