@@ -18,14 +18,11 @@
 /** @brief  Location for the unique hardware ID. */
 #define UNIQUE_ID_BASE          0x1fff7a10
 
-/** @brief  Base address for the firmware in flash. */
-#define FIRMWARE_BASE           0x08000000
-
 /** @brief  Base address for the bootloader in flash. */
 #define BOOTLOADER_BASE         0x08000000
 
 /** @brief  Offset from the FIRMWARE_BASE to the software version string. */
-#define SW_VERSION_OFFSET       0x200
+#define SW_VERSION_OFFSET       0x1c0
 
 
 /** @brief  Date definition. */
