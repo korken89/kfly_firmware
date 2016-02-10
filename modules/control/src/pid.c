@@ -115,12 +115,16 @@ float fPIUpdate_BackCalculationSaturation(pi_data_t *pi,
     /* Check the saturation and compensate with the integral if necessary. */
     if (u > u_max)
     {
-        pi->I_state = u_max - P_state;
+        if (pi->I_gain > 0.0f)
+            pi->I_state = u_max - P_state;
+
         return u_max;
     }
     else if (u < u_min)
     {
-        pi->I_state = u_min - P_state;
+        if (pi->I_gain > 0.0f)
+            pi->I_state = u_min - P_state;
+
         return u_min;
     }
     else
