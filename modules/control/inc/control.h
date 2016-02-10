@@ -273,13 +273,13 @@ typedef struct PACKED_VAR
     struct
     {
         /**
-         * @brief   Pitch rate limit in deg/s.
-         */
-        float pitch;
-        /**
          * @brief   Roll rate limit in deg/s.
          */
         float roll;
+        /**
+         * @brief   Pitch rate limit in deg/s.
+         */
+        float pitch;
         /**
          * @brief   Yaw rate limit in deg/s.
          */
@@ -291,13 +291,13 @@ typedef struct PACKED_VAR
     struct
     {
         /**
-         * @brief   Pitch rate limit in deg/s.
-         */
-        float pitch;
-        /**
          * @brief   Roll rate limit in deg/s.
          */
         float roll;
+        /**
+         * @brief   Pitch rate limit in deg/s.
+         */
+        float pitch;
         /**
          * @brief   Yaw rate limit in deg/s.
          */
@@ -309,13 +309,13 @@ typedef struct PACKED_VAR
     struct
     {
         /**
-         * @brief   Pitch attitude limit in radians.
-         */
-        float pitch;
-        /**
          * @brief   Roll attitude limit in radians.
          */
         float roll;
+        /**
+         * @brief   Pitch attitude limit in radians.
+         */
+        float pitch;
     } max_angle;
     /**
      * @brief   Holder for the velocity limits.

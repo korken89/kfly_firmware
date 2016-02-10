@@ -103,8 +103,8 @@ static const kfly_data_parser_t parser_lookup[128] = {
     NULL,                             /* 23:                                  */
     NULL,                             /* 24:                                  */
     NULL,                             /* 25:                                  */
-    ParseSetControllerLimits,         /* 26:  Cmd_SetControllerLimits         */
-    ParseGetControllerLimits,         /* 27:  Cmd_GetControllerLimits         */
+    ParseGetControllerLimits,         /* 26:  Cmd_GetControllerLimits         */
+    ParseSetControllerLimits,         /* 27:  Cmd_SetControllerLimits         */
     ParseGetArmSettings,              /* 28:  Cmd_GetArmSettings              */
     ParseSetArmSettings,              /* 29:  Cmd_SetArmSettings              */
     ParseGetRateControllerData,       /* 30:  Cmd_GetRateControllerData       */
