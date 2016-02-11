@@ -260,8 +260,8 @@ static void ParseGenericSetControllerData(const uint32_t pi_offset,
     /* Write only the PI coefficients */
     for (i = 0; i < 3; i++)
     {
-        memcpy(&data[i * PI_SETTINGS_SIZE], // Offset in the data package
-               (uint8_t *)&pi_list[i],      // Settings save location
+        memcpy((uint8_t *)&pi_list[i],      // Settings save location
+               &data[i * PI_SETTINGS_SIZE], // Offset in the data package
                PI_SETTINGS_SIZE);           // Settings size
     }
 
