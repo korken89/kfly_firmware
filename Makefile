@@ -275,7 +275,7 @@ OCD_TARGET = stm32f4x
 OCD_INTERFFACE = stlink-v2.cfg
 OPENOCD = openocd
 
-GDB_FLAGS = -tui -ex "target remote | $(OPENOCD) -c \"gdb_port pipe; log_output openocd.log\" -f interface/$(OCD_INTERFFACE) -f target/$(OCD_TARGET).cfg" -ex "load" -ex "monitor reset halt" -ex "set print pretty on" -ex "focus cmd"
+GDB_FLAGS = -tui -ex "target remote | $(OPENOCD) -c \"gdb_port pipe; log_output openocd.log\" -f interface/$(OCD_INTERFFACE) -f target/$(OCD_TARGET).cfg" -ex "load" -ex "monitor reset halt" -ex "set print pretty on" -ex "focus cmd" -ex "winheight SRC -8"
 
 gdb: build/$(PROJECT).elf
 	@echo "Starting GDB..."
