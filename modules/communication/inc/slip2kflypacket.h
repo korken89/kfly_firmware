@@ -213,21 +213,21 @@ typedef enum PACKED_VAR
     /*===============================================*/
 
     /**
-     * @brief   Get calibrated sensor data.
+     * @brief   Get calibrated IMU data.
      */
-    Cmd_GetSensorData               = 44,
+    Cmd_GetIMUData                  = 44,
     /**
-     * @brief   Get raw sensor data.
+     * @brief   Get raw IMU data.
      */
-    Cmd_GetRawSensorData            = 45,
+    Cmd_GetRawIMUData               = 45,
     /**
-     * @brief   Get sensor calibration.
+     * @brief   Get IMU calibration.
      */
-    Cmd_GetSensorCalibration        = 46,
+    Cmd_GetIMUCalibration           = 46,
     /**
-     * @brief   Set sensor calibration.
+     * @brief   Set IMU calibration.
      */
-    Cmd_SetSensorCalibration        = 47,
+    Cmd_SetIMUCalibration           = 47,
 
     /*===============================================*/
     /* Estimation specific commands.                 */

@@ -52,10 +52,10 @@ static void ParseSetChannelMix(kfly_parser_t *pHolder);
 static void ParseGetRCCalibration(kfly_parser_t *pHolder);
 static void ParseSetRCCalibration(kfly_parser_t *pHolder);
 static void ParseGetRCValues(kfly_parser_t *pHolder);
-static void ParseGetSensorData(kfly_parser_t *pHolder);
-static void ParseGetRawSensorData(kfly_parser_t *pHolder);
-static void ParseGetSensorCalibration(kfly_parser_t *pHolder);
-static void ParseSetSensorCalibration(kfly_parser_t *pHolder);
+static void ParseGetIMUData(kfly_parser_t *pHolder);
+static void ParseGetRawIMUData(kfly_parser_t *pHolder);
+static void ParseGetIMUCalibration(kfly_parser_t *pHolder);
+static void ParseSetIMUCalibration(kfly_parser_t *pHolder);
 static void ParseGetEstimationRate(kfly_parser_t *pHolder);
 static void ParseGetEstimationAttitude(kfly_parser_t *pHolder);
 static void ParseGetEstimationVelocity(kfly_parser_t *pHolder);
@@ -121,10 +121,10 @@ static const kfly_data_parser_t parser_lookup[128] = {
     ParseGetRCCalibration,            /* 41:  Cmd_GetRCCalibration            */
     ParseSetRCCalibration,            /* 42:  Cmd_SetRCCalibration            */
     ParseGetRCValues,                 /* 43:  Cmd_GetRCValues                 */
-    ParseGetSensorData,               /* 44:  Cmd_GetSensorData               */
-    ParseGetRawSensorData,            /* 45:  Cmd_GetRawSensorData            */
-    ParseGetSensorCalibration,        /* 46:  Cmd_GetSensorCalibration        */
-    ParseSetSensorCalibration,        /* 47:  Cmd_SetSensorCalibration        */
+    ParseGetIMUData,                  /* 44:  Cmd_GetIMUData                  */
+    ParseGetRawIMUData,               /* 45:  Cmd_GetRawIMUData               */
+    ParseGetIMUCalibration,           /* 46:  Cmd_GetIMUCalibration           */
+    ParseSetIMUCalibration,           /* 47:  Cmd_SetIMUCalibration           */
     ParseGetEstimationRate,           /* 48:  Cmd_GetEstimationRate           */
     ParseGetEstimationAttitude,       /* 49:  Cmd_GetEstimationAttitude       */
     ParseGetEstimationVelocity,       /* 50:  Cmd_GetEstimationVelocity       */
@@ -607,45 +607,45 @@ static void ParseGetRCValues(kfly_parser_t *pHolder)
 }
 
 /**
- * @brief               Parses a GetSensorData command.
+ * @brief               Parses a GetIMUData command.
  *
  * @param[in] pHolder   Message holder containing information
  *                      about the transmission.
  */
-static void ParseGetSensorData(kfly_parser_t *pHolder)
+static void ParseGetIMUData(kfly_parser_t *pHolder)
 {
-    GenerateMessage(Cmd_GetSensorData, pHolder->port);
+    GenerateMessage(Cmd_GetIMUData, pHolder->port);
 }
 
 /**
- * @brief               Parses a GetRawSensorData command.
+ * @brief               Parses a GetRawIMUData command.
  *
  * @param[in] pHolder   Message holder containing information
  *                      about the transmission.
  */
-static void ParseGetRawSensorData(kfly_parser_t *pHolder)
+static void ParseGetRawIMUData(kfly_parser_t *pHolder)
 {
-    GenerateMessage(Cmd_GetRawSensorData, pHolder->port);
+    GenerateMessage(Cmd_GetRawIMUData, pHolder->port);
 }
 
 /**
- * @brief               Parses a GetSensorCalibration command.
+ * @brief               Parses a GetIMUCalibration command.
  *
  * @param[in] pHolder   Message holder containing information
  *                      about the transmission.
  */
-static void ParseGetSensorCalibration(kfly_parser_t *pHolder)
+static void ParseGetIMUCalibration(kfly_parser_t *pHolder)
 {
-    GenerateMessage(Cmd_GetSensorCalibration, pHolder->port);
+    GenerateMessage(Cmd_GetIMUCalibration, pHolder->port);
 }
 
 /**
- * @brief               Parses a SetSensorCalibration command.
+ * @brief               Parses a SetIMUCalibration command.
  *
  * @param[in] pHolder   Message holder containing information
  *                      about the transmission.
  */
-static void ParseSetSensorCalibration(kfly_parser_t *pHolder)
+static void ParseSetIMUCalibration(kfly_parser_t *pHolder)
 {
     /* Temporary holder for IMU calibration data */
     static imu_calibration_t imu_calibration;

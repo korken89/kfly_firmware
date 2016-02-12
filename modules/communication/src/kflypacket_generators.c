@@ -36,10 +36,10 @@ static bool GenerateGetPositionControllerData(circular_buffer_t *Cbuff);
 static bool GenerateGetChannelMix(circular_buffer_t *Cbuff);
 static bool GenerateGetRCCalibration(circular_buffer_t *Cbuff);
 static bool GenerateGetRCValues(circular_buffer_t *Cbuff);
-static bool GenerateGetSensorData(circular_buffer_t *Cbuff);
-static bool GenerateGetRawSensorData(circular_buffer_t *Cbuff);
-static bool GenerateGetSensorCalibration(circular_buffer_t *Cbuff);
-static bool GenerateGetSensorCalibration(circular_buffer_t *Cbuff);
+static bool GenerateGetIMUData(circular_buffer_t *Cbuff);
+static bool GenerateGetRawIMUData(circular_buffer_t *Cbuff);
+static bool GenerateGetIMUCalibration(circular_buffer_t *Cbuff);
+static bool GenerateGetIMUCalibration(circular_buffer_t *Cbuff);
 static bool GenerateGetEstimationRate(circular_buffer_t *Cbuff);
 static bool GenerateGetEstimationAttitude(circular_buffer_t *Cbuff);
 static bool GenerateGetEstimationVelocity(circular_buffer_t *Cbuff);
@@ -103,9 +103,9 @@ static const kfly_generator_t generator_lookup[128] = {
     GenerateGetRCCalibration,         /* 41:  Cmd_GetRCCalibration            */
     NULL,                             /* 42:  Cmd_SetRCCalibration            */
     GenerateGetRCValues,              /* 43:  Cmd_GetRCValues                 */
-    GenerateGetSensorData,            /* 44:  Cmd_GetSensorData               */
-    GenerateGetRawSensorData,         /* 45:  Cmd_GetRawSensorData            */
-    GenerateGetSensorCalibration,     /* 46:  Cmd_GetSensorCalibration        */
+    GenerateGetIMUData,               /* 44:  Cmd_GetIMUData                  */
+    GenerateGetRawIMUData,            /* 45:  Cmd_GetRawIMUData               */
+    GenerateGetIMUCalibration,        /* 46:  Cmd_GetIMUCalibration           */
     NULL,                             /* 47:                                  */
     GenerateGetEstimationRate,        /* 48:  Cmd_GetEstimationRate           */
     GenerateGetEstimationAttitude,    /* 49:  Cmd_GetEstimationAttitude       */
@@ -524,14 +524,14 @@ static bool GenerateGetRCValues(circular_buffer_t *Cbuff)
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-static bool GenerateGetSensorData(circular_buffer_t *Cbuff)
+static bool GenerateGetIMUData(circular_buffer_t *Cbuff)
 {
     /* Temporary IMU data holder */
     static imu_data_t imu_data;
 
 
     GetIMUData(&imu_data);
-    return GenerateGenericCommand(Cmd_GetSensorData,
+    return GenerateGenericCommand(Cmd_GetIMUData,
                                   (uint8_t *)&imu_data,
                                   SENSOR_IMU_DATA_SIZE,
                                   Cbuff);
@@ -544,13 +544,13 @@ static bool GenerateGetSensorData(circular_buffer_t *Cbuff)
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-static bool GenerateGetRawSensorData(circular_buffer_t *Cbuff)
+static bool GenerateGetRawIMUData(circular_buffer_t *Cbuff)
 {
     /* Temporary IMU data holder */
     static imu_raw_data_t imu_rawdata;
 
     GetRawIMUData(&imu_rawdata);
-    return GenerateGenericCommand(Cmd_GetRawSensorData,
+    return GenerateGenericCommand(Cmd_GetRawIMUData,
                                   (uint8_t *)&imu_rawdata,
                                   SENSOR_IMU_RAW_DATA_SIZE,
                                   Cbuff);
@@ -564,14 +564,14 @@ static bool GenerateGetRawSensorData(circular_buffer_t *Cbuff)
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-static bool GenerateGetSensorCalibration(circular_buffer_t *Cbuff)
+static bool GenerateGetIMUCalibration(circular_buffer_t *Cbuff)
 {
     /* Temporary IMU data holder */
     static imu_calibration_t imu_calibration;
 
     GetIMUCalibration(&imu_calibration);
 
-    return GenerateGenericCommand(Cmd_GetSensorCalibration,
+    return GenerateGenericCommand(Cmd_GetIMUCalibration,
                                   (uint8_t *)&imu_calibration,
                                   SENSOR_IMU_CALIBRATION_SIZE,
                                   Cbuff);
