@@ -6,7 +6,7 @@
 /*===========================================================================*/
 /* Module global definitions.                                                */
 /*===========================================================================*/
-#define COMPUTER_CONTROL_MESSAGE_SIZE   sizeof(computer_control_package_t)
+#define COMPUTER_CONTROL_MESSAGE_SIZE   sizeof(computer_control_reference_t)
 
 /*===========================================================================*/
 /* Module data structures and types.                                         */
@@ -59,6 +59,6 @@ float fGetComputerControlThrottle(void);
 float fGetComputerControlRoll(void);
 float fGetComputerControlPitch(void);
 float fGetComputerControlYaw(void);
-void vParseComputerControlPackage(const uint8_t *payload, const uint8_t size);
+void vParseComputerControlPacket(const uint8_t *payload, const uint8_t size);
 
 #endif

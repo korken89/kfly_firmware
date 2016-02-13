@@ -20,7 +20,7 @@
 /* Module local variables and types.                                         */
 /*===========================================================================*/
 
-computer_control_t computer_control;
+computer_control_reference_t computer_control;
 virtual_timer_t vt_disarm;
 volatile bool bControlInit = true;
 
@@ -34,7 +34,7 @@ static void vt_disarm_callback(void *p)
 
     osalSysLockFromISR();
 
-    computer_control.throttle = 0;
+    //computer_control.throttle = 0;
     chVTResetI(&vt_disarm);
 
     osalSysUnlockFromISR();
@@ -44,27 +44,7 @@ static void vt_disarm_callback(void *p)
 /* Module exported functions.                                                */
 /*===========================================================================*/
 
-float fGetComputerControlThrottle(void)
-{
-    return ((float)computer_control.throttle) / 1000.0f;
-}
-
-float fGetComputerControlRoll(void)
-{
-    return ((float)computer_control.roll) / 1000.0f;
-}
-
-float fGetComputerControlPitch(void)
-{
-    return ((float)computer_control.pitch) / 1000.0f;
-}
-
-float fGetComputerControlYaw(void)
-{
-    return ((float)computer_control.yaw) / 1000.0f;
-}
-
-void vParseComputerControlPackage(const uint8_t *payload, const uint8_t size)
+void vParseComputerControlPacket(const uint8_t *payload, const uint8_t size)
 {
     if (size == COMPUTER_CONTROL_MESSAGE_SIZE)
     {

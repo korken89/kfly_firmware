@@ -21,7 +21,7 @@
 #include "sensor_read.h"
 #include "estimation.h"
 #include "control.h"
-#include "position_loop.h"
+#include "computer_control.h"
 #include "vicon.h"
 #include "kflypacket_parsers.h"
 
@@ -734,7 +734,7 @@ static void ParseResetEstimation(kfly_parser_t *pHolder)
 
 static void ParseComputerControlReference(kfly_parser_t *pHolder)
 {
-    vParseComputerControlPackage(pHolder->buffer, pHolder->data_length);
+    vParseComputerControlPacket(pHolder->buffer, pHolder->data_length);
 }
 
 /**
