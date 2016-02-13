@@ -18,9 +18,6 @@
 /** @brief  Location for the unique hardware ID. */
 #define UNIQUE_ID_BASE          0x1fff7a10
 
-/** @brief  Base address for the firmware in flash. */
-#define FIRMWARE_BASE           0x08000000
-
 /** @brief  Base address for the bootloader in flash. */
 #define BOOTLOADER_BASE         0x08000000
 

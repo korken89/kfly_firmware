@@ -5,7 +5,7 @@
 
 # Compiler options here.
 ifeq ($(USE_OPT),)
-  USE_OPT = -Og -ggdb -fomit-frame-pointer -falign-functions=16  -fdiagnostics-color
+  USE_OPT = -O1 --debug -ggdb -fomit-frame-pointer -falign-functions=16  -fdiagnostics-color
 endif
 
 # C specific options here (added to USE_OPT).
@@ -275,11 +275,24 @@ OCD_TARGET = stm32f4x
 OCD_INTERFFACE = stlink-v2.cfg
 OPENOCD = openocd
 
-GDB_FLAGS = -ex "target remote | $(OPENOCD) -c \"gdb_port pipe; log_output openocd.log\" -f interface/$(OCD_INTERFFACE) -f target/$(OCD_TARGET).cfg" -ex "load" -ex "monitor reset halt"
+GDB_FLAGS = -tui -ex "target remote | $(OPENOCD) -c \"gdb_port pipe; log_output openocd.log\" -f interface/$(OCD_INTERFFACE) -f target/$(OCD_TARGET).cfg" -ex "load" -ex "monitor reset halt" -ex "set print pretty on" -ex "focus cmd" -ex "winheight SRC -8"
 
 gdb: build/$(PROJECT).elf
-	$(GDB) build/$(PROJECT).elf $(GDB_FLAGS)
+	@echo "Starting GDB..."
+	@$(GDB) build/$(PROJECT).elf $(GDB_FLAGS)
 
 #
 # End of GDB section
 ##############################################################################
+
+##############################################################################
+# Force version information to be rebuilt every time
+#
+
+build/obj/version_information.o: .FORCE
+
+.FORCE:
+
+#
+##############################################################################
+

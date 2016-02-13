@@ -1,6 +1,6 @@
 /* *
  *
- * 
+ *
  *
  * */
 
@@ -62,7 +62,7 @@ const uint8_t *ptrGetBootloaderVersion(void)
  */
 const uint8_t *ptrGetFirmwareVersion(void)
 {
-    return (const uint8_t *)(FIRMWARE_BASE + SW_VERSION_OFFSET);
+    return (const uint8_t *)build_version;
 }
 
 /**

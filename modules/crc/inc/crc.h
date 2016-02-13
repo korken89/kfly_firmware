@@ -5,6 +5,9 @@
 /* Module global definitions.                                                */
 /*===========================================================================*/
 
+/* @brief Starting value for a CRC16. */
+#define CRC16_START_VALUE           0xffff
+
 /*===========================================================================*/
 /* Module data structures and types.                                         */
 /*===========================================================================*/
@@ -24,6 +27,7 @@
 uint8_t CRC8(uint8_t *data, uint32_t data_len);
 uint8_t CRC8_step(uint8_t data, uint8_t crc);
 uint16_t CRC16(uint8_t *data, uint32_t data_len);
+uint16_t CRC16_chunk(uint8_t *data, uint32_t data_len, const uint16_t crc_in);
 uint16_t CRC16_step(uint8_t data, uint16_t crc);
 
 #endif

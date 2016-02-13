@@ -6,7 +6,7 @@
 
 #include "ch.h"
 #include "hal.h"
-#include "statemachine_generators.h"
+#include "kflypacket_generators.h"
 #include "subscriptions.h"
 
 /*===========================================================================*/
@@ -44,11 +44,11 @@ typedef struct
     /**
      * @brief   The command to be sent at each timeout.
      */
-    KFly_Command command;
+    kfly_command_t command;
     /**
      * @brief   The port for the message to be sent on.
      */
-    External_Port port;
+    external_port_t port;
 } subscription_slot_t;
 
 /**
@@ -96,7 +96,7 @@ THD_WORKING_AREA(waSubscriptionsTask, 128);
 
 /**
  * @brief           Keeps track of the current subscriptions.
- *  
+ *
  * @param[in] arg   Input argument (unused).
  */
 static THD_FUNCTION(SubscriptionsTask, arg)
@@ -125,7 +125,7 @@ static THD_FUNCTION(SubscriptionsTask, arg)
 
 /**
  * @brief           Subscription virtual timer callback.
- *             
+ *
  * @param[in] p     Pointer to the subscription structure that requested
  *                  the callback.
  */
@@ -185,14 +185,14 @@ void vSubscriptionsInit(void)
 
 /**
  * @brief               Creates new subscription. I-class function.
- *             
+ *
  * @param[in] command   Command to subscribe to.
  * @param[in] port      Port to transmit the subscription on.
  * @param[in] delay_ms  Time between transmits.
  * @return              Return true if there was a free slot, else false.
  */
-bool bSubscribeToCommandI(KFly_Command command,
-                          External_Port port,
+bool bSubscribeToCommandI(kfly_command_t command,
+                          external_port_t port,
                           uint32_t delay_ms)
 {
     int i;
@@ -237,14 +237,14 @@ bool bSubscribeToCommandI(KFly_Command command,
 
 /**
  * @brief               Removes a subscription from a port. I-class function.
- *             
+ *
  * @param[in] command   Command to unsubscribe from.
  * @param[in] port      Port to unsubscribe from.
  * @return              Returns true if the subscription was successfully
  *                      deleted. False indicates it did not find any
  *                      subscription by the specified command.
  */
-bool bUnsubscribeFromCommandI(KFly_Command command, External_Port port)
+bool bUnsubscribeFromCommandI(kfly_command_t command, external_port_t port)
 {
     int i;
 

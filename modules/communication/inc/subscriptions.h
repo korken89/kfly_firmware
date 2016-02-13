@@ -17,10 +17,10 @@
 /* External declarations.                                                    */
 /*===========================================================================*/
 void vSubscriptionsInit(void);
-bool bSubscribeToCommandI(KFly_Command command,
-                          External_Port port,
+bool bSubscribeToCommandI(kfly_command_t command,
+                          external_port_t port,
                           uint32_t delay_ms);
-bool bUnsubscribeFromCommandI(KFly_Command command, External_Port port);
+bool bUnsubscribeFromCommandI(kfly_command_t command, external_port_t port);
 void vUnsubscribeFromAllI(void);
 
 /*===========================================================================*/
@@ -29,14 +29,14 @@ void vUnsubscribeFromAllI(void);
 
 /**
  * @brief               Creates new subscription.
- *             
+ *
  * @param[in] command   Command to subscribe to.
  * @param[in] port      Port to transmit the subscription on.
  * @param[in] delay_ms  Time between transmits.
  * @return              Return true if there was a free slot, else false.
  */
-static inline bool bSubscribeToCommand(KFly_Command command,
-                                       External_Port port,
+static inline bool bSubscribeToCommand(kfly_command_t command,
+                                       external_port_t port,
                                        uint32_t delay_ms)
 {
     bool result;
@@ -50,15 +50,15 @@ static inline bool bSubscribeToCommand(KFly_Command command,
 
 /**
  * @brief               Removes a subscription from a port.
- *             
+ *
  * @param[in] command   Command to unsubscribe from.
  * @param[in] port      Port to unsubscribe from.
  * @return              Returns true if the subscription was successfully
  *                      deleted. False indicates it did not find any
  *                      subscription by the specified command.
  */
-static inline bool bUnsubscribeFromCommand(KFly_Command command,
-	                                      External_Port port)
+static inline bool bUnsubscribeFromCommand(kfly_command_t command,
+                                           external_port_t port)
 {
     bool result;
 
