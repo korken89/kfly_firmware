@@ -26,9 +26,9 @@ static void vt_no_connection_timeout_callback(void *p);
 /*===========================================================================*/
 /* Module local variables and types.                                         */
 /*===========================================================================*/
-RCInput_Data rcinput_data;
+rcinput_data_t rcinput_data;
 uint64_t role_lookup;
-RCInput_Settings rcinput_settings;
+rcinput_settings_t rcinput_settings;
 EVENTSOURCE_DECL(rcinput_es);
 virtual_timer_t rcinput_timeout_vt;
 
@@ -110,7 +110,7 @@ THD_WORKING_AREA(waThreadRCInputFlashSave, 256);
 
 /**
  * @brief           Thread for the flash save operation.
- * 
+ *
  * @param[in] arg   Unused.
  * @return          Unused.
  */
@@ -131,7 +131,7 @@ static THD_FUNCTION(ThreadRCInputFlashSave, arg)
 
     while (1)
     {
-        /* Wait for new estimation */ 
+        /* Wait for new estimation */
         chEvtWaitOne(FLASHSAVE_SAVE_EVENTMASK);
 
         /* Save RC input settings to flash */
@@ -145,18 +145,18 @@ static THD_FUNCTION(ThreadRCInputFlashSave, arg)
 /**
  * @brief               Parses CPPM inputs. This function runs inside a
  *                      osalSysLockFromISR.
- *                      
- * 
+ *
+ *
  * @param[out] data     Pointer to RC Input data structure.
  * @param[in] capture   The value of the latest input capture.
  */
-static void ParseCPPMInput(RCInput_Data *data,
+static void ParseCPPMInput(rcinput_data_t *data,
                            uint32_t capture)
 {
     static uint16_t cppm_count = 0; /* Current CPPM channel */
 
     if (data->active_connection == TRUE)
-    {   
+    {
         /* If the capture is larger than the time for the SYNC, reset counter */
         if (capture > RCINPUT_CPPM_SYNC_LIMIT_MIN)
         {
@@ -215,12 +215,12 @@ static void ParseCPPMInput(RCInput_Data *data,
 /**
  * @brief               Parses RSSI inputs. This function runs inside a
  *                      osalSysLockFromISR.
- * 
+ *
  * @param[out] data     Pointer to RC Input data structure.
  * @param[in] width     The value of the latest width capture.
  * @param[in] period    The value of the latest period capture.
  */
-static void ParseRSSIInput(RCInput_Data *data,
+static void ParseRSSIInput(rcinput_data_t *data,
                            uint32_t width,
                            uint32_t period)
 {
@@ -260,10 +260,10 @@ static void ParseRSSIInput(RCInput_Data *data,
 
 /**
  * @brief               Reset a RCInput data structure.
- * 
+ *
  * @param[out] data     Pointer to RC Input data structure.
  */
-static void RCInputDataReset(RCInput_Data *data)
+static void RCInputDataReset(rcinput_data_t *data)
 {
     int i;
 
@@ -277,10 +277,10 @@ static void RCInputDataReset(RCInput_Data *data)
 
 /**
  * @brief               Reset a RCInput data structure.
- * 
+ *
  * @param[out] data     Pointer to RC Input data structure.
  */
-static void RCInputSettingsReset(RCInput_Settings *data)
+static void RCInputSettingsReset(rcinput_settings_t *data)
 {
     int i;
 
@@ -298,11 +298,11 @@ static void RCInputSettingsReset(RCInput_Settings *data)
 
 /**
  * @brief               Converts role to corresponding array index.
- * 
+ *
  * @param[in] role      Input role.
  * @return              Corresponding array index.
  */
-static uint32_t RoleToIndex(Input_Role_Selector role)
+static uint32_t RoleToIndex(input_role_selector_t role)
 {
     /* Get the index of the associated role */
     if (role != ROLE_OFF)
@@ -317,7 +317,7 @@ static uint32_t RoleToIndex(Input_Role_Selector role)
  * @details         This callback in invoked when neither the CPPM nor PWM
  *                  input has been invoked for a certain amount of time. This
  *                  is to detect if the cables have come loose.
- * 
+ *
  * @param[in] p     Input parameter (unused).
  */
 static void vt_no_connection_timeout_callback(void *p)
@@ -335,7 +335,7 @@ static void vt_no_connection_timeout_callback(void *p)
 
 /**
  * @brief               Callback for a new CPPM capture.
- * 
+ *
  * @param[out] eicup    Pointer to the EICU driver.
  * @param[in] channel   Channel that detected the input capture.
  */
@@ -352,7 +352,7 @@ static void cppm_callback(EICUDriver *eicup, eicuchannel_t channel)
     if (capture > last_count)       /* No overflow */
         capture = capture - last_count;
     else if (capture < last_count)  /* Timer overflow */
-        capture = ((0xFFFF - last_count) + capture); 
+        capture = ((0xFFFF - last_count) + capture);
 
     ParseCPPMInput(&rcinput_data, capture);
 
@@ -361,7 +361,7 @@ static void cppm_callback(EICUDriver *eicup, eicuchannel_t channel)
 
 /**
  * @brief               Callback for a new RSSI capture.
- * 
+ *
  * @param[out] eicup    Pointer to the EICU driver.
  * @param[in] channel   Channel that detected the input capture.
  */
@@ -380,7 +380,7 @@ static void rssi_callback(EICUDriver *eicup, eicuchannel_t channel)
 
 /**
  * @brief               Callback for a new PWM capture.
- * 
+ *
  * @param[out] eicup    Pointer to the EICU driver.
  * @param[in] channel   Channel that detected the input capture.
  */
@@ -477,11 +477,11 @@ msg_t RCInputInitialization(void)
 /**
  * @brief           Get the input level of the corresponding role and returns
  *                  it in the span of -1.0 to 1.0 or 0.0 to 1.0.
- * 
+ *
  * @param[in] role  Input role for the RC input.
  * @return          The curernt input value of the corresponding role.
  */
-float RCInputGetInputLevel(Input_Role_Selector role)
+float RCInputGetInputLevel(input_role_selector_t role)
 {
     int32_t value, idx;
     float level;
@@ -513,7 +513,7 @@ float RCInputGetInputLevel(Input_Role_Selector role)
             return 0.0f;
 
         /* Use the calibration to calculate the position */
-        level = level / (float)(rcinput_settings.ch_top[idx] - 
+        level = level / (float)(rcinput_settings.ch_top[idx] -
                                 rcinput_settings.ch_center[idx]);
     }
     /* If it is smaller than zero */
@@ -524,7 +524,7 @@ float RCInputGetInputLevel(Input_Role_Selector role)
             return 0.0f;
 
         /* Use the calibration to calculate the position */
-        level = level / (float)(rcinput_settings.ch_center[idx] - 
+        level = level / (float)(rcinput_settings.ch_center[idx] -
                                 rcinput_settings.ch_bottom[idx]);
     }
 
@@ -533,7 +533,7 @@ float RCInputGetInputLevel(Input_Role_Selector role)
 
 /**
  * @brief           Return the current connection status of the RC Input.
- * 
+ *
  * @return          Return true if there is a connection, else false.
  */
 bool bActiveRCInputConnection(void)
@@ -546,27 +546,27 @@ bool bActiveRCInputConnection(void)
 
 /**
  * @brief           Return the pointer to the RC Input data.
- * 
+ *
  * @return          Pointer to the RC input data.
  */
-RCInput_Data *ptrGetRCInputData(void)
+rcinput_data_t *ptrGetRCInputData(void)
 {
     return &rcinput_data;
 }
 
 /**
  * @brief           Return the pointer to the RC Input settings.
- * 
+ *
  * @return          Pointer to the RC input settings.
  */
-RCInput_Settings *ptrGetRCInputSettings(void)
+rcinput_settings_t *ptrGetRCInputSettings(void)
 {
     return &rcinput_settings;
 }
 
 /**
  * @brief           Return the pointer to the RC Input event source.
- * 
+ *
  * @return          Pointer to the RC input event source.
  */
 event_source_t *ptrGetRCInputEventSource(void)

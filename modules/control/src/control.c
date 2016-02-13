@@ -40,7 +40,7 @@
 /* Module local definitions.                                                 */
 /*===========================================================================*/
 
-static Arming_Stick_Region SticksInRegion(void);
+static arming_stick_region_t SticksInRegion(void);
 static void vZeroControlIntegrals(void);
 
 /*===========================================================================*/
@@ -50,12 +50,12 @@ static void vZeroControlIntegrals(void);
 /*===========================================================================*/
 /* Module local variables and types.                                         */
 /*===========================================================================*/
-static Control_Reference control_reference;
-static Control_Data control_data;
-static Control_Arm_Settings arm_settings;
-static Control_Limits control_limits;
-static Output_Mixer output_mixer;
-static Control_Parameters flash_save_control_parameters;
+static control_reference_t control_reference;
+static control_data_t control_data;
+static control_arm_settings_t arm_settings;
+static control_limits_t control_limits;
+static output_mixer_t output_mixer;
+static control_parameters_t flash_save_control_parameters;
 static volatile bool controllers_armed;
 
 
@@ -322,9 +322,9 @@ static void vReadControlParametersFromFlash(void)
  *
  * @return          Returns the current region the sticks are in.
  */
-static Arming_Stick_Region SticksInRegion(void)
+static arming_stick_region_t SticksInRegion(void)
 {
-    Input_Role_Selector sel;
+    input_role_selector_t sel;
     bool is_min;
     float level, threshold;
 
@@ -407,7 +407,7 @@ static void vRCInputsToControlAction(void)
 {
     float throttle;
 
-    const Flight_Mode selector = FLIGHTMODE_RATE;
+    const flightmode_t selector = FLIGHTMODE_RATE;
 
     if (controllers_armed == true)
     {
@@ -671,23 +671,6 @@ void ControlInit(void)
     /* Read data from flash (if available) */
     vReadControlParametersFromFlash();
 
-    /*
-     *  TODO: Remove and fix this...
-     *
-     *  SUPER UGGLY HACK TO GET SERVO SUPPORT FOR NOW...
-     *  DATA STRUCTURE HIDDEN AT THE END OF Output_Mixer CONTAINS OFFSETS.
-     *
-     *  Manually add the offset to the correct channel:
-     */
-    output_mixer.offset[0] = 0.0f;
-    output_mixer.offset[1] = 0.0f;
-    output_mixer.offset[2] = 0.0f;
-    output_mixer.offset[3] = 0.0f;
-    output_mixer.offset[4] = 0.0f;
-    output_mixer.offset[5] = 0.0f;
-    output_mixer.offset[6] = 0.0f;
-    output_mixer.offset[7] = 0.0f;
-
     vDisableAllOutputs();
 
     /* Initialize arming control thread */
@@ -777,7 +760,7 @@ void vControlForceDisarm(uint32_t key)
  *
  * @return      Pointer to the controller arm structure.
  */
-Control_Arm_Settings *ptrGetControlArmSettings(void)
+control_arm_settings_t *ptrGetControlArmSettings(void)
 {
     return &arm_settings;
 }
@@ -787,7 +770,7 @@ Control_Arm_Settings *ptrGetControlArmSettings(void)
  *
  * @return      Pointer to the control reference structure.
  */
-Control_Reference *ptrGetControlReferences(void)
+control_reference_t *ptrGetControlReferences(void)
 {
     return &control_reference;
 }
@@ -797,7 +780,7 @@ Control_Reference *ptrGetControlReferences(void)
  *
  * @return      Pointer to the control data structure.
  */
-Control_Data *ptrGetControlData(void)
+control_data_t *ptrGetControlData(void)
 {
     return &control_data;
 }
@@ -807,7 +790,7 @@ Control_Data *ptrGetControlData(void)
  *
  * @return      Pointer to the control limits structure.
  */
-Control_Limits *ptrGetControlLimits(void)
+control_limits_t *ptrGetControlLimits(void)
 {
     return &control_limits;
 }
@@ -817,7 +800,7 @@ Control_Limits *ptrGetControlLimits(void)
  *
  * @return      Pointer to the output mixer structure.
  */
-Output_Mixer *ptrGetOutputMixer(void)
+output_mixer_t *ptrGetOutputMixer(void)
 {
     return &output_mixer;
 }
@@ -826,14 +809,14 @@ Output_Mixer *ptrGetOutputMixer(void)
  * @brief       Copies current PI control parameters to an external structure.
  * @param[out] param    Save location.
  */
-void GetControlParameters(Control_Parameters *param)
+void GetControlParameters(control_parameters_t *param)
 {
     int i, j;
     float *f_pi, *f_par;
 
     /* Cast parameters and PI controller to arrays of respective kind */
     pi_data_t *pi = (pi_data_t *)&control_data;
-    PI_Parameters *par = (PI_Parameters *)param;
+    pi_parameters_t *par = (pi_parameters_t *)param;
 
     for (i = 0; i < CONTROL_NUMBER_OF_CONTROLLERS; i++)
     {
@@ -853,14 +836,14 @@ void GetControlParameters(Control_Parameters *param)
  *              current PI control parameters.
  * @param[out] param    Copy location.
  */
-void SetControlParameters(Control_Parameters *param)
+void SetControlParameters(control_parameters_t *param)
 {
     int i, j;
     float *f_pi, *f_par;
 
     /* Cast parameters and PI controller to arrays of respective kind */
     pi_data_t *pi = (pi_data_t *)&control_data;
-    PI_Parameters *par = (PI_Parameters *)param;
+    pi_parameters_t *par = (pi_parameters_t *)param;
 
     for (i = 0; i < CONTROL_NUMBER_OF_CONTROLLERS; i++)
     {

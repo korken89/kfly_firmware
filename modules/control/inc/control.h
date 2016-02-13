@@ -19,13 +19,13 @@
 #define POSITION_PI_OFFSET                      0
 
 /* Sizes */
-#define OUTPUT_MIXER_SIZE                       (sizeof(Output_Mixer))
-#define CONTROL_ARM_SIZE                        (sizeof(Control_Arm_Settings))
-#define CONTROL_LIMITS_SIZE                     (sizeof(Control_Limits))
-#define CONTROL_REFERENCE_SIZE                  (sizeof(Control_Reference))
+#define OUTPUT_MIXER_SIZE                       (sizeof(output_mixer_t))
+#define CONTROL_ARM_SIZE                        (sizeof(control_arm_settings_t))
+#define CONTROL_LIMITS_SIZE                     (sizeof(control_limits_t))
+#define CONTROL_REFERENCE_SIZE                  (sizeof(control_reference_t))
 #define CONTROL_NUMBER_OF_CONTROLLERS           (12)
-#define CONTROL_DATA_SIZE                       (sizeof(Control_Data))
-#define CONTROL_PARAMETERS_SIZE                 (sizeof(Control_Parameters))
+#define CONTROL_DATA_SIZE                       (sizeof(control_data_t))
+#define CONTROL_PARAMETERS_SIZE                 (sizeof(control_parameters_t))
 
 /*===========================================================================*/
 /* Module data structures and types.                                         */
@@ -64,7 +64,7 @@ typedef enum PACKED_VAR
      * @brief   Arm at yaw at max.
      */
     STICK_YAW_MAX
-} Arming_Stick_Direction;
+} arming_stick_direction_t;
 
 /**
  * @brief   Possible stick regions for arming/disarming the controllers.
@@ -83,7 +83,7 @@ typedef enum
      * @brief   Sticks are in the disarm position.
      */
     STICK_DISARM_REGION
-} Arming_Stick_Region;
+} arming_stick_region_t;
 
 /**
  * @brief   Possible flight modes the controllers support.
@@ -126,7 +126,7 @@ typedef enum PACKED_VAR
      * @brief   Position control with position hold.
      */
     FLIGHTMODE_COMPUTER_CONTROL
-} Flight_Mode;
+} flightmode_t;
 
 /**
  * @brief   Possible targeting direction for velocity and position control.
@@ -151,7 +151,7 @@ typedef enum PACKED_VAR
      * @brief   Target coordinate.
      */
     TARGET_COORDINATE
-} Target_Direcion;
+} target_direction_t;
 
 /**
  * @brief   Settings for the arm and disarm functionality.
@@ -169,7 +169,7 @@ typedef struct PACKED_VAR
     /**
      * @brief   Stick direction to arm the controllers.
      */
-    Arming_Stick_Direction stick_direction;
+    arming_stick_direction_t stick_direction;
     /**
      * @brief   Time (in seconds) needed to hold the sticks in correct
      *          position in order to arm the system.
@@ -180,7 +180,7 @@ typedef struct PACKED_VAR
      *          throttle has been given.
      */
     uint8_t arm_zero_throttle_timeout;
-} Control_Arm_Settings;
+} control_arm_settings_t;
 
 /**
  * @brief   Position, velocity, attitude, rate and actuator
@@ -232,12 +232,12 @@ typedef struct PACKED_VAR
     /**
      * @brief   Current flight mode.
      */
-    Flight_Mode mode;
+    flightmode_t mode;
     /**
      * @brief   Current targeting scheme for position and velocity control.
      */
-    Target_Direcion target;
-} Control_Reference;
+    target_direction_t target;
+} control_reference_t;
 
 /**
  * @brief   Position, velocity, attitude and rate controller gains and states.
@@ -260,7 +260,7 @@ typedef struct PACKED_VAR
      * @brief   Rate controller gains and states.
      */
     pi_data_t rate_controller[3];
-} Control_Data;
+} control_data_t;
 
 /**
  * @brief   Velocity, attitude and rate control limits.
@@ -331,7 +331,7 @@ typedef struct PACKED_VAR
          */
         float vertical;
     } max_velocity;
-} Control_Limits;
+} control_limits_t;
 
 /**
  * @brief   Output mixer weights.
@@ -346,7 +346,7 @@ typedef struct PACKED_VAR
      * @brief   Offsets to compensate for, as an example, the zero of an servo.
      */
     float offset[8];
-} Output_Mixer;
+} output_mixer_t;
 
 /*
  * Data transfer structures
@@ -369,7 +369,7 @@ typedef struct PACKED_VAR
      * @brief   Controller integral limit.
      */
     float I_limit;
-} PI_Parameters;
+} pi_parameters_t;
 
 /**
  * @brief   Control parameters structure for moving data.
@@ -379,20 +379,20 @@ typedef struct PACKED_VAR
     /**
      * @brief   Position controller parameters.
      */
-    PI_Parameters position_parameters[3];
+    pi_parameters_t position_parameters[3];
     /**
      * @brief   Velocity controller parameters.
      */
-    PI_Parameters velocity_parameters[3];
+    pi_parameters_t velocity_parameters[3];
     /**
      * @brief   Attitude controller parameters.
      */
-    PI_Parameters attitude_parameters[3];
+    pi_parameters_t attitude_parameters[3];
     /**
      * @brief   Rate controller parameters.
      */
-    PI_Parameters rate_parameters[3];
-} Control_Parameters;
+    pi_parameters_t rate_parameters[3];
+} control_parameters_t;
 
 /*===========================================================================*/
 /* Module macros.                                                            */
@@ -408,12 +408,12 @@ typedef struct PACKED_VAR
 void ControlInit(void);
 void vUpdateControlAction(quaternion_t *q_m, vector3f_t *omega_m, float dt);
 void vControlForceDisarm(uint32_t key);
-Control_Arm_Settings *ptrGetControlArmSettings(void);
-Control_Reference *ptrGetControlReferences(void);
-Control_Data *ptrGetControlData(void);
-Control_Limits *ptrGetControlLimits(void);
-Output_Mixer *ptrGetOutputMixer(void);
-void GetControlParameters(Control_Parameters *param);
-void SetControlParameters(Control_Parameters *param);
+control_arm_settings_t *ptrGetControlArmSettings(void);
+control_reference_t *ptrGetControlReferences(void);
+control_data_t *ptrGetControlData(void);
+control_limits_t *ptrGetControlLimits(void);
+output_mixer_t *ptrGetOutputMixer(void);
+void GetControlParameters(control_parameters_t *param);
+void SetControlParameters(control_parameters_t *param);
 
 #endif

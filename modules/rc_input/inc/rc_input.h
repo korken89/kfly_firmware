@@ -10,7 +10,7 @@
 #define RCINPUT_CPPM_SYNC_LIMIT_MAX     30000   /* 30 ms */
 #define RCINPUT_RSSI_THRESHOLD_PERCENT  5       /* RSSI threshold in percent */
 #define RCINPUT_RSSI_TIMEOUT            100     /* Number of bad RSSI
-                                                   measurements to disable the 
+                                                   measurements to disable the
                                                    connection */
 #define RCINPUT_NO_CON_TIMEOUT_MS       500
 #define RCINPUT_LOST_EVENTMASK          EVENT_MASK(0)
@@ -19,8 +19,8 @@
 #define RCINPUT_ROLE_TO_INDEX_BITS      4
 #define RCINPUT_ROLE_TO_INDEX_MASK      0x0f
 
-#define RCINPUT_DATA_SIZE               (sizeof(RCInput_Data))
-#define RCINPUT_SETTINGS_SIZE           (sizeof(RCInput_Settings))
+#define RCINPUT_DATA_SIZE               (sizeof(rcinput_data_t))
+#define RCINPUT_SETTINGS_SIZE           (sizeof(rcinput_settings_t))
 
 /*===========================================================================*/
 /* Module data structures and types.                                         */
@@ -61,7 +61,7 @@ typedef enum {
      * @brief   Channel 8 selector.
      */
     INPUT_RSSI = 7
-} RCInput_Capture_Channel;
+} rcinput_capture_channel_t;
 
 /**
  * @brief   Input capture type selector.
@@ -75,7 +75,7 @@ typedef enum {
      * @brief   PWM input: all channels have its own input line.
      */
     MODE_PWM_INPUT = 2
-} RCInput_Mode_Selector;
+} rcinput_mode_selector_t;
 
 /**
  * @brief   Input capture channel role selector.
@@ -117,7 +117,7 @@ typedef enum PACKED_VAR {
      * @brief   Aux 3 role selector.
      */
     ROLE_AUX3 = 9
-} Input_Role_Selector;
+} input_role_selector_t;
 
 /**
  * @brief   Input capture channel type.
@@ -135,7 +135,7 @@ typedef enum PACKED_VAR {
      * @brief   On/off type input.
      */
     TYPE_ON_OFF = 3
-} Input_Type_Selector;
+} input_type_selector_t;
 
 /**
  * @brief   Input capture data holder.
@@ -161,7 +161,7 @@ typedef struct PACKED_VAR {
      * @brief   Current RSSI frequency.
      */
     uint16_t rssi_frequency;
-} RCInput_Data;
+} rcinput_data_t;
 
 /**
  * @brief   Input capture settings holder.
@@ -174,11 +174,11 @@ typedef struct {
     /**
      * @brief   Input capture role selector.
      */
-    Input_Role_Selector role[RCINPUT_MAX_NUMBER_OF_INPUTS];
+    input_role_selector_t role[RCINPUT_MAX_NUMBER_OF_INPUTS];
     /**
      * @brief   Input capture type selector.
      */
-    Input_Type_Selector type[RCINPUT_MAX_NUMBER_OF_INPUTS];
+    input_type_selector_t type[RCINPUT_MAX_NUMBER_OF_INPUTS];
     /**
      * @brief   Input capture top calibration value.
      */
@@ -191,7 +191,7 @@ typedef struct {
      * @brief   Input capture bottom calibration value.
      */
     uint16_t ch_bottom[RCINPUT_MAX_NUMBER_OF_INPUTS];
-} RCInput_Settings;
+} rcinput_settings_t;
 
 /*===========================================================================*/
 /* Module macros.                                                            */
@@ -206,10 +206,10 @@ typedef struct {
 /*===========================================================================*/
 void RCInputInit(void);
 msg_t RCInputInitialization(void);
-float RCInputGetInputLevel(Input_Role_Selector role);
+float RCInputGetInputLevel(input_role_selector_t role);
 bool bActiveRCInputConnection(void);
-RCInput_Data *ptrGetRCInputData(void);
-RCInput_Settings *ptrGetRCInputSettings(void);
+rcinput_data_t *ptrGetRCInputData(void);
+rcinput_settings_t *ptrGetRCInputSettings(void);
 event_source_t *ptrGetRCInputEventSource(void);
 
 #endif
