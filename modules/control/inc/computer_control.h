@@ -11,31 +11,45 @@
 /*===========================================================================*/
 /* Module data structures and types.                                         */
 /*===========================================================================*/
+
+/**
+ * @brief   Data transfer structure for the computer control commands.
+ */
 typedef struct PACKED_VAR
 {
-    /* @brief Flight mode to differentiate the following data. */
+    /**
+     * @brief Flight mode to differentiate the following data.
+     */
     flightmode_t mode;
 
     union
     {
-        /* @brief Direct motor control data. */
+        /**
+         * @brief Direct motor control data.
+         */
         uint16_t direct_control[8];
 
-        /* @brief Indirect motor control data. */
+        /**
+         * @brief Indirect motor control data.
+         */
         struct
         {
             float roll, pitch, yaw;
             float throttle;
         } indirect_control;
 
-        /* @brief Rate control data. */
+        /**
+         * @brief Rate control data.
+         */
         struct
         {
             float roll, pitch, yaw;
             float throttle;
         } rate;
 
-        /* @brief Attitude control data. */
+        /**
+         * @brief Attitude control data.
+         */
         struct
         {
             float w, x, y, z;

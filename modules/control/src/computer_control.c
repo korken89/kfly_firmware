@@ -61,6 +61,8 @@ void vParseComputerControlPacket(const uint8_t *payload, const uint8_t size)
                    payload,
                    COMPUTER_CONTROL_MESSAGE_SIZE);
 
+            /* TODO: Check the payload in case of errors. */
+
             chVTSetI(&vt_disarm, MS2ST(500), vt_disarm_callback, NULL);
 
             osalSysUnlock();
