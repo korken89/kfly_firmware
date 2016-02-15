@@ -129,6 +129,21 @@ typedef enum PACKED_VAR
 } flightmode_t;
 
 /**
+ * @brief   Possible reference sources for the controllers.
+ */
+typedef enum PACKED_VAR
+{
+    /**
+     * @brief   Reference comes from manual (RC receiver).
+     */
+    REFERENCE_SOURCE_MANUAL = 0,
+    /**
+     * @brief   Reference comes from the computer control.
+     */
+    REFERENCE_SOURCE_COMPUTER_CONTROL
+} reference_source_t;
+
+/**
  * @brief   Possible targeting direction for velocity and position control.
  *          This determines where the system will be looking while following
  *          velocity and position commands.
