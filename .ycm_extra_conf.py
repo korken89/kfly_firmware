@@ -29,6 +29,7 @@ flags = [
     'stdlib=c',
     '-isystem', '/usr/local/include',
     '-isystem', '/usr/include',
+    '-I', './ChibiOS/os/rt/include',
     '-I', './system',
     '-I', './modules/control/inc',
     '-I', './modules/estimation/inc',
