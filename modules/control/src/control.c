@@ -1,13 +1,13 @@
 /* *
  *
  * General control structure from position to motors:
- *                 __________        __________        ___________        __________        __________        __________
- *                |          |      |          |      |           |      |          |      |          |      |          |
- *            +-> | Position | -+-> | Velocity | ---> | Targeting | -+-> | Attitude | -+-> |   Rate   | -+-> |  Motors  |
- *            |   |__________|  |   |__________|      |___________|  |   |__________|  |   |__________|  |   |__________|
- *            |                 |                                    |                 |                 |
- *             /                 /                                    /                 /                 / <-- Switch
- * Reference -+-----------------+------------------------------------+-----------------+-----------------+
+ *                 __________        __________        __________
+ *                |          |      |          |      |          |
+ *            +-> | Attitude | -+-> |   Rate   | -+-> |  Motors  |
+ *            |   |__________|  |   |__________|  |   |__________|
+ *            |                 |                 |
+ *             /                 /                 / <-- Switch
+ * Reference -+-----------------+-----------------+
  *
  * Aim:
  * To be able to connect a reference anywhere in the
@@ -15,12 +15,8 @@
  * This is done by the generic control structure with a
  * setting of the current control mode.
  *
- * The "Targeting" module does conversion from velocity
- * commands to attitude depending on where the system
- * shall be pointing.
- *
- * Every block is an vector PI controller (except Targeting
- * and Motors) with 3 inputs, 3 outputs and 3 references.
+ * Every block is an vector PI controller (except Motors) with 3 inputs,
+ * 3 outputs and 3 references.
  *
  * */
 
@@ -29,8 +25,8 @@
 #include "quaternion.h"
 #include "flash_save.h"
 #include "estimation.h"
+#include "arming.h"
 #include "control.h"
-#include "rc_input.h"
 #include "rc_output.h"
 #include "rate_loop.h"
 #include "attitude_loop.h"
@@ -39,7 +35,6 @@
 /* Module local definitions.                                                 */
 /*===========================================================================*/
 
-static arming_stick_region_t SticksInRegion(void);
 static void vZeroControlIntegrals(void);
 
 /*===========================================================================*/
@@ -51,14 +46,10 @@ static void vZeroControlIntegrals(void);
 /*===========================================================================*/
 static control_reference_t control_reference;
 static control_data_t control_data;
-static control_arm_settings_t arm_settings;
 static control_limits_t control_limits;
 static output_mixer_t output_mixer;
 static control_parameters_t flash_save_control_parameters;
-static volatile bool controllers_armed;
 
-
-THD_WORKING_AREA(waThreadControlArming, 256);
 THD_WORKING_AREA(waThreadControl, 256);
 THD_WORKING_AREA(waThreadControlFlashSave, 256);
 
@@ -66,133 +57,6 @@ THD_WORKING_AREA(waThreadControlFlashSave, 256);
 /* Module local functions.                                                   */
 /*===========================================================================*/
 
-/**
- * @brief           Thread for the arm and disarm functionality.
- *
- * @param[in] arg   Unused.
- * @return          Unused.
- */
-static THD_FUNCTION(ThreadControlArming, arg)
-{
-    (void)arg;
-
-    //uint16_t arm_time = 0, disarm_time = 0, timeout_time = 0;
-    //Arming_Stick_Region current_region;
-
-    /* Set thread name */
-    chRegSetThreadName("Arm Control");
-
-    while (1)
-    {
-        /* Check the conditions for arming and disarming */
-        osalThreadSleepMilliseconds(1000 / ARM_RATE);
-
-        if (controllers_armed == true)
-            palSetPad(GPIOC, GPIOC_LED_ERR);
-        else
-            palClearPad(GPIOC, GPIOC_LED_ERR);
-
-        /*
-         * Check all conditions for arming and disarming the system
-         */
-
-        /* Check so there is an active RC connection and st the arming stick
-           position has been set */
-        if ((bActiveRCInputConnection() == true) &&
-            (arm_settings.stick_direction != STICK_NONE))
-        {
-            if (RCInputGetInputLevel(ROLE_AUX1) < 0.5f)
-                controllers_armed = false;
-            else
-                controllers_armed = true;
-
-
-
-            /* Check emergency stop */
-//            if (RCInputGetInputLevel(ROLE_AUX1) < 0.5f)
-//            {
-//                controllers_armed = false;
-//                arm_time = 0;
-//                disarm_time = 0;
-//                timeout_time = 0;
-//            }
-//            else
-//            {
-//                /* Check so the sticks are in the correct region */
-//                current_region = SticksInRegion();
-//
-//                if (current_region == STICK_ARM_REGION)
-//                {
-//                    /* Check if the required time has been reached
-//                       to arm the system */
-//                    if ((arm_time / ARM_RATE) > arm_settings.arm_stick_time)
-//                    {
-//                        controllers_armed = true;
-//                    }
-//                    else
-//                    {
-//                        arm_time++;
-//                        disarm_time = 0;
-//                        timeout_time = 0;
-//                    }
-//                }
-//                else if (current_region == STICK_DISARM_REGION)
-//                {
-//                    /* Check if the required time has been reached
-//                       to disarm the system*/
-//                    if ((disarm_time / ARM_RATE) > arm_settings.arm_stick_time)
-//                    {
-//                        controllers_armed = false;
-//                    }
-//                    else
-//                    {
-//                        disarm_time++;
-//                        arm_time = 0;
-//                        timeout_time = 0;
-//                    }
-//                }
-//                else
-//                {
-//                    /* Sticks are not in the correct region,
-//                       reset timing counters */
-//                    arm_time = 0;
-//                    disarm_time = 0;
-//
-//                    /* Check the zero throttle timeout */
-//                    if (arm_settings.arm_zero_throttle_timeout != 0)
-//                    {
-//                        if ((RCInputGetInputLevel(ROLE_THROTTLE) <=
-//                            arm_settings.stick_threshold))
-//                        {
-//                            /* Check if the required time has passed to disarm due
-//                               to timeout, else increment the timing counter */
-//                            if ((timeout_time / ARM_RATE) >
-//                                arm_settings.arm_zero_throttle_timeout)
-//                            {
-//                                controllers_armed = false;
-//                            }
-//                            else
-//                            {
-//                                timeout_time++;
-//                                arm_time = 0;
-//                                disarm_time = 0;
-//                            }
-//                        }
-//                        /* The throttle is not in the correct position,
-//                           reset the timing counter */
-//                        else
-//                            timeout_time = 0;
-//                    }
-//                }
-//            }
-
-        }
-        else
-        {
-            controllers_armed = false;
-        }
-    }
-}
 
 /**
  * @brief           Thread for the entire control structure.
@@ -316,234 +180,6 @@ static void vReadControlParametersFromFlash(void)
 }
 
 /**
- * @brief           Checks if the sticks are in the correct position for Arm
- *                  Disarm access and returns the current region of the sticks.
- *
- * @return          Returns the current region the sticks are in.
- */
-static arming_stick_region_t SticksInRegion(void)
-{
-    input_role_selector_t sel;
-    bool is_min;
-    float level, threshold;
-
-    threshold = arm_settings.stick_threshold;
-    level = RCInputGetInputLevel(ROLE_THROTTLE);
-
-    /* Check so the throttle is within the threshold */
-    if (level <= threshold)
-    {
-        /* Determine which role the arm is linked to and if it is min/max. */
-        switch (arm_settings.stick_direction)
-        {
-            case STICK_PITCH_MIN:
-                sel = ROLE_PITCH;
-                is_min = true;
-                break;
-
-            case STICK_PITCH_MAX:
-                sel = ROLE_PITCH;
-                is_min = false;
-                break;
-
-            case STICK_ROLL_MIN:
-                sel = ROLE_ROLL;
-                is_min = true;
-                break;
-
-            case STICK_ROLL_MAX:
-                sel = ROLE_ROLL;
-                is_min = false;
-                break;
-
-            case STICK_YAW_MIN:
-                sel = ROLE_YAW;
-                is_min = true;
-                break;
-
-            case STICK_YAW_MAX:
-                sel = ROLE_YAW;
-                is_min = false;
-                break;
-
-            default:
-                return STICK_NO_REGION;
-
-        }
-
-        /* Calculate the threshold value. The *2 comes from the fact that the
-           throttle has half the span of the other sticks so double the
-           threshold is needed to the same relative threshold. */
-        threshold = 1.0f - 2.0f * threshold;
-
-        /* Check so the last role is within the threshold */
-        level = RCInputGetInputLevel(sel);
-
-        if (is_min == true)
-        {
-            if (level <= -threshold)
-                return STICK_ARM_REGION;
-            else if (level >= threshold)
-                return STICK_DISARM_REGION;
-        }
-        else
-        {
-            if (level >= threshold)
-                return STICK_ARM_REGION;
-            else if (level <= -threshold)
-                return STICK_DISARM_REGION;
-        }
-    }
-
-    return STICK_NO_REGION;
-}
-
-/**
- * @brief           Converts RC inputs to control action depending on
- *                  the current flight mode.
- */
-static void vRCInputsToControlAction(void)
-{
-    float throttle;
-
-    const flightmode_t selector = FLIGHTMODE_RATE;
-
-    if (controllers_armed == true)
-    {
-        if (selector == FLIGHTMODE_COMPUTER_CONTROL)
-        {
-            control_reference.mode = FLIGHTMODE_ATTITUDE;
-
-            throttle = RCInputGetInputLevel(ROLE_THROTTLE);
-            control_reference.attitude_reference.y = control_limits.max_angle.pitch * DEG2RAD * RCInputGetInputLevel(ROLE_PITCH);
-            control_reference.attitude_reference.x = control_limits.max_angle.roll * DEG2RAD * RCInputGetInputLevel(ROLE_ROLL);
-            control_reference.rate_reference.z = -fGetComputerControlYaw();
-        }
-        else if (selector == FLIGHTMODE_RATE)
-        {
-            control_reference.mode = FLIGHTMODE_RATE;
-
-            throttle = RCInputGetInputLevel(ROLE_THROTTLE);
-            control_reference.rate_reference.x = -control_limits.max_rate.pitch * DEG2RAD * RCInputGetInputLevel(ROLE_PITCH);
-            control_reference.rate_reference.y = control_limits.max_rate.roll * DEG2RAD * RCInputGetInputLevel(ROLE_ROLL);
-            control_reference.rate_reference.z = -control_limits.max_rate.yaw * DEG2RAD * RCInputGetInputLevel(ROLE_YAW);
-        }
-        else if (selector == FLIGHTMODE_ATTITUDE)
-        {
-            control_reference.mode = FLIGHTMODE_ATTITUDE;
-
-            throttle = RCInputGetInputLevel(ROLE_THROTTLE);
-            control_reference.attitude_reference.y = control_limits.max_angle.pitch * DEG2RAD * RCInputGetInputLevel(ROLE_PITCH);
-            control_reference.attitude_reference.x = control_limits.max_angle.roll * DEG2RAD * RCInputGetInputLevel(ROLE_ROLL);
-            control_reference.rate_reference.z = -control_limits.max_rate.yaw * DEG2RAD * RCInputGetInputLevel(ROLE_YAW);
-        }
-
-
-
-        if (throttle < arm_settings.armed_min_throttle)
-        {
-            control_reference.actuator_desired.throttle =
-                                            arm_settings.armed_min_throttle;
-
-            vZeroControlIntegrals();
-        }
-        else
-            control_reference.actuator_desired.throttle = throttle;
-    }
-    else
-        control_reference.mode = FLIGHTMODE_DISARMED;
-}
-
-/**
- * @brief           Implements the position controller.
- *
- * @param[in] position_m    Position measurement.
- * @param[in] dt            Controller sampling time.
- */
-static void vPositionControl(vector3f_t *position_m, float dt)
-{
-    (void)position_m;
-    (void)dt;
-}
-
-/**
- * @brief           Implements the velocity controller.
- *
- * @param[in] velocity_m    Velocity measurement.
- * @param[in] dt            Controller sampling time.
- */
-static void vVelocityControl(vector3f_t *velocity_m, float dt)
-{
-    (void)velocity_m;
-    (void)dt;
-}
-
-/**
- * @brief           Implements the attitude controller.
- *
- * @param[in] attitude_m    Attitude measurement.
- * @param[in] dt            Controller sampling time.
- */
-static void vAttitudeControl(quaternion_t *attitude_m,
-                             bool control_yaw,
-                             float dt)
-{
-    (void)control_yaw;
-
-    vector3f_t u;
-    vector3f_t err;
-
-    /* Calculate the quaternion error */
-    err.y = control_reference.attitude_reference.y - asinf(2.0f * (attitude_m->q0 * attitude_m->q2 - attitude_m->q1 * attitude_m->q3));
-    err.x = control_reference.attitude_reference.x + atan2f(2.0f * (attitude_m->q0 * attitude_m->q1 + attitude_m->q2 * attitude_m->q3), 1.0f - 2.0f * (attitude_m->q1 * attitude_m->q1 + attitude_m->q2 * attitude_m->q2));
-    err.z = 0.0f;
-
-    //atan2f(2.0f * (attitude_m->q0 * attitude_m->q3 + attitude_m->q1 * attitude_m->q2), 1.0f - 2.0f * (attitude_m->q2 * attitude_m->q2 + attitude_m->q3 * attitude_m->q3)))
-
-
-    /* Update controllers */
-    u.x = fPIUpdate(&control_data.attitude_controller[0], -err.y, dt);
-    u.y = fPIUpdate(&control_data.attitude_controller[1], err.x, dt);
-
-    /* Send bounded control signal to the next step in the cascade */
-    control_reference.rate_reference.x =
-                                bound( control_limits.max_rate_attitude.pitch,
-                                      -control_limits.max_rate_attitude.pitch,
-                                       u.x);
-    control_reference.rate_reference.y =
-                                bound( control_limits.max_rate_attitude.roll,
-                                      -control_limits.max_rate_attitude.roll,
-                                       u.y);
-}
-
-/**
- * @brief           Implements the rate controller.
- *
- * @param[in] omega_m   Rate measurement.
- * @param[in] dt        Controller sampling time.
- */
-static void vRateControl(vector3f_t *omega_m, float dt)
-{
-    vector3f_t u, error;
-
-    /* Calculate the errors */
-    error.x = control_reference.rate_reference.x - omega_m->y;
-    error.y = control_reference.rate_reference.y - omega_m->x;
-    error.z = control_reference.rate_reference.z - omega_m->z;
-
-    /* Update the PI controllers */
-    u.x = fPIUpdate(&control_data.rate_controller[0], -error.x, dt);
-    u.y = fPIUpdate(&control_data.rate_controller[1], -error.y, dt);
-    u.z = fPIUpdate(&control_data.rate_controller[2], -error.z, dt);
-
-    /* Send control signal to the next stage */
-    control_reference.actuator_desired.pitch = bound(1.0f, -1.0f, u.x);
-    control_reference.actuator_desired.roll = bound(1.0f, -1.0f, -u.y);
-    control_reference.actuator_desired.yaw = bound(1.0f, -1.0f, -u.z);
-
-}
-
-/**
  * @brief   Calculates the control signals based on the output weighting
  *          matrix and the desired torque around each axis plus throttle.
  */
@@ -631,23 +267,15 @@ void ControlInit(void)
     float *p;
     uint32_t i;
 
-    /* Initialize the arming structures */
-    controllers_armed = false;
-
-    arm_settings.stick_threshold = 0.0f;
-    arm_settings.armed_min_throttle = 0.0f;
-    arm_settings.stick_direction = STICK_NONE;
-    arm_settings.arm_stick_time = 5;
-    arm_settings.arm_zero_throttle_timeout = 30;
 
     /* Initialize all references to 0 and disarm controllers */
     p = (float *)&control_reference;
 
+    /* TODO: Fix this hack... */
     for (i = 0; i < ((CONTROL_REFERENCE_SIZE - 2) / 4); i++)
         p[i] = 0.0f;
 
     control_reference.mode = FLIGHTMODE_DISARMED;
-    control_reference.target = TARGET_GOAL;
 
     /* Initialize the controllers to 0 */
     p = (float *)&control_data;
@@ -672,12 +300,9 @@ void ControlInit(void)
 
     vDisableAllOutputs();
 
-    /* Initialize arming control thread */
-    chThdCreateStatic(waThreadControlArming,
-                      sizeof(waThreadControlArming),
-                      HIGHPRIO - 1,
-                      ThreadControlArming,
-                      NULL);
+
+    /* Initialize arming */
+    ArmingInit(&arm_settings);
 
     /* Initialize control thread */
     chThdCreateStatic(waThreadControl,
@@ -708,15 +333,6 @@ void vUpdateControlAction(quaternion_t *q_m, vector3f_t *omega_m, float dt)
 
     switch (control_reference.mode)
     {
-        //case FLIGHTMODE_POSITION_HOLD:
-        //    break;
-
-        case FLIGHTMODE_POSITION:
-            vPositionControl(NULL, dt);
-
-        case FLIGHTMODE_VELOCITY:
-            vVelocityControl(NULL, dt);
-
         case FLIGHTMODE_ATTITUDE:
             vAttitudeControl(q_m,
                              false,
@@ -742,26 +358,6 @@ void vUpdateControlAction(quaternion_t *q_m, vector3f_t *omega_m, float dt)
             vZeroControlIntegrals();
             break;
     }
-}
-
-/**
- * @brief       Forces the controllers to disarm if the correct key has been
- *              received. Key is 0xdeadbeef
- */
-void vControlForceDisarm(uint32_t key)
-{
-    if (key == 0xdeadbeef)
-        controllers_armed = false;
-}
-
-/**
- * @brief       Return the pointer to the controller arm structure.
- *
- * @return      Pointer to the controller arm structure.
- */
-control_arm_settings_t *ptrGetControlArmSettings(void)
-{
-    return &arm_settings;
 }
 
 /**
@@ -825,7 +421,7 @@ void GetControlParameters(control_parameters_t *param)
         f_par = (float *)&par[i];
 
         /* Copy PI parameters to the external location */
-        for (j = 0; j < 3; j++)
+        for (j = 0; j < PI_NUM_PARAMETERS; j++)
             f_par[j] = f_pi[j];
     }
 }
@@ -852,7 +448,7 @@ void SetControlParameters(control_parameters_t *param)
         f_par = (float *)&par[i];
 
         /* Save PI parameters from the external location */
-        for (j = 0; j < 3; j++)
+        for (j = 0; j < PI_NUM_PARAMETERS; j++)
             f_pi[j] = f_par[j];
     }
 }
