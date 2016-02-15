@@ -30,6 +30,8 @@ flags = [
     '-isystem', '/usr/local/include',
     '-isystem', '/usr/include',
     '-I', './ChibiOS/os/rt/include',
+    '-I', './ChibiOS/os/hal/osal/rt',
+    '-I', './ChibiOS/os/hal/include',
     '-I', './system',
     '-I', './modules/control/inc',
     '-I', './modules/estimation/inc',
