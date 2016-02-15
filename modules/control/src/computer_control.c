@@ -22,7 +22,8 @@
 
 computer_control_reference_t computer_control;
 virtual_timer_t vt_disarm;
-volatile bool bControlInit = true;
+volatile bool control_init;
+volatile reference_source_t reference_source;
 
 /*===========================================================================*/
 /* Module local functions.                                                   */
@@ -34,7 +35,7 @@ static void vt_disarm_callback(void *p)
 
     osalSysLockFromISR();
 
-    //computer_control.throttle = 0;
+    reference_source = REFERENCE_SOURCE_MANUAL;
     chVTResetI(&vt_disarm);
 
     osalSysUnlockFromISR();
@@ -44,14 +45,25 @@ static void vt_disarm_callback(void *p)
 /* Module exported functions.                                                */
 /*===========================================================================*/
 
+void ComputerControlInit(void)
+{
+    control_init = true;
+    reference_source = REFERENCE_SOURCE_MANUAL;
+}
+
+reference_source_t GetReferenceSource(void)
+{
+    return reference_source;
+}
+
 void vParseComputerControlPacket(const uint8_t *payload, const uint8_t size)
 {
     if (size == COMPUTER_CONTROL_MESSAGE_SIZE)
     {
-        if (bControlInit == true)
+        if (control_init == true)
         {
             chVTObjectInit(&vt_disarm);
-            bControlInit = false;
+            control_init = false;
         }
         else
         {
@@ -61,6 +73,7 @@ void vParseComputerControlPacket(const uint8_t *payload, const uint8_t size)
                    payload,
                    COMPUTER_CONTROL_MESSAGE_SIZE);
 
+            reference_source = REFERENCE_SOURCE_COMPUTER_CONTROL;
             /* TODO: Check the payload in case of errors. */
 
             chVTSetI(&vt_disarm, MS2ST(500), vt_disarm_callback, NULL);

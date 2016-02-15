@@ -13,6 +13,21 @@
 /*===========================================================================*/
 
 /**
+ * @brief   Possible reference sources for the controllers.
+ */
+typedef enum PACKED_VAR
+{
+    /**
+     * @brief   Reference comes from manual (RC receiver).
+     */
+    REFERENCE_SOURCE_MANUAL = 0,
+    /**
+     * @brief   Reference comes from the computer control.
+     */
+    REFERENCE_SOURCE_COMPUTER_CONTROL
+} reference_source_t;
+
+/**
  * @brief   Data transfer structure for the computer control commands.
  */
 typedef struct PACKED_VAR
@@ -34,7 +49,7 @@ typedef struct PACKED_VAR
          */
         struct
         {
-            float roll, pitch, yaw;
+            vector3f_t torque;
             float throttle;
         } indirect_control;
 
@@ -43,7 +58,7 @@ typedef struct PACKED_VAR
          */
         struct
         {
-            float roll, pitch, yaw;
+            vector3f_t rate;
             float throttle;
         } rate;
 
@@ -69,10 +84,9 @@ typedef struct PACKED_VAR
 /*===========================================================================*/
 /* External declarations.                                                    */
 /*===========================================================================*/
-float fGetComputerControlThrottle(void);
-float fGetComputerControlRoll(void);
-float fGetComputerControlPitch(void);
-float fGetComputerControlYaw(void);
+
+void ComputerControlInit(void);
+reference_source_t GetReferenceSource(void);
 void vParseComputerControlPacket(const uint8_t *payload, const uint8_t size);
 
 #endif

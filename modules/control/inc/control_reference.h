@@ -30,25 +30,14 @@ typedef enum PACKED_VAR
      */
     FLIGHTMODE_RATE,
     /**
-     * @brief   Attitude control.
+     * @brief   Attitude control in Euler angles, used when only controlling
+     *          roll and pitch in manual mode.
      */
-    FLIGHTMODE_ATTITUDE,
+    FLIGHTMODE_ATTITUDE_EULER,
     /**
-     * @brief   Velocity control.
+     * @brief   Attitude control in quaternion mode, used in computer control.
      */
-    FLIGHTMODE_VELOCITY,
-    /**
-     * @brief   Position control.
-     */
-    FLIGHTMODE_POSITION,
-    /**
-     * @brief   Position control with position hold.
-     */
-    FLIGHTMODE_POSITION_HOLD,
-    /**
-     * @brief   Position control with position hold.
-     */
-    FLIGHTMODE_COMPUTER_CONTROL
+    FLIGHTMODE_ATTITUDE
 } flightmode_t;
 
 /**
@@ -57,9 +46,13 @@ typedef enum PACKED_VAR
 typedef struct
 {
     /**
-     * @brief   Attitude control reference.
+     * @brief   Attitude control reference (quaternion mode).
      */
     quaternion_t attitude_reference;
+    /**
+     * @brief   Attitude control reference (Euler mode).
+     */
+    vector3f_t attitude_reference_euler;
     /**
      * @brief   Rate control reference.
      */
@@ -69,17 +62,9 @@ typedef struct
      */
     struct {
         /**
-         * @brief   Desired pitch torque.
+         * @brief   Desired torque around each axis.
          */
-        float pitch;
-        /**
-         * @brief   Desired roll torque.
-         */
-        float roll;
-        /**
-         * @brief   Desired yaw torque.
-         */
-        float yaw;
+        vector3f_t torque;
         /**
          * @brief   Desired throttle.
          */
@@ -111,7 +96,8 @@ typedef struct
 /* External declarations.                                                    */
 /*===========================================================================*/
 
-void UpdateRCInputsToControlAction(void);
-control_reference_t *ptrGetControlReferences(void);
+void RCInputsToControlAction(control_reference_t *ref,
+                             const vector3f_t *rate_lim,
+                             const vector3f_t *attitude_lim);
 
 #endif

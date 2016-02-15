@@ -10,7 +10,6 @@
 /* Module global definitions.                                                */
 /*===========================================================================*/
 
-#define DEG2RAD                                 (0.0174532925199433f)
 
 #define RATE_PI_OFFSET                          3
 #define ATTITUDE_PI_OFFSET                      0
@@ -27,23 +26,6 @@
 /*===========================================================================*/
 /* Module data structures and types.                                         */
 /*===========================================================================*/
-
-
-/**
- * @brief   Possible reference sources for the controllers.
- */
-typedef enum PACKED_VAR
-{
-    /**
-     * @brief   Reference comes from manual (RC receiver).
-     */
-    REFERENCE_SOURCE_MANUAL = 0,
-    /**
-     * @brief   Reference comes from the computer control.
-     */
-    REFERENCE_SOURCE_COMPUTER_CONTROL
-} reference_source_t;
-
 
 /**
  * @brief   Position, velocity, attitude and rate controller gains and states.
@@ -171,10 +153,9 @@ typedef struct PACKED_VAR
 /*===========================================================================*/
 /* External declarations.                                                    */
 /*===========================================================================*/
+
 void ControlInit(void);
 void vUpdateControlAction(quaternion_t *q_m, vector3f_t *omega_m, float dt);
-void vControlForceDisarm(uint32_t key);
-control_arm_settings_t *ptrGetControlArmSettings(void);
 control_reference_t *ptrGetControlReferences(void);
 control_data_t *ptrGetControlData(void);
 control_limits_t *ptrGetControlLimits(void);

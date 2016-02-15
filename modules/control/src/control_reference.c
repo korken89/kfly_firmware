@@ -13,7 +13,7 @@
 /* Module local definitions.                                                 */
 /*===========================================================================*/
 
-control_reference_t control_reference;
+#define DEG2RAD                                 (0.0174532925199433f)
 
 /*===========================================================================*/
 /* Module exported variables.                                                */
@@ -32,38 +32,44 @@ control_reference_t control_reference;
 /*===========================================================================*/
 
 /**
- * @brief           Converts RC inputs to control action depending on
- *                  the current flight mode.
+ * @brief       Converts RC inputs to control action depending on the current
+ *              flight mode.
+ * @note        Only for usage in manual control mode.
+ *
+ * @param[out] ref          Reference output.
+ * @param[in] rate_lim      Rate limits around roll (x), pitch (y) and yaw (z).
+ * @param[in] attitude_lim  Attitude limits around roll (x) and pitch (y).
  */
-void UpdateRCInputsToControlAction(control_reference_t *ref)
+void RCInputsToControlAction(control_reference_t *ref,
+                             const vector3f_t *rate_lim,
+                             const vector3f_t *attitude_lim)
 {
-    float throttle = 0.0f;
-
     if (ref->mode == FLIGHTMODE_RATE)
     {
-        control_reference->mode = FLIGHTMODE_RATE;
+        ref->actuator_desired.throttle = RCInputGetInputLevel(ROLE_THROTTLE);
 
-        throttle = RCInputGetInputLevel(ROLE_THROTTLE);
         ref->rate_reference.x =
-            control_limits.max_rate.pitch * DEG2RAD * RCInputGetInputLevel(ROLE_PITCH);
+            rate_lim->x * DEG2RAD * RCInputGetInputLevel(ROLE_PITCH);
         ref->rate_reference.y =
-            control_limits.max_rate.roll * DEG2RAD * RCInputGetInputLevel(ROLE_ROLL);
+            rate_lim->y * DEG2RAD * RCInputGetInputLevel(ROLE_ROLL);
         ref->rate_reference.z =
-            control_limits.max_rate.yaw * DEG2RAD * RCInputGetInputLevel(ROLE_YAW);
+            rate_lim->z * DEG2RAD * RCInputGetInputLevel(ROLE_YAW);
     }
-    else if (selector == FLIGHTMODE_ATTITUDE)
+    else if (ref->mode == FLIGHTMODE_ATTITUDE_EULER)
     {
-        control_reference.mode = FLIGHTMODE_ATTITUDE;
+        ref->actuator_desired.throttle = RCInputGetInputLevel(ROLE_THROTTLE);
 
-        throttle = RCInputGetInputLevel(ROLE_THROTTLE);
-        ref->attitude_reference.y =
-            control_limits.max_angle.pitch * DEG2RAD * RCInputGetInputLevel(ROLE_PITCH);
-        ref->attitude_reference.x =
-            control_limits.max_angle.roll * DEG2RAD * RCInputGetInputLevel(ROLE_ROLL);
+        ref->attitude_reference_euler.x =
+            attitude_lim->x * DEG2RAD * RCInputGetInputLevel(ROLE_ROLL);
+        ref->attitude_reference_euler.y =
+            attitude_lim->y * DEG2RAD * RCInputGetInputLevel(ROLE_PITCH);
         ref->rate_reference.z =
-            control_limits.max_rate.yaw * DEG2RAD * RCInputGetInputLevel(ROLE_YAW);
+            attitude_lim->z * DEG2RAD * RCInputGetInputLevel(ROLE_YAW);
     }
-
-    ref->actuator_desired.throttle = throttle;
+    else
+    {
+        /* The other modes (quaternion etc) are not supported here yet. */
+        ref->actuator_desired.throttle = 0.0f;
+    }
 }
 

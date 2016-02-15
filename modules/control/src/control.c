@@ -44,11 +44,11 @@ static void vZeroControlIntegrals(void);
 /*===========================================================================*/
 /* Module local variables and types.                                         */
 /*===========================================================================*/
-static control_reference_t control_reference;
-static control_data_t control_data;
-static control_limits_t control_limits;
-static output_mixer_t output_mixer;
-static control_parameters_t flash_save_control_parameters;
+control_reference_t control_reference;
+control_data_t control_data;
+control_limits_t control_limits;
+output_mixer_t output_mixer;
+control_parameters_t flash_save_control_parameters;
 
 THD_WORKING_AREA(waThreadControl, 256);
 THD_WORKING_AREA(waThreadControlFlashSave, 256);
@@ -329,7 +329,12 @@ void ControlInit(void)
  */
 void vUpdateControlAction(quaternion_t *q_m, vector3f_t *omega_m, float dt)
 {
-    vRCInputsToControlAction();
+    /* Check if manual control or computer control. */
+    /* TODO: Add it... */
+    //vRCInputsToControlAction();
+
+    /* Update references. */
+    /* TODO: Add it... */
 
     switch (control_reference.mode)
     {
