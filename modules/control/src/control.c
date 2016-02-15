@@ -34,7 +34,6 @@
 #include "rc_output.h"
 #include "rate_loop.h"
 #include "attitude_loop.h"
-#include "position_loop.h"
 
 /*===========================================================================*/
 /* Module local definitions.                                                 */
