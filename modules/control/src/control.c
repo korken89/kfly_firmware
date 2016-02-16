@@ -1,6 +1,6 @@
 /* *
  *
- * General control structure from position to motors:
+ * General control structure from attitude to motors:
  *                 __________        __________        __________
  *                |          |      |          |      |          |
  *            +-> | Attitude | -+-> |   Rate   | -+-> |  Motors  |
@@ -16,7 +16,9 @@
  * setting of the current control mode.
  *
  * Every block is an vector PI controller (except Motors) with 3 inputs,
- * 3 outputs and 3 references.
+ * 3 outputs and 3 references when in manual control and the attitude is based
+ * on the Quaternion Attitude Controller by Emil Fresk when running via
+ * computer control.
  *
  * */
 
