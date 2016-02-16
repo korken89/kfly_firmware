@@ -77,6 +77,22 @@ typedef struct
 /*===========================================================================*/
 
 /* TODO: Add transform operations. */
+transform_t ChainTransforms(const transform_t base, const transform_t next)
+{
+    (void) base;
+    (void) next;
+    transform_t r;
+
+    return r;
+}
+
+transform_t TransformInverse(const transform_t t)
+{
+    (void) t;
+    transform_t r;
+
+    return r;
+}
 
 /*===========================================================================*/
 /* External declarations.                                                    */
