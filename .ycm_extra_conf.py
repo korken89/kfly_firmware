@@ -31,6 +31,8 @@ flags = [
     '-isystem', '/usr/include',
     '-I', './ChibiOS/os/rt/include',
     '-I', './ChibiOS/os/rt/ports/ARMCMx',
+    '-I', './ChibiOS/os/rt/ports/ARM',
+    '-I', './ChibiOS/os/rt/ports/ARM/compilers/GCC',
     '-I', './ChibiOS/os/hal/osal/rt',
     '-I', './ChibiOS/os/hal/include',
     '-I', './ChibiOS/os/hal/lib/streams',
