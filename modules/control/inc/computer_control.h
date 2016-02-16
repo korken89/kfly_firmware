@@ -2,6 +2,7 @@
 #define __COMPUTER_CONTROL_H
 
 #include "control.h"
+#include "control_definitions.h"
 
 /*===========================================================================*/
 /* Module global definitions.                                                */
@@ -11,21 +12,6 @@
 /*===========================================================================*/
 /* Module data structures and types.                                         */
 /*===========================================================================*/
-
-/**
- * @brief   Possible reference sources for the controllers.
- */
-typedef enum PACKED_VAR
-{
-    /**
-     * @brief   Reference comes from manual (RC receiver).
-     */
-    REFERENCE_SOURCE_MANUAL = 0,
-    /**
-     * @brief   Reference comes from the computer control.
-     */
-    REFERENCE_SOURCE_COMPUTER_CONTROL
-} reference_source_t;
 
 /**
  * @brief   Data transfer structure for the computer control commands.

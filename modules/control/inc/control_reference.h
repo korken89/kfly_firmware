@@ -71,9 +71,9 @@ typedef struct
         float throttle;
     } actuator_desired;
     /**
-     * @brief   Control signal to each PWM channel.
+     * @brief   Control signal to each output channel.
      */
-    float pwm_out[8];
+    float output[8];
     /**
      * @brief   Current flight mode.
      */
