@@ -21,19 +21,19 @@ typedef struct
     /**
      * @brief   Scalar component.
      */
-    float q0;
+    float w;
     /**
      * @brief   i component.
      */
-    float q1;
+    float x;
     /**
      * @brief   j component.
      */
-    float q2;
+    float y;
     /**
      * @brief   k component.
      */
-    float q3;
+    float z;
 } quaternion_t;
 
 /*===========================================================================*/
@@ -48,7 +48,7 @@ typedef struct
  * @brief               Converts a Generalized Rodrigues Parameter to a
  *                      quaternion.
  *
- * @param[in] v         GRP vector. 
+ * @param[in] v         GRP vector.
  * @param[in] a         First scaling constant.
  * @param[in] f         Second scaling constant.
  * @return              Converted quaternion.
@@ -62,12 +62,12 @@ static inline quaternion_t grp2q(const vector3f_t p,
 
     sq = vector_norm(p);
 
-    q.q0 = (-a * sq + f * sqrtf(f * f + (1.0f - a * a) * sq)) / (f * f + sq);
+    q.w = (-a * sq + f * sqrtf(f * f + (1.0f - a * a) * sq)) / (f * f + sq);
 
-    inv = (a + q.q0) / f;
-    q.q1 = p.x * inv;
-    q.q2 = p.y * inv;
-    q.q3 = p.z * inv;
+    inv = (a + q.w) / f;
+    q.x = p.x * inv;
+    q.y = p.y * inv;
+    q.z = p.z * inv;
 
     return q;
 }
@@ -85,21 +85,21 @@ static inline void q2dcm(float R[3][3], const quaternion_t q)
                2*(q(2)*q(3)+q(1)*q(4)),   q(1)^2-q(2)^2+q(3)^2-q(4)^2,       2*(q(3)*q(4)-q(1)*q(2));
                2*(q(2)*q(4)-q(1)*q(3)),       2*(q(3)*q(4)+q(1)*q(2)),   q(1)^2-q(2)^2-q(3)^2+q(4)^2];
     */
-    const float q0sq = q.q0 * q.q0;
-    const float q1sq = q.q1 * q.q1;
-    const float q2sq = q.q2 * q.q2;
-    const float q3sq = q.q3 * q.q3;
+    const float q0sq = q.w * q.w;
+    const float q1sq = q.x * q.x;
+    const float q2sq = q.y * q.y;
+    const float q3sq = q.z * q.z;
 
     R[0][0] = q0sq + q1sq - q2sq - q3sq;
-    R[0][1] = 2.0f * (q.q1 * q.q2 - q.q0 * q.q3);
-    R[0][2] = 2.0f * (q.q1 * q.q3 + q.q0 * q.q2);
+    R[0][1] = 2.0f * (q.x * q.y - q.w * q.z);
+    R[0][2] = 2.0f * (q.x * q.z + q.w * q.y);
 
-    R[1][0] = 2.0f * (q.q1 * q.q2 + q.q0 * q.q3);
+    R[1][0] = 2.0f * (q.x * q.y + q.w * q.z);
     R[1][1] = q0sq - q1sq + q2sq - q3sq;
-    R[1][2] = 2.0f * (q.q2 * q.q3 - q.q0 * q.q1);
+    R[1][2] = 2.0f * (q.y * q.z - q.w * q.x);
 
-    R[2][0] = 2.0f * (q.q1 * q.q3 - q.q0 * q.q2);
-    R[2][1] = 2.0f * (q.q2 * q.q3 + q.q0 * q.q1);
+    R[2][0] = 2.0f * (q.x * q.z - q.w * q.y);
+    R[2][1] = 2.0f * (q.y * q.z + q.w * q.x);
     R[2][2] = q0sq - q1sq - q2sq + q3sq;
 }
 
@@ -120,10 +120,10 @@ static inline quaternion_t qmult(const quaternion_t a, const quaternion_t b)
      * */
     quaternion_t r;
 
-    r.q0 = a.q0 * b.q0 - a.q1 * b.q1 - a.q2 * b.q2 - a.q3 * b.q3;
-    r.q1 = a.q0 * b.q1 + a.q1 * b.q0 + a.q2 * b.q3 - a.q3 * b.q2;
-    r.q2 = a.q0 * b.q2 - a.q1 * b.q3 + a.q2 * b.q0 + a.q3 * b.q1;
-    r.q3 = a.q0 * b.q3 + a.q1 * b.q2 - a.q2 * b.q1 + a.q3 * b.q0;
+    r.w = a.w * b.w - a.x * b.x - a.y * b.y - a.z * b.z;
+    r.x = a.w * b.x + a.x * b.w + a.y * b.z - a.z * b.y;
+    r.y = a.w * b.y - a.x * b.z + a.y * b.w + a.z * b.x;
+    r.z = a.w * b.z + a.x * b.y - a.y * b.x + a.z * b.w;
 
     return r;
 }
@@ -138,10 +138,10 @@ static inline quaternion_t qconj(const quaternion_t q)
 {
     quaternion_t r;
 
-    r.q0 =   q.q0;
-    r.q1 = - q.q1;
-    r.q2 = - q.q2;
-    r.q3 = - q.q3;
+    r.w =   q.w;
+    r.x = - q.x;
+    r.y = - q.y;
+    r.z = - q.z;
 
     return r;
 }
@@ -156,10 +156,10 @@ static inline quaternion_t qneg(const quaternion_t q)
 {
     quaternion_t r;
 
-    r.q0 = - q.q0;
-    r.q1 = - q.q1;
-    r.q2 = - q.q2;
-    r.q3 = - q.q3;
+    r.w = - q.w;
+    r.x = - q.x;
+    r.y = - q.y;
+    r.z = - q.z;
 
     return r;
 }
@@ -172,7 +172,7 @@ static inline quaternion_t qneg(const quaternion_t q)
  */
 static inline float qnorm(const quaternion_t q)
 {
-    return sqrtf(q.q0*q.q0 + q.q1*q.q1 + q.q2*q.q2 + q.q3*q.q3);
+    return sqrtf(q.w*q.w + q.x*q.x + q.y*q.y + q.z*q.z);
 }
 
 /*
@@ -184,12 +184,12 @@ static inline float qnorm(const quaternion_t q)
 static inline quaternion_t qnormalize(const quaternion_t q)
 {
     quaternion_t r;
-    float invNorm = 1.0f / sqrtf(q.q0*q.q0 + q.q1*q.q1 + q.q2*q.q2 + q.q3*q.q3);
+    float invNorm = 1.0f / sqrtf(q.w*q.w + q.x*q.x + q.y*q.y + q.z*q.z);
 
-    r.q0 = q.q0 * invNorm;
-    r.q1 = q.q1 * invNorm;
-    r.q2 = q.q2 * invNorm;
-    r.q3 = q.q3 * invNorm;
+    r.w = q.w * invNorm;
+    r.x = q.x * invNorm;
+    r.y = q.y * invNorm;
+    r.z = q.z * invNorm;
 
     return r;
 }
@@ -214,10 +214,10 @@ static inline quaternion_t qint(const quaternion_t q_curr,
     dy = 0.5f * omega.y * dt;
     dz = 0.5f * omega.z * dt;
 
-    q_step.q0 = sqrtf(1.0f - dx * dx - dy * dy - dz * dz);
-    q_step.q1 = dx;
-    q_step.q2 = dy;
-    q_step.q3 = dz;
+    q_step.w = sqrtf(1.0f - dx * dx - dy * dy - dz * dz);
+    q_step.x = dx;
+    q_step.y = dy;
+    q_step.z = dz;
 
     return qmult(q_step, q_curr);
 }
@@ -232,10 +232,10 @@ static inline quaternion_t array2q(float a[4])
 {
     quaternion_t q;
 
-    q.q0 = a[0];
-    q.q1 = a[1];
-    q.q2 = a[2];
-    q.q3 = a[3];
+    q.w = a[0];
+    q.x = a[1];
+    q.y = a[2];
+    q.z = a[3];
 
     return q;
 }

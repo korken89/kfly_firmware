@@ -1,6 +1,6 @@
 /* *
  *
- * 
+ *
  *
  * */
 
@@ -81,10 +81,10 @@ void ViconSupportInit(void)
     vicon_measurement.available_data = 0;
     vicon_measurement.frame_number = 0;
 
-    vicon_measurement.attitude.q0 = 1.0f;
-    vicon_measurement.attitude.q1 = 0.0f;
-    vicon_measurement.attitude.q2 = 0.0f;
-    vicon_measurement.attitude.q3 = 0.0f;
+    vicon_measurement.attitude.w = 1.0f;
+    vicon_measurement.attitude.x = 0.0f;
+    vicon_measurement.attitude.y = 0.0f;
+    vicon_measurement.attitude.z = 0.0f;
 
     vicon_measurement.position.x = 0.0f;
     vicon_measurement.position.y = 0.0f;

@@ -34,7 +34,7 @@ static thread_t *tp;
 
 /**
  * @brief Main estimation thread.
- * 
+ *
  * @param[in/out] arg   Unused.
  */
 static THD_FUNCTION(ThreadEstimation, arg)
@@ -72,7 +72,7 @@ static THD_FUNCTION(ThreadEstimation, arg)
         //    isnan(states.w.x) || isnan(states.w.y) || isnan(states.w.z) ||
         //    isnan(states.wb.x) || isnan(states.wb.y) || isnan(states.wb.z))
         //    AttitudeEstimationInit(&states, &data, &q_init, &wb_init);
-        
+
         /* Check if there has been a request to reset the filter */
         //if (chEvtWaitOneTimeout(ESTIMATION_RESET_EVENTMASK, TIME_IMMEDIATE))
        // {
@@ -80,7 +80,7 @@ static THD_FUNCTION(ThreadEstimation, arg)
             //AttitudeEstimationInit(&states, &data, &q_init, &wb_init);
         //}
 
-        /* Wait for new measurement data */ 
+        /* Wait for new measurement data */
         chEvtWaitOne(ACCGYRO_DATA_AVAILABLE_EVENTMASK);
 
         /* Get sensor data */
@@ -94,7 +94,7 @@ static THD_FUNCTION(ThreadEstimation, arg)
                                 fc2lpf_gain(20, SENSOR_ACCGYRO_DT)); /* LPF ~ 45 Hz */
 
         /*InnovateAttitudeEKF(&states,
-                            &data, 
+                            &data,
                             imu_data.gyroscope,
                             imu_data.accelerometer,
                             imu_data.magnetometer,
@@ -105,17 +105,17 @@ static THD_FUNCTION(ThreadEstimation, arg)
         //states.w.x = -imu_data.gyroscope[0];
         //states.w.y = -imu_data.gyroscope[1];
         //states.w.z = imu_data.gyroscope[2];
-    
+
         //am.x = -imu_data.accelerometer[0];
         //am.y = -imu_data.accelerometer[1];
         //am.z = imu_data.accelerometer[2];
-    
+
         //states.q = MadgwickAHRSupdateIMU(states.w,
         //                                 am,
         //                                 states.q,
         //                                 0.15f,
         //                                 dt);
-    
+
         /* Broadcast new estimation available */
         chEvtBroadcastFlags(&estimation_events_es,
                             ESTIMATION_NEW_ESTIMATION_EVENTMASK);
@@ -136,9 +136,9 @@ void EstimationInit(void)
 
     /* Start the estimation thread */
     chThdCreateStatic(waThreadEstimation,
-                      sizeof(waThreadEstimation), 
-                      HIGHPRIO - 2, 
-                      ThreadEstimation, 
+                      sizeof(waThreadEstimation),
+                      HIGHPRIO - 2,
+                      ThreadEstimation,
                       NULL);
 
 }
@@ -154,7 +154,7 @@ void ResetEstimation(void)
 
 /**
  * @brief Returns the pointer to the attitude estimation states.
- * 
+ *
  * @return Pointer to the attitude estimation states.
  */
 attitude_states_t *ptrGetAttitudeEstimationStates(void)
@@ -164,7 +164,7 @@ attitude_states_t *ptrGetAttitudeEstimationStates(void)
 
 /**
  * @brief Returns the pointer to the estimation event source.
- * 
+ *
  * @return Pointer to the estimation event source.
  */
 event_source_t *ptrGetEstimationEventSource(void)
@@ -185,10 +185,10 @@ quaternion_t MadgwickAHRSupdateIMU(vector3f_t g,
     float _4q2 ,_8q1, _8q2, q0q0, q1q1, q2q2, q3q3;
 
     // Rate of change of quaternion from gyroscope
-    qDot1 = 0.5f * (-q.q1 * g.x - q.q2 * g.y - q.q3 * g.z);
-    qDot2 = 0.5f * (q.q0 * g.x + q.q2 * g.z - q.q3 * g.y);
-    qDot3 = 0.5f * (q.q0 * g.y - q.q1 * g.z + q.q3 * g.x);
-    qDot4 = 0.5f * (q.q0 * g.z + q.q1 * g.y - q.q2 * g.x);
+    qDot1 = 0.5f * (-q.x * g.x - q.y * g.y - q.z * g.z);
+    qDot2 = 0.5f * (q.w * g.x + q.y * g.z - q.z * g.y);
+    qDot3 = 0.5f * (q.w * g.y - q.x * g.z + q.z * g.x);
+    qDot4 = 0.5f * (q.w * g.z + q.x * g.y - q.y * g.x);
 
     // Compute feedback only if accelerometer measurement valid
     // (avoids NaN in accelerometer normalization)
@@ -198,31 +198,31 @@ quaternion_t MadgwickAHRSupdateIMU(vector3f_t g,
         recipNorm = 1.0f / sqrtf(a.x * a.x + a.y * a.y + a.z * a.z);
         a.x *= recipNorm;
         a.y *= recipNorm;
-        a.z *= recipNorm;   
+        a.z *= recipNorm;
 
         // Auxiliary variables to avoid repeated arithmetic
-        _2q0 = 2.0f * q.q0;
-        _2q1 = 2.0f * q.q1;
-        _2q2 = 2.0f * q.q2;
-        _2q3 = 2.0f * q.q3;
-        _4q0 = 4.0f * q.q0;
-        _4q1 = 4.0f * q.q1;
-        _4q2 = 4.0f * q.q2;
-        _8q1 = 8.0f * q.q1;
-        _8q2 = 8.0f * q.q2;
-        q0q0 = q.q0 * q.q0;
-        q1q1 = q.q1 * q.q1;
-        q2q2 = q.q2 * q.q2;
-        q3q3 = q.q3 * q.q3;
+        _2q0 = 2.0f * q.w;
+        _2q1 = 2.0f * q.x;
+        _2q2 = 2.0f * q.y;
+        _2q3 = 2.0f * q.z;
+        _4q0 = 4.0f * q.w;
+        _4q1 = 4.0f * q.x;
+        _4q2 = 4.0f * q.y;
+        _8q1 = 8.0f * q.x;
+        _8q2 = 8.0f * q.y;
+        q0q0 = q.w * q.w;
+        q1q1 = q.x * q.x;
+        q2q2 = q.y * q.y;
+        q3q3 = q.z * q.z;
 
         // Gradient decent algorithm corrective step
         s0 = _4q0 * q2q2 + _2q2 * a.x + _4q0 * q1q1 - _2q1 * a.y;
-        s1 = _4q1 * q3q3 - _2q3 * a.x + 4.0f * q0q0 * q.q1 - _2q0 * a.y
+        s1 = _4q1 * q3q3 - _2q3 * a.x + 4.0f * q0q0 * q.x - _2q0 * a.y
              - _4q1 + _8q1 * q1q1 + _8q1 * q2q2 + _4q1 * a.z;
-        s2 = 4.0f * q0q0 * q.q2 + _2q0 * a.x + _4q2 * q3q3 - _2q3 * a.y
+        s2 = 4.0f * q0q0 * q.y + _2q0 * a.x + _4q2 * q3q3 - _2q3 * a.y
              - _4q2 + _8q2 * q1q1 + _8q2 * q2q2 + _4q2 * a.z;
-        s3 = 4.0f * q1q1 * q.q3 - _2q1 * a.x + 4.0f * q2q2 * q.q3 - _2q2 * a.y;
-        recipNorm = 1.0f / sqrtf(s0 * s0 + s1 * s1 + s2 * s2 + s3 * s3); 
+        s3 = 4.0f * q1q1 * q.z - _2q1 * a.x + 4.0f * q2q2 * q.z - _2q2 * a.y;
+        recipNorm = 1.0f / sqrtf(s0 * s0 + s1 * s1 + s2 * s2 + s3 * s3);
         s0 *= recipNorm;
         s1 *= recipNorm;
         s2 *= recipNorm;
@@ -236,18 +236,18 @@ quaternion_t MadgwickAHRSupdateIMU(vector3f_t g,
     }
 
     // Integrate rate of change of quaternion to yield quaternion
-    q.q0 += qDot1 * dt;
-    q.q1 += qDot2 * dt;
-    q.q2 += qDot3 * dt;
-    q.q3 += qDot4 * dt;
+    q.w += qDot1 * dt;
+    q.x += qDot2 * dt;
+    q.y += qDot3 * dt;
+    q.z += qDot4 * dt;
 
     // Normalize quaternion
-    recipNorm = 1.0f / sqrtf(q.q0 * q.q0 + q.q1 * q.q1 +
-                             q.q2 * q.q2 + q.q3 * q.q3);
-    q.q0 *= recipNorm;
-    q.q1 *= recipNorm;
-    q.q2 *= recipNorm;
-    q.q3 *= recipNorm;
+    recipNorm = 1.0f / sqrtf(q.w * q.w + q.x * q.x +
+                             q.y * q.y + q.z * q.z);
+    q.w *= recipNorm;
+    q.x *= recipNorm;
+    q.y *= recipNorm;
+    q.z *= recipNorm;
 
     return q;
 }

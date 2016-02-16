@@ -81,13 +81,13 @@ static inline void vAttitudeControlEuler(const vector3f_t *ref,
 
     /* TODO: Check the calculations */
     /* Calculate the attitude error */
-    err.x = ref->x - atan2f(2.0f * (attitude_m->q0 * attitude_m->q1 +
-                                    attitude_m->q2 * attitude_m->q3),
-                            1.0f - 2.0f * (attitude_m->q1 * attitude_m->q1 +
-                                           attitude_m->q2 * attitude_m->q2));
+    err.x = ref->x - atan2f(2.0f * (attitude_m->w * attitude_m->x +
+                                    attitude_m->y * attitude_m->z),
+                            1.0f - 2.0f * (attitude_m->x * attitude_m->x +
+                                           attitude_m->y * attitude_m->y));
 
-    err.y = ref->y - asinf(2.0f * (attitude_m->q0 * attitude_m->q2 -
-                                   attitude_m->q1 * attitude_m->q3));
+    err.y = ref->y - asinf(2.0f * (attitude_m->w * attitude_m->y -
+                                   attitude_m->x * attitude_m->z));
 
     /* Update controllers, send bounded control signal to the next step */
     out->x =
