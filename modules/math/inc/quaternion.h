@@ -7,7 +7,6 @@
 /*===========================================================================*/
 /* Module global definitions.                                                */
 /*===========================================================================*/
-#define PI ( 3.14159265359f )
 
 /*===========================================================================*/
 /* Module data structures and types.                                         */
@@ -101,6 +100,39 @@ static inline void q2dcm(float R[3][3], const quaternion_t q)
     R[2][0] = 2.0f * (q.x * q.z - q.w * q.y);
     R[2][1] = 2.0f * (q.y * q.z + q.w * q.x);
     R[2][2] = q0sq - q1sq - q2sq + q3sq;
+}
+
+/*
+ * @brief           Rotates a vector v by the quaternion q.
+ *
+ * @param[in] q     Quaternion rotation.
+ * @param[in] v     Input vector.
+ *
+ * @return          The rotated vector.
+ */
+static inline vector3f_t qrotvector(const quaternion_t q, const vector3f_t v)
+{
+    vector3f_t ret;
+
+    /* Rotation from the rotation matrix equations directly applied on v. */
+    const float q0sq = q.w * q.w;
+    const float q1sq = q.x * q.x;
+    const float q2sq = q.y * q.y;
+    const float q3sq = q.z * q.z;
+
+    ret.x =       (q0sq + q1sq - q2sq - q3sq) * v.x;
+    ret.x += (2.0f * (q.x * q.y - q.w * q.z)) * v.y;
+    ret.x += (2.0f * (q.x * q.z + q.w * q.y)) * v.z;
+
+    ret.y =  (2.0f * (q.x * q.y + q.w * q.z)) * v.x;
+    ret.y +=      (q0sq - q1sq + q2sq - q3sq) * v.y;
+    ret.y += (2.0f * (q.y * q.z - q.w * q.x)) * v.z;
+
+    ret.z =  (2.0f * (q.x * q.z - q.w * q.y)) * v.x;
+    ret.z += (2.0f * (q.y * q.z + q.w * q.x)) * v.y;
+    ret.z +=      (q0sq - q1sq - q2sq + q3sq) * v.z;
+
+    return ret;
 }
 
 /*
