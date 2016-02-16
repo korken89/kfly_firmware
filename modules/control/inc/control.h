@@ -26,7 +26,9 @@
 /*===========================================================================*/
 
 void ControlInit(void);
-void vUpdateControlAction(quaternion_t *q_m, vector3f_t *omega_m, float dt);
+void vUpdateControlAction(const quaternion_t *q_m,
+                          const vector3f_t *omega_m,
+                          const float dt);
 control_reference_t *ptrGetControlReferences(void);
 control_data_t *ptrGetControlData(void);
 control_limits_t *ptrGetControlLimits(void);

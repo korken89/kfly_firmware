@@ -1,6 +1,7 @@
 /* *
  *
  * General control structure from attitude to motors:
+ *
  *                 __________        __________        __________
  *                |          |      |          |      |          |
  *            +-> | Attitude | -+-> |   Rate   | -+-> |  Motors  |
@@ -330,7 +331,9 @@ void ControlInit(void)
  * @param[in] omega_m   Rate measurement.
  * @param[in] dt        Controller sampling rate.
  */
-void vUpdateControlAction(quaternion_t *q_m, vector3f_t *omega_m, float dt)
+void vUpdateControlAction(const quaternion_t *q_m,
+                          const vector3f_t *omega_m,
+                          const float dt)
 {
     /* Check if manual control or computer control. */
     /* TODO: Add it... */
