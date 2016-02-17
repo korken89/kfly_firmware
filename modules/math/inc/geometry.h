@@ -125,8 +125,10 @@ static inline transform_t TransformChain(const transform_t base,
  */
 static inline transform_t TransformInverse(const transform_t t)
 {
-    (void) t;
     transform_t r;
+
+    r.orientation = qconj(t.orientation);
+    r.position = qrotvector(r.orientation, vector_neg(t.position));
 
     return r;
 }

@@ -44,7 +44,7 @@ typedef struct
  * @param[in] a         Array to be converted.
  * @return              The converted vector.
  */
-static inline vector3f_t array_to_vector(float a[3])
+static inline vector3f_t array_to_vector(const float a[3])
 {
     vector3f_t r;
 
@@ -56,10 +56,27 @@ static inline vector3f_t array_to_vector(float a[3])
 }
 
 /*
+ * @brief               Negates a vector, out = -in.
+ *
+ * @param[in] v         Vector to be negated.
+ * @return              The negated vector.
+ */
+static inline vector3f_t vector_neg(const vector3f_t v)
+{
+    vector3f_t r;
+
+    r.x = -v.x;
+    r.y = -v.y;
+    r.z = -v.z;
+
+    return r;
+}
+
+/*
  * @brief               Adds two vectors.
  *
- * @param[in] v         First vector to be added. 
- * @param[in] w         Second vector to be added. 
+ * @param[in] v         First vector to be added.
+ * @param[in] w         Second vector to be added.
  * @return              The sum of the two vectors.
  */
 static inline vector3f_t vector_add(const vector3f_t v, const vector3f_t w)
@@ -76,8 +93,8 @@ static inline vector3f_t vector_add(const vector3f_t v, const vector3f_t w)
 /*
  * @brief               Subtract two vectors.
  *
- * @param[in] v         First vector to be subtracted. 
- * @param[in] w         Second vector to be subtraced. 
+ * @param[in] v         First vector to be subtracted.
+ * @param[in] w         Second vector to be subtraced.
  * @return              The difference of the two vectors.
  */
 static inline vector3f_t vector_sub(const vector3f_t v, const vector3f_t w)
@@ -94,7 +111,7 @@ static inline vector3f_t vector_sub(const vector3f_t v, const vector3f_t w)
 /*
  * @brief               Scale a vector.
  *
- * @param[in] v         Vector to be scaled. 
+ * @param[in] v         Vector to be scaled.
  * @param[in] scale     Scaling constant.
  * @return              The scaled vector.
  */
@@ -112,8 +129,8 @@ static inline vector3f_t vector_scale(const vector3f_t v, const float scale)
 /*
  * @brief               Performs the dot product of two vectors.
  *
- * @param[in] v         First vector to be dotted. 
- * @param[in] w         Second vector to be dotted. 
+ * @param[in] v         First vector to be dotted.
+ * @param[in] w         Second vector to be dotted.
  * @return              The dot product of the two vectors.
  */
 static inline float vector_dot_product(const vector3f_t v, const vector3f_t w)
@@ -128,8 +145,8 @@ static inline float vector_dot_product(const vector3f_t v, const vector3f_t w)
 /*
  * @brief               Performs the cross product of two vectors.
  *
- * @param[in] v         First vector to be crossed. 
- * @param[in] w         Second vector to be crossed. 
+ * @param[in] v         First vector to be crossed.
+ * @param[in] w         Second vector to be crossed.
  * @return              The cross product of the two vectors.
  */
 static inline vector3f_t vector_cross_product(const vector3f_t v,
@@ -147,11 +164,12 @@ static inline vector3f_t vector_cross_product(const vector3f_t v,
 /*
  * @brief               Performs vector rotation.
  *
- * @param[in] R         Rotation matrix. 
- * @param[in] v         Vector to be rotated. 
+ * @param[in] R         Rotation matrix.
+ * @param[in] v         Vector to be rotated.
  * @return              The rotated vector.
  */
-static inline vector3f_t vector_rotation(float R[3][3], const vector3f_t v)
+static inline vector3f_t vector_rotation(const float R[3][3],
+                                         const vector3f_t v)
 {
     vector3f_t rot;
 
@@ -165,11 +183,11 @@ static inline vector3f_t vector_rotation(float R[3][3], const vector3f_t v)
 /*
  * @brief               Performs vector rotation (R is transposed).
  *
- * @param[in] R         Rotation matrix. 
- * @param[in] v         Vector to be rotated. 
+ * @param[in] R         Rotation matrix.
+ * @param[in] v         Vector to be rotated.
  * @return              The rotated vector.
  */
-static inline vector3f_t vector_rotation_transposed(float R[3][3],
+static inline vector3f_t vector_rotation_transposed(const float R[3][3],
                                                     const vector3f_t v)
 {
     vector3f_t rot;
@@ -184,7 +202,7 @@ static inline vector3f_t vector_rotation_transposed(float R[3][3],
 /*
  * @brief               Calculates the norm of a vector.
  *
- * @param[in] v         Input vector. 
+ * @param[in] v         Input vector.
  * @return              The vector norm.
  */
 static inline float vector_norm(const vector3f_t v)
