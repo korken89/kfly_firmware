@@ -53,7 +53,7 @@ typedef struct PACKED_VAR
          */
         struct
         {
-            float w, x, y, z;
+            quaternion_t attitude;
             float throttle;
         } attitude;
     };
@@ -74,6 +74,13 @@ typedef struct PACKED_VAR
 void ComputerControlInit(void);
 reference_source_t GetReferenceSource(void);
 flightmode_t GetComputerFlightMode(void);
+void GetComputerAttitudeReference(quaternion_t *attitude_ref,
+                                  float *throttle_ref);
+void GetComputerRateReference(vector3f_t *rate_ref,
+                              float *throttle_ref);
+void GetComputerIndirectReference(vector3f_t *torque_ref,
+                                  float *throttle_ref);
+void GetComputerDirectReference(float output[8]);
 void vParseComputerControlPacket(const uint8_t *payload, const uint8_t size);
 
 #endif

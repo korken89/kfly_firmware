@@ -355,15 +355,24 @@ void vUpdateControlAction(const quaternion_t *attitude_m,
 
         if (control_reference.mode == FLIGHTMODE_ATTITUDE)
         {
+            GetComputerAttitudeReference(&control_reference.attitude_reference,
+                                         &control_reference.actuator_desired.throttle);
         }
         else if (control_reference.mode == FLIGHTMODE_RATE)
         {
+            GetComputerRateReference(&control_reference.rate_reference,
+                                     &control_reference.actuator_desired.throttle);
+
         }
         else if (control_reference.mode == FLIGHTMODE_INDIRECT)
         {
+            GetComputerIndirectReference(&control_reference.actuator_desired.torque,
+                                         &control_reference.actuator_desired.throttle);
+
         }
         else if (control_reference.mode == FLIGHTMODE_DIRECT)
         {
+            GetComputerDirectReference(control_reference.output);
         }
         else
         {
