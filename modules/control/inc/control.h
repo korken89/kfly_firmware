@@ -3,6 +3,7 @@
 
 #include "control_definitions.h"
 #include "control_reference.h"
+#include "computer_control.h"
 #include "arming.h"
 
 /*===========================================================================*/

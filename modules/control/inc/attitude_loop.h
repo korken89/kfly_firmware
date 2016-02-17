@@ -30,7 +30,7 @@
  * @param[in] attitude_m            Attitude measurement.
  * @param[out] out                  Control output (rad/s).
  * @param[in] attitude_controller   Controller data structure.
- * @param[in] limits                Control limits.
+ * @param[in] limits                Rate control limits.
  * @param[in] dt                    Controller sampling time.
  */
 static inline void vAttitudeControl(const quaternion_t *ref,
@@ -67,7 +67,7 @@ static inline void vAttitudeControl(const quaternion_t *ref,
  * @param[in] attitude_m                Attitude measurement.
  * @param[out] out                      Control output (rad/s).
  * @param[in/out] attitude_controller   Controller data structure.
- * @param[in] limits                    Control limits.
+ * @param[in] limits                    Rate control limits.
  * @param[in] dt                        Controller sampling time.
  */
 static inline void vAttitudeControlEuler(const vector3f_t *ref,

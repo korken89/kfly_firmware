@@ -26,7 +26,6 @@
 #include "ch.h"
 #include "hal.h"
 #include "control.h"
-#include "computer_control.h"
 #include "flash_save.h"
 #include "estimation.h"
 #include "rc_output.h"
@@ -305,6 +304,9 @@ void ControlInit(void)
     /* Set outputs to default value. */
     vSetOutputsDefault();
 
+    /* Initializing computer control. */
+    ComputerControlInit();
+
     /* Initialize arming. */
     ArmingInit();
 
@@ -331,32 +333,81 @@ void ControlInit(void)
  * @param[in] omega_m   Rate measurement.
  * @param[in] dt        Controller sampling rate.
  */
-void vUpdateControlAction(const quaternion_t *q_m,
-                          const vector3f_t *omega_m,
+void vUpdateControlAction(const quaternion_t *attitude_m,
+                          const vector3f_t *rate_m,
                           const float dt)
 {
     /* Check if manual control or computer control. */
     /* TODO: Add it... */
-    //vRCInputsToControlAction();
+    if (GetReferenceSource() == REFERENCE_SOURCE_MANUAL)
+    {
+        /* TODO: Make this settable via software and switches. */
+        control_reference.mode = FLIGHTMODE_RATE;
 
-    /* Update references. */
-    /* TODO: Add it... */
+        RCInputsToControlAction(&control_reference,
+                                &control_limits.max_rate,
+                                (vector3f_t *)&control_limits.max_angle);
 
+    }
+    else
+    {
+        control_reference.mode = GetComputerFlightMode();
+
+        if (control_reference.mode == FLIGHTMODE_ATTITUDE)
+        {
+        }
+        else if (control_reference.mode == FLIGHTMODE_RATE)
+        {
+        }
+        else if (control_reference.mode == FLIGHTMODE_INDIRECT)
+        {
+        }
+        else if (control_reference.mode == FLIGHTMODE_DIRECT)
+        {
+        }
+        else
+        {
+            /* Fallback - disarm. */
+            control_reference.mode = FLIGHTMODE_DISARMED;
+        }
+    }
+
+
+    /* Apply the correct controller. */
     switch (control_reference.mode)
     {
+        case FLIGHTMODE_ATTITUDE_EULER:
         case FLIGHTMODE_ATTITUDE:
-            //vAttitudeControl(q_m,
-            //                 false,
-            //                 dt);
+            if (control_reference.mode == FLIGHTMODE_ATTITUDE_EULER)
+            {
+                vAttitudeControlEuler(&control_reference.attitude_reference_euler,
+                                      attitude_m,
+                                      &control_reference.rate_reference,
+                                      control_data.attitude_controller,
+                                      &control_limits.max_rate_attitude,
+                                      dt);
+            }
+            else
+            {
+                vAttitudeControl(&control_reference.attitude_reference,
+                                 attitude_m,
+                                 &control_reference.rate_reference,
+                                 control_data.attitude_controller,
+                                 &control_limits.max_rate_attitude,
+                                 dt);
+            }
 
         case FLIGHTMODE_RATE:
-            //vRateControl(omega_m,
-            //             dt);
+            vRateControl(&control_reference.rate_reference,
+                         rate_m,
+                         &control_reference.actuator_desired.torque,
+                         control_data.rate_controller,
+                         dt);
 
-        case FLIGHTMODE_DIRECT_CONTROL:
+        case FLIGHTMODE_INDIRECT:
             vUpdateOutputs();
 
-        case FLIGTMODE_DIRECT_PWM:
+        case FLIGHTMODE_DIRECT:
             vSendPWMCommands();
             break;
 

@@ -453,9 +453,12 @@ static bool GenerateGetAttitudeControllerData(circular_buffer_t *Cbuff)
  */
 static bool GenerateGetVelocityControllerData(circular_buffer_t *Cbuff)
 {
-    return GenerateGenericGetControllerData(Cmd_GetVelocityControllerData,
-                                            VELOCITY_PI_OFFSET,
-                                            Cbuff);
+    (void)Cbuff;
+    return HAL_FAILED;
+
+    //return GenerateGenericGetControllerData(Cmd_GetVelocityControllerData,
+    //                                        VELOCITY_PI_OFFSET,
+    //                                        Cbuff);
 }
 
 /**
@@ -467,9 +470,12 @@ static bool GenerateGetVelocityControllerData(circular_buffer_t *Cbuff)
  */
 static bool GenerateGetPositionControllerData(circular_buffer_t *Cbuff)
 {
-    return GenerateGenericGetControllerData(Cmd_GetPositionControllerData,
-                                            POSITION_PI_OFFSET,
-                                            Cbuff);
+    (void)Cbuff;
+    return HAL_FAILED;
+
+    //return GenerateGenericGetControllerData(Cmd_GetPositionControllerData,
+    //                                        POSITION_PI_OFFSET,
+    //                                        Cbuff);
 }
 
 /**

@@ -1,8 +1,8 @@
 #ifndef __CONTROL_REFERENCE_H
 #define __CONTROL_REFERENCE_H
 
-#include "trigonometry.h"
-#include "quaternion.h"
+#include "geometry.h"
+#include "rc_input.h"
 
 /*===========================================================================*/
 /* Module global definitions.                                                */
@@ -20,11 +20,11 @@ typedef enum PACKED_VAR
     /**
      * @brief   Direct control of the PWM outputs.
      */
-    FLIGTMODE_DIRECT_PWM,
+    FLIGHTMODE_DIRECT,
     /**
      * @brief   Direct control of the actuator desired commands.
      */
-    FLIGHTMODE_DIRECT_CONTROL,
+    FLIGHTMODE_INDIRECT,
     /**
      * @brief   Rate control.
      */

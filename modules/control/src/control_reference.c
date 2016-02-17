@@ -64,7 +64,7 @@ void RCInputsToControlAction(control_reference_t *ref,
         ref->attitude_reference_euler.y =
             attitude_lim->y * DEG2RAD * RCInputGetInputLevel(ROLE_PITCH);
         ref->rate_reference.z =
-            attitude_lim->z * DEG2RAD * RCInputGetInputLevel(ROLE_YAW);
+            rate_lim->z * DEG2RAD * RCInputGetInputLevel(ROLE_YAW);
     }
     else
     {

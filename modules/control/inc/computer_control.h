@@ -73,6 +73,7 @@ typedef struct PACKED_VAR
 
 void ComputerControlInit(void);
 reference_source_t GetReferenceSource(void);
+flightmode_t GetComputerFlightMode(void);
 void vParseComputerControlPacket(const uint8_t *payload, const uint8_t size);
 
 #endif

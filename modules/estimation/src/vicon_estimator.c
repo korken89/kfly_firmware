@@ -86,7 +86,7 @@ void vInnovateViconEstimator(attitude_states_t *states,
         q_err = qmult(q_err, qconj(vicon_data.attitude));
 
         /* 4. Estimate the gyro bias. */
-        wb_step = vector_scale(array_to_vector(&q_err.q1), wb_gain/dt);
+        wb_step = vector_scale(array_to_vector(&q_err.x), wb_gain/dt);
 
         /* 5. Apply estimate and update the estimation. */
         states->wb = vector_add(states->wb, wb_step);

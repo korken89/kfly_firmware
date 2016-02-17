@@ -35,6 +35,7 @@ static void vt_disarm_callback(void *p)
 
     osalSysLockFromISR();
 
+    /* No new computer control message, switch to manual mode. */
     reference_source = REFERENCE_SOURCE_MANUAL;
     chVTResetI(&vt_disarm);
 
@@ -49,6 +50,7 @@ void ComputerControlInit(void)
 {
     control_init = true;
     reference_source = REFERENCE_SOURCE_MANUAL;
+    chVTObjectInit(&vt_disarm);
 }
 
 reference_source_t GetReferenceSource(void)
@@ -56,29 +58,27 @@ reference_source_t GetReferenceSource(void)
     return reference_source;
 }
 
+flightmode_t GetComputerFlightMode(void)
+{
+    return computer_control.mode;
+}
+
 void vParseComputerControlPacket(const uint8_t *payload, const uint8_t size)
 {
     if (size == COMPUTER_CONTROL_MESSAGE_SIZE)
     {
-        if (control_init == true)
-        {
-            chVTObjectInit(&vt_disarm);
-            control_init = false;
-        }
-        else
-        {
-            osalSysLock();
+        osalSysLock();
 
-            memcpy(&computer_control,
-                   payload,
-                   COMPUTER_CONTROL_MESSAGE_SIZE);
+        memcpy(&computer_control,
+               payload,
+               COMPUTER_CONTROL_MESSAGE_SIZE);
 
-            reference_source = REFERENCE_SOURCE_COMPUTER_CONTROL;
-            /* TODO: Check the payload in case of errors. */
+        /* Set the reference source to computer control. */
+        reference_source = REFERENCE_SOURCE_COMPUTER_CONTROL;
 
-            chVTSetI(&vt_disarm, MS2ST(500), vt_disarm_callback, NULL);
+        /* Timeout for no new messags set to 500 ms. */
+        chVTSetI(&vt_disarm, MS2ST(500), vt_disarm_callback, NULL);
 
-            osalSysUnlock();
-        }
+        osalSysUnlock();
     }
 }

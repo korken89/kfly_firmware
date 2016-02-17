@@ -25,9 +25,9 @@
  * @brief   Implements the rate PI controller.
  *
  * @param[in] ref                   Rate reference around roll (x), pitch (y)
- *                                  and yaw (z) in radians/s.
+ *                                  and yaw (z) in rad/s.
  * @param[in] rate_m                Rate measurement.
- * @param[out] out                  Control output (rad/s).
+ * @param[out] out                  Control output in -100 to 100 % torque.
  * @param[in/out] rate_controller   Controller data structure.
  * @param[in] dt                    Controller sampling time.
  */

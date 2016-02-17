@@ -125,7 +125,7 @@ static THD_FUNCTION(ThreadControlArming, arg)
                     if (arm_settings.arm_zero_throttle_timeout != 0)
                     {
                         if ((RCInputGetInputLevel(ROLE_THROTTLE) <=
-                            arm_settings->stick_threshold))
+                            arm_settings.stick_threshold))
                         {
                             /* Check if the required time has passed to disarm due
                                to timeout, else increment the timing counter */

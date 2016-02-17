@@ -496,7 +496,8 @@ static void ParseSetAttitudeControllerData(kfly_parser_t *pHolder)
  */
 static void ParseGetVelocityControllerData(kfly_parser_t *pHolder)
 {
-    GenerateMessage(Cmd_GetVelocityControllerData, pHolder->port);
+    (void) pHolder;
+    //GenerateMessage(Cmd_GetVelocityControllerData, pHolder->port);
 }
 
 /**
@@ -507,9 +508,10 @@ static void ParseGetVelocityControllerData(kfly_parser_t *pHolder)
  */
 static void ParseSetVelocityControllerData(kfly_parser_t *pHolder)
 {
-    if (pHolder->data_length == (3 * PI_SETTINGS_SIZE))
-        ParseGenericSetControllerData(VELOCITY_PI_OFFSET,
-                                      pHolder->buffer);
+    (void) pHolder;
+    //if (pHolder->data_length == (3 * PI_SETTINGS_SIZE))
+    //    ParseGenericSetControllerData(VELOCITY_PI_OFFSET,
+    //                                  pHolder->buffer);
 }
 
 /**
@@ -520,7 +522,8 @@ static void ParseSetVelocityControllerData(kfly_parser_t *pHolder)
  */
 static void ParseGetPositionControllerData(kfly_parser_t *pHolder)
 {
-    GenerateMessage(Cmd_GetPositionControllerData, pHolder->port);
+    (void) pHolder;
+    //GenerateMessage(Cmd_GetPositionControllerData, pHolder->port);
 }
 
 /**
@@ -531,9 +534,10 @@ static void ParseGetPositionControllerData(kfly_parser_t *pHolder)
  */
 static void ParseSetPositionControllerData(kfly_parser_t *pHolder)
 {
-    if (pHolder->data_length == (3 * PI_SETTINGS_SIZE))
-        ParseGenericSetControllerData(POSITION_PI_OFFSET,
-                                      pHolder->buffer);
+    (void) pHolder;
+    //if (pHolder->data_length == (3 * PI_SETTINGS_SIZE))
+    //    ParseGenericSetControllerData(POSITION_PI_OFFSET,
+    //                                  pHolder->buffer);
 }
 
 /**
