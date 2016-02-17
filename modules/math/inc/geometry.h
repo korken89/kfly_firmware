@@ -76,8 +76,38 @@ typedef struct
 /* Module inline functions.                                                  */
 /*===========================================================================*/
 
-/* TODO: Add transform operations. */
-transform_t ChainTransforms(const transform_t base, const transform_t next)
+/**
+ * @brief   Initializes a transformation with a position and an orientation.
+ * @note    Does NOT rotate the position with the orientation, assumes a
+ *          translation and rotation from a base link.
+ *
+ * @param[in] position      Initial position.
+ * @param[in] orientation   Initial orientation.
+ */
+static inline transform_t TransformInit(const vector3f_t position,
+                                        const quaternion_t orientation)
+{
+    transform_t ret;
+
+    /* Save the position. */
+    ret.position = position;
+
+    /* Save the quaternion and make sure it is normalized. */
+    ret.orientation = qnormalize(orientation);
+
+    return ret;
+}
+
+/**
+ * @brief   Chains two transforms to get the compound transformation.
+ *
+ * @param[in] base  Base link.
+ * @param[in] next  Next link.
+ *
+ * @return  Returns the compound transform.
+ */
+static inline transform_t TransformChain(const transform_t base,
+                                         const transform_t next)
 {
     (void) base;
     (void) next;
@@ -86,7 +116,14 @@ transform_t ChainTransforms(const transform_t base, const transform_t next)
     return r;
 }
 
-transform_t TransformInverse(const transform_t t)
+/*
+ * @brief   Calculates the inverse transform.
+ *
+ * @param[in] t     Transform to be inverted.
+ *
+ * @return  The inverse transform.
+ */
+static inline transform_t TransformInverse(const transform_t t)
 {
     (void) t;
     transform_t r;

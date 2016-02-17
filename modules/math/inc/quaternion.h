@@ -8,6 +8,9 @@
 /* Module global definitions.                                                */
 /*===========================================================================*/
 
+#define UNIT_QUATERNION ((const quaternion_t){.w = 1.0f, .x = 0.0f,         \\
+                                              .y = 0.0f, .z = 0,0f})
+
 /*===========================================================================*/
 /* Module data structures and types.                                         */
 /*===========================================================================*/
@@ -43,7 +46,7 @@ typedef struct
 /* Module inline functions.                                                  */
 /*===========================================================================*/
 
-/*
+/**
  * @brief               Converts a Generalized Rodrigues Parameter to a
  *                      quaternion.
  *
@@ -71,7 +74,7 @@ static inline quaternion_t grp2q(const vector3f_t p,
     return q;
 }
 
-/*
+/**
  * @brief               Converts a quaternion to a Direction Cosine Matrix.
  *
  * @param[out] R        Pointer to the first element in the R matrix.
@@ -102,7 +105,7 @@ static inline void q2dcm(float R[3][3], const quaternion_t q)
     R[2][2] = q0sq - q1sq - q2sq + q3sq;
 }
 
-/*
+/**
  * @brief           Rotates a vector v by the quaternion q.
  *
  * @param[in] q     Quaternion rotation.
@@ -135,7 +138,7 @@ static inline vector3f_t qrotvector(const quaternion_t q, const vector3f_t v)
     return ret;
 }
 
-/*
+/**
  * @brief               Performs quaternion multiplication.
  *
  * @param[in] a         First quaternion to be multiplied.
@@ -160,7 +163,7 @@ static inline quaternion_t qmult(const quaternion_t a, const quaternion_t b)
     return r;
 }
 
-/*
+/**
  * @brief               Conjugates a quaternion.
  *
  * @param[in] q         Quaternion to be conjugated.
@@ -178,7 +181,7 @@ static inline quaternion_t qconj(const quaternion_t q)
     return r;
 }
 
-/*
+/**
  * @brief               Negates a quaternion.
  *
  * @param[in] q         Quaternion to be negated.
@@ -196,7 +199,7 @@ static inline quaternion_t qneg(const quaternion_t q)
     return r;
 }
 
-/*
+/**
  * @brief               Calculates the norm of a quaternion.
  *
  * @param[in] q         Input quaternion.
@@ -207,7 +210,7 @@ static inline float qnorm(const quaternion_t q)
     return sqrtf(q.w*q.w + q.x*q.x + q.y*q.y + q.z*q.z);
 }
 
-/*
+/**
  * @brief               Performs quaternion normalization.
  *
  * @param[in] q         Quaternion to be normalized.
@@ -226,7 +229,7 @@ static inline quaternion_t qnormalize(const quaternion_t q)
     return r;
 }
 
-/*
+/**
  * @brief               Performs quaternion integration approximation. This
  *                      implementation assumes that omega * dt is small.
  *
@@ -254,7 +257,7 @@ static inline quaternion_t qint(const quaternion_t q_curr,
     return qmult(q_step, q_curr);
 }
 
-/*
+/**
  * @brief               Converts an 4-element float array to a quaternion.
  *
  * @param[in] a         Array to be converted.
