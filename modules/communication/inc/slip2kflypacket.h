@@ -272,7 +272,7 @@ typedef enum PACKED_VAR
     /*===============================================*/
 
     /**
-     * @brief   New vicon measurement.
+     * @brief   New motion capture measurement.
      */
     Cmd_MotionCaptureMeasurement    = 127
 

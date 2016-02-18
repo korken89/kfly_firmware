@@ -46,7 +46,7 @@ flags = [
     '-I', './modules/rc_output/inc',
     '-I', './modules/usb/inc',
     '-I', './modules/external_flash/inc',
-    '-I', './modules/vicon/inc',
+    '-I', './modules/motion_capture/inc',
     '-I', './modules/communication/inc',
     '-I', './modules/sensors/inc',
     '-I', './modules/version_information/inc',
