@@ -5,7 +5,7 @@
 
 #include "ch.h"
 #include "hal.h"
-#include "vicon_estimator.h"
+#include "motion_capture_estimator.h"
 
 /*===========================================================================*/
 /* Module local definitions.                                                 */
@@ -18,7 +18,7 @@
 /*===========================================================================*/
 /* Module local variables and types.                                         */
 /*===========================================================================*/
-static vicon_measurement_t vicon_data;
+static motion_capture_t mc_data;
 static uint32_t old_frame_number;
 
 /*===========================================================================*/
@@ -29,19 +29,19 @@ static uint32_t old_frame_number;
 /* Module exported functions.                                                */
 /*===========================================================================*/
 
-void vInitializeViconEstimator(attitude_states_t *states)
+void vInitializeMotionCaptureEstimator(attitude_states_t *states)
 {
-    GetCopyViconMeasurement(&vicon_data);
+    GetCopyMotionCaptureFrame(&mc_data);
 
-    /* Wait while there is no valid data from the Vicon system. */
-    while (vicon_data.frame_number == 0)
+    /* Wait while there is no valid data from the motion capture system. */
+    while (mc_data.frame_number == 0)
     {
         chThdSleepMilliseconds(20);
-        GetCopyViconMeasurement(&vicon_data);
+        GetCopyMotionCaptureFrame(&mc_data);
     }
 
     /* Take the first measurement at starting point. */
-    states->q = vicon_data.pose.orientation;
+    states->q = mc_data.pose.orientation;
 
     states->w.x = 0.0f;
     states->w.y = 0.0f;
@@ -51,50 +51,50 @@ void vInitializeViconEstimator(attitude_states_t *states)
     states->wb.y = 0.0f;
     states->wb.z = 0.0f;
 
-    old_frame_number = vicon_data.frame_number;
+    old_frame_number = mc_data.frame_number;
 }
 
-void vInnovateViconEstimator(attitude_states_t *states,
-                             imu_data_t *imu_data,
-                             const float dt,
-                             const float wb_gain,
-                             const float gyro_lpf)
+void vInnovateMotionCaptureEstimator(attitude_states_t *states,
+                                     imu_data_t *imu_data,
+                                     const float dt,
+                                     const float wb_gain,
+                                     const float gyro_lpf)
 {
     vector3f_t w_hat, wb_step;
     quaternion_t q_err;
 
 
-    /* Get the current Vicon data */
-    GetCopyViconMeasurement(&vicon_data);
+    /* Get the current motion capture data */
+    GetCopyMotionCaptureFrame(&mc_data);
 
     /* 1. Remove bias from the measurement. */
     w_hat   = array_to_vector(imu_data->gyroscope);
     w_hat.z = - w_hat.z;
     w_hat   = vector_sub(w_hat, states->wb);
 
-    /* Check if there was new Vicon data. */
-    if (vicon_data.frame_number > old_frame_number)
+    /* Check if there was new motion capture data. */
+    if (mc_data.frame_number > old_frame_number)
     {
-        /* New Vicon data, update the bias and attitude estimation. */
-        old_frame_number = vicon_data.frame_number;
+        /* New motion capture data, update the bias and attitude estimation. */
+        old_frame_number = mc_data.frame_number;
 
         /* 2. Integrate the quaternion. */
         q_err = qint(states->q, w_hat, dt);
 
         /* 3. Create the error quaternion. */
-        q_err = qmult(q_err, qconj(vicon_data.pose.orientation));
+        q_err = qmult(q_err, qconj(mc_data.pose.orientation));
 
         /* 4. Estimate the gyro bias. */
         wb_step = vector_scale(array_to_vector(&q_err.x), wb_gain/dt);
 
         /* 5. Apply estimate and update the estimation. */
         states->wb = vector_add(states->wb, wb_step);
-        states->q = vicon_data.pose.orientation;
+        states->q = mc_data.pose.orientation;
         w_hat = vector_sub(w_hat, wb_step);
     }
     else
     {
-        /* No new Vicon data, use gyros to update the attitude estimation. */
+        /* No new motion capture data, use gyros to update the attitude estimation. */
 
         /* 2. Integrate and save the quaternion, and save the omega. */
         states->q = qint(states->q, w_hat, dt);
@@ -103,3 +103,4 @@ void vInnovateViconEstimator(attitude_states_t *states,
     /* 6. Apply low-pass filtering of gyro data and save it. */
     states->w = vector_lowpassfilter(w_hat, states->w, gyro_lpf);
 }
+

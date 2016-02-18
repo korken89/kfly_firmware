@@ -22,7 +22,7 @@
 #include "estimation.h"
 #include "control.h"
 #include "computer_control.h"
-#include "vicon.h"
+#include "motion_capture.h"
 #include "kflypacket_parsers.h"
 
 /*===========================================================================*/
@@ -63,7 +63,7 @@ static void ParseGetEstimationPosition(kfly_parser_t *pHolder);
 static void ParseGetEstimationAllStates(kfly_parser_t *pHolder);
 static void ParseResetEstimation(kfly_parser_t *pHolder);
 static void ParseComputerControlReference(kfly_parser_t *pHolder);
-static void ParseViconMeasurement(kfly_parser_t *pHolder);
+static void ParseMotionCaptureMeasurement(kfly_parser_t *pHolder);
 
 /*===========================================================================*/
 /* Module exported variables.                                                */
@@ -204,7 +204,7 @@ static const kfly_data_parser_t parser_lookup[128] = {
     NULL,                             /* 124:                                 */
     NULL,                             /* 125:                                 */
     ParseComputerControlReference,    /* 126: Cmd_ComputerControlReference    */
-    ParseViconMeasurement             /* 127: Cmd_ViconMeasurement            */
+    ParseMotionCaptureMeasurement     /* 127: Cmd_MotionCaptureMeasurement    */
 };
 
 /*===========================================================================*/
@@ -742,14 +742,14 @@ static void ParseComputerControlReference(kfly_parser_t *pHolder)
 }
 
 /**
- * @brief               Parses a ViconMeasurement command.
+ * @brief               Parses a MotionCaptureMeasurement command.
  *
  * @param[in] pHolder   Message holder containing information
  *                      about the transmission.
  */
-static void ParseViconMeasurement(kfly_parser_t *pHolder)
+static void ParseMotionCaptureMeasurement(kfly_parser_t *pHolder)
 {
-    vParseViconDataPackage(pHolder->buffer, pHolder->data_length);
+    vParseMotionCaptureDataPackage(pHolder->buffer, pHolder->data_length);
 }
 
 /*===========================================================================*/

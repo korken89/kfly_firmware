@@ -1,32 +1,21 @@
-#ifndef __VICON_H
-#define __VICON_H
+#ifndef __MOTION_CAPTURE_ESTIMATOR_H
+#define __MOTION_CAPTURE_ESTIMATOR_H
 
-#include "geometry.h"
+#include <math.h>
+#include "quaternion.h"
+#include "linear_algebra.h"
+#include "trigonometry.h"
+#include "sensor_read.h"
+#include "attitude_ekf.h"
+#include "motion_capture.h"
 
 /*===========================================================================*/
 /* Module global definitions.                                                */
 /*===========================================================================*/
-#define VICON_DATA_EVENTMASK                EVENT_MASK(0)
-#define VICON_MEASUREMENT_SIZE              (sizeof(vicon_measurement_t))
 
 /*===========================================================================*/
 /* Module data structures and types.                                         */
 /*===========================================================================*/
-
-/**
- * @brief   Data structure for a measurement from a motion capture system.
- */
-typedef struct PACKED_VAR
-{
-    /**
-     * @brief   Frame number from the motion capture system.
-     */
-    uint32_t frame_number;
-    /**
-     * @brief   Pose from the motion capture system.
-     */
-    pose_t pose;
-} vicon_measurement_t;
 
 /*===========================================================================*/
 /* Module macros.                                                            */
@@ -39,10 +28,11 @@ typedef struct PACKED_VAR
 /*===========================================================================*/
 /* External declarations.                                                    */
 /*===========================================================================*/
-void ViconSupportInit(void);
-event_source_t *ptrGetViconDataEventSource(void);
-vicon_measurement_t *ptrGetViconMeasurement(void);
-void GetCopyViconMeasurement(vicon_measurement_t *dest);
-void vParseViconDataPackage(const uint8_t *payload, const uint8_t size);
+void vInitializeMotionCaptureEstimator(attitude_states_t *states);
+void vInnovateMotionCaptureEstimator(attitude_states_t *states,
+                                     imu_data_t *imu_data,
+                                     const float dt,
+                                     const float wb_gain,
+                                     const float gyro_lpf);
 
-#endif
+#endif /* __VICON_ESTIMATOR_H */

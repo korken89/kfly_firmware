@@ -268,13 +268,13 @@ typedef enum PACKED_VAR
     Cmd_ComputerControlReference    = 126,
 
     /*===============================================*/
-    /* Vicon Measurement specific commands.          */
+    /* Motion Capture frame specific commands.       */
     /*===============================================*/
 
     /**
      * @brief   New vicon measurement.
      */
-    Cmd_ViconMeasurement            = 127
+    Cmd_MotionCaptureMeasurement    = 127
 
 } kfly_command_t;
 

@@ -7,7 +7,7 @@
 #include "hal.h"
 #include "estimation.h"
 #include "sensor_read.h"
-#include "vicon_estimator.h"
+#include "motion_capture_estimator.h"
 
 /*===========================================================================*/
 /* Module local definitions.                                                 */
@@ -64,7 +64,7 @@ static THD_FUNCTION(ThreadEstimation, arg)
     //chEvtAddEvents(ESTIMATION_RESET_EVENTMASK);
 
     //AttitudeEstimationInit(&states, &data, &q_init, &wb_init);
-    vInitializeViconEstimator(&states);
+    vInitializeMotionCaptureEstimator(&states);
 
     while(1)
     {
@@ -87,11 +87,11 @@ static THD_FUNCTION(ThreadEstimation, arg)
         GetIMUData(&imu_data);
 
         /* Run estimation */
-        vInnovateViconEstimator(&states,
-                                &imu_data,
-                                SENSOR_ACCGYRO_DT,
-                                0.0005f,
-                                fc2lpf_gain(20, SENSOR_ACCGYRO_DT)); /* LPF ~ 45 Hz */
+        vInnovateMotionCaptureEstimator(&states,
+                                        &imu_data,
+                                        SENSOR_ACCGYRO_DT,
+                                        0.0005f,
+                                        fc2lpf_gain(20, SENSOR_ACCGYRO_DT)); /* LPF ~ 45 Hz */
 
         /*InnovateAttitudeEKF(&states,
                             &data,

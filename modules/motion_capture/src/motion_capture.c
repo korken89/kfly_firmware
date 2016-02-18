@@ -6,7 +6,7 @@
 
 #include "ch.h"
 #include "hal.h"
-#include "vicon.h"
+#include "motion_capture.h"
 #include <string.h>
 
 /*===========================================================================*/
@@ -20,8 +20,8 @@
 /*===========================================================================*/
 /* Module local variables and types.                                         */
 /*===========================================================================*/
-static EVENTSOURCE_DECL(new_vicon_data_es);
-vicon_measurement_t vicon_measurement;
+static EVENTSOURCE_DECL(new_mc_frame_es);
+motion_capture_t mc_frame;
 
 /*===========================================================================*/
 /* Module local functions.                                                   */
@@ -32,85 +32,85 @@ vicon_measurement_t vicon_measurement;
 /*===========================================================================*/
 
 /**
- * @brief   Initializes the New Vicon Data events.
+ * @brief   Initializes the new motion capture frame events.
  */
-void ViconSupportInit(void)
+void MotionCaptureInit(void)
 {
-    /* Initialize New Vicon Data event source */
-    osalEventObjectInit(&new_vicon_data_es);
+    /* Initialize motion capture frame event source */
+    osalEventObjectInit(&new_mc_frame_es);
 
     /* Initialize the data structure */
-    vicon_measurement.frame_number = 0;
+    mc_frame.frame_number = 0;
 
-    vicon_measurement.pose.orientation.w = 1.0f;
-    vicon_measurement.pose.orientation.x = 0.0f;
-    vicon_measurement.pose.orientation.y = 0.0f;
-    vicon_measurement.pose.orientation.z = 0.0f;
+    mc_frame.pose.orientation.w = 1.0f;
+    mc_frame.pose.orientation.x = 0.0f;
+    mc_frame.pose.orientation.y = 0.0f;
+    mc_frame.pose.orientation.z = 0.0f;
 
-    vicon_measurement.pose.position.x = 0.0f;
-    vicon_measurement.pose.position.y = 0.0f;
-    vicon_measurement.pose.position.z = 0.0f;
+    mc_frame.pose.position.x = 0.0f;
+    mc_frame.pose.position.y = 0.0f;
+    mc_frame.pose.position.z = 0.0f;
 }
 
 /**
- * @brief       Returns the pointer to the New Vicon Data event source.
+ * @brief       Returns the pointer to the new Motion Capture frame event source.
  *
- * @return      Pointer to the New Vicon Data event source.
+ * @return      Pointer to the motion capture frame event source.
  */
-event_source_t *ptrGetViconDataEventSource(void)
+event_source_t *ptrGetMotionCaptureDataEventSource(void)
 {
-    return &new_vicon_data_es;
+    return &new_mc_frame_es;
 }
 
 /**
- * @brief       Returns the pointer to the Vicon Data holder.
+ * @brief       Returns the pointer to the motion capture frame holder.
  *
- * @return      Pointer to the Vicon Data holder.
+ * @return      Pointer to the motion capture frame holder.
  */
-vicon_measurement_t *ptrGetViconMeasurement(void)
+motion_capture_t *ptrGetMotionCaptureFrame(void)
 {
-    return &vicon_measurement;
+    return &mc_frame;
 }
 
 /**
- * @brief               Copies the Vicon Data holder to a chosen destination.
+ * @brief               Copies the motion capture frame holder to a chosen
+ *                      destination.
  *
  * @param[out] dest     Pointer to the destination location.
  */
-void GetCopyViconMeasurement(vicon_measurement_t *dest)
+void GetCopyMotionCaptureFrame(motion_capture_t *dest)
 {
     /* Lock while copying the data. */
     osalSysLock();
 
     memcpy((uint8_t *)dest,
-           (uint8_t *)&vicon_measurement,
-           sizeof(vicon_measurement_t));
+           (uint8_t *)&mc_frame,
+           sizeof(motion_capture_t));
 
     osalSysUnlock();
 }
 
 /**
  * @brief               Parses a payload from the serial communication for
- *                      Vicon data.
+ *                      motion capture data.
  *
  * @param[in] payload   Pointer to the payload location.
  * @param[in] size      Size of the payload.
  */
-void vParseViconDataPackage(const uint8_t *payload, const uint8_t size)
+void vParseMotionCaptureDataPackage(const uint8_t *payload, const uint8_t size)
 {
     /* If sizes are matching start decoding. */
-    if (size == VICON_MEASUREMENT_SIZE)
+    if (size == MOTION_CAPTURE_MEASUREMENT_SIZE)
     {
         /* Lock while saving the data. */
         osalSysLock();
-        /* The unlock is called in vBroadcastNewViconDataAvailable() */
 
         /* Save data. */
-        memcpy((uint8_t *)&vicon_measurement,
+        memcpy((uint8_t *)&mc_frame,
                payload,
-               VICON_MEASUREMENT_SIZE);
+               MOTION_CAPTURE_MEASUREMENT_SIZE);
 
-        chEvtBroadcastFlagsI(&new_vicon_data_es, VICON_DATA_EVENTMASK);
+        chEvtBroadcastFlagsI(&new_mc_frame_es, MOTION_CAPTURE_DATA_EVENTMASK);
 
         /* osalOsRescheduleS() must be called after a chEvtBroadcastFlagsI() */
         osalOsRescheduleS();
