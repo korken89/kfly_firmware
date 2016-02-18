@@ -1,27 +1,31 @@
 #ifndef __VICON_H
 #define __VICON_H
 
-#include "quaternion.h"
+#include "geometry.h"
 
 /*===========================================================================*/
 /* Module global definitions.                                                */
 /*===========================================================================*/
-#define VICON_DATA_EVENTMASK                        EVENT_MASK(0)
-
-#define VICON_QUATERNION_MASK                       (1<<7)
-#define VICON_POSITION_MASK                         (1<<6)
-#define VICON_VELOCITY_MASK                         (1<<5)
+#define VICON_DATA_EVENTMASK                EVENT_MASK(0)
+#define VICON_MEASUREMENT_SIZE              (sizeof(vicon_measurement_t))
 
 /*===========================================================================*/
 /* Module data structures and types.                                         */
 /*===========================================================================*/
-typedef struct
+
+/**
+ * @brief   Data structure for a measurement from a motion capture system.
+ */
+typedef struct PACKED_VAR
 {
-    uint8_t available_data;
+    /**
+     * @brief   Frame number from the motion capture system.
+     */
     uint32_t frame_number;
-    quaternion_t attitude;
-    vector3f_t position;
-    vector3f_t velocity;
+    /**
+     * @brief   Pose from the motion capture system.
+     */
+    pose_t pose;
 } vicon_measurement_t;
 
 /*===========================================================================*/
@@ -39,6 +43,6 @@ void ViconSupportInit(void);
 event_source_t *ptrGetViconDataEventSource(void);
 vicon_measurement_t *ptrGetViconMeasurement(void);
 void GetCopyViconMeasurement(vicon_measurement_t *dest);
-void vParseViconDataPackage(uint8_t *payload, uint8_t size);
+void vParseViconDataPackage(const uint8_t *payload, const uint8_t size);
 
 #endif

@@ -34,14 +34,14 @@ void vInitializeViconEstimator(attitude_states_t *states)
     GetCopyViconMeasurement(&vicon_data);
 
     /* Wait while there is no valid data from the Vicon system. */
-    while ((vicon_data.available_data & VICON_QUATERNION_MASK) == 0)
+    while (vicon_data.frame_number == 0)
     {
         chThdSleepMilliseconds(20);
         GetCopyViconMeasurement(&vicon_data);
     }
 
     /* Take the first measurement at starting point. */
-    states->q = vicon_data.attitude;
+    states->q = vicon_data.pose.orientation;
 
     states->w.x = 0.0f;
     states->w.y = 0.0f;
@@ -73,8 +73,7 @@ void vInnovateViconEstimator(attitude_states_t *states,
     w_hat   = vector_sub(w_hat, states->wb);
 
     /* Check if there was new Vicon data. */
-    if ((vicon_data.frame_number > old_frame_number) &&
-        (vicon_data.available_data & VICON_QUATERNION_MASK))
+    if (vicon_data.frame_number > old_frame_number)
     {
         /* New Vicon data, update the bias and attitude estimation. */
         old_frame_number = vicon_data.frame_number;
@@ -83,14 +82,14 @@ void vInnovateViconEstimator(attitude_states_t *states,
         q_err = qint(states->q, w_hat, dt);
 
         /* 3. Create the error quaternion. */
-        q_err = qmult(q_err, qconj(vicon_data.attitude));
+        q_err = qmult(q_err, qconj(vicon_data.pose.orientation));
 
         /* 4. Estimate the gyro bias. */
         wb_step = vector_scale(array_to_vector(&q_err.x), wb_gain/dt);
 
         /* 5. Apply estimate and update the estimation. */
         states->wb = vector_add(states->wb, wb_step);
-        states->q = vicon_data.attitude;
+        states->q = vicon_data.pose.orientation;
         w_hat = vector_sub(w_hat, wb_step);
     }
     else
