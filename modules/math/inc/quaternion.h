@@ -141,13 +141,13 @@ static inline quaternion_t qnormalize(const quaternion_t q)
 }
 
 /**
- * @brief               Performs quaternion multiplication p * q.
+ * @brief               Performs quaternion multiplication q * p.
  *
- * @param[in] p         First quaternion to be multiplied.
- * @param[in] q         Second quaternion to be multiplied.
+ * @param[in] q         First quaternion to be multiplied.
+ * @param[in] p         Second quaternion to be multiplied.
  * @return              Multiplied quaternion.
  */
-static inline quaternion_t qmult(const quaternion_t p, const quaternion_t q)
+static inline quaternion_t qmult(const quaternion_t q, const quaternion_t p)
 {
     /*
      * Quaternion multiplication from "A survey of attitude representations" by
@@ -161,10 +161,10 @@ static inline quaternion_t qmult(const quaternion_t p, const quaternion_t q)
 
     quaternion_t r;
 
-    r.w = p.w * q.w - p.x * q.x - p.y * q.y - p.z * q.z;
-    r.x = - p.x * q.w + p.w * q.x + p.z * q.y + p.y * q.z;
-    r.y = p.y * q.w - p.z * q.x + p.w * q.y + p.x * q.z;
-    r.z = p.z * q.w + p.y * q.x - p.x * q.y + p.w * q.z;
+    r.x = q.w * p.x + q.z * p.y - q.y * p.z + q.x * p.w;
+    r.y = - q.z * p.x + q.w * p.y + q.x * p.z + q.y * p.w;
+    r.z = q.y * p.x - q.x * p.y + q.w * p.z + q.z * p.w;
+    r.w = - q.x * p.x - q.y * p.y - q.z * p.z + q.w * p.w;
 
     return r;
 }
