@@ -75,95 +75,6 @@ static inline quaternion_t grp2q(const vector3f_t p,
 }
 
 /**
- * @brief               Converts a quaternion to a Direction Cosine Matrix.
- *
- * @param[out] R        Pointer to the first element in the R matrix.
- * @param[in] q         Input quaternion.
- */
-static inline void q2dcm(float R[3][3], const quaternion_t q)
-{
-    /*
-      R = [q(1)^2+q(2)^2-q(3)^2-q(4)^2,       2*(q(2)*q(3)-q(1)*q(4)),       2*(q(2)*q(4)+q(1)*q(3));
-               2*(q(2)*q(3)+q(1)*q(4)),   q(1)^2-q(2)^2+q(3)^2-q(4)^2,       2*(q(3)*q(4)-q(1)*q(2));
-               2*(q(2)*q(4)-q(1)*q(3)),       2*(q(3)*q(4)+q(1)*q(2)),   q(1)^2-q(2)^2-q(3)^2+q(4)^2];
-    */
-    const float q0sq = q.w * q.w;
-    const float q1sq = q.x * q.x;
-    const float q2sq = q.y * q.y;
-    const float q3sq = q.z * q.z;
-
-    R[0][0] = q0sq + q1sq - q2sq - q3sq;
-    R[0][1] = 2.0f * (q.x * q.y - q.w * q.z);
-    R[0][2] = 2.0f * (q.x * q.z + q.w * q.y);
-
-    R[1][0] = 2.0f * (q.x * q.y + q.w * q.z);
-    R[1][1] = q0sq - q1sq + q2sq - q3sq;
-    R[1][2] = 2.0f * (q.y * q.z - q.w * q.x);
-
-    R[2][0] = 2.0f * (q.x * q.z - q.w * q.y);
-    R[2][1] = 2.0f * (q.y * q.z + q.w * q.x);
-    R[2][2] = q0sq - q1sq - q2sq + q3sq;
-}
-
-/**
- * @brief           Rotates a vector v by the quaternion q.
- *
- * @param[in] q     Quaternion rotation.
- * @param[in] v     Input vector.
- *
- * @return          The rotated vector.
- */
-static inline vector3f_t qrotvector(const quaternion_t q, const vector3f_t v)
-{
-    vector3f_t ret;
-
-    /* Rotation from the rotation matrix equations directly applied on v. */
-    const float q0sq = q.w * q.w;
-    const float q1sq = q.x * q.x;
-    const float q2sq = q.y * q.y;
-    const float q3sq = q.z * q.z;
-
-    ret.x =       (q0sq + q1sq - q2sq - q3sq) * v.x;
-    ret.x += (2.0f * (q.x * q.y - q.w * q.z)) * v.y;
-    ret.x += (2.0f * (q.x * q.z + q.w * q.y)) * v.z;
-
-    ret.y =  (2.0f * (q.x * q.y + q.w * q.z)) * v.x;
-    ret.y +=      (q0sq - q1sq + q2sq - q3sq) * v.y;
-    ret.y += (2.0f * (q.y * q.z - q.w * q.x)) * v.z;
-
-    ret.z =  (2.0f * (q.x * q.z - q.w * q.y)) * v.x;
-    ret.z += (2.0f * (q.y * q.z + q.w * q.x)) * v.y;
-    ret.z +=      (q0sq - q1sq - q2sq + q3sq) * v.z;
-
-    return ret;
-}
-
-/**
- * @brief               Performs quaternion multiplication.
- *
- * @param[in] a         First quaternion to be multiplied.
- * @param[in] b         Second quaternion to be multiplied.
- * @return              Multiplied quaternion.
- */
-static inline quaternion_t qmult(const quaternion_t a, const quaternion_t b)
-{
-    /**
-     * q = [a(1)*b(1) - a(2)*b(2) - a(3)*b(3) - a(4)*b(4);
-     *      a(1)*b(2) + a(2)*b(1) + a(3)*b(4) - a(4)*b(3);
-     *      a(1)*b(3) - a(2)*b(4) + a(3)*b(1) + a(4)*b(2);
-     *      a(1)*b(4) + a(2)*b(3) - a(3)*b(2) + a(4)*b(1)]
-     * */
-    quaternion_t r;
-
-    r.w = a.w * b.w - a.x * b.x - a.y * b.y - a.z * b.z;
-    r.x = a.w * b.x + a.x * b.w + a.y * b.z - a.z * b.y;
-    r.y = a.w * b.y - a.x * b.z + a.y * b.w + a.z * b.x;
-    r.z = a.w * b.z + a.x * b.y - a.y * b.x + a.z * b.w;
-
-    return r;
-}
-
-/**
  * @brief               Conjugates a quaternion.
  *
  * @param[in] q         Quaternion to be conjugated.
@@ -230,6 +141,108 @@ static inline quaternion_t qnormalize(const quaternion_t q)
 }
 
 /**
+ * @brief               Performs quaternion multiplication p * q.
+ *
+ * @param[in] p         First quaternion to be multiplied.
+ * @param[in] q         Second quaternion to be multiplied.
+ * @return              Multiplied quaternion.
+ */
+static inline quaternion_t qmult(const quaternion_t p, const quaternion_t q)
+{
+    /*
+     * Quaternion multiplication from "A survey of attitude representations" by
+     * Malcom D. Shuster (p. 473). It is not written in the Hamiltonian order,
+     * it is rather a convenction resulting in multiplications of quaternions
+     * in "natural order". This is in accordance with the JPL Proposed Standard
+     * Conventions [W. G. Breckenridge, “Quaternions - Proposed Standard
+     * Conventions,” JPL, Tech. Rep. INTEROFFICE MEMORANDUM IOM 343-79-1199,
+     * 1999].
+     */
+
+    quaternion_t r;
+
+    r.w = p.w * q.w - p.x * q.x - p.y * q.y - p.z * q.z;
+    r.x = - p.x * q.w + p.w * q.x + p.z * q.y + p.y * q.z;
+    r.y = p.y * q.w - p.z * q.x + p.w * q.y + p.x * q.z;
+    r.z = p.z * q.w + p.y * q.x - p.x * q.y + p.w * q.z;
+
+    return r;
+}
+
+/**
+ * @brief           Converts a quaternion to a rotation matrix, where q
+ *                  represents the rotation from frame A to frame B. Then
+ *                  V^B = R * V^A
+ *
+ * @param[out] R    Pointer to the first element in the R matrix.
+ * @param[in] q     Input quaternion.
+ */
+static inline void q2dcm(float R[3][3], const quaternion_t q)
+{
+    /*
+     * Quaternion rotation matrix from "A survey of attitude representations" by
+     * Malcom D. Shuster (p. 473). It is not written in the Hamiltonian order,
+     * it is rather a convenction resulting in multiplications of quaternions
+     * in "natural order". This is in accordance with the JPL Proposed Standard
+     * Conventions [W. G. Breckenridge, “Quaternions - Proposed Standard
+     * Conventions,” JPL, Tech. Rep. INTEROFFICE MEMORANDUM IOM 343-79-1199,
+     * 1999].
+     */
+
+    const float qwsq = q.w * q.w;
+    const float qxsq = q.x * q.x;
+    const float qysq = q.y * q.y;
+    const float qzsq = q.z * q.z;
+
+    R[0][0] = qwsq + qxsq - qysq - qzsq;
+    R[0][1] = 2.0f * (q.x * q.y + q.w * q.z);
+    R[0][2] = 2.0f * (q.x * q.z - q.w * q.y);
+
+    R[1][0] = 2.0f * (q.x * q.y - q.w * q.z);
+    R[1][1] = qwsq - qxsq + qysq - qzsq;
+    R[1][2] = 2.0f * (q.y * q.z + q.w * q.x);
+
+    R[2][0] = 2.0f * (q.x * q.z + q.w * q.y);
+    R[2][1] = 2.0f * (q.y * q.z - q.w * q.x);
+    R[2][2] = qwsq - qxsq - qysq + qzsq;
+}
+
+/**
+ * @brief           Rotates a vector v by the quaternion q, that is if q
+ *                  represents the rotation from frame A to frame B then
+ *                  v^B = q * v^A * q^-1.
+ *
+ * @param[in] q     Quaternion rotation.
+ * @param[in] v     Input vector.
+ *
+ * @return          The rotated vector.
+ */
+static inline vector3f_t qrotvector(const quaternion_t q, const vector3f_t v)
+{
+    vector3f_t ret;
+
+    /* Rotation from the rotation matrix equations directly applied on v. */
+    const float qwsq = q.w * q.w;
+    const float qxsq = q.x * q.x;
+    const float qysq = q.y * q.y;
+    const float qzsq = q.z * q.z;
+
+    ret.x =       (qwsq + qxsq - qysq - qzsq) * v.x;
+    ret.x += (2.0f * (q.x * q.y + q.w * q.z)) * v.y;
+    ret.x += (2.0f * (q.x * q.z - q.w * q.y)) * v.z;
+
+    ret.y =  (2.0f * (q.x * q.y - q.w * q.z)) * v.x;
+    ret.y +=      (qwsq - qxsq + qysq - qzsq) * v.y;
+    ret.y += (2.0f * (q.y * q.z + q.w * q.x)) * v.z;
+
+    ret.z =  (2.0f * (q.x * q.z + q.w * q.y)) * v.x;
+    ret.z += (2.0f * (q.y * q.z - q.w * q.x)) * v.y;
+    ret.z +=      (qwsq - qxsq - qysq + qzsq) * v.z;
+
+    return ret;
+}
+
+/**
  * @brief               Performs quaternion integration approximation. This
  *                      implementation assumes that omega * dt is small.
  *
@@ -245,10 +258,12 @@ static inline quaternion_t qint(const quaternion_t q_curr,
     quaternion_t q_step;
     float dx, dy, dz;
 
+    /* TODO: Rewrite to the zeroth order integrator. */
     dx = 0.5f * omega.x * dt;
     dy = 0.5f * omega.y * dt;
     dz = 0.5f * omega.z * dt;
 
+    /* Small angle approximation. */
     q_step.w = sqrtf(1.0f - dx * dx - dy * dy - dz * dz);
     q_step.x = dx;
     q_step.y = dy;
