@@ -135,7 +135,15 @@ typedef enum PACKED_VAR
     /*===============================================*/
 
     /**
-     * @brief   Get contreller settings.
+     * @brief   Get controller references (quaternion and rate).
+     */
+    Cmd_GetControllerReferences     = 24,
+    /**
+     * @brief   Get control signals (actuator desired).
+     */
+    Cmd_GetControlSignals           = 25,
+    /**
+     * @brief   Get controller settings.
      */
     Cmd_GetControllerLimits         = 26,
     /**

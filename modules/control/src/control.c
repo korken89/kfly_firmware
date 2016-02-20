@@ -50,6 +50,8 @@ control_data_t control_data;
 control_limits_t control_limits;
 output_mixer_t output_mixer;
 control_parameters_t flash_save_control_parameters;
+control_signals_t control_signals_save;
+control_reference_save_t control_reference_save;
 
 THD_WORKING_AREA(waThreadControl, 256);
 THD_WORKING_AREA(waThreadControlFlashSave, 256);
@@ -338,7 +340,6 @@ void vUpdateControlAction(const quaternion_t *attitude_m,
                           const float dt)
 {
     /* Check if manual control or computer control. */
-    /* TODO: Add it... */
     if (GetReferenceSource() == REFERENCE_SOURCE_MANUAL)
     {
         /* TODO: Make this settable via software and switches. */
@@ -429,6 +430,18 @@ void vUpdateControlAction(const quaternion_t *attitude_m,
             vZeroControlIntegrals();
             break;
     }
+
+    osalSysLock();
+
+    /* Save control signals for transfer under lock to prevent data race. */
+    control_signals_save.throttle = control_reference.actuator_desired.throttle;
+    control_signals_save.torque = control_reference.actuator_desired.torque;
+
+    control_reference_save.throttle = control_reference.actuator_desired.throttle;
+    control_reference_save.attitude = control_reference.attitude_reference;
+    control_reference_save.rate = control_reference.rate_reference;
+
+    osalSysUnlock();
 }
 
 /**
@@ -523,3 +536,25 @@ void SetControlParameters(control_parameters_t *param)
             f_pi[j] = f_par[j];
     }
 }
+
+/**
+ * @brief           Copies current control singals to data structure.
+ * @param[out] sig  Save location.
+ */
+void GetControlSignals(control_signals_t *sig)
+{
+    sig->throttle = control_signals_save.throttle;
+    sig->torque = control_signals_save.torque;
+}
+
+/**
+ * @brief           Copies current control references to data structure.
+ * @param[out] ref  Save location.
+ */
+void GetControlReference(control_reference_save_t *ref)
+{
+    ref->throttle = control_reference_save.throttle;
+    ref->attitude = control_reference_save.attitude;
+    ref->rate = control_reference_save.rate;
+}
+

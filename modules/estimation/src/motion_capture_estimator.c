@@ -63,14 +63,11 @@ void vInnovateMotionCaptureEstimator(attitude_states_t *states,
     vector3f_t w_hat, wb_step;
     quaternion_t q_err;
 
-
     /* Get the current motion capture data */
     GetCopyMotionCaptureFrame(&mc_data);
 
     /* 1. Remove bias from the measurement. */
-    w_hat   = array_to_vector(imu_data->gyroscope);
-    w_hat.z = - w_hat.z;
-    w_hat   = vector_sub(w_hat, states->wb);
+    w_hat = vector_sub(array_to_vector(imu_data->gyroscope), states->wb);
 
     /* Check if there was new motion capture data. */
     if (mc_data.frame_number > old_frame_number)
@@ -85,7 +82,7 @@ void vInnovateMotionCaptureEstimator(attitude_states_t *states,
         q_err = qmult(q_err, qconj(mc_data.pose.orientation));
 
         /* 4. Estimate the gyro bias. */
-        wb_step = vector_scale(array_to_vector(&q_err.x), wb_gain/dt);
+        wb_step = vector_scale(array_to_vector(&q_err.x), wb_gain / dt);
 
         /* 5. Apply estimate and update the estimation. */
         states->wb = vector_add(states->wb, wb_step);

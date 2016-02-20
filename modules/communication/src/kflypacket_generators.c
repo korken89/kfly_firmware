@@ -27,6 +27,8 @@ static bool GenerateACK(circular_buffer_t *Cbuff);
 static bool GeneratePing(circular_buffer_t *Cbuff);
 static bool GenerateGetRunningMode(circular_buffer_t *Cbuff);
 static bool GenerateGetDeviceInfo(circular_buffer_t *Cbuff);
+static bool GenerateGetControllerReferences(circular_buffer_t *Cbuff);
+static bool GenerateGetControlSignals(circular_buffer_t *Cbuff);
 static bool GenerateGetControllerLimits(circular_buffer_t *Cbuff);
 static bool GenerateGetArmSettings(circular_buffer_t *Cbuff);
 static bool GenerateGetRateControllerData(circular_buffer_t *Cbuff);
@@ -83,8 +85,8 @@ static const kfly_generator_t generator_lookup[128] = {
     NULL,                             /* 21:                                  */
     NULL,                             /* 22:                                  */
     NULL,                             /* 23:                                  */
-    NULL,                             /* 24:                                  */
-    NULL,                             /* 25:                                  */
+    GenerateGetControllerReferences,  /* 24:  Cmd_GetControllerReferences     */
+    GenerateGetControlSignals,        /* 25:  Cmd_GetControlSignals           */
     GenerateGetControllerLimits,      /* 26:  Cmd_GetControllerLimits         */
     NULL,                             /* 27:  Cmd_SetControllerLimits         */
     GenerateGetArmSettings,           /* 28:  Cmd_GetArmSettings              */
@@ -383,6 +385,42 @@ static bool GenerateGetDeviceInfo(circular_buffer_t *Cbuff)
         crc16 = CRC16_chunk(ptr_list[i], len_list[i], crc16);
 
     return GenerateSLIP_MultiChunk(ptr_list, len_list, size, Cbuff);
+}
+
+/**
+ * @brief               Generates the message for controller references.
+ *
+ * @param Cbuff[out]    Pointer to the circular buffer to put the data in.
+ * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
+ *                      if it did fit.
+ */
+static bool GenerateGetControllerReferences(circular_buffer_t *Cbuff)
+{
+    static control_reference_save_t temp;
+    GetControlReference(&temp);
+
+    return GenerateGenericCommand(Cmd_GetControllerReferences,
+                                  (uint8_t *)&temp,
+                                  sizeof(control_reference_save_t),
+                                  Cbuff);
+}
+
+/**
+ * @brief               Generates the message for control signals.
+ *
+ * @param Cbuff[out]    Pointer to the circular buffer to put the data in.
+ * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
+ *                      if it did fit.
+ */
+static bool GenerateGetControlSignals(circular_buffer_t *Cbuff)
+{
+    static control_signals_t temp;
+    GetControlSignals(&temp);
+
+    return GenerateGenericCommand(Cmd_GetControlSignals,
+                                  (uint8_t *)&temp,
+                                  sizeof(control_signals_t),
+                                  Cbuff);
 }
 
 /**
