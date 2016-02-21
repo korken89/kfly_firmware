@@ -79,7 +79,7 @@ void vInnovateMotionCaptureEstimator(attitude_states_t *states,
         q_err = qint(states->q, w_hat, dt);
 
         /* 3. Create the error quaternion. */
-        q_err = qmult(q_err, qconj(mc_data.pose.orientation));
+        q_err = qmult(qconj(mc_data.pose.orientation), q_err);
 
         /* 4. Estimate the gyro bias. */
         wb_step = vector_scale(array_to_vector(&q_err.x), wb_gain / dt);
