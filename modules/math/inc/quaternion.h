@@ -1,3 +1,13 @@
+/* *
+ *
+ * Quaternion implementations, based on the passive Hamilton notation.
+ * See "Quaternion kinematics for the error-state KF" by Joan Solá for a good
+ * reference on Hamilton notation and quaternion integration. Or, for a more
+ * complete reference on quaternions, see "Quaternions and Rotation Sequences"
+ * by Jack B. Kupier (book).
+ *
+ * */
+
 #ifndef __QUATERNION_H
 #define __QUATERNION_H
 
@@ -141,30 +151,22 @@ static inline quaternion_t qnormalize(const quaternion_t q)
 }
 
 /**
- * @brief               Performs quaternion multiplication q * p.
+ * @brief               Performs quaternion multiplication p * q.
  *
- * @param[in] q         First quaternion to be multiplied.
- * @param[in] p         Second quaternion to be multiplied.
+ * @param[in] p         First quaternion to be multiplied.
+ * @param[in] q         Second quaternion to be multiplied.
  * @return              Multiplied quaternion.
  */
-static inline quaternion_t qmult(const quaternion_t q, const quaternion_t p)
+static inline quaternion_t qmult(const quaternion_t p, const quaternion_t q)
 {
-    /*
-     * Quaternion multiplication from "A survey of attitude representations" by
-     * Malcom D. Shuster (p. 473). It is not written in the Hamiltonian order,
-     * it is rather a convenction resulting in multiplications of quaternions
-     * in "natural order". This is in accordance with the JPL Proposed Standard
-     * Conventions [W. G. Breckenridge, “Quaternions - Proposed Standard
-     * Conventions,” JPL, Tech. Rep. INTEROFFICE MEMORANDUM IOM 343-79-1199,
-     * 1999].
-     */
+    /* Following the passive Hamilton notation. */
 
     quaternion_t r;
 
-    r.x = q.w * p.x + q.z * p.y - q.y * p.z + q.x * p.w;
-    r.y = - q.z * p.x + q.w * p.y + q.x * p.z + q.y * p.w;
-    r.z = q.y * p.x - q.x * p.y + q.w * p.z + q.z * p.w;
-    r.w = - q.x * p.x - q.y * p.y - q.z * p.z + q.w * p.w;
+    r.w = p.w * q.w - p.x * q.x - p.y * q.y - p.z * q.z;
+    r.x = p.w * q.x + p.x * q.w + p.y * q.z - p.z * q.y;
+    r.y = p.w * q.y - p.x * q.z + p.y * q.w + p.z * q.x;
+    r.z = p.w * q.z + p.x * q.y - p.y * q.x + p.z * q.w;
 
     return r;
 }
@@ -179,15 +181,7 @@ static inline quaternion_t qmult(const quaternion_t q, const quaternion_t p)
  */
 static inline void q2dcm(float R[3][3], const quaternion_t q)
 {
-    /*
-     * Quaternion rotation matrix from "A survey of attitude representations" by
-     * Malcom D. Shuster (p. 473). It is not written in the Hamiltonian order,
-     * it is rather a convenction resulting in multiplications of quaternions
-     * in "natural order". This is in accordance with the JPL Proposed Standard
-     * Conventions [W. G. Breckenridge, “Quaternions - Proposed Standard
-     * Conventions,” JPL, Tech. Rep. INTEROFFICE MEMORANDUM IOM 343-79-1199,
-     * 1999].
-     */
+    /* Following the passive Hamilton notation. */
 
     const float qwsq = q.w * q.w;
     const float qxsq = q.x * q.x;
@@ -195,15 +189,15 @@ static inline void q2dcm(float R[3][3], const quaternion_t q)
     const float qzsq = q.z * q.z;
 
     R[0][0] = qwsq + qxsq - qysq - qzsq;
-    R[0][1] = 2.0f * (q.x * q.y + q.w * q.z);
-    R[0][2] = 2.0f * (q.x * q.z - q.w * q.y);
+    R[0][1] = 2.0f * (q.x * q.y - q.w * q.z);
+    R[0][2] = 2.0f * (q.x * q.z + q.w * q.y);
 
-    R[1][0] = 2.0f * (q.x * q.y - q.w * q.z);
+    R[1][0] = 2.0f * (q.x * q.y + q.w * q.z);
     R[1][1] = qwsq - qxsq + qysq - qzsq;
-    R[1][2] = 2.0f * (q.y * q.z + q.w * q.x);
+    R[1][2] = 2.0f * (q.y * q.z - q.w * q.x);
 
-    R[2][0] = 2.0f * (q.x * q.z + q.w * q.y);
-    R[2][1] = 2.0f * (q.y * q.z - q.w * q.x);
+    R[2][0] = 2.0f * (q.x * q.z - q.w * q.y);
+    R[2][1] = 2.0f * (q.y * q.z + q.w * q.x);
     R[2][2] = qwsq - qxsq - qysq + qzsq;
 }
 
@@ -228,23 +222,23 @@ static inline vector3f_t qrotvector(const quaternion_t q, const vector3f_t v)
     const float qzsq = q.z * q.z;
 
     ret.x =       (qwsq + qxsq - qysq - qzsq) * v.x;
-    ret.x += (2.0f * (q.x * q.y + q.w * q.z)) * v.y;
-    ret.x += (2.0f * (q.x * q.z - q.w * q.y)) * v.z;
+    ret.x += (2.0f * (q.x * q.y - q.w * q.z)) * v.y;
+    ret.x += (2.0f * (q.x * q.z + q.w * q.y)) * v.z;
 
-    ret.y =  (2.0f * (q.x * q.y - q.w * q.z)) * v.x;
+    ret.y =  (2.0f * (q.x * q.y + q.w * q.z)) * v.x;
     ret.y +=      (qwsq - qxsq + qysq - qzsq) * v.y;
-    ret.y += (2.0f * (q.y * q.z + q.w * q.x)) * v.z;
+    ret.y += (2.0f * (q.y * q.z - q.w * q.x)) * v.z;
 
-    ret.z =  (2.0f * (q.x * q.z + q.w * q.y)) * v.x;
-    ret.z += (2.0f * (q.y * q.z - q.w * q.x)) * v.y;
+    ret.z =  (2.0f * (q.x * q.z - q.w * q.y)) * v.x;
+    ret.z += (2.0f * (q.y * q.z + q.w * q.x)) * v.y;
     ret.z +=      (qwsq - qxsq - qysq + qzsq) * v.z;
 
     return ret;
 }
 
 /**
- * @brief               Performs quaternion integration approximation. This
- *                      implementation assumes that omega * dt is small.
+ * @brief               Performs quaternion integration approximation with a
+ *                      zeroth order integrator.
  *
  * @param[in] q_curr    Current quaternion to be integrated.
  * @param[in] omega     Angular rate.
@@ -256,20 +250,25 @@ static inline quaternion_t qint(const quaternion_t q_curr,
                                 const float dt)
 {
     quaternion_t q_step;
-    float dx, dy, dz;
 
-    /* TODO: Rewrite to the zeroth order integrator. */
-    dx = 0.5f * omega.x * dt;
-    dy = 0.5f * omega.y * dt;
-    dz = 0.5f * omega.z * dt;
+    const vector3f_t dtheta = vector_scale(omega, 0.5f * dt);
+    const float dtheta_norm = vector_norm(dtheta);
 
-    /* Small angle approximation. */
-    q_step.w = sqrtf(1.0f - dx * dx - dy * dy - dz * dz);
-    q_step.x = dx;
-    q_step.y = dy;
-    q_step.z = dz;
+    /* There is only a problem with the integration if the norm is zero.  */
+    if (dtheta_norm == 0.0f)
+        return q_curr;
+    else
+    {
+        /* Integration according to Section 1.8.1 in
+         * "Quaternion kinematics for the error-state KF" by Joan Sloá. */
 
-    return qmult(q_step, q_curr);
+        q_step.w = cosf(dtheta_norm);
+
+        *((vector3f_t *)&q_step.x) = /* Cast to vector to suppress error. */
+            vector_scale(dtheta, sinf(dtheta_norm) / dtheta_norm);
+
+        return qmult(q_curr, q_step);
+    }
 }
 
 /**
