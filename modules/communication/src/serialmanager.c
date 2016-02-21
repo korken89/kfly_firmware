@@ -236,7 +236,7 @@ static THD_FUNCTION(Aux1SerialManagerTask, arg)
     /* Initialize data structures */
     InitSLIPParser(&slip_data_holder,
                    AUX1_in_buffer,
-                   16,
+                   SERIAL_RECIEVE_BUFFER_SIZE,
                    bind);
 
     /* Cut away the header. */
