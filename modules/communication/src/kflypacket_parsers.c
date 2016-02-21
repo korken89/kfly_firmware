@@ -298,40 +298,9 @@ static void ParseGetRunningMode(kfly_parser_t *pHolder)
  */
 static void ParseManageSubscriptions(kfly_parser_t *pHolder)
 {
-    /* Parsing structure for the data */
-    subscription_parser_t *p;
-
-    /* Check so the length of the message is correct */
-    if (pHolder->data_length == sizeof(subscription_parser_t))
-    {
-        /* Cast the message to the parser structure */
-        p = (subscription_parser_t *)pHolder->buffer;
-
-        /* Check for valid port */
-        if ((isPort(p->port) == true) || (p->port == 0xff))
-        {
-            if (p->on_off == 0)
-            {
-                /* Unsubscribe from command */
-                if (p->port == 0xff) /* Port is the one the command came on */
-                    bUnsubscribeFromCommand(p->command, pHolder->port);
-                else /* Port is is specified in the message */
-                    bUnsubscribeFromCommand(p->command, p->port);
-            }
-            else
-            {
-                /* Subscribe to command */
-                if (p->port == 0xff) /* Port is the one the command came on */
-                    bSubscribeToCommand(p->command,
-                                        pHolder->port,
-                                        p->delta_time);
-                else /* Port is is specified in the message */
-                    bSubscribeToCommand(p->command,
-                                        p->port,
-                                        p->delta_time);
-            }
-        }
-    }
+    vParseManageSubscription(pHolder->buffer,
+                             pHolder->data_length,
+                             pHolder->port);
 }
 
 /**
