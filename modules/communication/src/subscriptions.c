@@ -282,6 +282,13 @@ void vUnsubscribeFromAllI(void)
     }
 }
 
+/**
+ * @brief       Parses a data packet for managing a subscription.
+ *
+ * @param[in] data              Data packet.
+ * @param[in] size              Size of data packet.
+ * @param[in] reception_port    Port that the packet arrived on.
+ */
 void vParseManageSubscription(const uint8_t *data,
                               const uint8_t size,
                               external_port_t reception_port)
