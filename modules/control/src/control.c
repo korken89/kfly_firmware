@@ -300,9 +300,6 @@ void ControlInit(void)
     for (i = 0; i < (OUTPUT_MIXER_SIZE / 4); i++)
         p[i] = 0.0f;
 
-    /* Read data from flash (if available). */
-    vReadControlParametersFromFlash();
-
     /* Set outputs to default value. */
     vSetOutputsDefault();
 
@@ -311,6 +308,9 @@ void ControlInit(void)
 
     /* Initialize arming. */
     ArmingInit();
+
+    /* Read data from flash (if available). */
+    vReadControlParametersFromFlash();
 
     /* Initialize control thread. */
     chThdCreateStatic(waThreadControl,
