@@ -35,6 +35,7 @@ static void ParseManageSubscriptions(kfly_parser_t *pHolder);
 static void ParseGetDeviceInfo(kfly_parser_t *pHolder);
 static void ParseSetDeviceID(kfly_parser_t *pHolder);
 static void ParseSaveToFlash(kfly_parser_t *pHolder);
+static void ParseEraseFlash(kfly_parser_t *pHolder);
 static void ParseSetControllerLimits(kfly_parser_t *pHolder);
 static void ParseGetControllerLimits(kfly_parser_t *pHolder);
 static void ParseSetArmSettings(kfly_parser_t *pHolder);
@@ -97,7 +98,7 @@ static const kfly_data_parser_t parser_lookup[128] = {
     ParseGetDeviceInfo,               /* 17:  Cmd_GetBootloaderVersion        */
     ParseSetDeviceID,                 /* 18:  Cmd_SetDeviceID                 */
     ParseSaveToFlash,                 /* 19:  Cmd_SaveToFlash                 */
-    NULL,                             /* 20:                                  */
+    ParseEraseFlash,                  /* 20:  Cmd_EraseFlash                  */
     NULL,                             /* 21:                                  */
     NULL,                             /* 22:                                  */
     NULL,                             /* 23:                                  */
@@ -351,6 +352,25 @@ static void ParseSaveToFlash(kfly_parser_t *pHolder)
 
     /* Broadcast the Save to Flash event */
     vBroadcastFlashSaveEvent();
+}
+
+/**
+ * @brief               Parses a EraseFlash command.
+ * @note                The serial communication will be locked until the erase
+ *                      has finnished.
+ *
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
+ */
+static void ParseEraseFlash(kfly_parser_t *pHolder)
+{
+    (void)pHolder;
+
+    /* Erase the external flash, the communicaiton will be locked until it is
+     * done.
+     */
+    vFlashSave_EraseAll();
+
 }
 
 /**

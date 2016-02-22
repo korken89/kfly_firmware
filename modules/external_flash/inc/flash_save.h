@@ -54,7 +54,7 @@ typedef enum
 /*===========================================================================*/
 /**
  * @brief           Converts a string to a 32-bit ID.
- * 
+ *
  * @param str[id]   Input string.
  * @return          Returns 32-bit ID.
  */
@@ -68,7 +68,7 @@ static inline uint32_t FlashSave_STR2ID(char str[4])
 
 /**
  * @brief           Converts four bytes to a 32-bit ID.
- * 
+ *
  * @param[in] b1    First byte
  * @param[in] b2    Second byte
  * @param[in] b3    Third byte
@@ -88,7 +88,7 @@ static inline uint32_t FlashSave_BYTES2ID(uint8_t b1,
 
 /**
  * @brief       Swaps the oder of the bytes in a word.
- * 
+ *
  * @param[in] swap  The word to be reverse the order of bytes in.
  * @return      Returns the reordered word.
  */
@@ -106,12 +106,13 @@ static inline uint32_t FlashSave_Swap32(uint32_t swap)
 void FlashSaveInit(void);
 bool FlashSave_Seek(uint32_t uid, int16_t *page_number, uint8_t *size);
 FlashSave_Status FlashSave_Write(uint32_t uid,
-                                 bool overwrite, 
-                                 uint8_t *data, 
+                                 bool overwrite,
+                                 uint8_t *data,
                                  uint16_t count);
 FlashSave_Status FlashSave_Read(uint32_t uid,
                                 uint8_t *data,
                                 uint8_t requested_size);
+void vFlashSave_EraseAll(void);
 void vBroadcastFlashSaveEvent(void);
 event_source_t *ptrGetFlashSaveEventSource(void);
 

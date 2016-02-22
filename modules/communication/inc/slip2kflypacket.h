@@ -129,6 +129,10 @@ typedef enum PACKED_VAR
      * @brief   Save all settings to flash.
      */
     Cmd_SaveToFlash                 = 19,
+    /**
+     * @brief   Erases the settings flash.
+     */
+    Cmd_EraseFlash                  = 20,
 
     /*===============================================*/
     /* Controller specific commands.                 */

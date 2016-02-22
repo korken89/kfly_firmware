@@ -9,18 +9,18 @@
   * |          |          |         |          |
   * |  Save 1  |  Save 2  | -  -  - |  Save N  |
   * |__________|__________| _  _  _ |__________|
-  *                                /            \  
-  *    _ _ _ _ _ _ _ _ _ _ _ _ _ _/              \_ _ _ _ _ 
+  *                                /            \
+  *    _ _ _ _ _ _ _ _ _ _ _ _ _ _/              \_ _ _ _ _
   *  /                                                     \
   * /__________________________ _____________ ______________\
   * |                          |             |              |
   * |  32-bit Unique ID (UID)  |  Data size  |  Saved Data  |
   * |__________________________|_____________|______________|
   *            4 bytes              1 byte      1-250 bytes
-  *            
+  *
   * Each block can only span one page as maximum limiting the saved data to be
   * maximum 250 bytes.
-  * 
+  *
   * - The worst case time to complete a save is approximately 50 ms.
   * - The worst case time to complete a read is approximately 35 ms.
   */
@@ -72,7 +72,7 @@ EVENTSOURCE_DECL(save_to_flash_es);
  * @param[in] count     Number of bytes to write (max 256 bytes).
  */
 static void FlashSave_WritePage(const ExternalFlashConfig *config,
-                                uint32_t address, 
+                                uint32_t address,
                                 uint32_t uid,
                                 uint8_t *buffer,
                                 uint16_t count)
@@ -144,7 +144,7 @@ void FlashSaveInit(void)
 /**
  * @brief       Seek the flash memory for the requested UID and reports back
  *              the page number and size of the saved data.
- *  
+ *
  * @param[in]  uid          UID to search for.
  * @param[out] page_number  Pointer to saving variable for page number.
  * @param[out] size         Pointer to saving variable for data size.
@@ -170,7 +170,7 @@ bool FlashSave_Seek(uint32_t uid, int16_t *page_number, uint8_t *size)
                                         (current_page * FLASH_PAGE_SIZE),
                                         seek_union.raw_data,
                                         5);
-        
+
         current_page++;
     } while((seek_union.formated_seek.id != uid) &&
             (seek_union.formated_seek.id != FLASHSAVE_UNALLOCATED) &&
@@ -199,10 +199,10 @@ bool FlashSave_Seek(uint32_t uid, int16_t *page_number, uint8_t *size)
 }
 
 /**
- * @brief       Writes data to a location with the correct UID, or saved at a 
- *              new location if the UID was not already written. 
+ * @brief       Writes data to a location with the correct UID, or saved at a
+ *              new location if the UID was not already written.
  * @note        Max write size is 250 bytes.
- * 
+ *
  * @param[in] uid       UID to write at.
  * @param[in] overwrite True to overwrite old data.
  * @param[in] data      Pointer to the data to write.
@@ -268,8 +268,8 @@ FlashSave_Status FlashSave_Write(uint32_t uid,
 }
 
 /**
- * @brief       Reads data from a location with the correct UID. 
- * 
+ * @brief       Reads data from a location with the correct UID.
+ *
  * @param[in] uid               UID to read from.
  * @param[in] data              Pointer to the save location of the data.
  * @param[in] requested_size    Number of bytes to write.
@@ -323,6 +323,21 @@ FlashSave_Status FlashSave_Read(uint32_t uid,
 }
 
 /**
+ * @brief       Erases the entire flash memory.
+ */
+void vFlashSave_EraseAll(void)
+{
+    /* Claim external flash */
+    ExternalFlash_Claim(&flashcfg);
+
+    /* Erase. */
+    ExternalFlash_EraseBulk(&flashcfg);
+
+    /* Release external flash */
+    ExternalFlash_Release(&flashcfg);
+}
+
+/**
  * @brief       Broadcasts the save to flash event, signaling all threads using
  *              the save to flash functionality to save the current data.
  */
@@ -334,7 +349,7 @@ void vBroadcastFlashSaveEvent(void)
 
 /**
  * @brief       Returns the pointer to the Flash Save event source.
- * 
+ *
  * @return      Pointer to the Flash Save event source.
  */
 event_source_t *ptrGetFlashSaveEventSource(void)
