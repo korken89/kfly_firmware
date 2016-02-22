@@ -102,21 +102,17 @@ typedef enum PACKED_VAR {
      */
     ROLE_YAW = 4,
     /**
-     * @brief   Flight mode role selector.
-     */
-    ROLE_FLIGHT_MODE = 6,
-    /**
      * @brief   Aux 1 role selector.
      */
-    ROLE_AUX1 = 7,
+    ROLE_AUX1 = 5,
     /**
      * @brief   Aux 2 role selector.
      */
-    ROLE_AUX2 = 8,
+    ROLE_AUX2 = 6,
     /**
      * @brief   Aux 3 role selector.
      */
-    ROLE_AUX3 = 9
+    ROLE_AUX3 = 7
 } input_role_selector_t;
 
 /**
