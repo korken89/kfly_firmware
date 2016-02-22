@@ -342,12 +342,25 @@ void vUpdateControlAction(const quaternion_t *attitude_m,
     /* Check if manual control or computer control. */
     if (GetReferenceSource() == REFERENCE_SOURCE_MANUAL)
     {
-        /* TODO: Make this settable via software and switches. */
-        control_reference.mode = FLIGHTMODE_RATE;
+        if (bIsSystemArmed() == true)
+        {
+            /* TODO: Make this settable via software and switches. */
+            control_reference.mode = FLIGHTMODE_RATE;
 
-        RCInputsToControlAction(&control_reference,
-                                &control_limits.max_rate,
-                                (vector3f_t *)&control_limits.max_angle);
+            RCInputsToControlAction(&control_reference,
+                                    &control_limits.max_rate,
+                                    (vector3f_t *)&control_limits.max_angle);
+        }
+        else
+        {
+            /* When disarmed, set the throttle to the default. */
+            control_reference.mode = FLIGHTMODE_INDIRECT;
+
+            control_reference.actuator_desired.torque.x = 0.0f;
+            control_reference.actuator_desired.torque.y = 0.0f;
+            control_reference.actuator_desired.torque.z = 0.0f;
+            control_reference.actuator_desired.throttle = fGetDisarmedThrottle();
+        }
 
     }
     else
@@ -363,13 +376,11 @@ void vUpdateControlAction(const quaternion_t *attitude_m,
         {
             GetComputerRateReference(&control_reference.rate_reference,
                                      &control_reference.actuator_desired.throttle);
-
         }
         else if (control_reference.mode == FLIGHTMODE_INDIRECT)
         {
             GetComputerIndirectReference(&control_reference.actuator_desired.torque,
                                          &control_reference.actuator_desired.throttle);
-
         }
         else if (control_reference.mode == FLIGHTMODE_DIRECT)
         {

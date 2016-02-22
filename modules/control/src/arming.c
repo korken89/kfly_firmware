@@ -71,7 +71,7 @@ static THD_FUNCTION(ThreadControlArming, arg)
             (arm_settings.stick_direction != STICK_NONE))
         {
             /* Check emergency stop, TODO: Change to switch arming. */
-            if ((RCInputGetInputLevel(ROLE_AUX1) < 0.5f) || force_disarm)
+            if (force_disarm)
             {
                 system_armed = false;
                 force_disarm = false;
@@ -276,6 +276,17 @@ void ArmingInit(void)
 bool bIsSystemArmed(void)
 {
     return system_armed;
+}
+
+/**
+ * @brief       Returns the minimum throttle to rotate the propellers when
+ *              disarmed.
+ *
+ * @return      The minimum throttle value.
+ */
+float fGetDisarmedThrottle(void)
+{
+    return arm_settings.armed_min_throttle;
 }
 
 /**

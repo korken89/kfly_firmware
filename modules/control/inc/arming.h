@@ -106,6 +106,7 @@ typedef struct PACKED_VAR
 
 void ArmingInit(void);
 bool bIsSystemArmed(void);
+float fGetDisarmedThrottle(void);
 void vForceDisarm(const uint32_t key);
 control_arm_settings_t *ptrGetControlArmSettings(void);
 
