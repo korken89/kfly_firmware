@@ -353,13 +353,8 @@ void vUpdateControlAction(const quaternion_t *attitude_m,
         }
         else
         {
-            /* When disarmed, set the throttle to the default. */
-            control_reference.mode = FLIGHTMODE_INDIRECT;
-
-            control_reference.actuator_desired.torque.x = 0.0f;
-            control_reference.actuator_desired.torque.y = 0.0f;
-            control_reference.actuator_desired.torque.z = 0.0f;
-            control_reference.actuator_desired.throttle = fGetDisarmedThrottle();
+            /* When disarmed, set the throttle disarmed. */
+            control_reference.mode = FLIGHTMODE_DISARMED;
         }
 
     }

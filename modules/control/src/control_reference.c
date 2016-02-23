@@ -44,10 +44,19 @@ void RCInputsToControlAction(control_reference_t *ref,
                              const vector3f_t *rate_lim,
                              const vector3f_t *attitude_lim)
 {
+
+    /* Read out the throttle reference and check if it is bellow the minimum
+     * throttle. Used to indicate an armed system by rotating the propellers. */
+    float throttle = RCInputGetInputLevel(ROLE_THROTTLE);
+
+    if (throttle < fGetDisarmedThrottle())
+        throttle = fGetDisarmedThrottle();
+
+    ref->actuator_desired.throttle = throttle;
+
+
     if (ref->mode == FLIGHTMODE_RATE)
     {
-        ref->actuator_desired.throttle = RCInputGetInputLevel(ROLE_THROTTLE);
-
         ref->rate_reference.x =
             rate_lim->x * DEG2RAD * RCInputGetInputLevel(ROLE_PITCH);
         ref->rate_reference.y =
@@ -57,8 +66,6 @@ void RCInputsToControlAction(control_reference_t *ref,
     }
     else if (ref->mode == FLIGHTMODE_ATTITUDE_EULER)
     {
-        ref->actuator_desired.throttle = RCInputGetInputLevel(ROLE_THROTTLE);
-
         ref->attitude_reference_euler.x =
             attitude_lim->x * DEG2RAD * RCInputGetInputLevel(ROLE_ROLL);
         ref->attitude_reference_euler.y =
