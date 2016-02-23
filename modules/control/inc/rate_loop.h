@@ -40,9 +40,7 @@ static inline void vRateControl(const vector3f_t *ref,
     vector3f_t error;
 
     /* Calculate the errors */
-    error.x = ref->x - omega_m->y;
-    error.y = ref->y - omega_m->x;
-    error.z = ref->z - omega_m->z;
+    error = vector_sub(*ref, *omega_m);
 
     /* Update the PI controllers */
     out->x = fPIUpdate_BC(&rate_controller[0], error.x, 1.0f, -1.0f, dt);
