@@ -41,7 +41,8 @@ typedef struct PACKED_VAR
 /**
  * @brief       Updates the PI controller with one time step.
  * @note        The integral is limited using back calculation to not need
- *              need limits on the integral itself.
+ *              need limits on the integral itself, it is generally a better
+ *              integrator limiter than fixed limits.
  *
  * @param[in/out] pi_settings   PI settings and state structure.
  * @param[in] error             Controlled variable's error.
