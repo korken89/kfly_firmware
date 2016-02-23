@@ -37,24 +37,41 @@ static inline void vAttitudeControl(const quaternion_t *ref,
                                     const quaternion_t *attitude_m,
                                     vector3f_t *out,
                                     pi_data_t attitude_controller[3],
-                                    const vector3f_t *limits,
+                                    const vector3f_t *rate_limits,
                                     const float dt)
 {
-    vector3f_t err;
+    /*
+     * Based on the paper "Full quaternion based attitude control for a
+     * quadrotor" by Emil Fresk, equations 19 and 20.
+     */
+    quaternion_t err;
 
-    /* TODO: Add the quaternion calculations. */
+    /* TODO: Check the calculations */
     /* Calculate the quaternion error */
-    err.y = 0.0f;
-    err.x = 0.0f;
-    err.z = 0.0f;
+    err = qmult(*ref, qconj(*attitude_m));
+
+    /* Check the quaternion scalar to force minimum distance error. */
+    if (err.w < 0.0f)
+        err = qneg(err);
 
     /* Update controllers, send bounded control signal to the next step */
-    out->x =
-        fPIUpdate_BC(&attitude_controller[0], err.x, limits->x, -limits->x, dt);
-    out->y =
-        fPIUpdate_BC(&attitude_controller[1], err.y, limits->y, -limits->y, dt);
-    out->z =
-        fPIUpdate_BC(&attitude_controller[2], err.z, limits->z, -limits->z, dt);
+    out->x = fPIUpdate_BC(&attitude_controller[0],
+                          err.x,
+                          rate_limits->x,
+                          -rate_limits->x,
+                          dt);
+
+    out->y = fPIUpdate_BC(&attitude_controller[1],
+                          err.y,
+                          rate_limits->y,
+                          -rate_limits->y,
+                          dt);
+
+    out->z = fPIUpdate_BC(&attitude_controller[2],
+                          err.z,
+                          rate_limits->z,
+                          -rate_limits->z,
+                          dt);
 }
 
 /**
@@ -74,7 +91,7 @@ static inline void vAttitudeControlEuler(const vector3f_t *ref,
                                          const quaternion_t *attitude_m,
                                          vector3f_t *out,
                                          pi_data_t attitude_controller[3],
-                                         const vector3f_t *limits,
+                                         const vector3f_t *rate_limits,
                                          const float dt)
 {
     vector3f_t err;
@@ -90,10 +107,17 @@ static inline void vAttitudeControlEuler(const vector3f_t *ref,
                                    attitude_m->x * attitude_m->z));
 
     /* Update controllers, send bounded control signal to the next step */
-    out->x =
-        fPIUpdate_BC(&attitude_controller[0], err.x, limits->x, -limits->x, dt);
-    out->y =
-        fPIUpdate_BC(&attitude_controller[1], err.y, limits->y, -limits->y, dt);
+    out->x = fPIUpdate_BC(&attitude_controller[0],
+                          err.x,
+                          rate_limits->x,
+                          -rate_limits->x,
+                          dt);
+
+    out->y = fPIUpdate_BC(&attitude_controller[1],
+                          err.y,
+                          rate_limits->y,
+                          -rate_limits->y,
+                          dt);
 }
 /*===========================================================================*/
 /* External declarations.                                                    */
