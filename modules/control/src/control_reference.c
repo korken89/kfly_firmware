@@ -44,13 +44,20 @@ void RCInputsToControlAction(control_reference_t *ref,
                              const vector3f_t *rate_lim,
                              const vector3f_t *attitude_lim)
 {
+    /* Get the zero integrals function.  */
+    void vZeroControlIntegrals(void);
 
     /* Read out the throttle reference and check if it is bellow the minimum
      * throttle. Used to indicate an armed system by rotating the propellers. */
     float throttle = RCInputGetInputLevel(ROLE_THROTTLE);
 
-    if (throttle < fGetDisarmedThrottle())
-        throttle = fGetDisarmedThrottle();
+    if (throttle < fGetArmedMinThrottle())
+    {
+        throttle = fGetArmedMinThrottle();
+
+        /* If the throttle is bellow the */
+        vZeroControlIntegrals();
+    }
 
     if (ref->mode == FLIGHTMODE_RATE)
     {

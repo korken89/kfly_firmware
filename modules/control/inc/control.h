@@ -64,6 +64,7 @@ void ControlInit(void);
 void vUpdateControlAction(const quaternion_t *q_m,
                           const vector3f_t *omega_m,
                           const float dt);
+void vZeroControlIntegrals(void);
 control_reference_t *ptrGetControlReferences(void);
 control_data_t *ptrGetControlData(void);
 control_limits_t *ptrGetControlLimits(void);

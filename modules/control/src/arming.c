@@ -284,7 +284,7 @@ bool bIsSystemArmed(void)
  *
  * @return      The minimum throttle value.
  */
-float fGetDisarmedThrottle(void)
+float fGetArmedMinThrottle(void)
 {
     return arm_settings.armed_min_throttle;
 }

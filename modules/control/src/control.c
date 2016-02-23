@@ -36,8 +36,6 @@
 /* Module local definitions.                                                 */
 /*===========================================================================*/
 
-static void vZeroControlIntegrals(void);
-
 /*===========================================================================*/
 /* Module exported variables.                                                */
 /*===========================================================================*/
@@ -245,20 +243,6 @@ static void vSetOutputsDefault(void)
     vSendPWMCommands();
 }
 
-/**
- * @brief   Zeros all control integrals.
- */
-static void vZeroControlIntegrals(void)
-{
-    int i;
-
-    /* Cast the controller data into an array of PI controllers. */
-    pi_data_t *pi = (pi_data_t *)&control_data;
-
-    /* Zero each controllers Integral state. */
-    for (i = 0; i < CONTROL_NUMBER_OF_CONTROLLERS; i++)
-        pi[i].I_state = 0.0f;
-}
 
 /*===========================================================================*/
 /* Module exported functions.                                                */
@@ -449,6 +433,20 @@ void vUpdateControlAction(const quaternion_t *attitude_m,
     osalSysUnlock();
 }
 
+/**
+ * @brief   Zeros all control integrals.
+ */
+void vZeroControlIntegrals(void)
+{
+    int i;
+
+    /* Cast the controller data into an array of PI controllers. */
+    pi_data_t *pi = (pi_data_t *)&control_data;
+
+    /* Zero each controllers Integral state. */
+    for (i = 0; i < CONTROL_NUMBER_OF_CONTROLLERS; i++)
+        pi[i].I_state = 0.0f;
+}
 /**
  * @brief       Return the pointer to the control reference structure.
  *
