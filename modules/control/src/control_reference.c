@@ -55,7 +55,8 @@ void RCInputsToControlAction(control_reference_t *ref,
     {
         throttle = fGetArmedMinThrottle();
 
-        /* If the throttle is bellow the */
+        /* If the throttle is bellow the minimum armed throttle, zero integrals
+         * so there is no windup problem. */
         vZeroControlIntegrals();
     }
 
