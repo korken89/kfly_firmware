@@ -276,8 +276,7 @@ void ControlInit(void)
     /* Initialize all references to 0 and disarm controllers. */
     p = (float *)&control_reference;
 
-    /* TODO: Fix this hack... */
-    for (i = 0; i < ((CONTROL_REFERENCE_SIZE - 2) / 4); i++)
+    for (i = 0; i < (CONTROL_REFERENCE_SIZE / sizeof(float)); i++)
         p[i] = 0.0f;
 
     control_reference.mode = FLIGHTMODE_DISARMED;
@@ -285,23 +284,20 @@ void ControlInit(void)
     /* Initialize the controllers to 0. */
     p = (float *)&control_data;
 
-    for (i = 0; i < (CONTROL_DATA_SIZE / 4); i++)
+    for (i = 0; i < (CONTROL_DATA_SIZE / sizeof(float)); i++)
         p[i] = 0.0f;
 
     /* Initialize the limits to 0. */
     p = (float *)&control_limits;
 
-    for (i = 0; i < (CONTROL_LIMITS_SIZE / 4); i++)
+    for (i = 0; i < (CONTROL_LIMITS_SIZE / sizeof(float)); i++)
         p[i] = 0.0f;
 
     /* Initialize the mixer's weights to 0. */
     p = (float *)&output_mixer;
 
-    for (i = 0; i < (OUTPUT_MIXER_SIZE / 4); i++)
+    for (i = 0; i < (OUTPUT_MIXER_SIZE / sizeof(float)); i++)
         p[i] = 0.0f;
-
-    /* Set outputs to default value. */
-    vSetOutputsDefault();
 
     /* Initializing computer control. */
     ComputerControlInit();
@@ -311,6 +307,9 @@ void ControlInit(void)
 
     /* Read data from flash (if available). */
     vReadControlParametersFromFlash();
+
+    /* Set outputs to default value. */
+    vSetOutputsDefault();
 
     /* Initialize control thread. */
     chThdCreateStatic(waThreadControl,
