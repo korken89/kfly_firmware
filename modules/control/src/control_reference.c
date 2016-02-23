@@ -52,9 +52,6 @@ void RCInputsToControlAction(control_reference_t *ref,
     if (throttle < fGetDisarmedThrottle())
         throttle = fGetDisarmedThrottle();
 
-    ref->actuator_desired.throttle = throttle;
-
-
     if (ref->mode == FLIGHTMODE_RATE)
     {
         ref->rate_reference.x =
@@ -63,6 +60,8 @@ void RCInputsToControlAction(control_reference_t *ref,
             rate_lim->y * DEG2RAD * RCInputGetInputLevel(ROLE_ROLL);
         ref->rate_reference.z =
             rate_lim->z * DEG2RAD * RCInputGetInputLevel(ROLE_YAW);
+
+        ref->actuator_desired.throttle = throttle;
     }
     else if (ref->mode == FLIGHTMODE_ATTITUDE_EULER)
     {
@@ -72,6 +71,8 @@ void RCInputsToControlAction(control_reference_t *ref,
             attitude_lim->y * DEG2RAD * RCInputGetInputLevel(ROLE_PITCH);
         ref->rate_reference.z =
             rate_lim->z * DEG2RAD * RCInputGetInputLevel(ROLE_YAW);
+
+        ref->actuator_desired.throttle = throttle;
     }
     else
     {
