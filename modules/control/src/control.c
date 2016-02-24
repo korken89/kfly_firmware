@@ -23,6 +23,7 @@
  *
  * */
 
+#include "string.h"
 #include "ch.h"
 #include "hal.h"
 #include "control.h"
@@ -253,35 +254,18 @@ static void vSetOutputsDefault(void)
  */
 void ControlInit(void)
 {
-    float *p;
-    uint32_t i;
-
-
     /* Initialize all references to 0 and disarm controllers. */
-    p = (float *)&control_reference;
-
-    for (i = 0; i < (CONTROL_REFERENCE_SIZE / sizeof(float)); i++)
-        p[i] = 0.0f;
-
+    memset((uint8_t *)&control_reference, 0, CONTROL_REFERENCE_SIZE);
     control_reference.mode = FLIGHTMODE_DISARMED;
 
     /* Initialize the controllers to 0. */
-    p = (float *)&control_data;
-
-    for (i = 0; i < (CONTROL_DATA_SIZE / sizeof(float)); i++)
-        p[i] = 0.0f;
+    memset((uint8_t *)&control_data, 0, CONTROL_DATA_SIZE);
 
     /* Initialize the limits to 0. */
-    p = (float *)&control_limits;
-
-    for (i = 0; i < (CONTROL_LIMITS_SIZE / sizeof(float)); i++)
-        p[i] = 0.0f;
+    memset((uint8_t *)&control_limits, 0, CONTROL_LIMITS_SIZE);
 
     /* Initialize the mixer's weights to 0. */
-    p = (float *)&output_mixer;
-
-    for (i = 0; i < (OUTPUT_MIXER_SIZE / sizeof(float)); i++)
-        p[i] = 0.0f;
+    memset((uint8_t *)&output_mixer, 0, OUTPUT_MIXER_SIZE);
 
     /* Initializing computer control. */
     ComputerControlInit();
