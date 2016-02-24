@@ -90,8 +90,8 @@ static THD_FUNCTION(ThreadEstimation, arg)
         vInnovateMotionCaptureEstimator(&states,
                                         &imu_data,
                                         SENSOR_ACCGYRO_DT,
-                                        0.0002f,
-                                        fc2lpf_gain(20, SENSOR_ACCGYRO_DT)); /* LPF ~ 45 Hz */
+                                        0.0001f,
+                                        fc2lpf_gain(40, SENSOR_ACCGYRO_DT)); /* LPF ~ 45 Hz */
 
         /*InnovateAttitudeEKF(&states,
                             &data,
