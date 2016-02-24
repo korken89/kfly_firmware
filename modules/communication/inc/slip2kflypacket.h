@@ -129,13 +129,25 @@ typedef enum PACKED_VAR
      * @brief   Save all settings to flash.
      */
     Cmd_SaveToFlash                 = 19,
+    /**
+     * @brief   Erases the settings flash.
+     */
+    Cmd_EraseFlash                  = 20,
 
     /*===============================================*/
     /* Controller specific commands.                 */
     /*===============================================*/
 
     /**
-     * @brief   Get contreller settings.
+     * @brief   Get controller references (quaternion and rate).
+     */
+    Cmd_GetControllerReferences     = 24,
+    /**
+     * @brief   Get control signals (actuator desired).
+     */
+    Cmd_GetControlSignals           = 25,
+    /**
+     * @brief   Get controller settings.
      */
     Cmd_GetControllerLimits         = 26,
     /**
@@ -268,13 +280,13 @@ typedef enum PACKED_VAR
     Cmd_ComputerControlReference    = 126,
 
     /*===============================================*/
-    /* Vicon Measurement specific commands.          */
+    /* Motion Capture frame specific commands.       */
     /*===============================================*/
 
     /**
-     * @brief   New vicon measurement.
+     * @brief   New motion capture measurement.
      */
-    Cmd_ViconMeasurement            = 127
+    Cmd_MotionCaptureMeasurement    = 127
 
 } kfly_command_t;
 

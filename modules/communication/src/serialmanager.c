@@ -182,7 +182,7 @@ static THD_FUNCTION(USBDataPumpTask, arg)
     chRegSetThreadName("USB Data Pump");
 
     /* Buffer for transmitting serial USB commands */
-    CCM_MEMORY static uint8_t USB_out_buffer[SERIAL_TRANSMIT_BUFFER_SIZE];
+    static uint8_t USB_out_buffer[SERIAL_TRANSMIT_BUFFER_SIZE];
 
     /* Initialize the USB transmit circular buffer */
     CircularBuffer_Init(&data_pumps.USBTransmitBuffer,
@@ -236,7 +236,7 @@ static THD_FUNCTION(Aux1SerialManagerTask, arg)
     /* Initialize data structures */
     InitSLIPParser(&slip_data_holder,
                    AUX1_in_buffer,
-                   16,
+                   SERIAL_RECIEVE_BUFFER_SIZE,
                    bind);
 
     /* Cut away the header. */
@@ -262,7 +262,7 @@ static THD_FUNCTION(Aux1DataPumpTask, arg)
     chRegSetThreadName("Aux1 Data Pump");
 
     /* Buffer for transmitting serial Aux1 commands */
-    CCM_MEMORY static uint8_t AUX1_out_buffer[SERIAL_TRANSMIT_BUFFER_SIZE];
+    static uint8_t AUX1_out_buffer[SERIAL_TRANSMIT_BUFFER_SIZE];
 
     /* Initialize the Aux1 transmit circular buffer */
     CircularBuffer_Init(&data_pumps.AUX1TransmitBuffer,

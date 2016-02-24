@@ -29,7 +29,7 @@
 
 /*
  * @brief               Convert Pitch, Roll and Yaw to quaternion
- * 
+ *
  * @param[in] roll      Roll [rad]
  * @param[in] pitch     Pitch [rad]
  * @param[in] yaw       Yaw [rad]
@@ -56,8 +56,8 @@ void euler2quat(const float roll,
     const float sy = fast_sin(yaw_h);
 
     /* Create the quaternion */
-    q->q0 = cr * cp * cy + sr * sp * sy;
-    q->q1 = sr * cp * cy - cr * sp * sy;
-    q->q2 = cr * sp * cy + sr * cp * sy;
-    q->q3 = cr * cp * sy - sr * sp * cy;
+    q->w = cr * cp * cy + sr * sp * sy;
+    q->x = sr * cp * cy - cr * sp * sy;
+    q->y = cr * sp * cy + sr * cp * sy;
+    q->z = cr * cp * sy - sr * sp * cy;
 }

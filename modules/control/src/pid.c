@@ -34,13 +34,11 @@
  * @param[in] I_limit           Controller I limit.
  */
 void vInitPIController(pi_data_t *pi_settings,
-                       float P_gain,
-                       float I_gain,
-                       float I_limit)
+                       const float P_gain,
+                       const float I_gain)
 {
     pi_settings->P_gain = P_gain;
     pi_settings->I_gain = I_gain;
-    pi_settings->I_limit = I_limit;
     pi_settings->I_state = 0.0f;
 }
 
@@ -53,82 +51,10 @@ void vInitPIController(pi_data_t *pi_settings,
  * @param[in] I_limit           Controller I limit.
  */
 void vUpdatePISettings(pi_data_t *pi_settings,
-                       float P_gain,
-                       float I_gain,
-                       float I_limit)
+                       const float P_gain,
+                       const float I_gain)
 {
     pi_settings->P_gain = P_gain;
     pi_settings->I_gain = I_gain;
-    pi_settings->I_limit = I_limit;
 }
 
-/**
- * @brief       Updates the PI controller with one time step.
- * @note        The integral limits directly sets the maximum/minimum of the
- *              integral state.
- *
- * @param[in/out] pi_settings   PI settings and state structure.
- * @param[in] error             Controlled variable's error.
- * @param[in] dt                Time step size in seconds.
- * @return      The outputted control signal of the PI controller.
- */
-float fPIUpdate(pi_data_t *pi, float error, float dt)
-{
-    /* Integration with anti-windup */
-    pi->I_state = bound( pi->I_limit,
-                        -pi->I_limit,
-                         pi->I_state + pi->I_gain * error * dt);
-
-    /* Create control signal */
-    return ((pi->P_gain * error) + pi->I_state);
-}
-
-/**
- * @brief       Updates the PI controller with one time step.
- * @note        The integral is limited using back calculation to not need
- *              need limits on the integral itself.
- *
- * @param[in/out] pi_settings   PI settings and state structure.
- * @param[in] error             Controlled variable's error.
- * @param[in] u_max             Max saturation limit.
- * @param[in] u_min             Min saturation limit.
- * @param[in] dt                Time step size in seconds.
- * @return      The outputted control signal of the PI controller.
- */
-float fPIUpdate_BackCalculationSaturation(pi_data_t *pi,
-                                          float error,
-                                          float u_max,
-                                          float u_min,
-                                          float dt)
-{
-    float u, P_state;
-
-    /* Calculate the new integral state. */
-    pi->I_state += dt * pi->I_gain * error;
-
-    /* Calculate the proportional state . */
-    P_state = pi->P_gain * error;
-
-    /* Calculate the unsaturated control signal. */
-    u = P_state + pi->I_state;
-
-    /* Check the saturation and compensate with the integral if necessary. */
-    if (u > u_max)
-    {
-        if (pi->I_gain > 0.0f)
-            pi->I_state = u_max - P_state;
-
-        return u_max;
-    }
-    else if (u < u_min)
-    {
-        if (pi->I_gain > 0.0f)
-            pi->I_state = u_min - P_state;
-
-        return u_min;
-    }
-    else
-    {
-        return u;
-    }
-}

@@ -22,7 +22,7 @@
 #include "estimation.h"
 #include "control.h"
 #include "computer_control.h"
-#include "vicon.h"
+#include "motion_capture.h"
 #include "kflypacket_parsers.h"
 
 /*===========================================================================*/
@@ -35,6 +35,7 @@ static void ParseManageSubscriptions(kfly_parser_t *pHolder);
 static void ParseGetDeviceInfo(kfly_parser_t *pHolder);
 static void ParseSetDeviceID(kfly_parser_t *pHolder);
 static void ParseSaveToFlash(kfly_parser_t *pHolder);
+static void ParseEraseFlash(kfly_parser_t *pHolder);
 static void ParseSetControllerLimits(kfly_parser_t *pHolder);
 static void ParseGetControllerLimits(kfly_parser_t *pHolder);
 static void ParseSetArmSettings(kfly_parser_t *pHolder);
@@ -63,7 +64,7 @@ static void ParseGetEstimationPosition(kfly_parser_t *pHolder);
 static void ParseGetEstimationAllStates(kfly_parser_t *pHolder);
 static void ParseResetEstimation(kfly_parser_t *pHolder);
 static void ParseComputerControlReference(kfly_parser_t *pHolder);
-static void ParseViconMeasurement(kfly_parser_t *pHolder);
+static void ParseMotionCaptureMeasurement(kfly_parser_t *pHolder);
 
 /*===========================================================================*/
 /* Module exported variables.                                                */
@@ -97,7 +98,7 @@ static const kfly_data_parser_t parser_lookup[128] = {
     ParseGetDeviceInfo,               /* 17:  Cmd_GetBootloaderVersion        */
     ParseSetDeviceID,                 /* 18:  Cmd_SetDeviceID                 */
     ParseSaveToFlash,                 /* 19:  Cmd_SaveToFlash                 */
-    NULL,                             /* 20:                                  */
+    ParseEraseFlash,                  /* 20:  Cmd_EraseFlash                  */
     NULL,                             /* 21:                                  */
     NULL,                             /* 22:                                  */
     NULL,                             /* 23:                                  */
@@ -204,7 +205,7 @@ static const kfly_data_parser_t parser_lookup[128] = {
     NULL,                             /* 124:                                 */
     NULL,                             /* 125:                                 */
     ParseComputerControlReference,    /* 126: Cmd_ComputerControlReference    */
-    ParseViconMeasurement             /* 127: Cmd_ViconMeasurement            */
+    ParseMotionCaptureMeasurement     /* 127: Cmd_MotionCaptureMeasurement    */
 };
 
 /*===========================================================================*/
@@ -298,40 +299,9 @@ static void ParseGetRunningMode(kfly_parser_t *pHolder)
  */
 static void ParseManageSubscriptions(kfly_parser_t *pHolder)
 {
-    /* Parsing structure for the data */
-    subscription_parser_t *p;
-
-    /* Check so the length of the message is correct */
-    if (pHolder->data_length == sizeof(subscription_parser_t))
-    {
-        /* Cast the message to the parser structure */
-        p = (subscription_parser_t *)pHolder->buffer;
-
-        /* Check for valid port */
-        if ((isPort(p->port) == true) || (p->port == 0xff))
-        {
-            if (p->on_off == 0)
-            {
-                /* Unsubscribe from command */
-                if (p->port == 0xff) /* Port is the one the command came on */
-                    bUnsubscribeFromCommand(p->command, pHolder->port);
-                else /* Port is is specified in the message */
-                    bUnsubscribeFromCommand(p->command, p->port);
-            }
-            else
-            {
-                /* Subscribe to command */
-                if (p->port == 0xff) /* Port is the one the command came on */
-                    bSubscribeToCommand(p->command,
-                                        pHolder->port,
-                                        p->delta_time);
-                else /* Port is is specified in the message */
-                    bSubscribeToCommand(p->command,
-                                        p->port,
-                                        p->delta_time);
-            }
-        }
-    }
+    vParseManageSubscription(pHolder->buffer,
+                             pHolder->data_length,
+                             pHolder->port);
 }
 
 /**
@@ -382,6 +352,25 @@ static void ParseSaveToFlash(kfly_parser_t *pHolder)
 
     /* Broadcast the Save to Flash event */
     vBroadcastFlashSaveEvent();
+}
+
+/**
+ * @brief               Parses a EraseFlash command.
+ * @note                The serial communication will be locked until the erase
+ *                      has finnished.
+ *
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
+ */
+static void ParseEraseFlash(kfly_parser_t *pHolder)
+{
+    (void)pHolder;
+
+    /* Erase the external flash, the communicaiton will be locked until it is
+     * done.
+     */
+    vFlashSave_EraseAll();
+
 }
 
 /**
@@ -496,7 +485,8 @@ static void ParseSetAttitudeControllerData(kfly_parser_t *pHolder)
  */
 static void ParseGetVelocityControllerData(kfly_parser_t *pHolder)
 {
-    GenerateMessage(Cmd_GetVelocityControllerData, pHolder->port);
+    (void) pHolder;
+    //GenerateMessage(Cmd_GetVelocityControllerData, pHolder->port);
 }
 
 /**
@@ -507,9 +497,10 @@ static void ParseGetVelocityControllerData(kfly_parser_t *pHolder)
  */
 static void ParseSetVelocityControllerData(kfly_parser_t *pHolder)
 {
-    if (pHolder->data_length == (3 * PI_SETTINGS_SIZE))
-        ParseGenericSetControllerData(VELOCITY_PI_OFFSET,
-                                      pHolder->buffer);
+    (void) pHolder;
+    //if (pHolder->data_length == (3 * PI_SETTINGS_SIZE))
+    //    ParseGenericSetControllerData(VELOCITY_PI_OFFSET,
+    //                                  pHolder->buffer);
 }
 
 /**
@@ -520,7 +511,8 @@ static void ParseSetVelocityControllerData(kfly_parser_t *pHolder)
  */
 static void ParseGetPositionControllerData(kfly_parser_t *pHolder)
 {
-    GenerateMessage(Cmd_GetPositionControllerData, pHolder->port);
+    (void) pHolder;
+    //GenerateMessage(Cmd_GetPositionControllerData, pHolder->port);
 }
 
 /**
@@ -531,9 +523,10 @@ static void ParseGetPositionControllerData(kfly_parser_t *pHolder)
  */
 static void ParseSetPositionControllerData(kfly_parser_t *pHolder)
 {
-    if (pHolder->data_length == (3 * PI_SETTINGS_SIZE))
-        ParseGenericSetControllerData(POSITION_PI_OFFSET,
-                                      pHolder->buffer);
+    (void) pHolder;
+    //if (pHolder->data_length == (3 * PI_SETTINGS_SIZE))
+    //    ParseGenericSetControllerData(POSITION_PI_OFFSET,
+    //                                  pHolder->buffer);
 }
 
 /**
@@ -738,14 +731,14 @@ static void ParseComputerControlReference(kfly_parser_t *pHolder)
 }
 
 /**
- * @brief               Parses a ViconMeasurement command.
+ * @brief               Parses a MotionCaptureMeasurement command.
  *
  * @param[in] pHolder   Message holder containing information
  *                      about the transmission.
  */
-static void ParseViconMeasurement(kfly_parser_t *pHolder)
+static void ParseMotionCaptureMeasurement(kfly_parser_t *pHolder)
 {
-    vParseViconDataPackage(pHolder->buffer, pHolder->data_length);
+    vParseMotionCaptureDataPackage(pHolder->buffer, pHolder->data_length);
 }
 
 /*===========================================================================*/

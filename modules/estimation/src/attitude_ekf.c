@@ -28,7 +28,7 @@
 
 /**
  * @brief   Used to initialize and zero the matrices and states of the EKF
- * 
+ *
  * @param[out] states           Pointer to the EKF states.
  * @param[out] data             Pointer to the EKF data holder.
  * @param[in] start_attitude    Pointer to the starting guess of attitude.
@@ -40,10 +40,10 @@ void AttitudeEstimationInit(attitude_states_t *states,
                             vector3f_t *start_bias)
 {
     /* Initialize states */
-    states->q.q0 = start_attitude->q0;
-    states->q.q1 = start_attitude->q1;
-    states->q.q2 = start_attitude->q2;
-    states->q.q3 = start_attitude->q3;
+    states->q.w = start_attitude->w;
+    states->q.x = start_attitude->x;
+    states->q.y = start_attitude->y;
+    states->q.z = start_attitude->z;
 
     states->w.x = 0.0f;
     states->w.y = 0.0f;
@@ -83,15 +83,15 @@ void AttitudeEstimationInit(attitude_states_t *states,
 
 /**
  * @brief   Generates a staring guess attitude quaternion for the EKF,
- * 
+ *
  * @param[in] acc               Acceleration vector pointing approximating
  *                              gravity.
- * @param[in] mag               Magnetic vector approximating the earth's 
+ * @param[in] mag               Magnetic vector approximating the earth's
  *                              magnetic field.
  * @param[out] attitude_guess   Output quaternion.
  */
 void GenerateStartingGuess(vector3f_t *acc,
-                           vector3f_t *mag, 
+                           vector3f_t *mag,
                            quaternion_t *attitude_guess)
 {
     float pitch, roll, yaw;
@@ -101,7 +101,7 @@ void GenerateStartingGuess(vector3f_t *acc,
     pitch = -atan2f(acc->x, sqrtf(acc->y * acc->y + acc->z * acc->z));
 
     /* Generate yaw by compensating for the pitch and roll */
-    yaw = atan2f(mag->y * fast_cos(roll) + mag->z * fast_sin(roll), 
+    yaw = atan2f(mag->y * fast_cos(roll) + mag->z * fast_sin(roll),
                  (mag->x * fast_cos(pitch) + mag->y * fast_sin(pitch) *
                   fast_sin(roll) - mag->z * fast_sin(pitch) * fast_cos(roll)));
 
@@ -114,10 +114,10 @@ void GenerateStartingGuess(vector3f_t *acc,
  * @details         An Square-Root Multiplicative Extended Kalman Filter
  *                  (SR-MEKF) based on Generalized Rodriguez Parameters (GRPs).
  *                  It has very large dynamical range due to the square-root
- *                  factors and is written with close to optimal code. If there 
- *                  is no new magnetometer value, insert NULL and the filter 
+ *                  factors and is written with close to optimal code. If there
+ *                  is no new magnetometer value, insert NULL and the filter
  *                  will do an update without the magnetometer.
- * 
+ *
  * @param states[in/out]  Pointer to structure holding the states.
  * @param data[in/out]    Pointer to structure holding the data
  *                        and temporary matrices.
@@ -139,7 +139,7 @@ void InnovateAttitudeEKF(attitude_states_t *states,
 {
     (void)beta;
     (void)u_sum;
-    
+
     float R[3][3];
     float w_norm, dtheta, sdtheta, cdtheta, t1, t2, t3, x_hat[6];
     quaternion_t dq_int;
@@ -159,7 +159,7 @@ void InnovateAttitudeEKF(attitude_states_t *states,
 
     /* Calculate the delta quaternion */
     w_norm = sqrtf(w_hat.x * w_hat.x + w_hat.y * w_hat.y + w_hat.z * w_hat.z);
-    
+
     /* Security to prevent division by very small numbers */
     if (fabsf(w_norm) > 1.0E-4)
     {
@@ -169,10 +169,10 @@ void InnovateAttitudeEKF(attitude_states_t *states,
         cdtheta = fast_cos(dtheta);
 
         /* Calculate the integrated quaternion */
-        dq_int.q0 = cdtheta;
-        dq_int.q1 = sdtheta * (w_hat.x / w_norm);
-        dq_int.q2 = sdtheta * (w_hat.y / w_norm);
-        dq_int.q3 = sdtheta * (w_hat.z / w_norm);
+        dq_int.w = cdtheta;
+        dq_int.x = sdtheta * (w_hat.x / w_norm);
+        dq_int.y = sdtheta * (w_hat.y / w_norm);
+        dq_int.z = sdtheta * (w_hat.z / w_norm);
 
         /* Use the delta quaternion to produce the current
            estimate of the attitude */
@@ -196,12 +196,12 @@ void InnovateAttitudeEKF(attitude_states_t *states,
 
     /*
      * 1) Estimate the predicted state:
-     */  
+     */
 
     /* Since the error dynamics predict a zero, no change is made */
 
 
-    /* 
+    /*
      * 2) Estimate the square-root factor of the predicted
      *    error covariance matrix:
      */
@@ -286,14 +286,14 @@ void InnovateAttitudeEKF(attitude_states_t *states,
     acc_B.z = acc[2];
 
     mag_B.x = mag[0];
-    mag_B.y = mag[1];   
+    mag_B.y = mag[1];
     mag_B.z = mag[2];
 
     /* Rotate the acceleration and magnetic vector to the fixed frame */
     acc_F = vector_rotation_transposed(R, acc_B);
     mag_F = vector_rotation_transposed(R, mag_B);
 
-    /* Since the measurement prediction is based on the states and the 
+    /* Since the measurement prediction is based on the states and the
      * states are zero, then the measurement prediction is zero and the
      * error is the measurement directly.
      *
@@ -309,20 +309,20 @@ void InnovateAttitudeEKF(attitude_states_t *states,
     /*
      * 2) Estimate the square-root factor of the innovation covariance matrix:
      */
-    Ss[0][0] = R[0][0] * Sp[0][0] + R[1][0] * Sp[0][1] + R[2][0] * Sp[0][2]; 
-    Ss[0][1] = R[0][1] * Sp[0][0] + R[1][1] * Sp[0][1] + R[2][1] * Sp[0][2]; 
-    Ss[0][2] = R[0][2] * Sp[0][0] + R[1][2] * Sp[0][1] + R[2][2] * Sp[0][2]; 
+    Ss[0][0] = R[0][0] * Sp[0][0] + R[1][0] * Sp[0][1] + R[2][0] * Sp[0][2];
+    Ss[0][1] = R[0][1] * Sp[0][0] + R[1][1] * Sp[0][1] + R[2][1] * Sp[0][2];
+    Ss[0][2] = R[0][2] * Sp[0][0] + R[1][2] * Sp[0][1] + R[2][2] * Sp[0][2];
 
-    Ss[1][0] = R[1][0] * Sp[1][1] + R[2][0] * Sp[1][2]; 
-    Ss[1][1] = R[1][1] * Sp[1][1] + R[2][1] * Sp[1][2]; 
-    Ss[1][2] = R[1][2] * Sp[1][1] + R[2][2] * Sp[1][2]; 
+    Ss[1][0] = R[1][0] * Sp[1][1] + R[2][0] * Sp[1][2];
+    Ss[1][1] = R[1][1] * Sp[1][1] + R[2][1] * Sp[1][2];
+    Ss[1][2] = R[1][2] * Sp[1][1] + R[2][2] * Sp[1][2];
 
-    Ss[2][0] = R[2][0] * Sp[2][2]; 
-    Ss[2][1] = R[2][1] * Sp[2][2]; 
+    Ss[2][0] = R[2][0] * Sp[2][2];
+    Ss[2][1] = R[2][1] * Sp[2][2];
     Ss[2][2] = R[2][2] * Sp[2][2];
 
     /* In the T2 matrix I put the observation covariance matrix. */
-    T2[0][0] = SR_1; 
+    T2[0][0] = SR_1;
     T2[1][1] = SR_1;
     T2[2][2] = SR_2;
 
@@ -364,10 +364,10 @@ void InnovateAttitudeEKF(attitude_states_t *states,
 
 
     /*
-     * 3) Calculate the Kalman gain, 4) Calculate the updated state: 
+     * 3) Calculate the Kalman gain, 4) Calculate the updated state:
      */
 
-    /* K     = Sp * T3^T * Ss^-1 
+    /* K     = Sp * T3^T * Ss^-1
      * x_hat = K * y
      */
     t1 = Sp[0][0] * T3[0][0];
@@ -433,7 +433,7 @@ void InnovateAttitudeEKF(attitude_states_t *states,
     chol_downdate(&T1[0][0], &T3[1][0], 6);
     chol_downdate(&T1[0][0], &T3[2][0], 6);
 
-    /* Create the updated error covariance matrix Sp = T1 * Sp (the 
+    /* Create the updated error covariance matrix Sp = T1 * Sp (the
        chol_downdate creates an upper triangular matrix, no transpose needed) */
     uu_mul(&T1[0][0], &Sp[0][0], 6);
 
@@ -470,5 +470,5 @@ void InnovateAttitudeEKF(attitude_states_t *states,
 
     /*
      *      End of filter!
-     */ 
+     */
 }

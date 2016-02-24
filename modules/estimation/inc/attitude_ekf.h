@@ -16,19 +16,19 @@
 /* Process covariances */
 #define SQ_Q            (0.001f)                    /* Quaternion error
                                                       covariance */
-#define SQ_B            (0.0001f * ESTIMATION_DT)   /* Gyro bias covariance */ 
+#define SQ_B            (0.0001f * ESTIMATION_DT)   /* Gyro bias covariance */
 
 /* Observation covariances */
 #define SR_A            (100.0f)                    /* Acceleration error
                                                        covariance */
-#define SR_T            (1000.0f)                   /* Magnetometer error 
+#define SR_T            (1000.0f)                   /* Magnetometer error
                                                        covariance */
 
 /* Starting error covariance */
 #define S_P             (10.0f)                     /* Starting value of the
                                                        diagonal of P */
 
-/* Calculate the square-root factors 
+/* Calculate the square-root factors
  * Generated from Matlab, do not change */
 #define SQ_1            (sqrtf(SQ_Q))
 #define SQ_2            (0.5f * sqrtf(SQ_B * (4.0f * SQ_Q - SQ_B) / SQ_Q))
@@ -41,13 +41,13 @@
 /* GRP settings */
 #define GRP_A           (1.0f)
 #define GRP_F           (2.0f * (GRP_A + 1.0f))     /* This choice of GRP_F
-                                                       makes the small angle 
-                                                       approximation equal 
+                                                       makes the small angle
+                                                       approximation equal
                                                        the angle  */
 
 /* Sizes */
 #define ESTIMATION_STATES_SIZE              (sizeof(attitude_states_t))
-#define ESTIMATION_ATTITUDE_STATE_SIZE      (sizeof(quaternion_t))
+#define ESTIMATION_ATTITUDE_STATE_SIZE      (sizeof(attitude_states_t))
 #define ESTIMATION_RATE_OFFSET              (ESTIMATION_ATTITUDE_STATE_SIZE)
 #define ESTIMATION_RATE_STATE_SIZE          (sizeof(vector3f_t))
 /*===========================================================================*/
@@ -116,7 +116,7 @@ void AttitudeEstimationInit(attitude_states_t *states,
                             quaternion_t *start_attitude,
                             vector3f_t *start_bias);
 void GenerateStartingGuess(vector3f_t *acc,
-                           vector3f_t *mag, 
+                           vector3f_t *mag,
                            quaternion_t *attitude_guess);
 void InnovateAttitudeEKF(attitude_states_t *states,
                          attitude_matrices_t *settings,

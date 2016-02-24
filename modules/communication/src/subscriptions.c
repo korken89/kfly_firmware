@@ -281,3 +281,57 @@ void vUnsubscribeFromAllI(void)
         subscriptions.slot[i].command = Cmd_None;
     }
 }
+
+/**
+ * @brief       Parses a data packet for managing a subscription.
+ *
+ * @param[in] data              Data packet.
+ * @param[in] size              Size of data packet.
+ * @param[in] reception_port    Port that the packet arrived on.
+ */
+void vParseManageSubscription(const uint8_t *data,
+                              const uint8_t size,
+                              external_port_t reception_port)
+{
+    /* Parsing structure for the data */
+    subscription_parser_t *p;
+
+    /* Check so the length of the message is correct */
+    if (size == sizeof(subscription_parser_t))
+    {
+        /* Cast the message to the parser structure */
+        p = (subscription_parser_t *)data;
+
+        /* Check for valid port */
+        if ((isPort(p->port) == true) || ((uint8_t)p->port == 0xff))
+        {
+            if (p->on_off == 0)
+            {
+                /* Unsubscribe from command */
+                if ((uint8_t)p->port == 0xff) /* Port is the one the command came on */
+                    bUnsubscribeFromCommand(p->command, reception_port);
+                else /* Port is is specified in the message */
+                    bUnsubscribeFromCommand(p->command, p->port);
+            }
+            else
+            {
+                /* Check so the time is not 0. */
+                if (p->delta_time == 0)
+                    return;
+
+                /* Subscribe to command */
+                else if ((uint8_t)p->port == 0xff)
+                    /* Port is the one the command came on */
+                    bSubscribeToCommand(p->command,
+                                        reception_port,
+                                        p->delta_time);
+
+                else
+                    /* Port is is specified in the message */
+                    bSubscribeToCommand(p->command,
+                                        p->port,
+                                        p->delta_time);
+            }
+        }
+    }
+}

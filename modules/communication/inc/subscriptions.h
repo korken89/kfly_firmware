@@ -1,6 +1,8 @@
 #ifndef __SUBSCRIPTIONS_H
 #define __SUBSCRIPTIONS_H
 
+#include "slip2kflypacket.h"
+
 /*===========================================================================*/
 /* Module global definitions.                                                */
 /*===========================================================================*/
@@ -8,6 +10,30 @@
 /*===========================================================================*/
 /* Module data structures and types.                                         */
 /*===========================================================================*/
+
+/**
+ * @brief   Parsing structure for the management of subscriptions.
+ */
+typedef struct PACKED_VAR
+{
+    /**
+     * @brief   The port on which the command shall be (un)subscribed.
+     */
+    external_port_t port;
+    /**
+     * @brief   Which command to (un)subscribe (from)to.
+     */
+    kfly_command_t command;
+    /**
+     * @brief   If the command shall be subscribed or unsubscribed.
+     *          0 denotes unsubscribe, anything else is subscribe.
+     */
+    uint8_t on_off;
+    /**
+     * @brief   The time between transmissions of the subscription in ms.
+     */
+    uint32_t delta_time;
+} subscription_parser_t;
 
 /*===========================================================================*/
 /* Module macros.                                                            */
@@ -22,6 +48,9 @@ bool bSubscribeToCommandI(kfly_command_t command,
                           uint32_t delay_ms);
 bool bUnsubscribeFromCommandI(kfly_command_t command, external_port_t port);
 void vUnsubscribeFromAllI(void);
+void vParseManageSubscription(const uint8_t *data,
+                              const uint8_t size,
+                              external_port_t reception_port);
 
 /*===========================================================================*/
 /* Module inline functions.                                                  */

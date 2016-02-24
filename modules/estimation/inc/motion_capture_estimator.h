@@ -1,28 +1,21 @@
-#ifndef __VICON_H
-#define __VICON_H
+#ifndef __MOTION_CAPTURE_ESTIMATOR_H
+#define __MOTION_CAPTURE_ESTIMATOR_H
 
+#include <math.h>
 #include "quaternion.h"
+#include "linear_algebra.h"
+#include "trigonometry.h"
+#include "sensor_read.h"
+#include "attitude_ekf.h"
+#include "motion_capture.h"
 
 /*===========================================================================*/
 /* Module global definitions.                                                */
 /*===========================================================================*/
-#define VICON_DATA_EVENTMASK                        EVENT_MASK(0)
-
-#define VICON_QUATERNION_MASK                       (1<<7)
-#define VICON_POSITION_MASK                         (1<<6)
-#define VICON_VELOCITY_MASK                         (1<<5)
 
 /*===========================================================================*/
 /* Module data structures and types.                                         */
 /*===========================================================================*/
-typedef struct
-{
-    uint8_t available_data;
-    uint32_t frame_number;
-    quaternion_t attitude;
-    vector3f_t position;
-    vector3f_t velocity;
-} vicon_measurement_t;
 
 /*===========================================================================*/
 /* Module macros.                                                            */
@@ -35,10 +28,11 @@ typedef struct
 /*===========================================================================*/
 /* External declarations.                                                    */
 /*===========================================================================*/
-void ViconSupportInit(void);
-event_source_t *ptrGetViconDataEventSource(void);
-vicon_measurement_t *ptrGetViconMeasurement(void);
-void GetCopyViconMeasurement(vicon_measurement_t *dest);
-void vParseViconDataPackage(uint8_t *payload, uint8_t size);
+void vInitializeMotionCaptureEstimator(attitude_states_t *states);
+void vInnovateMotionCaptureEstimator(attitude_states_t *states,
+                                     imu_data_t *imu_data,
+                                     const float dt,
+                                     const float wb_gain,
+                                     const float gyro_lpf);
 
-#endif
+#endif /* __VICON_ESTIMATOR_H */

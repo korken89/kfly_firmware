@@ -1,3 +1,13 @@
+/* *
+ *
+ * Quaternion implementations, based on the passive Hamilton notation.
+ * See "Quaternion kinematics for the error-state KF" by Joan Solá for a good
+ * reference on Hamilton notation and quaternion integration. Or, for a more
+ * complete reference on quaternions, see "Quaternions and Rotation Sequences"
+ * by Jack B. Kupier (book).
+ *
+ * */
+
 #ifndef __QUATERNION_H
 #define __QUATERNION_H
 
@@ -7,7 +17,9 @@
 /*===========================================================================*/
 /* Module global definitions.                                                */
 /*===========================================================================*/
-#define PI ( 3.14159265359f )
+
+#define UNIT_QUATERNION ((const quaternion_t){.w = 1.0f, .x = 0.0f,         \\
+                                              .y = 0.0f, .z = 0,0f})
 
 /*===========================================================================*/
 /* Module data structures and types.                                         */
@@ -21,19 +33,19 @@ typedef struct
     /**
      * @brief   Scalar component.
      */
-    float q0;
+    float w;
     /**
      * @brief   i component.
      */
-    float q1;
+    float x;
     /**
      * @brief   j component.
      */
-    float q2;
+    float y;
     /**
      * @brief   k component.
      */
-    float q3;
+    float z;
 } quaternion_t;
 
 /*===========================================================================*/
@@ -44,11 +56,11 @@ typedef struct
 /* Module inline functions.                                                  */
 /*===========================================================================*/
 
-/*
+/**
  * @brief               Converts a Generalized Rodrigues Parameter to a
  *                      quaternion.
  *
- * @param[in] v         GRP vector. 
+ * @param[in] v         GRP vector.
  * @param[in] a         First scaling constant.
  * @param[in] f         Second scaling constant.
  * @return              Converted quaternion.
@@ -62,73 +74,17 @@ static inline quaternion_t grp2q(const vector3f_t p,
 
     sq = vector_norm(p);
 
-    q.q0 = (-a * sq + f * sqrtf(f * f + (1.0f - a * a) * sq)) / (f * f + sq);
+    q.w = (-a * sq + f * sqrtf(f * f + (1.0f - a * a) * sq)) / (f * f + sq);
 
-    inv = (a + q.q0) / f;
-    q.q1 = p.x * inv;
-    q.q2 = p.y * inv;
-    q.q3 = p.z * inv;
+    inv = (a + q.w) / f;
+    q.x = p.x * inv;
+    q.y = p.y * inv;
+    q.z = p.z * inv;
 
     return q;
 }
 
-/*
- * @brief               Converts a quaternion to a Direction Cosine Matrix.
- *
- * @param[out] R        Pointer to the first element in the R matrix.
- * @param[in] q         Input quaternion.
- */
-static inline void q2dcm(float R[3][3], const quaternion_t q)
-{
-    /*
-      R = [q(1)^2+q(2)^2-q(3)^2-q(4)^2,       2*(q(2)*q(3)-q(1)*q(4)),       2*(q(2)*q(4)+q(1)*q(3));
-               2*(q(2)*q(3)+q(1)*q(4)),   q(1)^2-q(2)^2+q(3)^2-q(4)^2,       2*(q(3)*q(4)-q(1)*q(2));
-               2*(q(2)*q(4)-q(1)*q(3)),       2*(q(3)*q(4)+q(1)*q(2)),   q(1)^2-q(2)^2-q(3)^2+q(4)^2];
-    */
-    const float q0sq = q.q0 * q.q0;
-    const float q1sq = q.q1 * q.q1;
-    const float q2sq = q.q2 * q.q2;
-    const float q3sq = q.q3 * q.q3;
-
-    R[0][0] = q0sq + q1sq - q2sq - q3sq;
-    R[0][1] = 2.0f * (q.q1 * q.q2 - q.q0 * q.q3);
-    R[0][2] = 2.0f * (q.q1 * q.q3 + q.q0 * q.q2);
-
-    R[1][0] = 2.0f * (q.q1 * q.q2 + q.q0 * q.q3);
-    R[1][1] = q0sq - q1sq + q2sq - q3sq;
-    R[1][2] = 2.0f * (q.q2 * q.q3 - q.q0 * q.q1);
-
-    R[2][0] = 2.0f * (q.q1 * q.q3 - q.q0 * q.q2);
-    R[2][1] = 2.0f * (q.q2 * q.q3 + q.q0 * q.q1);
-    R[2][2] = q0sq - q1sq - q2sq + q3sq;
-}
-
-/*
- * @brief               Performs quaternion multiplication.
- *
- * @param[in] a         First quaternion to be multiplied.
- * @param[in] b         Second quaternion to be multiplied.
- * @return              Multiplied quaternion.
- */
-static inline quaternion_t qmult(const quaternion_t a, const quaternion_t b)
-{
-    /**
-     * q = [a(1)*b(1) - a(2)*b(2) - a(3)*b(3) - a(4)*b(4);
-     *      a(1)*b(2) + a(2)*b(1) + a(3)*b(4) - a(4)*b(3);
-     *      a(1)*b(3) - a(2)*b(4) + a(3)*b(1) + a(4)*b(2);
-     *      a(1)*b(4) + a(2)*b(3) - a(3)*b(2) + a(4)*b(1)]
-     * */
-    quaternion_t r;
-
-    r.q0 = a.q0 * b.q0 - a.q1 * b.q1 - a.q2 * b.q2 - a.q3 * b.q3;
-    r.q1 = a.q0 * b.q1 + a.q1 * b.q0 + a.q2 * b.q3 - a.q3 * b.q2;
-    r.q2 = a.q0 * b.q2 - a.q1 * b.q3 + a.q2 * b.q0 + a.q3 * b.q1;
-    r.q3 = a.q0 * b.q3 + a.q1 * b.q2 - a.q2 * b.q1 + a.q3 * b.q0;
-
-    return r;
-}
-
-/*
+/**
  * @brief               Conjugates a quaternion.
  *
  * @param[in] q         Quaternion to be conjugated.
@@ -138,15 +94,15 @@ static inline quaternion_t qconj(const quaternion_t q)
 {
     quaternion_t r;
 
-    r.q0 =   q.q0;
-    r.q1 = - q.q1;
-    r.q2 = - q.q2;
-    r.q3 = - q.q3;
+    r.w =   q.w;
+    r.x = - q.x;
+    r.y = - q.y;
+    r.z = - q.z;
 
     return r;
 }
 
-/*
+/**
  * @brief               Negates a quaternion.
  *
  * @param[in] q         Quaternion to be negated.
@@ -156,15 +112,15 @@ static inline quaternion_t qneg(const quaternion_t q)
 {
     quaternion_t r;
 
-    r.q0 = - q.q0;
-    r.q1 = - q.q1;
-    r.q2 = - q.q2;
-    r.q3 = - q.q3;
+    r.w = - q.w;
+    r.x = - q.x;
+    r.y = - q.y;
+    r.z = - q.z;
 
     return r;
 }
 
-/*
+/**
  * @brief               Calculates the norm of a quaternion.
  *
  * @param[in] q         Input quaternion.
@@ -172,10 +128,10 @@ static inline quaternion_t qneg(const quaternion_t q)
  */
 static inline float qnorm(const quaternion_t q)
 {
-    return sqrtf(q.q0*q.q0 + q.q1*q.q1 + q.q2*q.q2 + q.q3*q.q3);
+    return sqrtf(q.w*q.w + q.x*q.x + q.y*q.y + q.z*q.z);
 }
 
-/*
+/**
  * @brief               Performs quaternion normalization.
  *
  * @param[in] q         Quaternion to be normalized.
@@ -184,19 +140,105 @@ static inline float qnorm(const quaternion_t q)
 static inline quaternion_t qnormalize(const quaternion_t q)
 {
     quaternion_t r;
-    float invNorm = 1.0f / sqrtf(q.q0*q.q0 + q.q1*q.q1 + q.q2*q.q2 + q.q3*q.q3);
+    float invNorm = 1.0f / sqrtf(q.w*q.w + q.x*q.x + q.y*q.y + q.z*q.z);
 
-    r.q0 = q.q0 * invNorm;
-    r.q1 = q.q1 * invNorm;
-    r.q2 = q.q2 * invNorm;
-    r.q3 = q.q3 * invNorm;
+    r.w = q.w * invNorm;
+    r.x = q.x * invNorm;
+    r.y = q.y * invNorm;
+    r.z = q.z * invNorm;
 
     return r;
 }
 
-/*
- * @brief               Performs quaternion integration approximation. This
- *                      implementation assumes that omega * dt is small.
+/**
+ * @brief               Performs quaternion multiplication p * q.
+ *
+ * @param[in] p         First quaternion to be multiplied.
+ * @param[in] q         Second quaternion to be multiplied.
+ * @return              Multiplied quaternion.
+ */
+static inline quaternion_t qmult(const quaternion_t p, const quaternion_t q)
+{
+    /* Following the passive Hamilton notation. */
+
+    quaternion_t r;
+
+    r.w = p.w * q.w - p.x * q.x - p.y * q.y - p.z * q.z;
+    r.x = p.w * q.x + p.x * q.w + p.y * q.z - p.z * q.y;
+    r.y = p.w * q.y - p.x * q.z + p.y * q.w + p.z * q.x;
+    r.z = p.w * q.z + p.x * q.y - p.y * q.x + p.z * q.w;
+
+    return r;
+}
+
+/**
+ * @brief           Converts a quaternion to a rotation matrix, where q
+ *                  represents the rotation from frame A to frame B. Then
+ *                  V^B = R * V^A
+ *
+ * @param[out] R    Pointer to the first element in the R matrix.
+ * @param[in] q     Input quaternion.
+ */
+static inline void q2dcm(float R[3][3], const quaternion_t q)
+{
+    /* Following the passive Hamilton notation. */
+
+    const float qwsq = q.w * q.w;
+    const float qxsq = q.x * q.x;
+    const float qysq = q.y * q.y;
+    const float qzsq = q.z * q.z;
+
+    R[0][0] = qwsq + qxsq - qysq - qzsq;
+    R[0][1] = 2.0f * (q.x * q.y - q.w * q.z);
+    R[0][2] = 2.0f * (q.x * q.z + q.w * q.y);
+
+    R[1][0] = 2.0f * (q.x * q.y + q.w * q.z);
+    R[1][1] = qwsq - qxsq + qysq - qzsq;
+    R[1][2] = 2.0f * (q.y * q.z - q.w * q.x);
+
+    R[2][0] = 2.0f * (q.x * q.z - q.w * q.y);
+    R[2][1] = 2.0f * (q.y * q.z + q.w * q.x);
+    R[2][2] = qwsq - qxsq - qysq + qzsq;
+}
+
+/**
+ * @brief           Rotates a vector v by the quaternion q, that is if q
+ *                  represents the rotation from frame A to frame B then
+ *                  v^B = q * v^A * q^-1.
+ *
+ * @param[in] q     Quaternion rotation.
+ * @param[in] v     Input vector.
+ *
+ * @return          The rotated vector.
+ */
+static inline vector3f_t qrotvector(const quaternion_t q, const vector3f_t v)
+{
+    vector3f_t ret;
+
+    /* Rotation from the rotation matrix equations directly applied on v. */
+    const float qwsq = q.w * q.w;
+    const float qxsq = q.x * q.x;
+    const float qysq = q.y * q.y;
+    const float qzsq = q.z * q.z;
+
+    ret.x =       (qwsq + qxsq - qysq - qzsq) * v.x;
+    ret.x += (2.0f * (q.x * q.y - q.w * q.z)) * v.y;
+    ret.x += (2.0f * (q.x * q.z + q.w * q.y)) * v.z;
+
+    ret.y =  (2.0f * (q.x * q.y + q.w * q.z)) * v.x;
+    ret.y +=      (qwsq - qxsq + qysq - qzsq) * v.y;
+    ret.y += (2.0f * (q.y * q.z - q.w * q.x)) * v.z;
+
+    ret.z =  (2.0f * (q.x * q.z - q.w * q.y)) * v.x;
+    ret.z += (2.0f * (q.y * q.z + q.w * q.x)) * v.y;
+    ret.z +=      (qwsq - qxsq - qysq + qzsq) * v.z;
+
+    return ret;
+}
+
+/**
+ * @brief               Performs quaternion integration approximation with a
+ *                      zeroth order integrator.
  *
  * @param[in] q_curr    Current quaternion to be integrated.
  * @param[in] omega     Angular rate.
@@ -208,21 +250,28 @@ static inline quaternion_t qint(const quaternion_t q_curr,
                                 const float dt)
 {
     quaternion_t q_step;
-    float dx, dy, dz;
 
-    dx = 0.5f * omega.x * dt;
-    dy = 0.5f * omega.y * dt;
-    dz = 0.5f * omega.z * dt;
+    const vector3f_t dtheta = vector_scale(omega, 0.5f * dt);
+    const float dtheta_norm = vector_norm(dtheta);
 
-    q_step.q0 = sqrtf(1.0f - dx * dx - dy * dy - dz * dz);
-    q_step.q1 = dx;
-    q_step.q2 = dy;
-    q_step.q3 = dz;
+    /* There is only a problem with the integration if the norm is zero.  */
+    if (dtheta_norm == 0.0f)
+        return q_curr;
+    else
+    {
+        /* Integration according to Section 1.8.1 in
+         * "Quaternion kinematics for the error-state KF" by Joan Sloá. */
 
-    return qmult(q_step, q_curr);
+        q_step.w = cosf(dtheta_norm);
+
+        *((vector3f_t *)&q_step.x) = /* Cast to vector to suppress error. */
+            vector_scale(dtheta, sinf(dtheta_norm) / dtheta_norm);
+
+        return qmult(q_curr, q_step);
+    }
 }
 
-/*
+/**
  * @brief               Converts an 4-element float array to a quaternion.
  *
  * @param[in] a         Array to be converted.
@@ -232,10 +281,10 @@ static inline quaternion_t array2q(float a[4])
 {
     quaternion_t q;
 
-    q.q0 = a[0];
-    q.q1 = a[1];
-    q.q2 = a[2];
-    q.q3 = a[3];
+    q.w = a[0];
+    q.x = a[1];
+    q.y = a[2];
+    q.z = a[3];
 
     return q;
 }

@@ -21,7 +21,7 @@
 #include "serialmanager.h"
 #include "estimation.h"
 #include "control.h"
-#include "vicon.h"
+#include "motion_capture.h"
 
 /*===========================================================================*/
 /* Module local definitions.                                                 */
@@ -220,10 +220,10 @@ static void vSystemInitList(void)
 
     /*
      *
-     * Start the Vicon Support.
+     * Start the Motion Capture Support.
      *
      */
-    ViconSupportInit();
+    MotionCaptureInit();
 
     /*
      *
