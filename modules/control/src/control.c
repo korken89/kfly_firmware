@@ -415,6 +415,10 @@ void vUpdateControlAction(const quaternion_t *attitude_m,
     control_reference_save.rate = control_reference.rate_reference;
 
     osalSysUnlock();
+
+    void RecordData(void);
+    RecordData();
+
 }
 
 /**
@@ -545,3 +549,110 @@ void GetControlReference(control_reference_save_t *ref)
     ref->rate = control_reference_save.rate;
 }
 
+
+/*
+ *
+ * Temporary test code
+ *
+ */
+#include "sensor_read.h"
+
+typedef struct PACKED_VAR
+{
+    int16_t acc_z;
+    int16_t gyro[3];
+    int16_t torque[3];
+    int16_t throttle;
+    uint16_t cnt;
+} experiment_data_t;
+
+volatile experiment_data_t exp_data_1[4600];
+volatile experiment_data_t exp_data_2[3600] CCM_MEMORY;
+
+void RecordData(void)
+{
+    const int skip = 2; // Must be larger than 0.
+
+    static int cnt = 0;
+    static uint16_t save_cnt = 0;
+    static vector3f_t gyro_mean, torque_mean;
+    static float throttle_mean, acc_mean;
+
+    uint16_t save_cnt_tmp;
+
+    if (cnt == 0)
+    {
+        gyro_mean = ptrGetAttitudeEstimationStates()->w;
+        acc_mean = ptrGetAccelerometerData()[2];
+        torque_mean = control_reference.actuator_desired.torque;
+        throttle_mean = control_reference.actuator_desired.throttle;
+
+        cnt++;
+    }
+    else if (cnt == skip)
+    {
+        gyro_mean = vector_add(gyro_mean, ptrGetAttitudeEstimationStates()->w);
+        acc_mean += ptrGetAccelerometerData()[2];
+        torque_mean = vector_add(torque_mean, control_reference.actuator_desired.torque);
+        throttle_mean += control_reference.actuator_desired.throttle;
+
+        cnt = 0;
+
+        gyro_mean = vector_scale(gyro_mean, 1.0f / (float)(skip + 1));
+        torque_mean = vector_scale(torque_mean, 1.0f / (float)(skip + 1));
+        throttle_mean = throttle_mean / ((float)(skip + 1));
+
+        /* Save data. */
+        if (save_cnt < 4600)
+        {
+            save_cnt_tmp = save_cnt/(skip + 1);
+
+            /* Use first save location. */
+            exp_data_1[save_cnt_tmp].cnt = save_cnt / (skip + 1);
+            exp_data_1[save_cnt_tmp].acc_z = (int16_t)(acc_mean);
+            exp_data_1[save_cnt_tmp].throttle = (int16_t)(throttle_mean * 10000.0f);
+
+            exp_data_1[save_cnt_tmp].gyro[0] = (int16_t)(gyro_mean.x * 10000.0f);
+            exp_data_1[save_cnt_tmp].gyro[1] = (int16_t)(gyro_mean.y * 10000.0f);
+            exp_data_1[save_cnt_tmp].gyro[2] = (int16_t)(gyro_mean.z * 10000.0f);
+
+            exp_data_1[save_cnt_tmp].torque[0] = (int16_t)(torque_mean.x * 10000.0f);
+            exp_data_1[save_cnt_tmp].torque[1] = (int16_t)(torque_mean.y * 10000.0f);
+            exp_data_1[save_cnt_tmp].torque[2] = (int16_t)(torque_mean.z * 10000.0f);
+        }
+        else if (save_cnt < 4600 + 3600 && save_cnt >= 4600)
+        {
+            save_cnt_tmp = (save_cnt - 4600)/(skip + 1);
+
+            /* Use second save location. */
+            exp_data_2[save_cnt_tmp].cnt = save_cnt / (skip + 1);
+            exp_data_2[save_cnt_tmp].acc_z = (int16_t)(acc_mean);
+            exp_data_2[save_cnt_tmp].throttle = (int16_t)(throttle_mean * 10000.0f);
+
+            exp_data_2[save_cnt_tmp].gyro[0] = (int16_t)(gyro_mean.x * 10000.0f);
+            exp_data_2[save_cnt_tmp].gyro[1] = (int16_t)(gyro_mean.y * 10000.0f);
+            exp_data_2[save_cnt_tmp].gyro[2] = (int16_t)(gyro_mean.z * 10000.0f);
+
+            exp_data_2[save_cnt_tmp].torque[0] = (int16_t)(torque_mean.x * 10000.0f);
+            exp_data_2[save_cnt_tmp].torque[1] = (int16_t)(torque_mean.y * 10000.0f);
+            exp_data_2[save_cnt_tmp].torque[2] = (int16_t)(torque_mean.z * 10000.0f);
+        }
+        else
+        {
+            /* Transmit data. */
+            chSysHalt("Data captured");
+        }
+
+    }
+    else
+    {
+        gyro_mean = vector_add(gyro_mean, ptrGetAttitudeEstimationStates()->w);
+        acc_mean += ptrGetAccelerometerData()[2];
+        torque_mean = vector_add(torque_mean, control_reference.actuator_desired.torque);
+        throttle_mean += control_reference.actuator_desired.throttle;
+
+        cnt++;
+    }
+
+    save_cnt++;
+}
