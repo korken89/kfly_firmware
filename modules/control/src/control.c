@@ -55,6 +55,9 @@ control_reference_save_t control_reference_save;
 THD_WORKING_AREA(waThreadControl, 256);
 THD_WORKING_AREA(waThreadControlFlashSave, 256);
 
+THD_WORKING_AREA(waThreadSendRecording, 256);
+static THD_FUNCTION(ThreadSendRecording, arg);
+
 /*===========================================================================*/
 /* Module local functions.                                                   */
 /*===========================================================================*/
@@ -292,6 +295,13 @@ void ControlInit(void)
                       NORMALPRIO,
                       ThreadControlFlashSave,
                       NULL);
+
+    /* Initialize send experiment thread. */
+    chThdCreateStatic(waThreadSendRecording,
+                      sizeof(waThreadSendRecording),
+                      NORMALPRIO,
+                      ThreadSendRecording,
+                      NULL);
 }
 
 
@@ -414,10 +424,11 @@ void vUpdateControlAction(const quaternion_t *attitude_m,
     control_reference_save.attitude = control_reference.attitude_reference;
     control_reference_save.rate = control_reference.rate_reference;
 
-    osalSysUnlock();
-
     void RecordData(void);
     RecordData();
+
+    osalSysUnlock();
+
 
 }
 
@@ -566,23 +577,42 @@ typedef struct PACKED_VAR
     uint16_t cnt;
 } experiment_data_t;
 
-volatile experiment_data_t exp_data_1[4600];
-volatile experiment_data_t exp_data_2[3600] CCM_MEMORY;
+#define EXP1_SIZE 4600
+#define EXP2_SIZE 3600
+
+volatile bool record = false;
+volatile bool send_recording = false;
+experiment_data_t exp_data_1[EXP1_SIZE];
+experiment_data_t exp_data_2[EXP2_SIZE] CCM_MEMORY;
+int cnt;
+uint16_t save_cnt;
+
+void StartRecordData(void)
+{
+    if (send_recording == false)
+    {
+        record = true;
+        cnt = 0;
+        save_cnt = 0;
+    }
+}
 
 void RecordData(void)
 {
     const int skip = 2; // Must be larger than 0.
 
-    static int cnt = 0;
-    static uint16_t save_cnt = 0;
     static vector3f_t gyro_mean, torque_mean;
     static float throttle_mean, acc_mean;
 
     uint16_t save_cnt_tmp;
 
-    if (cnt == 0)
+    if (!record)
     {
-        gyro_mean = ptrGetAttitudeEstimationStates()->w;
+        return;
+    }
+    else if (cnt == 0)
+    {
+        gyro_mean = array_to_vector(ptrGetGyroscopeData());
         acc_mean = ptrGetAccelerometerData()[2];
         torque_mean = control_reference.actuator_desired.torque;
         throttle_mean = control_reference.actuator_desired.throttle;
@@ -591,7 +621,7 @@ void RecordData(void)
     }
     else if (cnt == skip)
     {
-        gyro_mean = vector_add(gyro_mean, ptrGetAttitudeEstimationStates()->w);
+        gyro_mean = vector_add(gyro_mean, array_to_vector(ptrGetGyroscopeData()));
         acc_mean += ptrGetAccelerometerData()[2];
         torque_mean = vector_add(torque_mean, control_reference.actuator_desired.torque);
         throttle_mean += control_reference.actuator_desired.throttle;
@@ -599,16 +629,17 @@ void RecordData(void)
         cnt = 0;
 
         gyro_mean = vector_scale(gyro_mean, 1.0f / (float)(skip + 1));
+        acc_mean = acc_mean / ((float)(skip + 1));
         torque_mean = vector_scale(torque_mean, 1.0f / (float)(skip + 1));
         throttle_mean = throttle_mean / ((float)(skip + 1));
 
         /* Save data. */
-        if (save_cnt < 4600)
+        if (save_cnt < EXP1_SIZE)
         {
-            save_cnt_tmp = save_cnt/(skip + 1);
+            save_cnt_tmp = save_cnt;
 
             /* Use first save location. */
-            exp_data_1[save_cnt_tmp].cnt = save_cnt / (skip + 1);
+            exp_data_1[save_cnt_tmp].cnt = save_cnt;
             exp_data_1[save_cnt_tmp].acc_z = (int16_t)(acc_mean);
             exp_data_1[save_cnt_tmp].throttle = (int16_t)(throttle_mean * 10000.0f);
 
@@ -620,12 +651,12 @@ void RecordData(void)
             exp_data_1[save_cnt_tmp].torque[1] = (int16_t)(torque_mean.y * 10000.0f);
             exp_data_1[save_cnt_tmp].torque[2] = (int16_t)(torque_mean.z * 10000.0f);
         }
-        else if (save_cnt < 4600 + 3600 && save_cnt >= 4600)
+        else if (save_cnt < EXP1_SIZE + EXP2_SIZE && save_cnt >= EXP1_SIZE)
         {
-            save_cnt_tmp = (save_cnt - 4600)/(skip + 1);
+            save_cnt_tmp = save_cnt - EXP1_SIZE;
 
             /* Use second save location. */
-            exp_data_2[save_cnt_tmp].cnt = save_cnt / (skip + 1);
+            exp_data_2[save_cnt_tmp].cnt = save_cnt;
             exp_data_2[save_cnt_tmp].acc_z = (int16_t)(acc_mean);
             exp_data_2[save_cnt_tmp].throttle = (int16_t)(throttle_mean * 10000.0f);
 
@@ -637,16 +668,19 @@ void RecordData(void)
             exp_data_2[save_cnt_tmp].torque[1] = (int16_t)(torque_mean.y * 10000.0f);
             exp_data_2[save_cnt_tmp].torque[2] = (int16_t)(torque_mean.z * 10000.0f);
         }
-        else
+        else if (save_cnt >= EXP1_SIZE + EXP2_SIZE)
         {
-            /* Transmit data. */
-            chSysHalt("Data captured");
+            /* Transmit data, start the thread. */
+            record = false;
+            send_recording = true;
         }
+
+        save_cnt++;
 
     }
     else
     {
-        gyro_mean = vector_add(gyro_mean, ptrGetAttitudeEstimationStates()->w);
+        gyro_mean = vector_add(gyro_mean, array_to_vector(ptrGetGyroscopeData()));
         acc_mean += ptrGetAccelerometerData()[2];
         torque_mean = vector_add(torque_mean, control_reference.actuator_desired.torque);
         throttle_mean += control_reference.actuator_desired.throttle;
@@ -654,5 +688,60 @@ void RecordData(void)
         cnt++;
     }
 
-    save_cnt++;
+}
+
+#include "kflypacket_generators.h"
+
+void SendRecordedPacket(experiment_data_t *exp)
+{
+    GenerateCustomMessage(Cmd_Experiment,
+                          (uint8_t *)exp,
+                          sizeof(experiment_data_t),
+                          PORT_AUX1);
+}
+
+#define MS_BETWEEN_PACKETS      10
+static THD_FUNCTION(ThreadSendRecording, arg)
+{
+    (void)arg;
+
+    int cnt;
+
+    /* Set thread name. */
+    chRegSetThreadName("Send Recording");
+
+    while (1)
+    {
+        while(!send_recording)
+            osalThreadSleepMilliseconds(100);
+
+        /* Send the data. */
+        for (cnt = 0; cnt < EXP1_SIZE; cnt++)
+        {
+            /* Resend each packet 3 times to minimize chance of loss. */
+            SendRecordedPacket((experiment_data_t *)&exp_data_1[cnt]);
+            osalThreadSleepMilliseconds(MS_BETWEEN_PACKETS);
+
+            SendRecordedPacket((experiment_data_t *)&exp_data_1[cnt]);
+            osalThreadSleepMilliseconds(MS_BETWEEN_PACKETS);
+
+            SendRecordedPacket((experiment_data_t *)&exp_data_1[cnt]);
+            osalThreadSleepMilliseconds(MS_BETWEEN_PACKETS);
+        }
+
+        for (cnt = 0; cnt < EXP2_SIZE; cnt++)
+        {
+            /* Resend each packet 3 times to minimize chance of loss. */
+            SendRecordedPacket((experiment_data_t *)&exp_data_2[cnt]);
+            osalThreadSleepMilliseconds(MS_BETWEEN_PACKETS);
+
+            SendRecordedPacket((experiment_data_t *)&exp_data_2[cnt]);
+            osalThreadSleepMilliseconds(MS_BETWEEN_PACKETS);
+
+            SendRecordedPacket((experiment_data_t *)&exp_data_2[cnt]);
+            osalThreadSleepMilliseconds(MS_BETWEEN_PACKETS);
+        }
+
+        send_recording = false;
+    }
 }

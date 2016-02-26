@@ -63,6 +63,7 @@ static void ParseGetEstimationVelocity(kfly_parser_t *pHolder);
 static void ParseGetEstimationPosition(kfly_parser_t *pHolder);
 static void ParseGetEstimationAllStates(kfly_parser_t *pHolder);
 static void ParseResetEstimation(kfly_parser_t *pHolder);
+static void ParseExperiment(kfly_parser_t *pHolder);
 static void ParseComputerControlReference(kfly_parser_t *pHolder);
 static void ParseMotionCaptureMeasurement(kfly_parser_t *pHolder);
 
@@ -203,7 +204,7 @@ static const kfly_data_parser_t parser_lookup[128] = {
     NULL,                             /* 122:                                 */
     NULL,                             /* 123:                                 */
     NULL,                             /* 124:                                 */
-    NULL,                             /* 125:                                 */
+    ParseExperiment,                  /* 125: Cmd_Experiment                  */
     ParseComputerControlReference,    /* 126: Cmd_ComputerControlReference    */
     ParseMotionCaptureMeasurement     /* 127: Cmd_MotionCaptureMeasurement    */
 };
@@ -723,6 +724,21 @@ static void ParseGetEstimationAllStates(kfly_parser_t *pHolder)
 static void ParseResetEstimation(kfly_parser_t *pHolder)
 {
     (void)pHolder;
+}
+
+/**
+ * @brief               Parses a experiment command.
+ *
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
+ */
+static void ParseExperiment(kfly_parser_t *pHolder)
+{
+    (void)pHolder;
+
+    void StartRecordData(void);
+
+    StartRecordData();
 }
 
 static void ParseComputerControlReference(kfly_parser_t *pHolder)
