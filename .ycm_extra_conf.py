@@ -39,6 +39,7 @@ flags = [
     '-I', './ChibiOS/os/hal/ports/common/ARMCMx',
     '-I', './ChibiOS/os/hal/ports/STM32/STM32F4xx',
     '-I', './system',
+    '-I', './board',
     '-I', './modules/control/inc',
     '-I', './modules/estimation/inc',
     '-I', './modules/math/inc',
