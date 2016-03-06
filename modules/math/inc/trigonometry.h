@@ -158,31 +158,32 @@ static inline float fast_cos(float x)
     return y;
 }
 
-
 /*
- * @brief               My floor implementation.
+ * @brief               Evaluation of a polynomial using Horner's Rule.
+ * @details             Given coeffs = [b0 b1 ... bN] the polynomial's
+ *                      evaluation becomes:
+ *                      y = b0 + x * (b1 + x * (b2 ... + x * (bN-1 + x * bN))),
+ *                      which in code is evaluated backwards.
  *
- * @param[in] x         Input value.
- * @return              The floor value.
+ * @param[in] x         Value to evaluate the polynomial at.
+ * @param[in] coeffs    Array containing the coefficients.
+ * @param[in] size      Size of the coefficients array.
+ * @return              The evaluated polynomical.
  */
-static inline float myfloor(const float x)
+static inline float polyeval_horner(const float x,
+                                    const float *coeffs,
+                                    const size_t size)
 {
-    if (x > 0.0f)
-        return (int)x;
-    else
-        return (int)(x - 0.9999999999999999f);
-}
+    int i;
 
-/*
- * @brief               My float modulus implementation.
- *
- * @param[in] x         Input value.
- * @param[in] m         Input mod value.
- * @return              The remainder of x / m.
- */
-static inline float myfmodf(const float x, const float m)
-{
-    return x - myfloor(x / m) * m;
+    /* Load the last coefficient to not waste one multiplication. */
+    float accumulator = coeffs[size - 1];
+
+    /* Run for the size of the polynomial. */
+    for (i = size - 2; i >= 0; i--)
+        accumulator = accumulator * x + coeffs[i];
+
+    return accumulator;
 }
 
 /*===========================================================================*/
