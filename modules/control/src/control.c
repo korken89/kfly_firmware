@@ -402,12 +402,19 @@ void vUpdateControlAction(const quaternion_t *attitude_m,
 
         case FLIGHTMODE_DIRECT:
             vSendPWMCommands();
+
+            /* Set the arming LED. */
+            palSetPad(GPIOC, GPIOC_LED_ERR);
+
             break;
 
         case FLIGHTMODE_DISARMED:
         default:
             /* Disable all outputs. */
             vSetOutputsDefault();
+
+            /* Clear the arming LED. */
+            palClearPad(GPIOC, GPIOC_LED_ERR);
 
             /* Zero all the controllers' integrators. */
             vZeroControlIntegrals();

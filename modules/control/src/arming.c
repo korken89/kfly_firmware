@@ -54,11 +54,6 @@ static THD_FUNCTION(ThreadControlArming, arg)
         /* Check the conditions for arming and disarming */
         osalThreadSleepMilliseconds(1000 / ARM_RATE);
 
-        if (system_armed == true)
-            palSetPad(GPIOC, GPIOC_LED_ERR);
-        else
-            palClearPad(GPIOC, GPIOC_LED_ERR);
-
         /*
          * Check all conditions for arming and disarming the system
          */
