@@ -18,8 +18,8 @@
 /* Module global definitions.                                                */
 /*===========================================================================*/
 
-#define UNIT_QUATERNION ((const quaternion_t){.w = 1.0f, .x = 0.0f,         \\
-                                              .y = 0.0f, .z = 0,0f})
+#define UNIT_QUATERNION ((const quaternion_t){.w = 1.0f, .x = 0.0f,         \
+                                              .y = 0.0f, .z = 0.0f})
 
 /*===========================================================================*/
 /* Module data structures and types.                                         */
