@@ -29,34 +29,32 @@ static uint32_t old_frame_number;
 /* Module exported functions.                                                */
 /*===========================================================================*/
 
+/**
+ * @brief               Initialization for the Motion Capture estimator.
+ *
+ * @param[in] states    Unused.
+ */
 void vInitializeMotionCaptureEstimator(attitude_states_t *states)
 {
-    GetCopyMotionCaptureFrame(&mc_data);
+    /* New initialization. */
+    (void) states;
 
-    /* Wait while there is no valid data from the motion capture system. */
-    while (mc_data.frame_number == 0)
-    {
-        chThdSleepMilliseconds(20);
-        GetCopyMotionCaptureFrame(&mc_data);
-    }
-
-    /* Take the first measurement at starting point. */
-    states->q = mc_data.pose.orientation;
-
-    states->w.x = 0.0f;
-    states->w.y = 0.0f;
-    states->w.z = 0.0f;
-
-    states->wb.x = 0.0f;
-    states->wb.y = 0.0f;
-    states->wb.z = 0.0f;
-
-    old_frame_number = mc_data.frame_number;
+    states->q = UNIT_QUATERNION;
+    old_frame_number = 0;
 }
 
+/**
+ * @brief               Innovate the Motion Capture estimator.
+ *
+ * @param[in/out] states    Attitude states to be updated.
+ * @param[in] imu_data      Latest IMU measurement.
+ * @param[in] imu_dt        Sampling time of the IMU data.
+ * @param[in] wb_gain       Gain for the rate bias estimation.
+ * @param[in] gyro_lpf      Time constant for the gyro lowpass filter.
+ */
 void vInnovateMotionCaptureEstimator(attitude_states_t *states,
-                                     imu_data_t *imu_data,
-                                     const float dt,
+                                     const imu_data_t *imu_data,
+                                     const float imu_dt,
                                      const float wb_gain,
                                      const float gyro_lpf)
 {
@@ -66,6 +64,26 @@ void vInnovateMotionCaptureEstimator(attitude_states_t *states,
 
     /* Get the current motion capture data */
     GetCopyMotionCaptureFrame(&mc_data);
+
+    /* Check for startup conditions. */
+    if ((mc_data.frame_number > 0) && (old_frame_number == 0))
+    {
+        /* On the first measurement, set the quaternion to this and reset
+         * all other states. */
+        states->q = mc_data.pose.orientation;
+
+        states->w.x = 0.0f;
+        states->w.y = 0.0f;
+        states->w.z = 0.0f;
+
+        states->wb.x = 0.0f;
+        states->wb.y = 0.0f;
+        states->wb.z = 0.0f;
+
+        old_frame_number = mc_data.frame_number;
+
+        return;
+    }
 
     /* 1. Remove bias from the measurement. */
     w_hat = vector_sub(array_to_vector(imu_data->gyroscope), states->wb);
@@ -77,7 +95,7 @@ void vInnovateMotionCaptureEstimator(attitude_states_t *states,
         old_frame_number = mc_data.frame_number;
 
         /* 2. Integrate the quaternion. */
-        //q_err = qint(states->q, w_hat, dt);
+        //q_err = qint(states->q, w_hat, imu_dt);
 
         /* 3. Create the error quaternion. */
         //q_err = qmult(qconj(mc_data.pose.orientation), q_err);
@@ -95,7 +113,7 @@ void vInnovateMotionCaptureEstimator(attitude_states_t *states,
         /* No new motion capture data, use gyros to update the attitude estimation. */
 
         /* 2. Integrate and save the quaternion, and save the omega. */
-        states->q = qint(states->q, w_hat, dt);
+        states->q = qint(states->q, w_hat, imu_dt);
     }
 
     /* 6. Apply low-pass filtering of gyro data and save it. */
