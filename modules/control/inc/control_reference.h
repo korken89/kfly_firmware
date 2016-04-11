@@ -20,24 +20,24 @@ typedef enum PACKED_VAR
     /**
      * @brief   Direct control of the PWM outputs.
      */
-    FLIGHTMODE_DIRECT,
+    FLIGHTMODE_DIRECT = 1,
     /**
      * @brief   Direct control of the actuator desired commands.
      */
-    FLIGHTMODE_INDIRECT,
+    FLIGHTMODE_INDIRECT = 2,
     /**
      * @brief   Rate control.
      */
-    FLIGHTMODE_RATE,
+    FLIGHTMODE_RATE = 3,
     /**
      * @brief   Attitude control in Euler angles, used when only controlling
      *          roll and pitch in manual mode.
      */
-    FLIGHTMODE_ATTITUDE_EULER,
+    FLIGHTMODE_ATTITUDE_EULER = 4,
     /**
      * @brief   Attitude control in quaternion mode, used in computer control.
      */
-    FLIGHTMODE_ATTITUDE
+    FLIGHTMODE_ATTITUDE = 5
 } flightmode_t;
 
 /**
