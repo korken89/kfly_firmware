@@ -73,6 +73,7 @@ typedef struct
 /* External declarations.                                                    */
 /*===========================================================================*/
 msg_t RCOutputInit(const RCOutput_Configuration *cfg);
+void RCOutputDisableI(void);
 msg_t RCOutputSetChannelWidthUs(RCOutput_Channel_Selector sel,
                                 pwmcnt_t width_us);
 msg_t RCOutputSetChannelWidthRelativePositive(RCOutput_Channel_Selector sel,

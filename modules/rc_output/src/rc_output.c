@@ -35,7 +35,7 @@ static const RCOutput_Configuration *rcoutput_cfg = NULL;
 
 /**
  * @brief           Initializes RC outputs
- * 
+ *
  * @param[in] cfg   Pointer to configuration structure
  * @return          MSG_OK if the initialization was successful
  */
@@ -68,10 +68,28 @@ msg_t RCOutputInit(const RCOutput_Configuration *cfg)
     return status;
 }
 
+/**
+ * @brief   Disables all outputs, used when force disable of outputs is needed.
+ */
+void RCOutputDisableI(void)
+{
+    if (rcoutput_cfg != NULL)
+    {
+        pwmDisableChannelI(rcoutput_cfg->pwmp_lowbank, 0);
+        pwmDisableChannelI(rcoutput_cfg->pwmp_lowbank, 1);
+        pwmDisableChannelI(rcoutput_cfg->pwmp_lowbank, 2);
+        pwmDisableChannelI(rcoutput_cfg->pwmp_lowbank, 3);
+
+        pwmDisableChannelI(rcoutput_cfg->pwmp_highbank, 0);
+        pwmDisableChannelI(rcoutput_cfg->pwmp_highbank, 1);
+        pwmDisableChannelI(rcoutput_cfg->pwmp_highbank, 2);
+        pwmDisableChannelI(rcoutput_cfg->pwmp_highbank, 3);
+    }
+}
 
 /**
  * @brief               Set output channel width in microseconds.
- * 
+ *
  * @param[in] sel       Channel selector.
  * @param[in] width_us  New width in microseconds.
  * @return              MSG_OK if the change was successful or MSG_RESET if the
@@ -94,7 +112,7 @@ msg_t RCOutputSetChannelWidthUs(RCOutput_Channel_Selector sel,
                          width_us);
     else
         pwmEnableChannel(rcoutput_cfg->pwmp_highbank,
-                         pwmchannellut[sel], 
+                         pwmchannellut[sel],
                          width_us);
 
     return MSG_OK;
@@ -103,7 +121,7 @@ msg_t RCOutputSetChannelWidthUs(RCOutput_Channel_Selector sel,
 /**
  * @brief               Set relative output channel width
  * @details             Set the width from 1 to 2 milliseconds using 0% to 100%.
- * 
+ *
  * @param[in] sel       Channel selector.
  * @param[in] width     New width in 0.0 to 1.0.
  * @return              MSG_OK if the change was successful or MSG_RESET if the
@@ -133,7 +151,7 @@ msg_t RCOutputSetChannelWidthRelativePositive(RCOutput_Channel_Selector sel,
  * @brief               Set relative output channel width.
  * @details             Set the width from 1 to 2 milliseconds using -100% to
  *                      100%.
- * 
+ *
  * @param[in] sel       Channel selector.
  * @param[in] width     New width in -1.0 to 1.0.
  * @return              MSG_OK if the change was successful or MSG_RESET if the
@@ -161,7 +179,7 @@ msg_t RCOutputSetChannelWidthRelative(RCOutput_Channel_Selector sel,
 
 /**
  * @brief           Change the output rate of one output bank.
- * 
+ *
  * @param[in] sel   Bank selector.
  * @param[in] rate  New output rate.
  * @return          MSG_OK if the change was successful or MSG_RESET if the RC
