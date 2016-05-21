@@ -504,6 +504,10 @@
 //#define CORTEX_VTOR_INIT        0x8000  /* 32kB offset */
 
 #if !defined(_FROM_ASM_)
+
+/* Simplifcation for defining unused parameters. */
+#define UNUSED(expr)    do { (void)(expr); } while (0)
+
 typedef struct {
   const char *reason;
   const char *function;
