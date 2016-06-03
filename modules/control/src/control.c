@@ -322,7 +322,7 @@ void vUpdateControlAction(const quaternion_t *attitude_m,
         if (bIsSystemArmed() == true)
         {
             /* TODO: Make this settable via software and switches. */
-            control_reference.mode = FLIGHTMODE_RATE;
+            control_reference.mode = FLIGHTMODE_ATTITUDE_EULER;
 
             RCInputsToControlAction(&control_reference,
                                     &control_limits.max_rate,
@@ -648,15 +648,15 @@ void RecordData(void)
             /* Use first save location. */
             exp_data_1[save_cnt_tmp].cnt = save_cnt;
             exp_data_1[save_cnt_tmp].acc_z = (int16_t)(acc_mean);
-            exp_data_1[save_cnt_tmp].throttle = (int16_t)(throttle_mean * 10000.0f);
+            exp_data_1[save_cnt_tmp].throttle = (int16_t)(throttle_mean * 5000.0f);
 
-            exp_data_1[save_cnt_tmp].gyro[0] = (int16_t)(gyro_mean.x * 10000.0f);
-            exp_data_1[save_cnt_tmp].gyro[1] = (int16_t)(gyro_mean.y * 10000.0f);
-            exp_data_1[save_cnt_tmp].gyro[2] = (int16_t)(gyro_mean.z * 10000.0f);
+            exp_data_1[save_cnt_tmp].gyro[0] = (int16_t)(gyro_mean.x * 5000.0f);
+            exp_data_1[save_cnt_tmp].gyro[1] = (int16_t)(gyro_mean.y * 5000.0f);
+            exp_data_1[save_cnt_tmp].gyro[2] = (int16_t)(gyro_mean.z * 5000.0f);
 
-            exp_data_1[save_cnt_tmp].torque[0] = (int16_t)(torque_mean.x * 10000.0f);
-            exp_data_1[save_cnt_tmp].torque[1] = (int16_t)(torque_mean.y * 10000.0f);
-            exp_data_1[save_cnt_tmp].torque[2] = (int16_t)(torque_mean.z * 10000.0f);
+            exp_data_1[save_cnt_tmp].torque[0] = (int16_t)(torque_mean.x * 5000.0f);
+            exp_data_1[save_cnt_tmp].torque[1] = (int16_t)(torque_mean.y * 5000.0f);
+            exp_data_1[save_cnt_tmp].torque[2] = (int16_t)(torque_mean.z * 5000.0f);
         }
         else if (save_cnt < EXP1_SIZE + EXP2_SIZE && save_cnt >= EXP1_SIZE)
         {
@@ -665,15 +665,15 @@ void RecordData(void)
             /* Use second save location. */
             exp_data_2[save_cnt_tmp].cnt = save_cnt;
             exp_data_2[save_cnt_tmp].acc_z = (int16_t)(acc_mean);
-            exp_data_2[save_cnt_tmp].throttle = (int16_t)(throttle_mean * 10000.0f);
+            exp_data_2[save_cnt_tmp].throttle = (int16_t)(throttle_mean * 5000.0f);
 
-            exp_data_2[save_cnt_tmp].gyro[0] = (int16_t)(gyro_mean.x * 10000.0f);
-            exp_data_2[save_cnt_tmp].gyro[1] = (int16_t)(gyro_mean.y * 10000.0f);
-            exp_data_2[save_cnt_tmp].gyro[2] = (int16_t)(gyro_mean.z * 10000.0f);
+            exp_data_2[save_cnt_tmp].gyro[0] = (int16_t)(gyro_mean.x * 5000.0f);
+            exp_data_2[save_cnt_tmp].gyro[1] = (int16_t)(gyro_mean.y * 5000.0f);
+            exp_data_2[save_cnt_tmp].gyro[2] = (int16_t)(gyro_mean.z * 5000.0f);
 
-            exp_data_2[save_cnt_tmp].torque[0] = (int16_t)(torque_mean.x * 10000.0f);
-            exp_data_2[save_cnt_tmp].torque[1] = (int16_t)(torque_mean.y * 10000.0f);
-            exp_data_2[save_cnt_tmp].torque[2] = (int16_t)(torque_mean.z * 10000.0f);
+            exp_data_2[save_cnt_tmp].torque[0] = (int16_t)(torque_mean.x * 5000.0f);
+            exp_data_2[save_cnt_tmp].torque[1] = (int16_t)(torque_mean.y * 5000.0f);
+            exp_data_2[save_cnt_tmp].torque[2] = (int16_t)(torque_mean.z * 5000.0f);
         }
         else if (save_cnt >= EXP1_SIZE + EXP2_SIZE)
         {

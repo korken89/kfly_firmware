@@ -74,9 +74,9 @@ void RCInputsToControlAction(control_reference_t *ref,
     else if (ref->mode == FLIGHTMODE_ATTITUDE_EULER)
     {
         ref->attitude_reference_euler.x =
-            attitude_lim->x * DEG2RAD * RCInputGetInputLevel(ROLE_ROLL);
+            attitude_lim->x * DEG2RAD * RCInputGetInputLevel(ROLE_PITCH);
         ref->attitude_reference_euler.y =
-            attitude_lim->y * DEG2RAD * RCInputGetInputLevel(ROLE_PITCH);
+            attitude_lim->y * DEG2RAD * RCInputGetInputLevel(ROLE_ROLL);
         ref->rate_reference.z =
             rate_lim->z * DEG2RAD * RCInputGetInputLevel(ROLE_YAW);
 
