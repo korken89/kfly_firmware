@@ -26,7 +26,7 @@
  * @brief   Definition of a 1-bit bool struct.
  */
 typedef struct PACKED_VAR {
-    bool bit : 1;
+    bool value : 1;
 } bool_1bit_t;
 
 /*===========================================================================*/
