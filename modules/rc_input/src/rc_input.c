@@ -26,10 +26,31 @@ static void vt_no_connection_timeout_callback(void *p);
 /*===========================================================================*/
 /* Module local variables and types.                                         */
 /*===========================================================================*/
+
+/**
+ * @brief   Data holder for the RC input.
+ */
 rcinput_data_t rcinput_data;
-uint64_t role_lookup;
+
+/**
+ * @brief   Role lookup table.
+ */
+input_role_lookup_t role_lookup;
+
+/**
+ * @brief   Data holder for the RC input settings.
+ */
 rcinput_settings_t rcinput_settings;
+
+/**
+ * @brief   Event source for the RC input, indicates new measurements and
+ *          connection status.
+ */
 EVENTSOURCE_DECL(rcinput_es);
+
+/**
+ * @brief   Timer for checking time out of the RC input.
+ */
 virtual_timer_t rcinput_timeout_vt;
 
 /* EICU Configuration for CPPM, RSSI and PWM inputs */
@@ -297,19 +318,65 @@ static void RCInputSettingsReset(rcinput_settings_t *data)
 }
 
 /**
+ * @brief   Checks the settings so the roles are not duplicate and sets
+ *          duplicates to zero.
+ */
+static void ValidateRoleSettings(void)
+{
+
+    int i, j, cnt;
+
+    for (i = 1; i < ROLE_MAX; i++)
+    {
+        cnt = 0;
+
+        for (j = 0; j < RCINPUT_MAX_NUMBER_OF_INPUTS; j++)
+            if (rcinput_settings.role[j] == (input_role_selector_t)i)
+                cnt++;
+
+        if (cnt > 1)
+            for (j = 0; j < RCINPUT_MAX_NUMBER_OF_INPUTS; j++)
+                rcinput_settings.role[j] = ROLE_OFF;
+    }
+}
+
+/**
+ * @brief   Generates the role -> index lookup table.
+ */
+static void GenerateRoleLookupTable(void)
+{
+    int i;
+    input_role_selector_t role;
+
+    /* Validate the role settings before generating the lookup table. */
+    ValidateRoleSettings();
+
+    /* For each role associated with a channel, generate
+       the inverse lookup table */
+    for (i = 0; i < RCINPUT_MAX_NUMBER_OF_INPUTS; i++)
+    {
+        role = rcinput_settings.role[i];
+
+        if ((role > ROLE_OFF) && (role < ROLE_MAX))
+            role_lookup.index[(uint32_t)role] = i;
+        else
+            role_lookup.index[(uint32_t)role] = 0;
+    }
+}
+
+/**
  * @brief               Converts role to corresponding array index.
  *
  * @param[in] role      Input role.
  * @return              Corresponding array index.
  */
-static uint32_t RoleToIndex(input_role_selector_t role)
+static uint8_t RoleToIndex(input_role_selector_t role)
 {
-    /* Get the index of the associated role */
-    if (role != ROLE_OFF)
-        return ((role_lookup >> ((role - 1) * RCINPUT_ROLE_TO_INDEX_BITS)) &
-                 RCINPUT_ROLE_TO_INDEX_MASK);
+    /* Get the index of the associated role. */
+    if (role < ROLE_MAX)
+        return role_lookup.index[role];
     else
-        return RCINPUT_ROLE_TO_INDEX_MASK;
+        return 0;
 }
 
 /**
@@ -430,7 +497,6 @@ void RCInputInit(void)
 msg_t RCInputInitialization(void)
 {
     msg_t status = MSG_OK;
-    int i;
 
     /* If the EICU driver was already in use, disable it */
     if (EICUD3.state != EICU_STOP)
@@ -462,14 +528,8 @@ msg_t RCInputInitialization(void)
     else /* Invalid input, return error */
         return MSG_RESET;
 
-    /* For each role associated with a channel, generate
-       the inverse lookup table */
-    role_lookup = 0;
-
-    for (i = 0; i < RCINPUT_MAX_NUMBER_OF_INPUTS; i++)
-        if (rcinput_settings.role[i] != ROLE_OFF)
-            role_lookup |= (i << ((rcinput_settings.role[i] - 1) *
-                                   RCINPUT_ROLE_TO_INDEX_BITS));
+    /* Gernerate the role lookup table */
+    GenerateRoleLookupTable();
 
     return status;
 }
@@ -490,7 +550,7 @@ float RCInputGetInputLevel(input_role_selector_t role)
     idx = RoleToIndex(role);
 
     /* Check the validity of the index */
-    if (idx == RCINPUT_ROLE_TO_INDEX_MASK)
+    if (idx == 0)
         return 0.0f;
 
     /* Get the raw value from the raw data structure */
@@ -513,8 +573,12 @@ float RCInputGetInputLevel(input_role_selector_t role)
             return 0.0f;
 
         /* Use the calibration to calculate the position */
-        level = level / (float)(rcinput_settings.ch_top[idx] -
-                                rcinput_settings.ch_center[idx]);
+        if (rcinput_settings.ch_reverse[idx].bit == true)
+            level = 1.0 - level / (float)(rcinput_settings.ch_top[idx] -
+                                    rcinput_settings.ch_center[idx]);
+        else
+            level = level / (float)(rcinput_settings.ch_top[idx] -
+                                    rcinput_settings.ch_center[idx]);
     }
     /* If it is smaller than zero */
     else if (level < 0.0f)
@@ -524,8 +588,17 @@ float RCInputGetInputLevel(input_role_selector_t role)
             return 0.0f;
 
         /* Use the calibration to calculate the position */
-        level = level / (float)(rcinput_settings.ch_center[idx] -
-                                rcinput_settings.ch_bottom[idx]);
+        if (rcinput_settings.ch_reverse[idx].bit == true)
+            level = -1.0 - level / (float)(rcinput_settings.ch_center[idx] -
+                                    rcinput_settings.ch_bottom[idx]);
+        else
+            level = level / (float)(rcinput_settings.ch_center[idx] -
+                                    rcinput_settings.ch_bottom[idx]);
+    }
+    else
+    {
+        if (rcinput_settings.ch_reverse[idx].bit == true)
+            level = -level;
     }
 
     return bound(1.0f, -1.0f, level);

@@ -1,11 +1,12 @@
 #ifndef __RC_INPUT_H
 #define __RC_INPUT_H
 
+#include <kfly_defs.h>
+
 /*===========================================================================*/
 /* Module global definitions.                                                */
 /*===========================================================================*/
 #define RCINPUT_CAPTURE_TIMER_RATE      1000000
-#define RCINPUT_MAX_NUMBER_OF_INPUTS    12
 #define RCINPUT_CPPM_SYNC_LIMIT_MIN     3000    /* 3 ms */
 #define RCINPUT_CPPM_SYNC_LIMIT_MAX     30000   /* 30 ms */
 #define RCINPUT_RSSI_THRESHOLD_PERCENT  5       /* RSSI threshold in percent */
@@ -16,8 +17,6 @@
 #define RCINPUT_LOST_EVENTMASK          EVENT_MASK(0)
 #define RCINPUT_ACTIVE_EVENTMASK        EVENT_MASK(1)
 #define RCINPUT_NEWINPUT_EVENTMASK      EVENT_MASK(2)
-#define RCINPUT_ROLE_TO_INDEX_BITS      4
-#define RCINPUT_ROLE_TO_INDEX_MASK      0x0f
 
 #define RCINPUT_DATA_SIZE               (sizeof(rcinput_data_t))
 #define RCINPUT_SETTINGS_SIZE           (sizeof(rcinput_settings_t))
@@ -112,8 +111,24 @@ typedef enum PACKED_VAR {
     /**
      * @brief   Aux 3 role selector.
      */
-    ROLE_AUX3 = 7
+    ROLE_AUX3 = 7,
+    /**
+     * @brief   Role of a non-latching switch to arm the flight controller.
+     */
+    ROLE_ARM_NONLATCH = 8,
+    /**
+     * @brief   Role for a latching switch to switch to remote serial control.
+     */
+    ROLE_ENABLE_SERIAL_CONTROL = 9,
+    /**
+     * @brief   The number of roles - 1. Always have at the end!
+     */
+    ROLE_MAX = 10
 } input_role_selector_t;
+
+typedef struct {
+    uint8_t index[RCINPUT_MAX_NUMBER_OF_INPUTS];
+} input_role_lookup_t;
 
 /**
  * @brief   Input capture channel type.
@@ -175,6 +190,10 @@ typedef struct {
      * @brief   Input capture type selector.
      */
     input_type_selector_t type[RCINPUT_MAX_NUMBER_OF_INPUTS];
+    /**
+     * @brief   Input reverse selector.
+     */
+    bool_1bit_t ch_reverse[RCINPUT_MAX_NUMBER_OF_INPUTS];
     /**
      * @brief   Input capture top calibration value.
      */
