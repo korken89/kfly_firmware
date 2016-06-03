@@ -59,8 +59,8 @@ void vInnovateMotionCaptureEstimator(attitude_states_t *states,
                                      const float gyro_lpf)
 {
     (void) wb_gain;
-    vector3f_t w_hat; //, wb_step;
-    //quaternion_t q_err;
+    vector3f_t w_hat, wb_step;
+    quaternion_t q_err;
 
     /* Get the current motion capture data */
     GetCopyMotionCaptureFrame(&mc_data);
@@ -95,18 +95,18 @@ void vInnovateMotionCaptureEstimator(attitude_states_t *states,
         old_frame_number = mc_data.frame_number;
 
         /* 2. Integrate the quaternion. */
-        //q_err = qint(states->q, w_hat, imu_dt);
+        q_err = qint(states->q, w_hat, imu_dt);
 
         /* 3. Create the error quaternion. */
-        //q_err = qmult(qconj(mc_data.pose.orientation), q_err);
+        q_err = qmult(qconj(mc_data.pose.orientation), q_err);
 
         /* 4. Estimate the gyro bias. */
-        //wb_step = vector_scale(array_to_vector(&q_err.x), wb_gain / dt);
+        wb_step = vector_scale(array_to_vector(&q_err.x), wb_gain / imu_dt);
 
         /* 5. Apply estimate and update the estimation. */
-        //states->wb = vector_add(states->wb, wb_step);
+        states->wb = vector_add(states->wb, wb_step);
         states->q = mc_data.pose.orientation;
-        //w_hat = vector_sub(w_hat, wb_step);
+        w_hat = vector_sub(w_hat, wb_step);
     }
     else
     {
