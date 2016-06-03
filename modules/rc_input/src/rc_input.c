@@ -539,7 +539,7 @@ msg_t RCInputInitialization(void)
  *                  it in the span of -1.0 to 1.0 or 0.0 to 1.0.
  *
  * @param[in] role  Input role for the RC input.
- * @return          The curernt input value of the corresponding role.
+ * @return          The current input value of the corresponding role.
  */
 float RCInputGetInputLevel(input_role_selector_t role)
 {
@@ -550,16 +550,16 @@ float RCInputGetInputLevel(input_role_selector_t role)
     idx = RoleToIndex(role);
 
     /* Check the validity of the index */
-    if (idx == 0)
+    if ((idx == 0) ||
+        (role == ROLE_OFF) ||
+        (rcinput_data.active_connection == FALSE))
         return 0.0f;
 
     /* Get the raw value from the raw data structure */
     value = rcinput_data.value[idx];
 
     /* Check so the data and input is valid */
-    if ((value == 0) ||
-        (role == ROLE_OFF) ||
-        (rcinput_data.active_connection == FALSE))
+    if (value == 0)
         return 0.0f;
 
     /* Remove the center offset */
@@ -597,6 +597,89 @@ float RCInputGetInputLevel(input_role_selector_t role)
     }
 
     return bound(1.0f, -1.0f, level);
+}
+
+/**
+ * @brief           Get the input level of switches, if it is a switch.
+ *
+ * @param[in] role  Input role for the RC input.
+ * @return          The current switch state of the corresponding role.
+ */
+input_switch_position_t RCInputGetSwitchState(input_role_selector_t role)
+{
+    int32_t value, idx, center;
+    input_type_selector_t type;
+
+    /* Get the position in the array for the requested role */
+    idx = RoleToIndex(role);
+
+    /* Check the validity of the index */
+    if ((idx == 0) ||
+        (role == ROLE_OFF) ||
+        (rcinput_data.active_connection == FALSE))
+        return SWITCH_NOT_SWITCH;
+
+    /* Get the raw value from the raw data structure */
+    value = rcinput_data.value[idx];
+    type = rcinput_settings.type[idx];
+
+    /* Check so the data and input is valid */
+    if ((value == 0) || (type == TYPE_ANALOG))
+        return SWITCH_NOT_SWITCH;
+
+    if (type == TYPE_3_STATE)
+    {
+        /* 3 state switch. */
+
+        /* Calculate the the center span as 1/4 of total span. */
+        center = rcinput_settings.ch_top[idx] - rcinput_settings.ch_bottom[idx];
+        center = center / 4;
+
+        if (value > rcinput_settings.ch_center[idx] - center)
+        {
+            /* Switch at bottom, but check for channel reversal. */
+            if (rcinput_settings.ch_reverse[idx].value == true)
+                return SWITCH_POSITION_TOP;
+            else
+                return SWITCH_POSITION_BOTTOM;
+        }
+        else if (value < rcinput_settings.ch_center[idx] + center)
+        {
+            /* Switch at top, but check for channel reversal. */
+            if (rcinput_settings.ch_reverse[idx].value == true)
+                return SWITCH_POSITION_BOTTOM;
+            else
+                return SWITCH_POSITION_TOP;
+        }
+        else
+            return SWITCH_POSITION_CENTER;
+    }
+    else
+    {
+        /* Calculate the switch boundary. */
+        center = rcinput_settings.ch_top[idx] - rcinput_settings.ch_bottom[idx];
+        center = center / 2;
+
+        /* 2 state switch. */
+        if (value < center)
+        {
+            /* Switch at bottom, but check for channel reversal. */
+            if (rcinput_settings.ch_reverse[idx].value == true)
+                return SWITCH_POSITION_TOP;
+            else
+                return SWITCH_POSITION_BOTTOM;
+        }
+        else
+        {
+            /* Switch at top, but check for channel reversal. */
+            if (rcinput_settings.ch_reverse[idx].value == true)
+                return SWITCH_POSITION_BOTTOM;
+            else
+                return SWITCH_POSITION_TOP;
+        }
+    }
+
+    return SWITCH_NOT_SWITCH;
 }
 
 /**

@@ -126,6 +126,9 @@ typedef enum PACKED_VAR {
     ROLE_MAX = 10
 } input_role_selector_t;
 
+/**
+ * @brief   Input role lookup definition.
+ */
 typedef struct {
     uint8_t index[RCINPUT_MAX_NUMBER_OF_INPUTS];
 } input_role_lookup_t;
@@ -147,6 +150,28 @@ typedef enum PACKED_VAR {
      */
     TYPE_ON_OFF = 3
 } input_type_selector_t;
+
+/**
+ * @brief   Input capture channel type.
+ */
+typedef enum PACKED_VAR {
+    /**
+     * @brief   Switch error, not a switch.
+     */
+    SWITCH_NOT_SWITCH = 0,
+    /**
+     * @brief   Switch at bottom position.
+     */
+    SWITCH_POSITION_BOTTOM = 1,
+    /**
+     * @brief   Switch at center position.
+     */
+    SWITCH_POSITION_CENTER = 2,
+    /**
+     * @brief   Switch at top position.
+     */
+    SWITCH_POSITION_TOP = 3
+} input_switch_position_t;
 
 /**
  * @brief   Input capture data holder.
@@ -222,6 +247,7 @@ typedef struct {
 void RCInputInit(void);
 msg_t RCInputInitialization(void);
 float RCInputGetInputLevel(input_role_selector_t role);
+input_switch_position_t RCInputGetSwitchState(input_role_selector_t role);
 bool bActiveRCInputConnection(void);
 rcinput_data_t *ptrGetRCInputData(void);
 rcinput_settings_t *ptrGetRCInputSettings(void);
