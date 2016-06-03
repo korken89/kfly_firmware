@@ -307,11 +307,12 @@ static void RCInputSettingsReset(rcinput_settings_t *data)
 
     for (i = 0; i < RCINPUT_MAX_NUMBER_OF_INPUTS; i++)
     {
-        data->role[i]      = ROLE_OFF;
-        data->type[i]      = TYPE_ANALOG;
-        data->ch_bottom[i] = 1000;
-        data->ch_center[i] = 1500;
-        data->ch_top[i]    = 2000;
+        data->role[i]             = ROLE_OFF;
+        data->type[i]             = TYPE_ANALOG;
+        data->ch_reverse[i].value = false;
+        data->ch_bottom[i]        = 1000;
+        data->ch_center[i]        = 1500;
+        data->ch_top[i]           = 2000;
     }
 
     data->mode = MODE_CPPM_INPUT;
