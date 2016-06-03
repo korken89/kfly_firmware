@@ -17,31 +17,35 @@ typedef enum PACKED_VAR
     /**
      * @brief   Arm direction not yet set.
      */
-    STICK_NONE = 0,
+    ARMING_DIRECTION_STICK_NONE = 0,
     /**
      * @brief   Arm at pitch at min.
      */
-    STICK_PITCH_MIN,
+    ARMING_DIRECTION_STICK_PITCH_MIN,
     /**
      * @brief   Arm at pitch at max.
      */
-    STICK_PITCH_MAX,
+    ARMING_DIRECTION_STICK_PITCH_MAX,
     /**
      * @brief   Arm at roll at min.
      */
-    STICK_ROLL_MIN,
+    ARMING_DIRECTION_STICK_ROLL_MIN,
     /**
      * @brief   Arm at roll at max.
      */
-    STICK_ROLL_MAX,
+    ARMING_DIRECTION_STICK_ROLL_MAX,
     /**
      * @brief   Arm at yaw at min.
      */
-    STICK_YAW_MIN,
+    ARMING_DIRECTION_STICK_YAW_MIN,
     /**
      * @brief   Arm at yaw at max.
      */
-    STICK_YAW_MAX
+    ARMING_DIRECTION_STICK_YAW_MAX,
+    /**
+     * @brief   Arm with non-latching switch.
+     */
+    ARMING_DIRECTION_NON_LATCHING_SWITCH
 } arming_stick_direction_t;
 
 /**
@@ -52,15 +56,19 @@ typedef enum
     /**
      * @brief   Sticks are neither in the arm or disarm position.
      */
-    STICK_NO_REGION = 0,
+    ARMING_REGION_STICK_NO_REGION = 0,
     /**
      * @brief   Sticks are in the arm position.
      */
-    STICK_ARM_REGION,
+    ARMING_REGION_STICK_ARM,
     /**
      * @brief   Sticks are in the disarm position.
      */
-    STICK_DISARM_REGION
+    ARMING_REGION_STICK_DISARM,
+    /**
+     * @brief   The non-latching arm switch is in the correct region.
+     */
+    ARMING_REGION_NON_LATCHING_SWITCH_ACTIVE
 } arming_stick_region_t;
 
 /**
