@@ -574,8 +574,8 @@ float RCInputGetInputLevel(input_role_selector_t role)
 
         /* Use the calibration to calculate the position */
         if (rcinput_settings.ch_reverse[idx].bit == true)
-            level = 1.0 - level / (float)(rcinput_settings.ch_top[idx] -
-                                    rcinput_settings.ch_center[idx]);
+            level = 1.0f - level / (float)(rcinput_settings.ch_top[idx] -
+                                           rcinput_settings.ch_center[idx]);
         else
             level = level / (float)(rcinput_settings.ch_top[idx] -
                                     rcinput_settings.ch_center[idx]);
@@ -589,16 +589,11 @@ float RCInputGetInputLevel(input_role_selector_t role)
 
         /* Use the calibration to calculate the position */
         if (rcinput_settings.ch_reverse[idx].bit == true)
-            level = -1.0 - level / (float)(rcinput_settings.ch_center[idx] -
-                                    rcinput_settings.ch_bottom[idx]);
+            level = -1.0f - level / (float)(rcinput_settings.ch_center[idx] -
+                                            rcinput_settings.ch_bottom[idx]);
         else
             level = level / (float)(rcinput_settings.ch_center[idx] -
                                     rcinput_settings.ch_bottom[idx]);
-    }
-    else
-    {
-        if (rcinput_settings.ch_reverse[idx].bit == true)
-            level = -level;
     }
 
     return bound(1.0f, -1.0f, level);
