@@ -44,7 +44,7 @@ static THD_FUNCTION(ThreadControlArming, arg)
     (void)arg;
 
     uint16_t arm_time = 0, disarm_time = 0, timeout_time = 0;
-    bool latch_released_after_arm = false;
+    bool latch_released = false;
     arming_stick_region_t current_region;
 
     /* Set thread name */
@@ -64,6 +64,7 @@ static THD_FUNCTION(ThreadControlArming, arg)
         {
             system_armed = false;
             force_disarm = false;
+            latch_released = false;
             arm_time = 0;
             disarm_time = 0;
             timeout_time = 0;
@@ -84,12 +85,12 @@ static THD_FUNCTION(ThreadControlArming, arg)
                  */
                 if (current_region == ARMING_REGION_NON_LATCHING_SWITCH_ACTIVE)
                 {
-                    if (system_armed == false)
+                    if ((system_armed == false) && (latch_released == true))
                     {
                         if ((arm_time / ARM_RATE) > arm_settings.arm_stick_time)
                         {
                             system_armed = true;
-                            latch_released_after_arm = false;
+                            latch_released = false;
                         }
                         else
                         {
@@ -99,9 +100,9 @@ static THD_FUNCTION(ThreadControlArming, arg)
                         }
                     }
                     else if ((system_armed == true) &&
-                             (latch_released_after_arm == true))
+                             (latch_released == true))
                     {
-
+                        latch_released = false;
                         system_armed = false;
                         arm_time = 0;
                         disarm_time = 0;
@@ -110,10 +111,7 @@ static THD_FUNCTION(ThreadControlArming, arg)
                 }
                 else
                 {
-                    if (system_armed == true)
-                    {
-                        latch_released_after_arm = true;
-                    }
+                    latch_released = true;
                 }
             }
             else
@@ -162,7 +160,7 @@ static THD_FUNCTION(ThreadControlArming, arg)
                     /* Check the zero throttle timeout */
                     if (arm_settings.arm_zero_throttle_timeout != 0)
                     {
-                        if ((RCInputGetInputLevel(ROLE_THROTTLE) <=
+                        if ((RCInputGetInputLevel(RCINPUT_ROLE_THROTTLE) <=
                             arm_settings.stick_threshold))
                         {
                             /* Check if the required time has passed to disarm due
@@ -208,7 +206,7 @@ static arming_stick_region_t SticksInRegion(void)
     float level, threshold;
 
     threshold = arm_settings.stick_threshold;
-    level = RCInputGetInputLevel(ROLE_THROTTLE);
+    level = RCInputGetInputLevel(RCINPUT_ROLE_THROTTLE);
 
     /* Check so the throttle is within the threshold */
     if (level <= threshold)
@@ -217,43 +215,43 @@ static arming_stick_region_t SticksInRegion(void)
         switch (arm_settings.stick_direction)
         {
             case ARMING_DIRECTION_NON_LATCHING_SWITCH:
-                sel = ROLE_ARM_NONLATCH;
+                sel = RCINPUT_ROLE_ARM_NONLATCH;
                 is_min = false;
                 is_switch = true;
                 break;
 
             case ARMING_DIRECTION_STICK_PITCH_MIN:
-                sel = ROLE_PITCH;
+                sel = RCINPUT_ROLE_PITCH;
                 is_min = true;
                 is_switch = false;
                 break;
 
             case ARMING_DIRECTION_STICK_PITCH_MAX:
-                sel = ROLE_PITCH;
+                sel = RCINPUT_ROLE_PITCH;
                 is_min = false;
                 is_switch = false;
                 break;
 
             case ARMING_DIRECTION_STICK_ROLL_MIN:
-                sel = ROLE_ROLL;
+                sel = RCINPUT_ROLE_ROLL;
                 is_min = true;
                 is_switch = false;
                 break;
 
             case ARMING_DIRECTION_STICK_ROLL_MAX:
-                sel = ROLE_ROLL;
+                sel = RCINPUT_ROLE_ROLL;
                 is_min = false;
                 is_switch = false;
                 break;
 
             case ARMING_DIRECTION_STICK_YAW_MIN:
-                sel = ROLE_YAW;
+                sel = RCINPUT_ROLE_YAW;
                 is_min = true;
                 is_switch = false;
                 break;
 
             case ARMING_DIRECTION_STICK_YAW_MAX:
-                sel = ROLE_YAW;
+                sel = RCINPUT_ROLE_YAW;
                 is_min = false;
                 is_switch = false;
                 break;
@@ -264,29 +262,32 @@ static arming_stick_region_t SticksInRegion(void)
         }
 
         /* Check the switch. */
-        if (is_switch && (RCInputGetSwitchState(sel) == SWITCH_POSITION_TOP))
+        if (is_switch &&
+            (RCInputGetSwitchState(sel) == RCINPUT_SWITCH_POSITION_TOP))
             return ARMING_REGION_NON_LATCHING_SWITCH_ACTIVE;
-
-        level = RCInputGetInputLevel(sel);
-
-        /* Calculate the threshold value. The *2 comes from the fact that the
-           throttle has half the span of the other sticks so double the
-           threshold is needed to the same relative threshold. */
-        threshold = 1.0f - 2.0f * threshold;
-
-        if (is_min == true)
-        {
-            if (level <= -threshold)
-                return ARMING_REGION_STICK_ARM;
-            else if (level >= threshold)
-                return ARMING_REGION_STICK_DISARM;
-        }
         else
         {
-            if (level >= threshold)
-                return ARMING_REGION_STICK_ARM;
-            else if (level <= -threshold)
-                return ARMING_REGION_STICK_DISARM;
+            level = RCInputGetInputLevel(sel);
+
+            /* Calculate the threshold value. The *2 comes from the fact that
+               the throttle has half the span of the other sticks so double the
+               threshold is needed to the same relative threshold. */
+            threshold = 1.0f - 2.0f * threshold;
+
+            if (is_min == true)
+            {
+                if (level <= -threshold)
+                    return ARMING_REGION_STICK_ARM;
+                else if (level >= threshold)
+                    return ARMING_REGION_STICK_DISARM;
+            }
+            else
+            {
+                if (level >= threshold)
+                    return ARMING_REGION_STICK_ARM;
+                else if (level <= -threshold)
+                    return ARMING_REGION_STICK_DISARM;
+            }
         }
     }
 
