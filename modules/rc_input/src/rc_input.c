@@ -307,15 +307,15 @@ static void RCInputSettingsReset(rcinput_settings_t *data)
 
     for (i = 0; i < RCINPUT_MAX_NUMBER_OF_INPUTS; i++)
     {
-        data->role[i]             = ROLE_OFF;
-        data->type[i]             = TYPE_ANALOG;
+        data->role[i]             = RCINPUT_ROLE_OFF;
+        data->type[i]             = RCINPUT_TYPE_ANALOG;
         data->ch_reverse[i].value = false;
         data->ch_bottom[i]        = 1000;
         data->ch_center[i]        = 1500;
         data->ch_top[i]           = 2000;
     }
 
-    data->mode = MODE_CPPM_INPUT;
+    data->mode = RCINPUT_MODE_CPPM_INPUT;
 }
 
 /**
@@ -327,7 +327,7 @@ static void ValidateRoleSettings(void)
 
     int i, j, cnt;
 
-    for (i = 1; i < ROLE_MAX; i++)
+    for (i = 1; i < RCINPUT_ROLE_MAX; i++)
     {
         cnt = 0;
 
@@ -337,7 +337,7 @@ static void ValidateRoleSettings(void)
 
         if (cnt > 1)
             for (j = 0; j < RCINPUT_MAX_NUMBER_OF_INPUTS; j++)
-                rcinput_settings.role[j] = ROLE_OFF;
+                rcinput_settings.role[j] = RCINPUT_ROLE_OFF;
     }
 }
 
@@ -358,7 +358,7 @@ static void GenerateRoleLookupTable(void)
     {
         role = rcinput_settings.role[i];
 
-        if ((role > ROLE_OFF) && (role < ROLE_MAX))
+        if ((role > RCINPUT_ROLE_OFF) && (role < RCINPUT_ROLE_MAX))
             role_lookup.index[(uint32_t)role] = i;
         else
             role_lookup.index[(uint32_t)role] = 0;
@@ -374,7 +374,7 @@ static void GenerateRoleLookupTable(void)
 static uint8_t RoleToIndex(input_role_selector_t role)
 {
     /* Get the index of the associated role. */
-    if (role < ROLE_MAX)
+    if (role < RCINPUT_ROLE_MAX)
         return role_lookup.index[role];
     else
         return 0;
@@ -508,7 +508,7 @@ msg_t RCInputInitialization(void)
         eicuDisable(&EICUD12);
 
     /* Configure the input capture unit */
-    if (rcinput_settings.mode == MODE_CPPM_INPUT)
+    if (rcinput_settings.mode == RCINPUT_MODE_CPPM_INPUT)
     {
         /* Start and enable the EICU driver */
         eicuStart(&EICUD9, &cppm_rcinputcfg);
@@ -516,7 +516,7 @@ msg_t RCInputInitialization(void)
         eicuEnable(&EICUD9);
         eicuEnable(&EICUD12);
     }
-    else if (rcinput_settings.mode == MODE_PWM_INPUT)
+    else if (rcinput_settings.mode == RCINPUT_MODE_PWM_INPUT)
     {
         /* Start and enable the EICU driver */
         eicuStart(&EICUD3, &pwm_rcinputcfg_2);
@@ -552,7 +552,7 @@ float RCInputGetInputLevel(input_role_selector_t role)
 
     /* Check the validity of the index */
     if ((idx == 0) ||
-        (role == ROLE_OFF) ||
+        (role == RCINPUT_ROLE_OFF) ||
         (rcinput_data.active_connection == FALSE))
         return 0.0f;
 
@@ -616,19 +616,19 @@ input_switch_position_t RCInputGetSwitchState(input_role_selector_t role)
 
     /* Check the validity of the index */
     if ((idx == 0) ||
-        (role == ROLE_OFF) ||
+        (role == RCINPUT_ROLE_OFF) ||
         (rcinput_data.active_connection == FALSE))
-        return SWITCH_NOT_SWITCH;
+        return RCINPUT_SWITCH_NOT_SWITCH;
 
     /* Get the raw value from the raw data structure */
     value = rcinput_data.value[idx];
     type = rcinput_settings.type[idx];
 
     /* Check so the data and input is valid */
-    if ((value == 0) || (type == TYPE_ANALOG))
-        return SWITCH_NOT_SWITCH;
+    if ((value == 0) || (type == RCINPUT_TYPE_ANALOG))
+        return RCINPUT_SWITCH_NOT_SWITCH;
 
-    if (type == TYPE_3_STATE)
+    if (type == RCINPUT_TYPE_3_STATE)
     {
         /* 3 state switch. */
 
@@ -640,20 +640,20 @@ input_switch_position_t RCInputGetSwitchState(input_role_selector_t role)
         {
             /* Switch at bottom, but check for channel reversal. */
             if (rcinput_settings.ch_reverse[idx].value == true)
-                return SWITCH_POSITION_TOP;
+                return RCINPUT_SWITCH_POSITION_TOP;
             else
-                return SWITCH_POSITION_BOTTOM;
+                return RCINPUT_SWITCH_POSITION_BOTTOM;
         }
         else if (value < rcinput_settings.ch_center[idx] + center)
         {
             /* Switch at top, but check for channel reversal. */
             if (rcinput_settings.ch_reverse[idx].value == true)
-                return SWITCH_POSITION_BOTTOM;
+                return RCINPUT_SWITCH_POSITION_BOTTOM;
             else
-                return SWITCH_POSITION_TOP;
+                return RCINPUT_SWITCH_POSITION_TOP;
         }
         else
-            return SWITCH_POSITION_CENTER;
+            return RCINPUT_SWITCH_POSITION_CENTER;
     }
     else
     {
@@ -666,21 +666,21 @@ input_switch_position_t RCInputGetSwitchState(input_role_selector_t role)
         {
             /* Switch at bottom, but check for channel reversal. */
             if (rcinput_settings.ch_reverse[idx].value == true)
-                return SWITCH_POSITION_TOP;
+                return RCINPUT_SWITCH_POSITION_TOP;
             else
-                return SWITCH_POSITION_BOTTOM;
+                return RCINPUT_SWITCH_POSITION_BOTTOM;
         }
         else
         {
             /* Switch at top, but check for channel reversal. */
             if (rcinput_settings.ch_reverse[idx].value == true)
-                return SWITCH_POSITION_BOTTOM;
+                return RCINPUT_SWITCH_POSITION_BOTTOM;
             else
-                return SWITCH_POSITION_TOP;
+                return RCINPUT_SWITCH_POSITION_TOP;
         }
     }
 
-    return SWITCH_NOT_SWITCH;
+    return RCINPUT_SWITCH_NOT_SWITCH;
 }
 
 /**

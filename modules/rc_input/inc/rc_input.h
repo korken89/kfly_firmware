@@ -31,31 +31,31 @@ typedef enum {
     /**
      * @brief   Channel 1 selector.
      */
-    INPUT_CH1 = 0,
+    RCINPUT_INPUT_CH1 = 0,
     /**
      * @brief   Channel 2 selector.
      */
-    INPUT_CH2 = 1,
+    RCINPUT_INPUT_CH2 = 1,
     /**
      * @brief   Channel 3 selector.
      */
-    INPUT_CH3 = 2,
+    RCINPUT_INPUT_CH3 = 2,
     /**
      * @brief   Channel 4 selector.
      */
-    INPUT_CH4 = 3,
+    RCINPUT_INPUT_CH4 = 3,
     /**
      * @brief   Channel 5 selector.
      */
-    INPUT_CH5 = 4,
+    RCINPUT_INPUT_CH5 = 4,
     /**
      * @brief   Channel 6 selector.
      */
-    INPUT_CH6 = 5,
+    RCINPUT_INPUT_CH6 = 5,
     /**
      * @brief   Channel 7 selector.
      */
-    INPUT_CPPM = 6,
+    RCINPUT_INPUT_CPPM = 6,
     /**
      * @brief   Channel 8 selector.
      */
@@ -67,13 +67,17 @@ typedef enum {
  */
 typedef enum {
     /**
+     * @brief   No mode.
+     */
+    RCINPUT_MODE_NONE = 0,
+    /**
      * @brief   CPPM input: all channels on one input line.
      */
-    MODE_CPPM_INPUT = 1,
+    RCINPUT_MODE_CPPM_INPUT = 1,
     /**
      * @brief   PWM input: all channels have its own input line.
      */
-    MODE_PWM_INPUT = 2
+    RCINPUT_MODE_PWM_INPUT = 2
 } rcinput_mode_selector_t;
 
 /**
@@ -83,47 +87,47 @@ typedef enum PACKED_VAR {
     /**
      * @brief   Unused role selector.
      */
-    ROLE_OFF = 0,
+    RCINPUT_ROLE_OFF = 0,
     /**
      * @brief   Throttle role selector.
      */
-    ROLE_THROTTLE = 1,
+    RCINPUT_ROLE_THROTTLE = 1,
     /**
      * @brief   Pitch role selector.
      */
-    ROLE_PITCH = 2,
+    RCINPUT_ROLE_PITCH = 2,
     /**
      * @brief   Roll role selector.
      */
-    ROLE_ROLL = 3,
+    RCINPUT_ROLE_ROLL = 3,
     /**
      * @brief   Yaw role selector.
      */
-    ROLE_YAW = 4,
+    RCINPUT_ROLE_YAW = 4,
     /**
      * @brief   Aux 1 role selector.
      */
-    ROLE_AUX1 = 5,
+    RCINPUT_ROLE_AUX1 = 5,
     /**
      * @brief   Aux 2 role selector.
      */
-    ROLE_AUX2 = 6,
+    RCINPUT_ROLE_AUX2 = 6,
     /**
      * @brief   Aux 3 role selector.
      */
-    ROLE_AUX3 = 7,
+    ROLE_AURCINPUT_X3 = 7,
     /**
      * @brief   Role of a non-latching switch to arm the flight controller.
      */
-    ROLE_ARM_NONLATCH = 8,
+    RCINPUT_ROLE_ARM_NONLATCH = 8,
     /**
      * @brief   Role for a latching switch to switch to remote serial control.
      */
-    ROLE_ENABLE_SERIAL_CONTROL = 9,
+    RCINPUT_ROLE_ENABLE_SERIAL_CONTROL = 9,
     /**
      * @brief   The number of roles - 1. Always have at the end!
      */
-    ROLE_MAX = 10
+    RCINPUT_ROLE_MAX = 10
 } input_role_selector_t;
 
 /**
@@ -140,15 +144,15 @@ typedef enum PACKED_VAR {
     /**
      * @brief   Analog type input.
      */
-    TYPE_ANALOG = 1,
+    RCINPUT_TYPE_ANALOG = 1,
     /**
      * @brief   Tri-state type input.
      */
-    TYPE_3_STATE = 2,
+    RCINPUT_TYPE_3_STATE = 2,
     /**
      * @brief   On/off type input.
      */
-    TYPE_ON_OFF = 3
+    RCINPUT_TYPE_ON_OFF = 3
 } input_type_selector_t;
 
 /**
@@ -158,20 +162,21 @@ typedef enum PACKED_VAR {
     /**
      * @brief   Switch error, not a switch.
      */
-    SWITCH_NOT_SWITCH = 0,
+    RCINPUT_SWITCH_NOT_SWITCH = 0,
     /**
      * @brief   Switch at bottom position.
      */
-    SWITCH_POSITION_BOTTOM = 1,
+    RCINPUT_SWITCH_POSITION_BOTTOM = 1,
     /**
      * @brief   Switch at center position.
      */
-    SWITCH_POSITION_CENTER = 2,
+    RCINPUT_SWITCH_POSITION_CENTER = 2,
     /**
      * @brief   Switch at top position.
      */
-    SWITCH_POSITION_TOP = 3
+    RCINPUT_SWITCH_POSITION_TOP = 3
 } input_switch_position_t;
+
 
 /**
  * @brief   Input capture data holder.
@@ -218,7 +223,7 @@ typedef struct {
     /**
      * @brief   Input reverse selector.
      */
-    bool_1bit_t ch_reverse[RCINPUT_MAX_NUMBER_OF_INPUTS];
+    bool8_t ch_reverse[RCINPUT_MAX_NUMBER_OF_INPUTS];
     /**
      * @brief   Input capture top calibration value.
      */
