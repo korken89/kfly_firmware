@@ -49,7 +49,7 @@ void RCInputsToControlAction(control_reference_t *ref,
 
     /* Read out the throttle reference and check if it is bellow the minimum
      * throttle. Used to indicate an armed system by rotating the propellers. */
-    float throttle = RCInputGetInputLevel(ROLE_THROTTLE);
+    float throttle = RCInputGetInputLevel(RCINPUT_ROLE_THROTTLE);
 
     if (throttle < fGetArmedMinThrottle())
     {
@@ -63,22 +63,22 @@ void RCInputsToControlAction(control_reference_t *ref,
     if (ref->mode == FLIGHTMODE_RATE)
     {
         ref->rate_reference.x =
-            rate_lim->x * DEG2RAD * RCInputGetInputLevel(ROLE_PITCH);
+            rate_lim->x * DEG2RAD * RCInputGetInputLevel(RCINPUT_ROLE_ROLL);
         ref->rate_reference.y =
-            rate_lim->y * DEG2RAD * RCInputGetInputLevel(ROLE_ROLL);
+            rate_lim->y * DEG2RAD * RCInputGetInputLevel(RCINPUT_ROLE_PITCH);
         ref->rate_reference.z =
-            rate_lim->z * DEG2RAD * RCInputGetInputLevel(ROLE_YAW);
+            rate_lim->z * DEG2RAD * RCInputGetInputLevel(RCINPUT_ROLE_YAW);
 
         ref->actuator_desired.throttle = throttle;
     }
     else if (ref->mode == FLIGHTMODE_ATTITUDE_EULER)
     {
         ref->attitude_reference_euler.x =
-            attitude_lim->x * DEG2RAD * RCInputGetInputLevel(ROLE_PITCH);
+            attitude_lim->x * DEG2RAD * RCInputGetInputLevel(RCINPUT_ROLE_ROLL);
         ref->attitude_reference_euler.y =
-            attitude_lim->y * DEG2RAD * RCInputGetInputLevel(ROLE_ROLL);
+            attitude_lim->y * DEG2RAD * RCInputGetInputLevel(RCINPUT_ROLE_PITCH);
         ref->rate_reference.z =
-            rate_lim->z * DEG2RAD * RCInputGetInputLevel(ROLE_YAW);
+            rate_lim->z * DEG2RAD * RCInputGetInputLevel(RCINPUT_ROLE_YAW);
 
         ref->actuator_desired.throttle = throttle;
     }
