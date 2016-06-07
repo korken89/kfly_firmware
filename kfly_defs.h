@@ -27,7 +27,14 @@
  */
 typedef struct PACKED_VAR {
     bool value : 1;
-} bool_1bit_t;
+} bool1_t;
+
+/**
+ * @brief   Definition of a 8-bit bool struct.
+ */
+typedef struct PACKED_VAR {
+    bool value : 1;
+} bool8_t;
 
 /*===========================================================================*/
 /* Global macros.                                                            */
