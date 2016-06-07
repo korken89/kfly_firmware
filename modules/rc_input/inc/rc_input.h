@@ -115,7 +115,7 @@ typedef enum PACKED_VAR {
     /**
      * @brief   Aux 3 role selector.
      */
-    ROLE_AURCINPUT_X3 = 7,
+    RCINPUT_ROLE_AUX3 = 7,
     /**
      * @brief   Role of a non-latching switch to arm the flight controller.
      */
