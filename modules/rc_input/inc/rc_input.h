@@ -105,29 +105,33 @@ typedef enum PACKED_VAR {
      */
     RCINPUT_ROLE_YAW = 4,
     /**
-     * @brief   Aux 1 role selector.
-     */
-    RCINPUT_ROLE_AUX1 = 5,
-    /**
-     * @brief   Aux 2 role selector.
-     */
-    RCINPUT_ROLE_AUX2 = 6,
-    /**
-     * @brief   Aux 3 role selector.
-     */
-    RCINPUT_ROLE_AUX3 = 7,
-    /**
      * @brief   Role of a non-latching switch to arm the flight controller.
      */
-    RCINPUT_ROLE_ARM_NONLATCH = 8,
+    RCINPUT_ROLE_ARM_NONLATCH = 5,
     /**
      * @brief   Role for a latching switch to switch to remote serial control.
      */
-    RCINPUT_ROLE_ENABLE_SERIAL_CONTROL = 9,
+    RCINPUT_ROLE_ENABLE_SERIAL_CONTROL = 6,
+    /**
+     * @brief   Flight mode selector.
+     */
+    RCINPUT_ROLE_FLIGHTMODE = 7,
+    /**
+     * @brief   Aux 1 role selector.
+     */
+    RCINPUT_ROLE_AUX1 = 8,
+    /**
+     * @brief   Aux 2 role selector.
+     */
+    RCINPUT_ROLE_AUX2 = 9,
+    /**
+     * @brief   Aux 3 role selector.
+     */
+    RCINPUT_ROLE_AUX3 = 10,
     /**
      * @brief   The number of roles - 1. Always have at the end!
      */
-    RCINPUT_ROLE_MAX = 10
+    RCINPUT_ROLE_MAX = 11
 } input_role_selector_t;
 
 /**
