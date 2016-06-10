@@ -6,13 +6,14 @@
 #include "ch.h"
 #include "hal.h"
 #include "arming.h"
+#include "computer_control.h"
 #include "rc_input.h"
 
 /*===========================================================================*/
 /* Module local definitions.                                                 */
 /*===========================================================================*/
 
-#define ARM_RATE                10 /* Hz */
+#define ARM_RATE                20 /* Hz */
 
 static arming_stick_region_t SticksInRegion(void);
 
@@ -78,6 +79,12 @@ static THD_FUNCTION(ThreadControlArming, arg)
             /* Check so the sticks are in the correct region ( */
             current_region = SticksInRegion();
 
+            /* If the computer control is active, don't disarm based on time. */
+            if ((system_armed == true) && (ComputerControlEnabled() == true))
+            {
+                timeout_time = 0;
+            }
+
             if (arm_settings.stick_direction == ARMING_DIRECTION_NON_LATCHING_SWITCH)
             {
                 /*
@@ -85,9 +92,11 @@ static THD_FUNCTION(ThreadControlArming, arg)
                  */
                 if (current_region == ARMING_REGION_NON_LATCHING_SWITCH_ACTIVE)
                 {
+                    /* If it is in the correct state, increase the arm counter,
+                     * and if it has reached the correct time - arm. */
                     if ((system_armed == false) && (latch_released == true))
                     {
-                        if ((arm_time / ARM_RATE) > arm_settings.arm_stick_time)
+                        if ((arm_time / ARM_RATE * 10) >= arm_settings.arm_stick_time)
                         {
                             system_armed = true;
                             latch_released = false;
@@ -95,22 +104,23 @@ static THD_FUNCTION(ThreadControlArming, arg)
                         else
                         {
                             arm_time++;
-                            disarm_time = 0;
                             timeout_time = 0;
                         }
                     }
                     else if ((system_armed == true) &&
                              (latch_released == true))
                     {
+                        /* Disarm does not need to use the wait time as arm
+                         * does, only a quick tap will disarm. */
                         latch_released = false;
                         system_armed = false;
                         arm_time = 0;
-                        disarm_time = 0;
                         timeout_time = 0;
                     }
                 }
                 else
                 {
+                    arm_time = 0;
                     latch_released = true;
                 }
             }
@@ -124,7 +134,7 @@ static THD_FUNCTION(ThreadControlArming, arg)
                 {
                     /* Check if the required time has been reached
                        to arm the system */
-                    if ((arm_time / ARM_RATE) > arm_settings.arm_stick_time)
+                    if ((arm_time / ARM_RATE * 10) >= arm_settings.arm_stick_time)
                     {
                         system_armed = true;
                     }
@@ -139,7 +149,7 @@ static THD_FUNCTION(ThreadControlArming, arg)
                 {
                     /* Check if the required time has been reached
                        to disarm the system*/
-                    if ((disarm_time / ARM_RATE) > arm_settings.arm_stick_time)
+                    if ((disarm_time / ARM_RATE) >= arm_settings.arm_stick_time)
                     {
                         system_armed = false;
                     }
@@ -201,7 +211,7 @@ static THD_FUNCTION(ThreadControlArming, arg)
  */
 static arming_stick_region_t SticksInRegion(void)
 {
-    input_role_selector_t sel;
+    rcinput_role_selector_t sel;
     bool is_min, is_switch;
     float level, threshold;
 
@@ -311,7 +321,7 @@ void ArmingInit(void)
     arm_settings.stick_threshold = 0.0f;
     arm_settings.armed_min_throttle = 0.0f;
     arm_settings.stick_direction = ARMING_DIRECTION_STICK_NONE;
-    arm_settings.arm_stick_time = 5;
+    arm_settings.arm_stick_time = 10;
     arm_settings.arm_zero_throttle_timeout = 30;
 
     /* Initialize arming control thread */

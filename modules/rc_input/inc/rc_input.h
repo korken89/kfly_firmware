@@ -13,6 +13,7 @@
 #define RCINPUT_RSSI_TIMEOUT            100     /* Number of bad RSSI
                                                    measurements to disable the
                                                    connection */
+#define RCINPUT_NUMBER_OF_SWITCHES      3
 #define RCINPUT_NO_CON_TIMEOUT_MS       500
 #define RCINPUT_LOST_EVENTMASK          EVENT_MASK(0)
 #define RCINPUT_ACTIVE_EVENTMASK        EVENT_MASK(1)
@@ -85,66 +86,79 @@ typedef enum {
  */
 typedef enum PACKED_VAR {
     /**
-     * @brief   Unused role selector.
-     */
-    RCINPUT_ROLE_OFF = 0,
-    /**
      * @brief   Throttle role selector.
      */
-    RCINPUT_ROLE_THROTTLE = 1,
+    RCINPUT_ROLE_THROTTLE = 0,
     /**
      * @brief   Pitch role selector.
      */
-    RCINPUT_ROLE_PITCH = 2,
+    RCINPUT_ROLE_PITCH = 1,
     /**
      * @brief   Roll role selector.
      */
-    RCINPUT_ROLE_ROLL = 3,
+    RCINPUT_ROLE_ROLL = 2,
     /**
      * @brief   Yaw role selector.
      */
-    RCINPUT_ROLE_YAW = 4,
-    /**
-     * @brief   Role of a non-latching switch to arm the flight controller.
-     */
-    RCINPUT_ROLE_ARM_NONLATCH = 5,
-    /**
-     * @brief   Role for a latching switch to switch to remote serial control.
-     */
-    RCINPUT_ROLE_ENABLE_SERIAL_CONTROL = 6,
-    /**
-     * @brief   Flight mode selector.
-     */
-    RCINPUT_ROLE_FLIGHTMODE = 7,
+    RCINPUT_ROLE_YAW = 3,
     /**
      * @brief   Aux 1 role selector.
      */
-    RCINPUT_ROLE_AUX1 = 8,
+    RCINPUT_ROLE_AUX1 = 4,
     /**
      * @brief   Aux 2 role selector.
      */
-    RCINPUT_ROLE_AUX2 = 9,
+    RCINPUT_ROLE_AUX2 = 5,
     /**
      * @brief   Aux 3 role selector.
      */
-    RCINPUT_ROLE_AUX3 = 10,
+    RCINPUT_ROLE_AUX3 = 6,
+
+    /*
+     * Switched bellow here!
+     */
+
+    /**
+     * @brief   Role of a non-latching switch to arm the flight controller.
+     */
+    RCINPUT_ROLE_ARM_NONLATCH = 7,
+    /**
+     * @brief   Role for a latching switch to switch to remote serial control.
+     */
+    RCINPUT_ROLE_ENABLE_SERIAL_CONTROL = 8,
+    /**
+     * @brief   Flight mode selector.
+     */
+    RCINPUT_ROLE_FLIGHTMODE = 9,
     /**
      * @brief   The number of roles - 1. Always have at the end!
      */
-    RCINPUT_ROLE_MAX = 11
-} input_role_selector_t;
+    RCINPUT_ROLE_MAX = 10,
+    /**
+     * @brief   Start value for switches.
+     */
+    RCINPUT_ROLE_SWITCHES_START = RCINPUT_ROLE_ARM_NONLATCH,
+    /**
+     * @brief   Unused role selector.
+     */
+    RCINPUT_ROLE_OFF = 0xff
+} rcinput_role_selector_t;
 
 /**
  * @brief   Input role lookup definition.
  */
 typedef struct {
     uint8_t index[RCINPUT_MAX_NUMBER_OF_INPUTS];
-} input_role_lookup_t;
+} rcinput_role_lookup_t;
 
 /**
  * @brief   Input capture channel type.
  */
 typedef enum PACKED_VAR {
+    /**
+     * @brief   Input type not set.
+     */
+    RCINPUT_TYPE_NONE = 0,
     /**
      * @brief   Analog type input.
      */
@@ -157,30 +171,44 @@ typedef enum PACKED_VAR {
      * @brief   On/off type input.
      */
     RCINPUT_TYPE_ON_OFF = 3
-} input_type_selector_t;
+} rcinput_type_selector_t;
 
 /**
- * @brief   Input capture channel type.
+ * @brief   Input switch states.
  */
 typedef enum PACKED_VAR {
     /**
      * @brief   Switch error, not a switch.
      */
-    RCINPUT_SWITCH_NOT_SWITCH = 0,
+    RCINPUT_SWITCH_UNDEFINED = 0,
+    /**
+     * @brief   Switch error, not a switch.
+     */
+    RCINPUT_SWITCH_NOT_SWITCH = 1,
     /**
      * @brief   Switch at bottom position.
      */
-    RCINPUT_SWITCH_POSITION_BOTTOM = 1,
+    RCINPUT_SWITCH_POSITION_BOTTOM = 2,
     /**
      * @brief   Switch at center position.
      */
-    RCINPUT_SWITCH_POSITION_CENTER = 2,
+    RCINPUT_SWITCH_POSITION_CENTER = 3,
     /**
      * @brief   Switch at top position.
      */
-    RCINPUT_SWITCH_POSITION_TOP = 3
-} input_switch_position_t;
+    RCINPUT_SWITCH_POSITION_TOP = 4
+} rcinput_switch_position_t;
 
+typedef struct PACKED_VAR {
+    /**
+     * @brief  All calibrated values.
+     */
+    float calibrated_value[RCINPUT_MAX_NUMBER_OF_INPUTS];
+    /**
+     * @brief   State of the switches.
+     */
+    rcinput_switch_position_t switches[RCINPUT_NUMBER_OF_SWITCHES];
+} rcinput_calibrated_data_t;
 
 /**
  * @brief   Input capture data holder.
@@ -189,7 +217,7 @@ typedef struct PACKED_VAR {
     /**
      * @brief   Active connection indicator.
      */
-    uint32_t active_connection;
+    bool32_t active_connection;
     /**
      * @brief   Number of active channels.
      */
@@ -206,6 +234,10 @@ typedef struct PACKED_VAR {
      * @brief   Current RSSI frequency.
      */
     uint16_t rssi_frequency;
+    /**
+     * @brief   Calibrated and mapped data holder.
+     */
+    rcinput_calibrated_data_t calibrated_values;
 } rcinput_data_t;
 
 /**
@@ -215,15 +247,19 @@ typedef struct {
     /**
      * @brief   Input capture mode selector.
      */
-    uint32_t mode;
+    uint16_t mode;
+    /**
+     * @brief   RSSI usage selector.
+     */
+    bool16_t use_rssi;
     /**
      * @brief   Input capture role selector.
      */
-    input_role_selector_t role[RCINPUT_MAX_NUMBER_OF_INPUTS];
+    rcinput_role_selector_t role[RCINPUT_MAX_NUMBER_OF_INPUTS];
     /**
      * @brief   Input capture type selector.
      */
-    input_type_selector_t type[RCINPUT_MAX_NUMBER_OF_INPUTS];
+    rcinput_type_selector_t type[RCINPUT_MAX_NUMBER_OF_INPUTS];
     /**
      * @brief   Input reverse selector.
      */
@@ -255,8 +291,8 @@ typedef struct {
 /*===========================================================================*/
 void RCInputInit(void);
 msg_t RCInputInitialization(void);
-float RCInputGetInputLevel(input_role_selector_t role);
-input_switch_position_t RCInputGetSwitchState(input_role_selector_t role);
+float RCInputGetInputLevel(rcinput_role_selector_t role);
+rcinput_switch_position_t RCInputGetSwitchState(rcinput_role_selector_t role);
 bool bActiveRCInputConnection(void);
 rcinput_data_t *ptrGetRCInputData(void);
 rcinput_settings_t *ptrGetRCInputSettings(void);

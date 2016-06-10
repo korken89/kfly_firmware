@@ -89,8 +89,8 @@ typedef struct PACKED_VAR
      */
     arming_stick_direction_t stick_direction;
     /**
-     * @brief   Time (in seconds) needed to hold the sticks in correct
-     *          position in order to arm the system.
+     * @brief   Time (in 1/10th seconds) needed to hold the sticks or switches
+     *          in correct position in order to arm the system.
      */
     uint8_t arm_stick_time;
     /**

@@ -23,7 +23,7 @@
 computer_control_reference_t computer_control;
 virtual_timer_t vt_disarm;
 volatile bool control_init;
-volatile reference_source_t reference_source;
+volatile bool computer_control_active;
 
 /*===========================================================================*/
 /* Module local functions.                                                   */
@@ -42,7 +42,7 @@ static void vt_disarm_callback(void *p)
     osalSysLockFromISR();
 
     /* No new computer control message, switch to manual mode. */
-    reference_source = REFERENCE_SOURCE_MANUAL;
+    computer_control_active = false;
     chVTResetI(&vt_disarm);
 
     osalSysUnlockFromISR();
@@ -58,7 +58,8 @@ static void vt_disarm_callback(void *p)
 void ComputerControlInit(void)
 {
     control_init = true;
-    reference_source = REFERENCE_SOURCE_MANUAL;
+    computer_control_active = false;
+
     chVTObjectInit(&vt_disarm);
 }
 
@@ -67,9 +68,17 @@ void ComputerControlInit(void)
  *
  * @return  The current reference source.
  */
-reference_source_t GetReferenceSource(void)
+bool ComputerControlLinkActive(void)
 {
-    return reference_source;
+    return computer_control_active;
+}
+
+bool ComputerControlEnabled(void)
+{
+    return ((bIsSystemArmed() == true) &&
+            (ComputerControlLinkActive() == true) &&
+            (RCInputGetSwitchState(RCINPUT_ROLE_ENABLE_SERIAL_CONTROL) ==
+                RCINPUT_SWITCH_POSITION_TOP));
 }
 
 /**
@@ -77,7 +86,7 @@ reference_source_t GetReferenceSource(void)
  *
  * @return  Return the flight mode of the computer control.
  */
-flightmode_t GetComputerFlightMode(void)
+flightmode_t ComputerControlGetFlightmode(void)
 {
     return computer_control.mode;
 }
@@ -89,8 +98,8 @@ flightmode_t GetComputerFlightMode(void)
  * @param[out] attitude_ref     Where the attitude reference will be saved.
  * @param[out] throttle_ref     Where the throttle reference will be saved.
  */
-void GetComputerAttitudeReference(quaternion_t *attitude_ref,
-                                  float *throttle_ref)
+void ComputerControlGetAttitudeReference(quaternion_t *attitude_ref,
+                                         float *throttle_ref)
 {
     *attitude_ref = computer_control.attitude.attitude;
     *throttle_ref = computer_control.attitude.throttle;
@@ -103,8 +112,8 @@ void GetComputerAttitudeReference(quaternion_t *attitude_ref,
  * @param[out] rate_ref         Where the rate reference will be saved.
  * @param[out] throttle_ref     Where the throttle reference will be saved.
  */
-void GetComputerRateReference(vector3f_t *rate_ref,
-                              float *throttle_ref)
+void ComputerControlGetRateReference(vector3f_t *rate_ref,
+                                     float *throttle_ref)
 {
     *rate_ref = computer_control.rate.rate;
     *throttle_ref = computer_control.rate.throttle;
@@ -117,8 +126,8 @@ void GetComputerRateReference(vector3f_t *rate_ref,
  * @param[out] torque_ref       Where the normalized torque will be saved.
  * @param[out] throttle_ref     Where the throttle reference will be saved.
  */
-void GetComputerIndirectReference(vector3f_t *torque_ref,
-                                  float *throttle_ref)
+void ComputerControlGetIndirectReference(vector3f_t *torque_ref,
+                                         float *throttle_ref)
 {
     *torque_ref = computer_control.indirect_control.torque;
     *throttle_ref = computer_control.indirect_control.throttle;
@@ -129,7 +138,7 @@ void GetComputerIndirectReference(vector3f_t *torque_ref,
  *
  * @param[out] output   Where the direct motor commands will be saved.
  */
-void GetComputerDirectReference(float output[8])
+void ComputerControlGetDirectReference(float output[8])
 {
     int i;
 
@@ -155,7 +164,7 @@ void vParseComputerControlPacket(const uint8_t *payload, const uint8_t size)
                COMPUTER_CONTROL_MESSAGE_SIZE);
 
         /* Set the reference source to computer control. */
-        reference_source = REFERENCE_SOURCE_COMPUTER_CONTROL;
+        computer_control_active = true;
 
         /* Timeout for no new messags set to 500 ms. */
         chVTSetI(&vt_disarm, MS2ST(500), vt_disarm_callback, NULL);

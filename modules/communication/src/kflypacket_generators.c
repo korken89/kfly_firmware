@@ -209,7 +209,7 @@ static bool GenerateGenericGetControllerData(kfly_command_t command,
                                              const uint32_t pi_offset,
                                              circular_buffer_t *Cbuff)
 {
-    const int size = 5;
+    const uint32_t size = 5;
     uint8_t header[2];
     uint8_t *ptr_list[size];
     uint32_t len_list[size];
@@ -349,7 +349,7 @@ static bool GenerateGetRunningMode(circular_buffer_t *Cbuff)
  */
 static bool GenerateGetDeviceInfo(circular_buffer_t *Cbuff)
 {
-    const int size = 6;
+    const uint32_t size = 6;
     uint8_t header[2];
     uint8_t *ptr_list[size];
     uint32_t len_list[size];

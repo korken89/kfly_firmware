@@ -317,52 +317,50 @@ void vUpdateControlAction(const quaternion_t *attitude_m,
                           const float dt)
 {
     /* Check if manual control or computer control. */
-    if (GetReferenceSource() == REFERENCE_SOURCE_MANUAL)
+
+    if (bIsSystemArmed() == false)
     {
-        if (bIsSystemArmed() == true)
-        {
-            /* TODO: Make this settable via software and switches. */
-            control_reference.mode = FLIGHTMODE_ATTITUDE_EULER;
-
-            RCInputsToControlAction(&control_reference,
-                                    &control_limits.max_rate,
-                                    (vector3f_t *)&control_limits.max_angle);
-        }
-        else
-        {
-            /* When disarmed, set the throttle disarmed. */
-            control_reference.mode = FLIGHTMODE_DISARMED;
-        }
-
+        control_reference.mode = FLIGHTMODE_DISARMED;
     }
-    else
+    else if ((ComputerControlLinkActive() == true) &&
+        (RCInputGetSwitchState(RCINPUT_ROLE_ENABLE_SERIAL_CONTROL) ==
+            RCINPUT_SWITCH_POSITION_TOP))
     {
-        control_reference.mode = GetComputerFlightMode();
+        control_reference.mode = ComputerControlGetFlightmode();
 
         if (control_reference.mode == FLIGHTMODE_ATTITUDE)
         {
-            GetComputerAttitudeReference(&control_reference.attitude_reference,
-                                         &control_reference.actuator_desired.throttle);
+            ComputerControlGetAttitudeReference(&control_reference.attitude_reference,
+                                        &control_reference.actuator_desired.throttle);
         }
         else if (control_reference.mode == FLIGHTMODE_RATE)
         {
-            GetComputerRateReference(&control_reference.rate_reference,
+            ComputerControlGetRateReference(&control_reference.rate_reference,
                                      &control_reference.actuator_desired.throttle);
         }
         else if (control_reference.mode == FLIGHTMODE_INDIRECT)
         {
-            GetComputerIndirectReference(&control_reference.actuator_desired.torque,
+            ComputerControlGetIndirectReference(&control_reference.actuator_desired.torque,
                                          &control_reference.actuator_desired.throttle);
         }
         else if (control_reference.mode == FLIGHTMODE_DIRECT)
         {
-            GetComputerDirectReference(control_reference.output);
+            ComputerControlGetDirectReference(control_reference.output);
         }
         else
         {
             /* Fallback - disarm. */
             control_reference.mode = FLIGHTMODE_DISARMED;
         }
+    }
+    else
+    {
+        /* TODO: Make this settable via software and switches. */
+        control_reference.mode = FLIGHTMODE_RATE;
+
+        RCInputsToControlAction(&control_reference,
+                                &control_limits.max_rate,
+                                (vector3f_t *)&control_limits.max_angle);
     }
 
 

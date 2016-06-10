@@ -12,7 +12,7 @@ int main(void)
 {
     /*
      * System initializations.
-     * - HAL initialization, this also initializes the configured 
+     * - HAL initialization, this also initializes the configured
      *   device drivers and performs the board-specific initializations.
      * - Kernel initialization, the main() function becomes a thread
      *   and the RTOS is active.
@@ -34,8 +34,14 @@ int main(void)
      */
     while(bSystemShutdownRequested() == false)
     {
-        palTogglePad(GPIOC, GPIOC_LED_USR);
-        chThdSleepMilliseconds(200);
+        palSetPad(GPIOC, GPIOC_LED_USR);
+        chThdSleepMilliseconds(150);
+        palClearPad(GPIOC, GPIOC_LED_USR);
+        chThdSleepMilliseconds(150);
+        palSetPad(GPIOC, GPIOC_LED_USR);
+        chThdSleepMilliseconds(150);
+        palClearPad(GPIOC, GPIOC_LED_USR);
+        chThdSleepMilliseconds(500);
         //vSystemRequestShutdown(SYSTEM_SHUTDOWN_KEY);
     }
 

@@ -34,7 +34,24 @@ typedef struct PACKED_VAR {
  */
 typedef struct PACKED_VAR {
     bool value : 1;
+    uint32_t __reserved : 7;
 } bool8_t;
+
+/**
+ * @brief   Definition of a 16-bit bool struct.
+ */
+typedef struct PACKED_VAR {
+    bool value : 1;
+    uint32_t __reserved : 15;
+} bool16_t;
+
+/**
+ * @brief   Definition of a 32-bit bool struct.
+ */
+typedef struct PACKED_VAR {
+    bool value : 1;
+    uint32_t __reserved : 31;
+} bool32_t;
 
 /*===========================================================================*/
 /* Global macros.                                                            */
