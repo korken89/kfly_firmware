@@ -54,8 +54,9 @@ static THD_FUNCTION(ThreadEstimation, arg)
     event_listener_t el;
 
     /* Register to new data from accelerometer and gyroscope */
-    chEvtRegisterMask(ptrGetNewDataEventSource(),
+    chEvtRegisterMaskWithFlags(ptrGetNewDataEventSource(),
                       &el,
+                      EVENT_MASK(0),
                       ACCGYRO_DATA_AVAILABLE_EVENTMASK |
                       MAG_DATA_AVAILABLE_EVENTMASK |
                       BARO_DATA_AVAILABLE_EVENTMASK);
@@ -81,44 +82,51 @@ static THD_FUNCTION(ThreadEstimation, arg)
         //}
 
         /* Wait for new measurement data */
-        chEvtWaitOne(ACCGYRO_DATA_AVAILABLE_EVENTMASK);
+        chEvtWaitAny(ALL_EVENTS);
 
-        /* Get sensor data */
-        GetIMUData(&imu_data);
+        eventflags_t flags = chEvtGetAndClearFlags(&el);
 
-        /* Run estimation */
-        vInnovateMotionCaptureEstimator(&states,
-                                        &imu_data,
-                                        SENSOR_ACCGYRO_DT,
-                                        0.0007f,
-                                        fc2lpf_gain(40, SENSOR_ACCGYRO_DT)); /* LPF ~ 45 Hz */
+        if (flags & ACCGYRO_DATA_AVAILABLE_EVENTMASK)
+        {
 
-        /*InnovateAttitudeEKF(&states,
-                            &data,
-                            imu_data.gyroscope,
-                            imu_data.accelerometer,
-                            imu_data.magnetometer,
-                            0.0f,
-                            0.0f,
-                            ESTIMATION_DT);*/
+            /* Get sensor data */
+            GetIMUData(&imu_data);
 
-        //states.w.x = -imu_data.gyroscope[0];
-        //states.w.y = -imu_data.gyroscope[1];
-        //states.w.z = imu_data.gyroscope[2];
+            /* Run estimation */
+            vInnovateMotionCaptureEstimator(&states,
+                                            &imu_data,
+                                            SENSOR_ACCGYRO_DT,
+                                            0.0007f,
+                                            fc2lpf_gain(40, SENSOR_ACCGYRO_DT)); /* LPF ~ 45 Hz */
 
-        //am.x = -imu_data.accelerometer[0];
-        //am.y = -imu_data.accelerometer[1];
-        //am.z = imu_data.accelerometer[2];
+            /*InnovateAttitudeEKF(&states,
+                                &data,
+                                imu_data.gyroscope,
+                                imu_data.accelerometer,
+                                imu_data.magnetometer,
+                                0.0f,
+                                0.0f,
+                                ESTIMATION_DT);*/
 
-        //states.q = MadgwickAHRSupdateIMU(states.w,
-        //                                 am,
-        //                                 states.q,
-        //                                 0.15f,
-        //                                 dt);
+            //states.w.x = -imu_data.gyroscope[0];
+            //states.w.y = -imu_data.gyroscope[1];
+            //states.w.z = imu_data.gyroscope[2];
 
-        /* Broadcast new estimation available */
-        chEvtBroadcastFlags(&estimation_events_es,
-                            ESTIMATION_NEW_ESTIMATION_EVENTMASK);
+            //am.x = -imu_data.accelerometer[0];
+            //am.y = -imu_data.accelerometer[1];
+            //am.z = imu_data.accelerometer[2];
+
+            //states.q = MadgwickAHRSupdateIMU(states.w,
+            //                                 am,
+            //                                 states.q,
+            //                                 0.15f,
+            //                                 dt);
+
+            /* Broadcast new estimation available */
+            chEvtBroadcastFlags(&estimation_events_es,
+                                ESTIMATION_NEW_ESTIMATION_EVENTMASK);
+
+        }
     }
 }
 
