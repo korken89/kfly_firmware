@@ -28,10 +28,10 @@ static const EPWMConfig pwmcfg = {
     RCOUTPUT_FREQUENCY_PWM,             /* 1 MHz PWM clock frequency    */
     RCOUTPUT_PERIOD_50HZ,               /* Initial PWM period: 50 Hz   */
     {
-        {EPWM_OUTPUT_ACTIVE_HIGH},      /* Active high */
-        {EPWM_OUTPUT_ACTIVE_HIGH},      /* Active high */
-        {EPWM_OUTPUT_ACTIVE_HIGH},      /* Active high */
-        {EPWM_OUTPUT_ACTIVE_HIGH}       /* Active high */
+        {EPWM_OUTPUT_ACTIVE_LOW},      /* Active low */
+        {EPWM_OUTPUT_ACTIVE_LOW},      /* Active low */
+        {EPWM_OUTPUT_ACTIVE_LOW},      /* Active low */
+        {EPWM_OUTPUT_ACTIVE_LOW}       /* Active low */
     },
     EPWM_PWM_MODE
 };
@@ -40,7 +40,7 @@ static const EPWMConfig pwmcfg = {
  * @brief RC output One Pulse Mode (OneShot125) configuration.
  */
 static const EPWMConfig opmcfg = {
-    RCOUTPUT_FREQUENCY_OPM,             /* 10 MHz clock frequency    */
+    RCOUTPUT_FREQUENCY_OPM,             /* 7 MHz clock frequency    */
     RCOUTPUT_PERIOD_OPM,
     {
         {EPWM_OUTPUT_ACTIVE_HIGH},      /* Active high */
