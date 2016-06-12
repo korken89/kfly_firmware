@@ -23,8 +23,17 @@
  */
 typedef enum
 {
+    /**
+     * @brief Output mode PWM @ 400 Hz.
+     */
     RCOUTPUT_MODE_400HZ_PWM = 0,
+    /**
+     * @brief Output mode PWM @ 50 Hz.
+     */
     RCOUTPUT_MODE_50HZ_PWM = 1,
+    /**
+     * @brief Output mode OPM (OneShot125).
+     */
     RCOUTPUT_MODE_OPM = 2
 } rcoutput_mode_t;
 
@@ -33,8 +42,17 @@ typedef enum
  */
 typedef enum
 {
+    /**
+     * @brief Output period for PWM @ 400 Hz.
+     */
     RCOUTPUT_PERIOD_400HZ = 2500,
+    /**
+     * @brief Output period for PWM @ 50 Hz.
+     */
     RCOUTPUT_PERIOD_50HZ = 20000,
+    /**
+     * @brief Output period for OPM (OneShot125).
+     */
     RCOUTPUT_PERIOD_OPM = 1760   /* 10 ticks of padding added. */
 } rcoutput_period_t;
 
@@ -43,7 +61,13 @@ typedef enum
  */
 typedef enum
 {
+    /**
+     * @brief Timer frequency for PWM mode.
+     */
     RCOUTPUT_FREQUENCY_PWM = 1000000,
+    /**
+     * @brief Timer frequency for OPM (OneShot125) mode.
+     */
     RCOUTPUT_FREQUENCY_OPM = 7000000
 } rcoutput_frequency_t;
 
@@ -72,7 +96,7 @@ typedef enum
 } rcoutput_bank_t;
 
 /**
- * @brief Configuration structure for RC ouput.
+ * @brief Configuration structure for RC output.
  */
 typedef struct
 {
