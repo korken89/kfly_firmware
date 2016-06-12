@@ -118,14 +118,14 @@
  * @brief   Enables the PWM subsystem.
  */
 #if !defined(HAL_USE_PWM) || defined(__DOXYGEN__)
-#define HAL_USE_PWM                 TRUE
+#define HAL_USE_PWM                 FALSE
 #endif
 
 /**
  * @brief   Enables the EPWM subsystem.
  */
 #if !defined(HAL_USE_EPWM) || defined(__DOXYGEN__)
-#define HAL_USE_EPWM                FALSE
+#define HAL_USE_EPWM                TRUE
 #endif
 
 /**

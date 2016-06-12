@@ -724,6 +724,12 @@ msg_t RCInputInitialization(void)
     return status;
 }
 
+/**
+ * @brief           Gets the current analog level of the requested role.
+ *
+ * @param[in] role  The role to get the value of.
+ * @return          The analog value.
+ */
 float RCInputGetInputLevel(const rcinput_role_selector_t role)
 {
     uint8_t idx;
@@ -739,6 +745,12 @@ float RCInputGetInputLevel(const rcinput_role_selector_t role)
         return rcinput_data.calibrated_values.calibrated_value[idx];
 }
 
+/**
+ * @brief           Gets the current state of the requested switch.
+ *
+ * @param[in] role  The switch role to get the state of.
+ * @return          The switch position.
+ */
 rcinput_switch_position_t RCInputGetSwitchState(const rcinput_role_selector_t role)
 {
     /* Check the validity of the index */
@@ -751,6 +763,32 @@ rcinput_switch_position_t RCInputGetSwitchState(const rcinput_role_selector_t ro
         return rcinput_data.
                calibrated_values.
                switches[role - RCINPUT_ROLE_SWITCHES_START];
+}
+
+/**
+ * @brief               Parses a payload from the serial communication for
+ *                      all the RC input settings and calibration.
+ *
+ * @param[in] payload   Pointer to the payload location.
+ * @param[in] size      Size of the payload.
+ */
+void vParseSetRCInputSettings(const uint8_t *payload,
+                              const size_t data_length)
+{
+    if (data_length == RCINPUT_SETTINGS_SIZE)
+    {
+        osalSysLock();
+
+        /* Save the data */
+        memcpy((uint8_t *)ptrGetRCInputSettings(),
+               payload,
+               RCINPUT_SETTINGS_SIZE);
+
+        osalSysUnlock();
+    }
+
+    /* Reinitialize the RC Input module */
+    RCInputInitialization();
 }
 
 /**

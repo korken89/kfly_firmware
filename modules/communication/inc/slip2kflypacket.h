@@ -208,17 +208,25 @@ typedef enum PACKED_VAR
     /*===============================================*/
 
     /**
-     * @brief   Get RC calibration.
+     * @brief   Get RC input settings.
      */
-    Cmd_GetRCCalibration            = 41,
+    Cmd_GetRCInputSettings          = 41,
     /**
-     * @brief   Set RC calibration.
+     * @brief   Set RC input settings.
      */
-    Cmd_SetRCCalibration            = 42,
+    Cmd_SetRCInputSettings          = 42,
+    /**
+     * @brief   Get RC output settings.
+     */
+    Cmd_GetRCOutputSettings         = 43,
+    /**
+     * @brief   Set RC output settings.
+     */
+    Cmd_SetRCOutputSettings         = 44,
     /**
      * @brief   Get RC values.
      */
-    Cmd_GetRCValues                 = 43,
+    Cmd_GetRCValues                 = 45,
 
     /*===============================================*/
     /* Sensor specific commands.                     */
@@ -227,19 +235,19 @@ typedef enum PACKED_VAR
     /**
      * @brief   Get calibrated IMU data.
      */
-    Cmd_GetIMUData                  = 44,
+    Cmd_GetIMUData                  = 46,
     /**
      * @brief   Get raw IMU data.
      */
-    Cmd_GetRawIMUData               = 45,
+    Cmd_GetRawIMUData               = 47,
     /**
      * @brief   Get IMU calibration.
      */
-    Cmd_GetIMUCalibration           = 46,
+    Cmd_GetIMUCalibration           = 48,
     /**
      * @brief   Set IMU calibration.
      */
-    Cmd_SetIMUCalibration           = 47,
+    Cmd_SetIMUCalibration           = 49,
 
     /*===============================================*/
     /* Estimation specific commands.                 */
@@ -248,27 +256,27 @@ typedef enum PACKED_VAR
     /**
      * @brief   Get rate estimation.
      */
-    Cmd_GetEstimationRate           = 48,
+    Cmd_GetEstimationRate           = 50,
     /**
      * @brief   Get attitude estimation.
      */
-    Cmd_GetEstimationAttitude       = 49,
+    Cmd_GetEstimationAttitude       = 51,
     /**
      * @brief   Get velocity estimation.
      */
-    Cmd_GetEstimationVelocity       = 50,
+    Cmd_GetEstimationVelocity       = 52,
     /**
      * @brief   Get position estimation.
      */
-    Cmd_GetEstimationPosition       = 51,
+    Cmd_GetEstimationPosition       = 53,
     /**
      * @brief   Get all states.
      */
-    Cmd_GetEstimationAllStates      = 52,
+    Cmd_GetEstimationAllStates      = 54,
     /**
      * @brief   Reset estimation.
      */
-    Cmd_ResetEstimation             = 53,
+    Cmd_ResetEstimation             = 55,
 
     /*===============================================*/
     /* Command reserved for experimental use.        */

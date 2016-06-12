@@ -293,6 +293,8 @@ void RCInputInit(void);
 msg_t RCInputInitialization(void);
 float RCInputGetInputLevel(rcinput_role_selector_t role);
 rcinput_switch_position_t RCInputGetSwitchState(rcinput_role_selector_t role);
+void vParseSetRCInputSettings(const uint8_t *payload,
+                              const size_t data_length);
 bool bActiveRCInputConnection(void);
 rcinput_data_t *ptrGetRCInputData(void);
 rcinput_settings_t *ptrGetRCInputSettings(void);

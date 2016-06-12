@@ -16,6 +16,7 @@
 #include "estimation.h"
 #include "control.h"
 #include "rc_input.h"
+#include "rc_output.h"
 #include "kflypacket_parsers.h"
 #include "kflypacket_generators.h"
 
@@ -36,7 +37,8 @@ static bool GenerateGetAttitudeControllerData(circular_buffer_t *Cbuff);
 static bool GenerateGetVelocityControllerData(circular_buffer_t *Cbuff);
 static bool GenerateGetPositionControllerData(circular_buffer_t *Cbuff);
 static bool GenerateGetChannelMix(circular_buffer_t *Cbuff);
-static bool GenerateGetRCCalibration(circular_buffer_t *Cbuff);
+static bool GenerateGetRCInputSettings(circular_buffer_t *Cbuff);
+static bool GenerateGetRCOutputSettings(circular_buffer_t *Cbuff);
 static bool GenerateGetRCValues(circular_buffer_t *Cbuff);
 static bool GenerateGetIMUData(circular_buffer_t *Cbuff);
 static bool GenerateGetRawIMUData(circular_buffer_t *Cbuff);
@@ -102,20 +104,20 @@ static const kfly_generator_t generator_lookup[128] = {
     NULL,                             /* 38:                                  */
     GenerateGetChannelMix,            /* 39:  Cmd_GetChannelMix               */
     NULL,                             /* 40:  Cmd_SetChannelMix               */
-    GenerateGetRCCalibration,         /* 41:  Cmd_GetRCCalibration            */
-    NULL,                             /* 42:  Cmd_SetRCCalibration            */
-    GenerateGetRCValues,              /* 43:  Cmd_GetRCValues                 */
-    GenerateGetIMUData,               /* 44:  Cmd_GetIMUData                  */
-    GenerateGetRawIMUData,            /* 45:  Cmd_GetRawIMUData               */
-    GenerateGetIMUCalibration,        /* 46:  Cmd_GetIMUCalibration           */
-    NULL,                             /* 47:                                  */
-    GenerateGetEstimationRate,        /* 48:  Cmd_GetEstimationRate           */
-    GenerateGetEstimationAttitude,    /* 49:  Cmd_GetEstimationAttitude       */
-    GenerateGetEstimationVelocity,    /* 50:  Cmd_GetEstimationVelocity       */
-    GenerateGetEstimationPosition,    /* 51:  Cmd_GetEstimationPosition       */
-    GenerateGetEstimationAllStates,   /* 52:  Cmd_GetEstimationAllStates      */
-    NULL,                             /* 53:                                  */
-    NULL,                             /* 54:                                  */
+    GenerateGetRCInputSettings,       /* 41:  Cmd_GetRCInputSettings          */
+    NULL,                             /* 42:  Cmd_SetRCInputSettings          */
+    GenerateGetRCOutputSettings,      /* 43:  Cmd_GetRCOutputSettings         */
+    NULL,                             /* 44:  Cmd_SetRCOutputSettings         */
+    GenerateGetRCValues,              /* 45:  Cmd_GetRCValues                 */
+    GenerateGetIMUData,               /* 46:  Cmd_GetIMUData                  */
+    GenerateGetRawIMUData,            /* 47:  Cmd_GetRawIMUData               */
+    GenerateGetIMUCalibration,        /* 48:  Cmd_GetIMUCalibration           */
+    NULL,                             /* 49:                                  */
+    GenerateGetEstimationRate,        /* 50:  Cmd_GetEstimationRate           */
+    GenerateGetEstimationAttitude,    /* 51:  Cmd_GetEstimationAttitude       */
+    GenerateGetEstimationVelocity,    /* 52:  Cmd_GetEstimationVelocity       */
+    GenerateGetEstimationPosition,    /* 53:  Cmd_GetEstimationPosition       */
+    GenerateGetEstimationAllStates,   /* 54:  Cmd_GetEstimationAllStates      */
     NULL,                             /* 55:                                  */
     NULL,                             /* 56:                                  */
     NULL,                             /* 57:                                  */
@@ -532,17 +534,32 @@ static bool GenerateGetChannelMix(circular_buffer_t *Cbuff)
 }
 
 /**
- * @brief               Generates the message for the RC Calibration.
+ * @brief               Generates the message for the RC Input Settings.
  *
  * @param[out] Cbuff    Pointer to the circular buffer to put the data in.
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-static bool GenerateGetRCCalibration(circular_buffer_t *Cbuff)
+static bool GenerateGetRCInputSettings(circular_buffer_t *Cbuff)
 {
-    return GenerateGenericCommand(Cmd_GetRCCalibration,
+    return GenerateGenericCommand(Cmd_GetRCInputSettings,
                                   (uint8_t *)ptrGetRCInputSettings(),
                                   RCINPUT_SETTINGS_SIZE,
+                                  Cbuff);
+}
+
+/**
+ * @brief               Generates the message for the RC Output Settings.
+ *
+ * @param[out] Cbuff    Pointer to the circular buffer to put the data in.
+ * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
+ *                      if it did fit.
+ */
+static bool GenerateGetRCOutputSettings(circular_buffer_t *Cbuff)
+{
+    return GenerateGenericCommand(Cmd_GetRCOutputSettings,
+                                  (uint8_t *)ptrGetRCOutoutSettings(),
+                                  RCOUTPUT_SETTINGS_SIZE,
                                   Cbuff);
 }
 

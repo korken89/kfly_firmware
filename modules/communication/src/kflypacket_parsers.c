@@ -18,6 +18,7 @@
 #include "crc.h"
 #include "pid.h"
 #include "rc_input.h"
+#include "rc_output.h"
 #include "sensor_read.h"
 #include "estimation.h"
 #include "control.h"
@@ -50,8 +51,10 @@ static void ParseGetPositionControllerData(kfly_parser_t *pHolder);
 static void ParseSetPositionControllerData(kfly_parser_t *pHolder);
 static void ParseGetChannelMix(kfly_parser_t *pHolder);
 static void ParseSetChannelMix(kfly_parser_t *pHolder);
-static void ParseGetRCCalibration(kfly_parser_t *pHolder);
-static void ParseSetRCCalibration(kfly_parser_t *pHolder);
+static void ParseGetRCInputSettings(kfly_parser_t *pHolder);
+static void ParseSetRCInputSettings(kfly_parser_t *pHolder);
+static void ParseGetRCOutputSettings(kfly_parser_t *pHolder);
+static void ParseSetRCOutputSettings(kfly_parser_t *pHolder);
 static void ParseGetRCValues(kfly_parser_t *pHolder);
 static void ParseGetIMUData(kfly_parser_t *pHolder);
 static void ParseGetRawIMUData(kfly_parser_t *pHolder);
@@ -120,21 +123,21 @@ static const kfly_data_parser_t parser_lookup[128] = {
     NULL,                             /* 38:                                  */
     ParseGetChannelMix,               /* 39:  Cmd_GetChannelMix               */
     ParseSetChannelMix,               /* 40:  Cmd_SetChannelMix               */
-    ParseGetRCCalibration,            /* 41:  Cmd_GetRCCalibration            */
-    ParseSetRCCalibration,            /* 42:  Cmd_SetRCCalibration            */
-    ParseGetRCValues,                 /* 43:  Cmd_GetRCValues                 */
-    ParseGetIMUData,                  /* 44:  Cmd_GetIMUData                  */
-    ParseGetRawIMUData,               /* 45:  Cmd_GetRawIMUData               */
-    ParseGetIMUCalibration,           /* 46:  Cmd_GetIMUCalibration           */
-    ParseSetIMUCalibration,           /* 47:  Cmd_SetIMUCalibration           */
-    ParseGetEstimationRate,           /* 48:  Cmd_GetEstimationRate           */
-    ParseGetEstimationAttitude,       /* 49:  Cmd_GetEstimationAttitude       */
-    ParseGetEstimationVelocity,       /* 50:  Cmd_GetEstimationVelocity       */
-    ParseGetEstimationPosition,       /* 51:  Cmd_GetEstimationPosition       */
-    ParseGetEstimationAllStates,      /* 52:  Cmd_GetEstimationAllStates      */
-    ParseResetEstimation,             /* 53:  Cmd_ResetEstimation             */
-    NULL,                             /* 54:                                  */
-    NULL,                             /* 55:                                  */
+    ParseGetRCInputSettings,          /* 41:  Cmd_GetRCInputSettings          */
+    ParseSetRCInputSettings,          /* 42:  Cmd_SetRCInputSettings          */
+    ParseGetRCOutputSettings,         /* 43:  Cmd_GetRCOutputSettings         */
+    ParseSetRCOutputSettings,         /* 44:  Cmd_SetRCOutputSettings         */
+    ParseGetRCValues,                 /* 45:  Cmd_GetRCValues                 */
+    ParseGetIMUData,                  /* 46:  Cmd_GetIMUData                  */
+    ParseGetRawIMUData,               /* 47:  Cmd_GetRawIMUData               */
+    ParseGetIMUCalibration,           /* 48:  Cmd_GetIMUCalibration           */
+    ParseSetIMUCalibration,           /* 49:  Cmd_SetIMUCalibration           */
+    ParseGetEstimationRate,           /* 50:  Cmd_GetEstimationRate           */
+    ParseGetEstimationAttitude,       /* 51:  Cmd_GetEstimationAttitude       */
+    ParseGetEstimationVelocity,       /* 52:  Cmd_GetEstimationVelocity       */
+    ParseGetEstimationPosition,       /* 53:  Cmd_GetEstimationPosition       */
+    ParseGetEstimationAllStates,      /* 54:  Cmd_GetEstimationAllStates      */
+    ParseResetEstimation,             /* 55:  Cmd_ResetEstimation             */
     NULL,                             /* 56:                                  */
     NULL,                             /* 57:                                  */
     NULL,                             /* 58:                                  */
@@ -559,34 +562,47 @@ static void ParseSetChannelMix(kfly_parser_t *pHolder)
 }
 
 /**
- * @brief               Parses a GetRCCalibration command.
+ * @brief               Parses a GetRCInputSettings command.
  *
  * @param[in] pHolder   Message holder containing information
  *                      about the transmission.
  */
-static void ParseGetRCCalibration(kfly_parser_t *pHolder)
+static void ParseGetRCInputSettings(kfly_parser_t *pHolder)
 {
-    GenerateMessage(Cmd_GetRCCalibration, pHolder->port);
+    GenerateMessage(Cmd_GetRCInputSettings, pHolder->port);
 }
 
 /**
- * @brief               Parses a SetRCCalibration command.
+ * @brief               Parses a SetRCInputSettings command.
  *
  * @param[in] pHolder   Message holder containing information
  *                      about the transmission.
  */
-static void ParseSetRCCalibration(kfly_parser_t *pHolder)
+static void ParseSetRCInputSettings(kfly_parser_t *pHolder)
 {
-    if (pHolder->data_length == RCINPUT_SETTINGS_SIZE)
-    {
-        /* Save the data */
-        GenericSaveData((uint8_t *)ptrGetRCInputSettings(),
-                        pHolder->buffer,
-                        RCINPUT_SETTINGS_SIZE);
-    }
+    vParseSetRCInputSettings(pHolder->buffer, pHolder->data_length);
+}
 
-    /* Reinitialize the RC Input module */
-    RCInputInitialization();
+/**
+ * @brief               Parses a GetRCInputSettings command.
+ *
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
+ */
+static void ParseGetRCOutputSettings(kfly_parser_t *pHolder)
+{
+    GenerateMessage(Cmd_GetRCOutputSettings, pHolder->port);
+}
+
+/**
+ * @brief               Parses a SetRCInputSettings command.
+ *
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
+ */
+static void ParseSetRCOutputSettings(kfly_parser_t *pHolder)
+{
+    vParseSetRCOutputSettings(pHolder->buffer, pHolder->data_length);
 }
 
 /**

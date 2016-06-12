@@ -9,6 +9,7 @@
 
 /* All includes from modules */
 #include "eicu.h"
+#include "epwm.h"
 #include "usb_access.h"
 #include "mpu6050.h"
 #include "hmc5983.h"
@@ -126,25 +127,6 @@ static void vSystemInitList(void)
         }
     };
 
-    /* RC Output Configuration */
-    static const PWMConfig pwmcfg = {
-        1000000,                            /* 1 MHz PWM clock frequency    */
-        RCOUTPUT_400HZ,                     /* Initial PWM period: 400 Hz   */
-        NULL,                               /* No callback                  */
-        {
-            {PWM_OUTPUT_ACTIVE_HIGH, NULL}, /* Active high, no callback     */
-            {PWM_OUTPUT_ACTIVE_HIGH, NULL}, /* Active high, no callback     */
-            {PWM_OUTPUT_ACTIVE_HIGH, NULL}, /* Active high, no callback     */
-            {PWM_OUTPUT_ACTIVE_HIGH, NULL}  /* Active high, no callback     */
-        },
-        0,
-        0
-    };
-    static const RCOutput_Configuration rcoutputcfg = {
-        &PWMD4,
-        &PWMD8,
-        &pwmcfg
-    };
 
     /*
      *
@@ -188,6 +170,13 @@ static void vSystemInitList(void)
 
     /*
      *
+     * Start the extended PWM  module for RC outputs.
+     *
+     */
+    epwmInit();
+
+    /*
+     *
      * Initialize the external flash and save to flash functionality.
      * Note: Must be initialized before any module that uses the save to or
      *       read from flash functionality.
@@ -207,7 +196,7 @@ static void vSystemInitList(void)
      * Initialize the RC Outputs
      *
      */
-    RCOutputInit(&rcoutputcfg);
+    RCOutputInit();
 
     /*
      *

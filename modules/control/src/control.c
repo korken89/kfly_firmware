@@ -230,8 +230,9 @@ static void vSendPWMCommands(void)
 
     /* The setting function bounds the control signal internally. */
     for (i = 0; i < 8; i++)
-        RCOutputSetChannelWidthRelativePositive(i,
-                                                control_reference.output[i]);
+        RCOutputSetChannelWidth(i, control_reference.output[i]);
+
+    RCOutputSyncOutput();
 }
 
 /**
@@ -604,7 +605,7 @@ void StartRecordData(void)
 
 void RecordData(void)
 {
-    const int skip = 2; // Must be larger than 0.
+    const int skip = 1; // Must be larger than 0.
 
     static vector3f_t gyro_mean, torque_mean;
     static float throttle_mean, acc_mean;
