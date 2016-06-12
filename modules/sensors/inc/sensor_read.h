@@ -8,7 +8,7 @@
 /*===========================================================================*/
 /* Module global definitions.                                                */
 /*===========================================================================*/
-#define SENSOR_ACCGYRO_DT                           0.0015f
+#define SENSOR_ACCGYRO_DT                           0.0025f
 #define ACCGYRO_DATA_AVAILABLE_EVENTMASK            EVENT_MASK(0)
 #define MAG_DATA_AVAILABLE_EVENTMASK                EVENT_MASK(1)
 #define BARO_DATA_AVAILABLE_EVENTMASK               EVENT_MASK(2)
