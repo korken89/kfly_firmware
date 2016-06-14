@@ -120,11 +120,11 @@ bool COBSEncode_MultiChunk(const uint8_t *ptr_list[],
                            const size_t size,
                            circular_buffer_t *cb,
                            cobs_encoder_t *enc);
-void COBSInitParser(uint8_t *buffer,
-                    const size_t buffer_size,
-                    void (*parser)(cobs_parser_t *),
-                    cobs_parser_t *p);
-void COBSResetParser(cobs_parser_t *p);
+void COBSInitDecoder(uint8_t *buffer,
+                     const size_t buffer_size,
+                     void (*parser)(cobs_parser_t *),
+                     cobs_parser_t *p);
+void COBSResetDecoder(cobs_parser_t *p);
 void COBSDecode(const uint8_t data, cobs_parser_t *p);
 
 /*===========================================================================*/
