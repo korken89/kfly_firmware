@@ -147,15 +147,15 @@ bool COBSEncode_MultiChunk(const uint8_t *ptr_list[],
 /**
  * @brief                       Initializes the cobs_parser_t structure.
  *
- * @param[in/out] p             Pointer to cobs_parser_t structure.
  * @param[in]     buffer        Buffer used for intermediate data.
  * @param[in]     buffer_size   Buffer size.
  * @param[in]     parser        Pointer to the parser of the passed data.
+ * @param[in/out] p             Pointer to cobs_parser_t structure.
  */
-void COBSInitParser(cobs_parser_t *p,
-                    uint8_t *buffer,
+void COBSInitParser(uint8_t *buffer,
                     const size_t buffer_size,
-                    void (*parser)(cobs_parser_t *))
+                    void (*parser)(cobs_parser_t *),
+                    cobs_parser_t *p)
 {
     p->buffer = buffer;
     p->buffer_size = buffer_size;
@@ -168,9 +168,9 @@ void COBSInitParser(cobs_parser_t *p,
 }
 
 /**
- * @brief                       Resets the cobs_parser_t structure.
+ * @brief               Resets the cobs_parser_t structure.
  *
- * @param[in/out] p             Pointer to cobs_parser_t structure.
+ * @param[in/out] p     Pointer to cobs_parser_t structure.
  */
 void COBSResetParser(cobs_parser_t *p)
 {
