@@ -38,7 +38,7 @@
  */
 void CircularBuffer_Init(circular_buffer_t *Cbuff,
                          uint8_t *buffer,
-                         uint32_t buffer_size)
+                         size_t buffer_size)
 {
     Cbuff->head = 0;
     Cbuff->tail = 0;
@@ -67,9 +67,9 @@ void CircularBuffer_InitMutex(circular_buffer_t *Cbuff)
  */
 void CircularBuffer_WriteChunk(circular_buffer_t *Cbuff,
                                uint8_t *data,
-                               const uint32_t count)
+                               const size_t count)
 {
-    uint32_t i, head, from_bot, to_top;
+    size_t i, head, from_bot, to_top;
 
     head = Cbuff->head;
     to_top = Cbuff->size - Cbuff->head;
@@ -108,7 +108,7 @@ void CircularBuffer_WriteChunk(circular_buffer_t *Cbuff,
  */
 void CircularBuffer_ReadChunk(circular_buffer_t *Cbuff,
                               uint8_t *data,
-                              uint32_t count)
+                              size_t count)
 {
     (void)Cbuff;
     (void)data;
@@ -126,7 +126,7 @@ void CircularBuffer_ReadChunk(circular_buffer_t *Cbuff,
  * @return              Pointer to the buffer with offset.
  */
 uint8_t *CircularBuffer_GetReadPointer(circular_buffer_t *Cbuff,
-                                       uint32_t *size)
+                                       size_t *size)
 {
     uint8_t *p;
 

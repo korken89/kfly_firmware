@@ -322,7 +322,7 @@ static THD_FUNCTION(Aux1DataPumpTask, arg)
 static bool USBTransmitCircularBuffer(circular_buffer_t *Cbuff)
 {
     uint8_t *read_pointer;
-    uint32_t read_size;
+    size_t read_size;
 
     if ((isUSBActive() == true) && (Cbuff != NULL))
     {
@@ -372,7 +372,7 @@ static bool AuxTransmitCircularBuffer(SerialDriver *sdp,
                                       circular_buffer_t *Cbuff)
 {
     uint8_t *read_pointer;
-    uint32_t read_size;
+    size_t read_size;
 
     if ((sdp != NULL) && (Cbuff != NULL))
     {

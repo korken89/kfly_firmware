@@ -72,7 +72,7 @@ static inline void CircularBuffer_Release(circular_buffer_t *Cbuff)
  *
  * @param[in] Cbuff     Pointer to the circular buffer.
  */
-static inline uint32_t CircularBuffer_SpaceLeft(circular_buffer_t *Cbuff)
+static inline size_t CircularBuffer_SpaceLeft(circular_buffer_t *Cbuff)
 {
     return (Cbuff->tail + Cbuff->size - Cbuff->head - 1) % Cbuff->size;
 }
@@ -84,7 +84,7 @@ static inline uint32_t CircularBuffer_SpaceLeft(circular_buffer_t *Cbuff)
  * @param[in] count     Number to increase with.
  */
 static inline void CircularBuffer_IncrementTail(circular_buffer_t *Cbuff,
-                                                uint32_t count)
+                                                size_t count)
 {
     Cbuff->tail = ((Cbuff->tail + count) % Cbuff->size);
 }
@@ -142,16 +142,16 @@ static inline bool CircularBuffer_Increment(circular_buffer_t *Cbuff,
 
 void CircularBuffer_Init(circular_buffer_t *Cbuff,
                          uint8_t *buffer,
-                         uint32_t buffer_size);
+                         size_t buffer_size);
 void CircularBuffer_InitMutex(circular_buffer_t *Cbuff);
 void CircularBuffer_WriteChunk(circular_buffer_t *Cbuff,
                                uint8_t *data,
-                               const uint32_t count);
+                               const size_t count);
 void CircularBuffer_ReadChunk(circular_buffer_t *Cbuff,
                               uint8_t *data,
-                              uint32_t count);
+                              size_t count);
 bool CircularBuffer_Increment(circular_buffer_t *Cbuff, int32_t count);
 uint8_t *CircularBuffer_GetReadPointer(circular_buffer_t *Cbuff,
-                                       uint32_t *size);
+                                       size_t *size);
 
 #endif
