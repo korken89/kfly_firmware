@@ -21,15 +21,15 @@ typedef struct
     /**
      * @brief   Position of the head of the buffer.
      */
-    uint32_t head;          /* Newest element */
+    size_t head;          /* Newest element */
     /**
      * @brief   Position of the tail of the buffer.
      */
-    uint32_t tail;          /* Oldest element */
+    size_t tail;          /* Oldest element */
     /**
      * @brief   Size of the circular buffer.
      */
-    uint32_t size;          /* Size of buffer */
+    size_t size;          /* Size of buffer */
     /**
      * @brief   Pointer to the data holding region.
      */
