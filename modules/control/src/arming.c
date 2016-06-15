@@ -46,6 +46,7 @@ static THD_FUNCTION(ThreadControlArming, arg)
 
     uint16_t arm_time = 0, disarm_time = 0, timeout_time = 0;
     bool latch_released = false;
+    float level;
     arming_stick_region_t current_region;
 
     /* Set thread name */
@@ -79,6 +80,7 @@ static THD_FUNCTION(ThreadControlArming, arg)
             /* Check so the sticks are in the correct region ( */
             current_region = SticksInRegion();
 
+
             /* If the computer control is active, don't disarm based on time. */
             if ((system_armed == true) && (ComputerControlEnabled() == true))
             {
@@ -92,9 +94,12 @@ static THD_FUNCTION(ThreadControlArming, arg)
                  */
                 if (current_region == ARMING_REGION_NON_LATCHING_SWITCH_ACTIVE)
                 {
+                    level = RCInputGetInputLevel(RCINPUT_ROLE_THROTTLE);
+
                     /* If it is in the correct state, increase the arm counter,
                      * and if it has reached the correct time - arm. */
-                    if ((system_armed == false) && (latch_released == true))
+                    if ((system_armed == false) && (latch_released == true) &&
+                        (level <= arm_settings.stick_threshold))
                     {
                         if ((arm_time / ARM_RATE * 10) >= arm_settings.arm_stick_time)
                         {
@@ -121,6 +126,7 @@ static THD_FUNCTION(ThreadControlArming, arg)
                 else
                 {
                     arm_time = 0;
+                    timeout_time++;
                     latch_released = true;
                 }
             }
@@ -167,32 +173,35 @@ static THD_FUNCTION(ThreadControlArming, arg)
                     arm_time = 0;
                     disarm_time = 0;
 
-                    /* Check the zero throttle timeout */
-                    if (arm_settings.arm_zero_throttle_timeout != 0)
+                }
+            }
+
+            /* Timeout counter. */
+            /* Check the zero throttle timeout */
+            if ((arm_settings.arm_zero_throttle_timeout != 0) &&
+                (system_armed == true))
+            {
+                if ((RCInputGetInputLevel(RCINPUT_ROLE_THROTTLE) <=
+                    arm_settings.stick_threshold))
+                {
+                    /* Check if the required time has passed to disarm due
+                       to timeout, else increment the timing counter */
+                    if ((timeout_time / ARM_RATE) >
+                        arm_settings.arm_zero_throttle_timeout)
                     {
-                        if ((RCInputGetInputLevel(RCINPUT_ROLE_THROTTLE) <=
-                            arm_settings.stick_threshold))
-                        {
-                            /* Check if the required time has passed to disarm due
-                               to timeout, else increment the timing counter */
-                            if ((timeout_time / ARM_RATE) >
-                                arm_settings.arm_zero_throttle_timeout)
-                            {
-                                system_armed = false;
-                            }
-                            else
-                            {
-                                timeout_time++;
-                                arm_time = 0;
-                                disarm_time = 0;
-                            }
-                        }
-                        /* The throttle is not in the correct position,
-                           reset the timing counter */
-                        else
-                            timeout_time = 0;
+                        system_armed = false;
+                    }
+                    else
+                    {
+                        timeout_time++;
+                        arm_time = 0;
+                        disarm_time = 0;
                     }
                 }
+                /* The throttle is not in the correct position,
+                   reset the timing counter */
+                else
+                    timeout_time = 0;
             }
 
         }
@@ -212,71 +221,64 @@ static THD_FUNCTION(ThreadControlArming, arg)
 static arming_stick_region_t SticksInRegion(void)
 {
     rcinput_role_selector_t sel;
-    bool is_min, is_switch;
+    bool is_min;
     float level, threshold;
 
     threshold = arm_settings.stick_threshold;
-    level = RCInputGetInputLevel(RCINPUT_ROLE_THROTTLE);
 
-    /* Check so the throttle is within the threshold */
-    if (level <= threshold)
+    if (arm_settings.stick_direction == ARMING_DIRECTION_NON_LATCHING_SWITCH)
     {
-        /* Determine which role the arm is linked to and if it is min/max. */
-        switch (arm_settings.stick_direction)
-        {
-            case ARMING_DIRECTION_NON_LATCHING_SWITCH:
-                sel = RCINPUT_ROLE_ARM_NONLATCH;
-                is_min = false;
-                is_switch = true;
-                break;
+        sel = RCINPUT_ROLE_ARM_NONLATCH;
 
-            case ARMING_DIRECTION_STICK_PITCH_MIN:
-                sel = RCINPUT_ROLE_PITCH;
-                is_min = true;
-                is_switch = false;
-                break;
-
-            case ARMING_DIRECTION_STICK_PITCH_MAX:
-                sel = RCINPUT_ROLE_PITCH;
-                is_min = false;
-                is_switch = false;
-                break;
-
-            case ARMING_DIRECTION_STICK_ROLL_MIN:
-                sel = RCINPUT_ROLE_ROLL;
-                is_min = true;
-                is_switch = false;
-                break;
-
-            case ARMING_DIRECTION_STICK_ROLL_MAX:
-                sel = RCINPUT_ROLE_ROLL;
-                is_min = false;
-                is_switch = false;
-                break;
-
-            case ARMING_DIRECTION_STICK_YAW_MIN:
-                sel = RCINPUT_ROLE_YAW;
-                is_min = true;
-                is_switch = false;
-                break;
-
-            case ARMING_DIRECTION_STICK_YAW_MAX:
-                sel = RCINPUT_ROLE_YAW;
-                is_min = false;
-                is_switch = false;
-                break;
-
-            default:
-                return ARMING_REGION_STICK_NO_REGION;
-
-        }
-
-        /* Check the switch. */
-        if (is_switch &&
-            (RCInputGetSwitchState(sel) == RCINPUT_SWITCH_POSITION_TOP))
+        if  (RCInputGetSwitchState(sel) == RCINPUT_SWITCH_POSITION_TOP)
             return ARMING_REGION_NON_LATCHING_SWITCH_ACTIVE;
-        else
+    }
+    else
+    {
+        level = RCInputGetInputLevel(RCINPUT_ROLE_THROTTLE);
+
+        /* Check so the throttle is within the threshold */
+        if (level <= threshold)
         {
+            /* Determine which role the arm is linked to and if it is min/max. */
+            switch (arm_settings.stick_direction)
+            {
+
+                case ARMING_DIRECTION_STICK_PITCH_MIN:
+                    sel = RCINPUT_ROLE_PITCH;
+                    is_min = true;
+                    break;
+
+                case ARMING_DIRECTION_STICK_PITCH_MAX:
+                    sel = RCINPUT_ROLE_PITCH;
+                    is_min = false;
+                    break;
+
+                case ARMING_DIRECTION_STICK_ROLL_MIN:
+                    sel = RCINPUT_ROLE_ROLL;
+                    is_min = true;
+                    break;
+
+                case ARMING_DIRECTION_STICK_ROLL_MAX:
+                    sel = RCINPUT_ROLE_ROLL;
+                    is_min = false;
+                    break;
+
+                case ARMING_DIRECTION_STICK_YAW_MIN:
+                    sel = RCINPUT_ROLE_YAW;
+                    is_min = true;
+                    break;
+
+                case ARMING_DIRECTION_STICK_YAW_MAX:
+                    sel = RCINPUT_ROLE_YAW;
+                    is_min = false;
+                    break;
+
+                default:
+                    return ARMING_REGION_STICK_NO_REGION;
+
+            }
+
             level = RCInputGetInputLevel(sel);
 
             /* Calculate the threshold value. The *2 comes from the fact that
