@@ -139,14 +139,4 @@ inline size_t COBSGetMaxEncodedSize(const size_t size)
     return size + size / 208 + 2;
 }
 
-inline bool COBSisDiff2Zero(const uint8_t code)
-{
-    return (code >= COBS_Diff2Zero);
-}
-
-inline bool COBSisRunZero(const uint8_t code)
-{
-    return ((code >= COBS_RunZero) && (code <= COBS_RunZeroMax));
-}
-
 #endif

@@ -14,6 +14,16 @@
 /* Module local definitions.                                                 */
 /*===========================================================================*/
 
+/**
+ * @brief Convert from single-zero code to corresponding double-zero code.
+ */
+#define CONVERTZP                   (COBS_Diff2Zero - COBS_DiffZero)
+
+/**
+ * @brief Highest single-zero code with a corresponding double-zero code.
+ */
+#define MAXCONVERTIBLE              (COBS_Diff2ZeroMax - CONVERTZP)
+
 /*===========================================================================*/
 /* Module exported variables.                                                */
 /*===========================================================================*/
@@ -26,25 +36,59 @@
 /* Module local functions.                                                   */
 /*===========================================================================*/
 
-/*===========================================================================*/
-/* Module exported functions.                                                */
-/*===========================================================================*/
+static inline void FinishBlock(int32_t *count,
+                               circular_buffer_t *cb,
+                               cobs_encoder_t *enc)
+{
+    size_t index;
 
+    /* Save final code and prepare for next block. */
+    cb->buffer[enc->code_index] = enc->code;
+    enc->code = COBS_DiffZero;
+
+    /* Add dummy byte for the next code, or the frame delimiter if there are
+     * no more data to be encoded. */
+    index = (cb->head + *count) % cb->size;
+
+    enc->code_index = index;
+    cb->buffer[index] = COBS_FrameDelimiter;
+    *count += 1;
+}
+
+/**
+ * @brief       Prepares the buffer and encoder for a new packet.
+ *
+ * @param[in/out] count     Pointer to tracking variable for the buffer.
+ * @param[in/out] cb        Pointer to the circular buffer.
+ * @param[in/out] enc       Pointer to the encoder data structure.
+ */
+static inline void StartPacket(int32_t *count,
+                               circular_buffer_t *cb,
+                               cobs_encoder_t *enc)
+{
+    size_t index = cb->head;
+
+    /* Initialize the encoding buffer. */
+    cb->buffer[index] = COBS_FrameDelimiter;
+    enc->code = COBS_DiffZero;
+    enc->code_index = index;
+
+    *count += 1;
+}
+inline bool isDiff2Zero(const uint8_t code)
+{
+    return (code >= COBS_Diff2Zero);
+}
+
+inline bool isRunZero(const uint8_t code)
+{
+    return ((code >= COBS_RunZero) && (code <= COBS_RunZeroMax));
+}
 
 /*===============================================================*/
 /* Expansion of circular buffers required by the serial protocol */
 /*===============================================================*/
 
-/**
- * @brief               Finished a COBS packet in the buffer.
- *
- * @param[in/out] cb        Pointer to the circular buffer.
- * @param[in/out] count     Pointer to tracking variable for the buffer.
- */
-static inline void CircularBuffer_COBSFinishPacket(circular_buffer_t *cb,
-                                                   int32_t *count)
-{
-}
 
 /**
  * @brief               Writes a chunk of data to the circular buffer and
@@ -55,16 +99,83 @@ static inline void CircularBuffer_COBSFinishPacket(circular_buffer_t *cb,
  * @param[in]     size  Size of the data.
  * @param[in/out] count Pointer to tracking variable for the buffer.
  */
-static inline void CircularBuffer_COBSWriteChunkNoInc(circular_buffer_t *cb,
-                                                      const uint8_t *data,
+static inline void CircularBuffer_COBSWriteChunkNoInc(const uint8_t *data,
                                                       const size_t size,
-                                                      int32_t *count)
+                                                      int32_t *count,
+                                                      circular_buffer_t *cb,
+                                                      cobs_encoder_t *enc)
 {
+    size_t i;
+    uint8_t ch;
+
+    for (i = 0; i < size; i++)
+    {
+        ch = data[i];
+
+        if (ch == 0)
+        {
+            /* If the data byte is zero apply the COBS encodng. */
+
+            if (isRunZero(enc->code) && enc->code < COBS_RunZeroMax)
+            {
+                /* If already in ZRE mode, continue filling. */
+                enc->code++;
+            }
+            else if (enc->code == COBS_Diff2Zero)
+            {
+                /* 2 zeros and no data, switch to ZRE. */
+                enc->code = COBS_RunZero;
+            }
+            else if (enc->code <= MAXCONVERTIBLE)
+            {
+                /* In 1 zero and data is small enough to switch to ZPE. */
+                enc->code += CONVERTZP;
+            }
+            else
+            {
+                /* Worst case scenario: Too much data for ZPE or too many
+                 * zeros for ZRE. Finish the block and start over. */
+                FinishBlock(count, cb, enc);
+            }
+        }
+        else
+        {
+            /* If the data byte is non-zero, check the code and add the byte. */
+
+            /* Note that the code is one step ahead here and needs to be
+             * converted back one step. */
+            if (isDiff2Zero(enc->code))
+            {
+                enc->code -= CONVERTZP;
+                FinishBlock(count, cb, enc);
+            }
+            else if (enc->code == COBS_RunZero)
+            {
+                enc->code = COBS_Diff2Zero;
+                FinishBlock(count, cb, enc);
+            }
+            else if (isRunZero(enc->code))
+            {
+                enc->code -= 1;
+                FinishBlock(count, cb, enc);
+            }
+
+            /* Put the data in the buffer. */
+            cb->buffer[(cb->head + *count) % cb->size] = ch;
+            *count += 1;
+
+            if (++enc->code == COBS_Diff)
+            {
+                /* We will hit the max limit of codes, finish and start new. */
+                FinishBlock(count, cb, enc);
+            }
+        }
+    }
 }
 
-/*================================*/
-/* Generate message functionality */
-/*================================*/
+/*===========================================================================*/
+/* Module exported functions.                                                */
+/*===========================================================================*/
 
 /**
  * @brief               Encodes a chunk of data with the COBS protocol.
@@ -87,15 +198,20 @@ bool COBSEncode(const uint8_t *data,
     /* Check if the worst case will fit. */
     if (CircularBuffer_SpaceLeft(cb) < COBSGetMaxEncodedSize(size))
         return HAL_FAILED;
+    else
+    {
+        /* Prepare the buffer for the packet. */
+        StartPacket(&count, cb, enc);
 
-    /* Encode and send the data. */
-    CircularBuffer_COBSWriteChunkNoInc(cb, data, size, &count);
+        /* Encode and send the data. */
+        CircularBuffer_COBSWriteChunkNoInc(data, size, &count, cb, enc);
 
-    /* Finish the packet. */
-    CircularBuffer_COBSFinishPacket(cb, &count);
+        /* Finish the packet. */
+        FinishBlock(&count, cb, enc);
 
-    /* Increment the buffer pointer */
-    return CircularBuffer_Increment(cb, count);
+        /* Increment the buffer pointer */
+        return CircularBuffer_Increment(cb, count);
+    }
 }
 
 /**
@@ -127,17 +243,22 @@ bool COBSEncode_MultiChunk(const uint8_t *ptr_list[],
     /* Check if the worst case will fit. */
     if (CircularBuffer_SpaceLeft(cb) < COBSGetMaxEncodedSize(total_size))
         return HAL_FAILED;
+    else
+    {
+        /* Prepare the buffer for the packet. */
+        StartPacket(&count, cb, enc);
 
-    /* Encode and send the data. */
-    for (i = 0; i < list_size; i++)
-        CircularBuffer_COBSWriteChunkNoInc(cb, ptr_list[i],
-                                           length_list[i], &count);
+        /* Encode and send the data. */
+        for (i = 0; i < list_size; i++)
+            CircularBuffer_COBSWriteChunkNoInc(ptr_list[i], length_list[i],
+                                               &count, cb, enc);
 
-    /* Add stop byte. */
-    CircularBuffer_COBSFinishPacket(cb, &count);
+        /* Add stop byte. */
+        FinishBlock(&count, cb, enc);
 
-    /* Increment the buffer pointer */
-    return CircularBuffer_Increment(cb, count);
+        /* Increment the buffer pointer */
+        return CircularBuffer_Increment(cb, count);
+    }
 }
 
 /*============================*/
