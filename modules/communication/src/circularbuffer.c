@@ -56,18 +56,6 @@ void CircularBuffer_InitMutex(circular_buffer_t *Cbuff)
     chMtxObjectInit(&Cbuff->write_lock);
 }
 
-
-/**
- * @brief               Writes a byte to a circular buffer.
- *
- * @param[in] Cbuff     Pointer to the circular buffer.
- */
-void CircularBuffer_WriteSingle(circular_buffer_t *Cbuff, uint8_t data)
-{
-    Cbuff->buffer[Cbuff->head] = data;
-    Cbuff->head = ((Cbuff->head + 1) % Cbuff->size);
-}
-
 /**
  * @brief               Writes a chunk of data to a circular buffer.
  * @note                This algorithm assumes you have checked that the
@@ -110,20 +98,6 @@ void CircularBuffer_WriteChunk(circular_buffer_t *Cbuff,
     }
 }
 
-/**
- * @brief               Reads a byte from a circular buffer.
- *
- * @param[in/out] Cbuff Pointer to the circular buffer.
- */
-uint8_t CircularBuffer_ReadSingle(circular_buffer_t *Cbuff)
-{
-    uint8_t data;
-
-    data = Cbuff->buffer[Cbuff->tail];
-    Cbuff->tail = ((Cbuff->tail + 1) % Cbuff->size);
-
-    return data;
-}
 
 /**
  * @brief               Reads a chunk of data from a circular buffer.
@@ -141,24 +115,6 @@ void CircularBuffer_ReadChunk(circular_buffer_t *Cbuff,
     (void)count;
 }
 
-/**
- * @brief               Increment the circular buffer pointer to math the
- *                      number of bytes written.
- *
- * @param[in/out] Cbuff Pointer to the circular buffer.
- * @param[in] count     Number of bytes to increment the pointer.
- */
-bool CircularBuffer_Increment(circular_buffer_t *Cbuff, int32_t count)
-{
-    if (count == -1) /* Error! */
-        return HAL_FAILED;
-
-    else
-    {
-        Cbuff->head = ((Cbuff->head + count) % Cbuff->size);
-        return HAL_SUCCESS;
-    }
-}
 
 /**
  * @brief               Generates a pointer to the tail byte and returns a size

@@ -1,6 +1,9 @@
 #ifndef __CIRCULARBUFFER_H
 #define __CIRCULARBUFFER_H
 
+#include <stdint.h>
+#include <stdbool.h>
+
 /*===========================================================================*/
 /* Module global definitions.                                                */
 /*===========================================================================*/
@@ -86,6 +89,53 @@ static inline void CircularBuffer_IncrementTail(circular_buffer_t *Cbuff,
     Cbuff->tail = ((Cbuff->tail + count) % Cbuff->size);
 }
 
+/**
+ * @brief               Writes a byte to a circular buffer.
+ *
+ * @param[in] Cbuff     Pointer to the circular buffer.
+ */
+static inline void CircularBuffer_WriteSingle(circular_buffer_t *Cbuff,
+                                              uint8_t data)
+{
+    Cbuff->buffer[Cbuff->head] = data;
+    Cbuff->head = ((Cbuff->head + 1) % Cbuff->size);
+}
+
+/**
+ * @brief               Reads a byte from a circular buffer.
+ *
+ * @param[in/out] Cbuff Pointer to the circular buffer.
+ */
+static inline uint8_t CircularBuffer_ReadSingle(circular_buffer_t *Cbuff)
+{
+    uint8_t data;
+
+    data = Cbuff->buffer[Cbuff->tail];
+    Cbuff->tail = ((Cbuff->tail + 1) % Cbuff->size);
+
+    return data;
+}
+
+/**
+ * @brief               Increment the circular buffer pointer to math the
+ *                      number of bytes written.
+ *
+ * @param[in/out] Cbuff Pointer to the circular buffer.
+ * @param[in] count     Number of bytes to increment the pointer.
+ */
+static inline bool CircularBuffer_Increment(circular_buffer_t *Cbuff,
+                                            int32_t count)
+{
+    if (count == -1) /* Error! */
+        return HAL_FAILED;
+
+    else
+    {
+        Cbuff->head = ((Cbuff->head + count) % Cbuff->size);
+        return HAL_SUCCESS;
+    }
+}
+
 /*===========================================================================*/
 /* External declarations.                                                    */
 /*===========================================================================*/
@@ -94,11 +144,9 @@ void CircularBuffer_Init(circular_buffer_t *Cbuff,
                          uint8_t *buffer,
                          uint32_t buffer_size);
 void CircularBuffer_InitMutex(circular_buffer_t *Cbuff);
-void CircularBuffer_WriteSingle(circular_buffer_t *Cbuff, uint8_t data);
 void CircularBuffer_WriteChunk(circular_buffer_t *Cbuff,
                                uint8_t *data,
                                const uint32_t count);
-uint8_t CircularBuffer_ReadSingle(circular_buffer_t *Cbuff);
 void CircularBuffer_ReadChunk(circular_buffer_t *Cbuff,
                               uint8_t *data,
                               uint32_t count);
