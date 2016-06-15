@@ -51,7 +51,7 @@ typedef enum
  * @brief   The structure to keep track of the states and data through the
  *          COBS state machine.
  */
-typedef struct _cobs_parser
+typedef struct _cobs_decoder
 {
     /**
      * @brief   Pointer to the buffer storing the data.
@@ -82,11 +82,19 @@ typedef struct _cobs_parser
      */
     cobs_state_t state;
     /**
+     * @brief   Number of zeros to add to the output.
+     */
+    size_t num_zeros;
+    /**
+     * @brief   Number of data bytes to add to the output.
+     */
+    size_t num_data;
+    /**
      * @brief    Pointer to the parser to parse the data after a
      *           successful transfer.
      */
-    void (*parser)(struct _cobs_parser *);
-} cobs_parser_t;
+    void (*parser)(struct _cobs_decoder *);
+} cobs_decoder_t;
 
 /**
  * @brief   Structure to keep track of the code byte and index during encoding.
@@ -122,10 +130,10 @@ bool COBSEncode_MultiChunk(const uint8_t *ptr_list[],
                            cobs_encoder_t *enc);
 void COBSInitDecoder(uint8_t *buffer,
                      const size_t buffer_size,
-                     void (*parser)(cobs_parser_t *),
-                     cobs_parser_t *p);
-void COBSResetDecoder(cobs_parser_t *p);
-void COBSDecode(const uint8_t data, cobs_parser_t *p);
+                     void (*parser)(cobs_decoder_t *),
+                     cobs_decoder_t *p);
+void COBSResetDecoder(cobs_decoder_t *p);
+void COBSDecode(const uint8_t data, cobs_decoder_t *p);
 
 /*===========================================================================*/
 /* Module inline functions.                                                  */

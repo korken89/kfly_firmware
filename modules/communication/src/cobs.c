@@ -266,17 +266,17 @@ bool COBSEncode_MultiChunk(const uint8_t *ptr_list[],
 /*============================*/
 
 /**
- * @brief                       Initializes the cobs_parser_t structure.
+ * @brief                       Initializes the cobs_decoder_t structure.
  *
  * @param[in]     buffer        Buffer used for intermediate data.
  * @param[in]     buffer_size   Buffer size.
  * @param[in]     parser        Pointer to the parser of the passed data.
- * @param[in/out] p             Pointer to cobs_parser_t structure.
+ * @param[in/out] p             Pointer to cobs_decoder_t structure.
  */
 void COBSInitDecoder(uint8_t *buffer,
                      const size_t buffer_size,
-                     void (*parser)(cobs_parser_t *),
-                     cobs_parser_t *p)
+                     void (*parser)(cobs_decoder_t *),
+                     cobs_decoder_t *p)
 {
     p->buffer = buffer;
     p->buffer_size = buffer_size;
@@ -289,11 +289,11 @@ void COBSInitDecoder(uint8_t *buffer,
 }
 
 /**
- * @brief               Resets the cobs_parser_t structure.
+ * @brief               Resets the cobs_decoder_t structure.
  *
- * @param[in/out] p     Pointer to cobs_parser_t structure.
+ * @param[in/out] p     Pointer to cobs_decoder_t structure.
  */
-void COBSResetDecoder(cobs_parser_t *p)
+void COBSResetDecoder(cobs_decoder_t *p)
 {
     p->buffer_count = 0;
     p->buffer_overrun = 0;
@@ -309,29 +309,93 @@ void COBSResetDecoder(cobs_parser_t *p)
  *                     parsing.
  *
  * @param[in] data     Input data to be parsed.
- * @param[in] p        Pointer to cobs_parser_t structure.
+ * @param[in] p        Pointer to cobs_decoder_t structure.
  */
-void COBSDecode(const uint8_t data, cobs_parser_t *p)
+void COBSDecode(const uint8_t in, cobs_decoder_t *p)
 {
     /* Parse the data based on the current state. */
-    switch (p->state)
+    if ((p->state == COBS_STATE_AWAITING_CODE) && (in != 0))
     {
-    case COBS_STATE_AWAITING_DATA:
+        /* Change state. */
+        p->state = COBS_STATE_AWAITING_DATA;
 
+        if (in == COBS_Diff)
+        {
+            /* No zeros, all data. */
+            p->num_zeros = 0;
+            p->num_data = in - 1;
+        }
+        else if (isRunZero(in))
+        {
+            /* Extract the number of zeros from ZRE (and no data). */
+            p->num_zeros = in & 0x0f;
+            p->num_data = 0;
+        }
+        else if (isDiff2Zero(in))
+        {
+            /* Extract the number of data bytes and add 2 zeros (ZPE). */
+            p->num_zeros = 2;
+            p->num_data = in & 0x1f;
+        }
+        else
+        {
+            /* Extract the number of data bytes and add 1 zero (DiffZero). */
+            p->num_zeros = 1;
+            p->num_data = in - 1;
+        }
 
-        break;
+        /* Check if there is no data, only zeros. */
+        if (p->num_data == 0)
+        {
+            /* Add all zeros. */
+            while(p->num_zeros-- > 0)
+                p->buffer[p->buffer_count++] = 0;
 
-    case COBS_STATE_AWAITING_CODE:
+            p->state = COBS_STATE_AWAITING_CODE;
+        }
+    }
+    else if ((p->state == COBS_STATE_AWAITING_DATA) && (in != 0))
+    {
+        /* Decrease the data counter. */
+        p->num_data--;
 
+        /* While there are data bytes left, add it to the output. */
+        p->buffer[p->buffer_count++] = in;
 
-        break;
+        if (p->num_data == 0)
+        {
+            /* Add all zeros. */
+            while(p->num_zeros-- > 0)
+                p->buffer[p->buffer_count++] = 0;
 
+            p->state = COBS_STATE_AWAITING_CODE;
+        }
+    }
+    else
+    {
+        /* Packet seperator detected! */
 
-    default:
+        if (p->state == COBS_STATE_AWAITING_CODE)
+        {
+            /* If there are data bytes in the buffer, remove the extra zero. */
+            if (p->buffer_count > 0)
+                p->buffer_count--;
 
-        /* Should never come here. */
+            /* RX successful! Add statistics and call the parser. */
+            p->rx_success++;
+
+            if (p->parser != NULL)
+                p->parser(p);
+        }
+        else
+        {
+            /* Packet separator detected in data section: Error!
+             * Increase error counter. */
+            p->rx_error++;
+        }
+
+        /* Reset state and buffer. */
         p->state = COBS_STATE_AWAITING_CODE;
-        p->rx_error++;
-
+        p->buffer_count = 0;
     }
 }
