@@ -79,13 +79,6 @@ MAILBOX_DECL(subscription_mailbox,
              subscriptions.box,
              SUBSCRIPTION_MAILBOX_SIZE);
 
-/*===================================================*/
-/* Working area for the data pump                    */
-/* and data decode threads.                          */
-/*===================================================*/
-
-THD_WORKING_AREA(waSubscriptionsTask, 128);
-
 /*===========================================================================*/
 /* Module local functions.                                                   */
 /*===========================================================================*/
