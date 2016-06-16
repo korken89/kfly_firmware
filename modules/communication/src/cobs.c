@@ -48,7 +48,7 @@ static inline void FinishBlock(int32_t *count,
 
     /* Add dummy byte for the next code, or the frame delimiter if there are
      * no more data to be encoded. */
-    index = (cb->head + *count) % cb->size;
+    index = (cb->head + *count) & cb->mask;
 
     enc->code_index = index;
     cb->buffer[index] = COBS_FrameDelimiter;
@@ -179,7 +179,7 @@ static inline void CircularBuffer_COBSWriteChunkNoInc(const uint8_t *data,
             }
 
             /* Put the data in the buffer. */
-            cb->buffer[(cb->head + *count) % cb->size] = ch;
+            cb->buffer[(cb->head + *count) & cb->mask] = ch;
             *count += 1;
 
             if (++enc->code == COBS_Diff)
@@ -406,13 +406,21 @@ void COBSDecode(const uint8_t in, cobs_decoder_t *dec)
         {
             /* If there are data bytes in the buffer, remove the extra zero. */
             if (dec->buffer_count > 0)
+            {
                 dec->buffer_count--;
 
-            /* RX successful! Add statistics and call the parser. */
-            dec->rx_success++;
+                /* RX successful! Add statistics and call the parser. */
+                dec->rx_success++;
 
-            if (dec->parser != NULL)
-                dec->parser(dec);
+                if (dec->parser != NULL)
+                    dec->parser(dec);
+            }
+            else
+            {
+                /* Packet without data detected, just a consecutive frame
+                 * delimiter. */
+                dec->rx_error++;
+            }
         }
         else
         {

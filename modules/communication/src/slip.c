@@ -50,7 +50,7 @@ static void CircularBuffer_SLIPWriteENDNoInc(circular_buffer_t *cb,
         /* Check if we have 2 bytes free, in case of data = reserved */
         if ((CircularBuffer_SpaceLeft(cb) - *count) >= 1)
         {
-            cb->buffer[(cb->head + *count) % cb->size] = SLIP_END;
+            cb->buffer[(cb->head + *count) & cb->mask] = SLIP_END;
             *count += 1;
         }
         else
@@ -86,21 +86,21 @@ static void CircularBuffer_SLIPWriteChunkNoInc(circular_buffer_t *cb,
             {
                 if ((data[i] != SLIP_END) && (data[i] != SLIP_ESC))
                 {
-                    cb->buffer[(cb->head + *count) % cb->size] = data[i];
+                    cb->buffer[(cb->head + *count) & cb->mask] = data[i];
                     *count += 1;
                 }
                 else if (data[i] == SLIP_END)
                 {
-                    cb->buffer[(cb->head + *count) % cb->size] = SLIP_ESC;
+                    cb->buffer[(cb->head + *count) & cb->mask] = SLIP_ESC;
                     *count += 1;
-                    cb->buffer[(cb->head + *count) % cb->size] = SLIP_ESC_END;
+                    cb->buffer[(cb->head + *count) & cb->mask] = SLIP_ESC_END;
                     *count += 1;
                 }
                 else
                 {
-                    cb->buffer[(cb->head + *count) % cb->size] = SLIP_ESC;
+                    cb->buffer[(cb->head + *count) & cb->mask] = SLIP_ESC;
                     *count += 1;
-                    cb->buffer[(cb->head + *count) % cb->size] = SLIP_ESC_ESC;
+                    cb->buffer[(cb->head + *count) & cb->mask] = SLIP_ESC_ESC;
                     *count += 1;
                 }
             }
@@ -119,23 +119,23 @@ static void CircularBuffer_SLIPWriteChunkNoInc(circular_buffer_t *cb,
             {
                 if ((data[p_sp] != SLIP_END) && (data[p_sp] != SLIP_ESC))
                 {
-                    cb->buffer[(cb->head + *count) % cb->size] = data[p_sp];
+                    cb->buffer[(cb->head + *count) & cb->mask] = data[p_sp];
                     *count += 1;
                     i++;
                 }
                 else if (data[p_sp] == SLIP_END)
                 {
-                    cb->buffer[(cb->head + *count) % cb->size] = SLIP_ESC;
+                    cb->buffer[(cb->head + *count) & cb->mask] = SLIP_ESC;
                     *count += 1;
-                    cb->buffer[(cb->head + *count) % cb->size] = SLIP_ESC_END;
+                    cb->buffer[(cb->head + *count) & cb->mask] = SLIP_ESC_END;
                     *count += 1;
                     i += 2;
                 }
                 else
                 {
-                    cb->buffer[(cb->head + *count) % cb->size] = SLIP_ESC;
+                    cb->buffer[(cb->head + *count) & cb->mask] = SLIP_ESC;
                     *count += 1;
-                    cb->buffer[(cb->head + *count) % cb->size] = SLIP_ESC_ESC;
+                    cb->buffer[(cb->head + *count) & cb->mask] = SLIP_ESC_ESC;
                     *count += 1;
                     i += 2;
                 }
