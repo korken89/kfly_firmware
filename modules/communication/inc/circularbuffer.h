@@ -35,6 +35,10 @@ typedef struct
      */
     size_t size;          /* Size of buffer */
     /**
+     * @brief   Mask for wrapping the buffer on overflow.
+     */
+    size_t mask;          /* Size of buffer */
+    /**
      * @brief   Pointer to the data holding region.
      */
     uint8_t *buffer;        /* Pointer to memory area */
@@ -75,7 +79,7 @@ static inline void CircularBuffer_Release(circular_buffer_t *Cbuff)
  */
 static inline size_t CircularBuffer_SpaceLeft(circular_buffer_t *Cbuff)
 {
-    return (Cbuff->tail + Cbuff->size - Cbuff->head - 1) % Cbuff->size;
+    return (Cbuff->tail + Cbuff->size - Cbuff->head - 1) & Cbuff->mask;
 }
 
 /**
@@ -87,7 +91,7 @@ static inline size_t CircularBuffer_SpaceLeft(circular_buffer_t *Cbuff)
 static inline void CircularBuffer_IncrementTail(circular_buffer_t *Cbuff,
                                                 size_t count)
 {
-    Cbuff->tail = ((Cbuff->tail + count) % Cbuff->size);
+    Cbuff->tail = ((Cbuff->tail + count) & Cbuff->mask);
 }
 
 /**
@@ -99,7 +103,7 @@ static inline void CircularBuffer_WriteSingle(circular_buffer_t *Cbuff,
                                               uint8_t data)
 {
     Cbuff->buffer[Cbuff->head] = data;
-    Cbuff->head = ((Cbuff->head + 1) % Cbuff->size);
+    Cbuff->head = ((Cbuff->head + 1) & Cbuff->mask);
 }
 
 /**
@@ -112,7 +116,7 @@ static inline uint8_t CircularBuffer_ReadSingle(circular_buffer_t *Cbuff)
     uint8_t data;
 
     data = Cbuff->buffer[Cbuff->tail];
-    Cbuff->tail = ((Cbuff->tail + 1) % Cbuff->size);
+    Cbuff->tail = ((Cbuff->tail + 1) & Cbuff->mask);
 
     return data;
 }
@@ -125,14 +129,14 @@ static inline uint8_t CircularBuffer_ReadSingle(circular_buffer_t *Cbuff)
  * @param[in] count     Number of bytes to increment the pointer.
  */
 static inline bool CircularBuffer_Increment(circular_buffer_t *Cbuff,
-                                            int32_t count)
+                                            const int32_t count)
 {
     if (count == -1) /* Error! */
         return HAL_FAILED;
 
     else
     {
-        Cbuff->head = ((Cbuff->head + count) % Cbuff->size);
+        Cbuff->head = ((Cbuff->head + count) & Cbuff->mask);
         return HAL_SUCCESS;
     }
 }
@@ -143,15 +147,14 @@ static inline bool CircularBuffer_Increment(circular_buffer_t *Cbuff,
 
 void CircularBuffer_Init(circular_buffer_t *Cbuff,
                          uint8_t *buffer,
-                         size_t buffer_size);
+                         const size_t buffer_size);
 void CircularBuffer_InitMutex(circular_buffer_t *Cbuff);
 void CircularBuffer_WriteChunk(circular_buffer_t *Cbuff,
                                uint8_t *data,
                                const size_t count);
 void CircularBuffer_ReadChunk(circular_buffer_t *Cbuff,
                               uint8_t *data,
-                              size_t count);
-bool CircularBuffer_Increment(circular_buffer_t *Cbuff, int32_t count);
+                              const size_t count);
 uint8_t *CircularBuffer_GetReadPointer(circular_buffer_t *Cbuff,
                                        size_t *size);
 

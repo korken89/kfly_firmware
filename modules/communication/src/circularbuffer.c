@@ -25,6 +25,17 @@
 /* Module local functions.                                                   */
 /*===========================================================================*/
 
+/**
+ * @brief           Check if a number is a power of 2.
+ *
+ * @param[in] x     The number to be checked.
+ * @return          True if it is a power of 2.
+ */
+static inline bool isPowerOfTwo(const size_t x)
+{
+    return ((x != 0) && !(x & (x - 1)));
+}
+
 /*===========================================================================*/
 /* Module exported functions.                                                */
 /*===========================================================================*/
@@ -34,16 +45,28 @@
  *
  * @param[in] Cbuff         Pointer to the circular buffer.
  * @param[in] buffer        Pointer to where the circular buffer data is stored.
- * @param[in] buffer_size   Size of the circular buffer in bytes.
+ * @param[in] buffer_size   Size of the circular buffer in bytes, must be a
+ *                          power of 2.
  */
 void CircularBuffer_Init(circular_buffer_t *Cbuff,
                          uint8_t *buffer,
-                         size_t buffer_size)
+                         const size_t buffer_size)
 {
     Cbuff->head = 0;
     Cbuff->tail = 0;
-    Cbuff->size = buffer_size;
-    Cbuff->buffer = buffer;
+
+    if (isPowerOfTwo(buffer_size))
+    {
+        Cbuff->size = buffer_size;
+        Cbuff->buffer = buffer;
+        Cbuff->mask = buffer_size -1;
+    }
+    else
+    {
+        Cbuff->size = 0;
+        Cbuff->buffer = 0;
+        Cbuff->mask = 0;
+    }
 }
 
 /**
