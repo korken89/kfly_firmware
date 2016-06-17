@@ -28,10 +28,10 @@ static const EPWMConfig pwmcfg = {
     RCOUTPUT_FREQUENCY_PWM,             /* 1 MHz PWM clock frequency    */
     RCOUTPUT_PERIOD_50HZ,               /* Initial PWM period: 50 Hz   */
     {
-        {EPWM_OUTPUT_ACTIVE_LOW},      /* Active low */
-        {EPWM_OUTPUT_ACTIVE_LOW},      /* Active low */
-        {EPWM_OUTPUT_ACTIVE_LOW},      /* Active low */
-        {EPWM_OUTPUT_ACTIVE_LOW}       /* Active low */
+        {EPWM_OUTPUT_ACTIVE_HIGH},      /* Active high */
+        {EPWM_OUTPUT_ACTIVE_HIGH},      /* Active high */
+        {EPWM_OUTPUT_ACTIVE_HIGH},      /* Active high */
+        {EPWM_OUTPUT_ACTIVE_HIGH}       /* Active high */
     },
     EPWM_PWM_MODE
 };
