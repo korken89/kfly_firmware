@@ -2,30 +2,11 @@
 #include "hal.h"
 #include "system_init.h"
 #include "bootloader.h"
-#include "cobs.h"
 
 /**
  * @brief Placeholder for error messages.
  */
 volatile assert_errors kfly_assert_errors;
-
-#define TEST_SIZE       64
-uint8_t cobs_buffer[TEST_SIZE];
-uint8_t cobs_buffer2[TEST_SIZE];
-circular_buffer_t cobs_cb;
-cobs_encoder_t cobs_encoder;
-cobs_decoder_t cobs_decoder;
-
-const uint8_t msg1[] = {1,2,3,4,5,6};
-const uint8_t msg2[] = {1,2,3,0,5,6,7,8,9};
-const uint8_t msg3[] = {1,2,3,0,0,6,7,8,9};
-const uint8_t msg4[] = {1,2,3,0,0,0,7,8,9};
-const uint8_t msg5[] = {1,2,3,0,0,0,0,0,0,7,8,9,0};
-const uint8_t msg6[] = {1,2,3,0,0,0,0,0,0,7,8,9,0,0};
-const uint8_t msg7[] = {1,2,3,0,0,0,0,0,0,7,8,9,0,0,0};
-const uint8_t msg8[] = {1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        0,0,7,8,9,0,0,0,0,0,0,0,0,0};
-const uint8_t msg9[] = {1,2,3,0,0,0,0,7,8,9,0,0,0};
 
 int main(void)
 {
@@ -39,25 +20,12 @@ int main(void)
     halInit();
     chSysInit();
 
-
-    CircularBuffer_Init(&cobs_cb, cobs_buffer, TEST_SIZE);
-    COBSInitDecoder(cobs_buffer2, TEST_SIZE, NULL, &cobs_decoder);
-
-    COBSEncode(msg1, sizeof(msg1), &cobs_cb, &cobs_encoder);
-    //COBSEncode(msg2, sizeof(msg2), &cobs_cb, &cobs_encoder);
-    //COBSEncode(msg3, sizeof(msg3), &cobs_cb, &cobs_encoder);
-
-    while(cobs_cb.tail < cobs_cb.head)
-    {
-        COBSDecode(CircularBuffer_ReadSingle(&cobs_cb), &cobs_decoder);
-    }
-
     /*
      *
      * Initialize all drivers and modules.
      *
      */
-    //vSystemInit();
+    vSystemInit();
 
     /*
      *
