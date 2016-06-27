@@ -15,6 +15,25 @@
 /*===========================================================================*/
 
 /**
+ * @brief   COBS stuffing codes.
+ */
+typedef enum
+{
+    COBS_FrameDelimiter = 0x00, /* Unused (framing character placeholder)    */
+
+    COBS_DiffZero = 0x01,       /* Range 0x01 - 0xD1:                        */
+    COBS_DiffZeroMax = 0xD1,    /* n-1 explicit characters plus a zero       */
+    COBS_Diff = 0xD2,           /* 209 explicit characters, no added zero    */
+
+    COBS_RunZero = 0xD3,        /* Range 0xD3 - 0xDF:                        */
+    COBS_RunZeroMax = 0xDF,     /* 3-15 zeros (Zero Run Encoding)            */
+
+    COBS_Diff2Zero = 0xE0,      /* Range 0xE0 - 0xFF:                        */
+    COBS_Diff2ZeroMax = 0xFF,   /* 0-31 characters plus 2 implicit zeros (Zero
+                                   Pair Encoding)                            */
+} cobs_stuffingcodes_t;
+
+/**
  * @brief Convert from single-zero code to corresponding double-zero code.
  */
 #define CONVERTZP                   (COBS_Diff2Zero - COBS_DiffZero)
