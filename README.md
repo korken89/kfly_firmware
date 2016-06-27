@@ -16,20 +16,19 @@ All PCBs follow the standard 36 x 36 mm outline with 30.5 x 30.5 mm mounting hol
 
 #### KFly PCB version 4:
 * ST's **STM32F746** CPU: 32-bit ARM Cortex-M7F @ 216 MHz with 32-bit FPU, DSP and advanced branch prediction
-* Separate analog and digital power supply with 16 V max input voltage
 * ST's **LSM6DS3** accelerometer / gyroscope (changed due to its low gain error)
-* Honeywell's **HMC5983** magnetometer
-* ST's **LPS25H** pressure sensor (comparable to the MS5611)
+* ST's **LIS3MDL** magnetometer
+* ST's **LPS25HB** pressure sensor
+* Separate analog and digital power supply with 6 V max input voltage
 * 8 outputs (50 Hz / 400 Hz / Oneshot125)
 * 4 expansion connectors (3 UARTs & 1 CAN port)
 * 6 slot RC input connector with support for (C)PPM up to 8 channels in and signal strength
-* 433 MHz RF link for data, command and control transfers
-* MicroSD card holder for "Blackbox" flight logging 
+* MicroSD card holder for "Blackbox" flight logging
 
 
 ### Software Specifications
 #### Common features
-* Runs ChibiOS 3.x
+* Runs ChibiOS 16.x
 * USB Serial Bootloader - no need for an external programmer!
 * Quaternion based Square-Root Multiplicative Extended Kalman Filter (SR-MEKF) provides identification and estimation
 * "Control signal to Motor"-mixing for different types of frames
