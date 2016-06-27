@@ -66,6 +66,15 @@ typedef void (*generic_parser_t)(communication_decoder_t *);
 /* Module inline functions.                                                  */
 /*===========================================================================*/
 
+/**
+ * @brief                       Initializes the communication_decoder_t
+ *                              structure.
+ *
+ * @param[in]     buffer        Buffer used for intermediate data.
+ * @param[in]     buffer_size   Buffer size.
+ * @param[in]     parser        Pointer to the parser of the passed data.
+ * @param[in/out] dec           Pointer to communication_decoder_t structure.
+ */
 static inline void GenericDecoderInit(uint8_t *buffer,
                                       const size_t buffer_size,
                                       generic_parser_t parser,
@@ -80,6 +89,11 @@ static inline void GenericDecoderInit(uint8_t *buffer,
     dec->parser = parser;
 }
 
+/**
+ * @brief               Resets the communication_decoder_t structure.
+ *
+ * @param[in/out] dec   Pointer to communication_decoder_t structure.
+ */
 static inline void GenericDecoderReset(communication_decoder_t *dec)
 {
     dec->buffer_count = 0;

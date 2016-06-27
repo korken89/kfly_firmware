@@ -55,6 +55,13 @@ typedef enum
 /* Module local functions.                                                   */
 /*===========================================================================*/
 
+/**
+ * @brief       Finished a COBS encoding block.
+ *
+ * @param[in/out] count     Pointer to tracking variable for the buffer.
+ * @param[in/out] cb        Pointer to the circular buffer.
+ * @param[in/out] enc       Pointer to the encoder data structure.
+ */
 static inline void FinishBlock(int32_t *count,
                                circular_buffer_t *cb,
                                cobs_encoder_t *enc)
@@ -94,16 +101,37 @@ static inline void StartPacket(int32_t *count,
 
     *count += 1;
 }
+
+/**
+ * @brief           Checks if the code is Diff2Zero.
+ *
+ * @param[in] code  The code to be checked.
+ * @return          Returns true if it is Diff2Zero.
+ */
 inline bool isDiff2Zero(const uint8_t code)
 {
     return (code >= COBS_Diff2Zero);
 }
 
+/**
+ * @brief           Checks if the code is RunZero.
+ *
+ * @param[in] code  The code to be checked.
+ * @return          Returns true if it is RunZero.
+ */
 inline bool isRunZero(const uint8_t code)
 {
     return ((code >= COBS_RunZero) && (code <= COBS_RunZeroMax));
 }
 
+/**
+ * @brief           Checks if decoded size will fit the buffer, else it will
+ *                  reset the decoder.
+ *
+ * @param[in] added_size    The amount of bytes that will be added.
+ * @param[in/out] dec       The pointer to the COBS decoder.
+ * @return                  Returns true if it will fit, else false.
+ */
 static inline bool DecodedSizeFitsBuffer(const size_t added_size,
                                          cobs_decoder_t *dec)
 {
@@ -309,7 +337,7 @@ bool COBSEncode_MultiChunk(const uint8_t *ptr_list[],
  * @param[in]     buffer        Buffer used for intermediate data.
  * @param[in]     buffer_size   Buffer size.
  * @param[in]     parser        Pointer to the parser of the passed data.
- * @param[in/out] p             Pointer to cobs_decoder_t structure.
+ * @param[in/out] dec           Pointer to cobs_decoder_t structure.
  */
 void COBSInitDecoder(uint8_t *buffer,
                      const size_t buffer_size,
@@ -323,7 +351,7 @@ void COBSInitDecoder(uint8_t *buffer,
 /**
  * @brief               Resets the cobs_decoder_t structure.
  *
- * @param[in/out] p     Pointer to cobs_decoder_t structure.
+ * @param[in/out] dec   Pointer to cobs_decoder_t structure.
  */
 void COBSResetDecoder(cobs_decoder_t *dec)
 {
