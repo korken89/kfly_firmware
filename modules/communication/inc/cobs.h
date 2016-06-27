@@ -2,6 +2,7 @@
 #define __COBS_H
 
 #include "circularbuffer.h"
+#include "communication_defs.h"
 
 /*===========================================================================*/
 /* Module global definitions.                                                */
@@ -54,29 +55,9 @@ typedef enum
 typedef struct _cobs_decoder
 {
     /**
-     * @brief   Pointer to the buffer storing the data.
+     * @brief   Holds the generic decoding information.
      */
-    uint8_t *buffer;
-    /**
-     * @brief   The size of the buffer.
-     */
-    size_t buffer_size;
-    /**
-     * @brief   The current location in the buffer.
-     */
-    size_t buffer_count;
-    /**
-     * @brief   Buffer overrun counter.
-     */
-    uint64_t buffer_overrun;
-    /**
-     * @brief   The number of receive errors.
-     */
-    uint64_t rx_error;
-    /**
-     * @brief   The number of correctly received packets.
-     */
-    uint64_t rx_success;
+    communication_decoder_t generic_decoder;
     /**
      * @brief   Current state of the state machine.
      */
@@ -89,11 +70,6 @@ typedef struct _cobs_decoder
      * @brief   Number of data bytes to add to the output.
      */
     size_t num_data;
-    /**
-     * @brief    Pointer to the parser to parse the data after a
-     *           successful transfer.
-     */
-    void (*parser)(struct _cobs_decoder *);
 } cobs_decoder_t;
 
 /**
@@ -130,7 +106,7 @@ bool COBSEncode_MultiChunk(const uint8_t *ptr_list[],
                            cobs_encoder_t *enc);
 void COBSInitDecoder(uint8_t *buffer,
                      const size_t buffer_size,
-                     void (*parser)(cobs_decoder_t *),
+                     void (*parser)(communication_decoder_t *),
                      cobs_decoder_t *p);
 void COBSResetDecoder(cobs_decoder_t *p);
 void COBSDecode(const uint8_t data, cobs_decoder_t *p);

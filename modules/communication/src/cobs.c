@@ -89,14 +89,15 @@ static inline bool DecodedSizeFitsBuffer(const size_t added_size,
                                          cobs_decoder_t *dec)
 {
     /* Check if the data fits in the buffer, if not reset the decoder. */
-    if (dec->buffer_count + added_size < dec->buffer_size)
+    if (dec->generic_decoder.buffer_count + added_size <
+            dec->generic_decoder.buffer_size)
     {
         return true;
     }
     else
     {
-        dec->buffer_count = 0;
-        dec->buffer_overrun++;
+        dec->generic_decoder.buffer_count = 0;
+        dec->generic_decoder.buffer_overrun++;
         dec->state = COBS_STATE_AWAITING_CODE;
 
         return false;
@@ -293,17 +294,17 @@ bool COBSEncode_MultiChunk(const uint8_t *ptr_list[],
  */
 void COBSInitDecoder(uint8_t *buffer,
                      const size_t buffer_size,
-                     void (*parser)(cobs_decoder_t *),
+                     void (*parser)(communication_decoder_t *),
                      cobs_decoder_t *dec)
 {
-    dec->buffer = buffer;
-    dec->buffer_size = buffer_size;
-    dec->buffer_count = 0;
-    dec->buffer_overrun = 0;
-    dec->rx_error = 0;
-    dec->rx_success = 0;
+    dec->generic_decoder.buffer = buffer;
+    dec->generic_decoder.buffer_size = buffer_size;
+    dec->generic_decoder.buffer_count = 0;
+    dec->generic_decoder.buffer_overrun = 0;
+    dec->generic_decoder.rx_error = 0;
+    dec->generic_decoder.rx_success = 0;
+    dec->generic_decoder.parser = parser;
     dec->state = COBS_STATE_AWAITING_CODE;
-    dec->parser = parser;
 }
 
 /**
@@ -313,10 +314,10 @@ void COBSInitDecoder(uint8_t *buffer,
  */
 void COBSResetDecoder(cobs_decoder_t *dec)
 {
-    dec->buffer_count = 0;
-    dec->buffer_overrun = 0;
-    dec->rx_error = 0;
-    dec->rx_success = 0;
+    dec->generic_decoder.buffer_count = 0;
+    dec->generic_decoder.buffer_overrun = 0;
+    dec->generic_decoder.rx_error = 0;
+    dec->generic_decoder.rx_success = 0;
     dec->state = COBS_STATE_AWAITING_CODE;
 }
 
@@ -373,7 +374,8 @@ void COBSDecode(const uint8_t in, cobs_decoder_t *dec)
 
             /* Add all zeros. */
             while(dec->num_zeros-- > 0)
-                dec->buffer[dec->buffer_count++] = 0;
+                dec->generic_decoder.buffer[dec->generic_decoder.buffer_count++]
+                    = 0;
 
             dec->state = COBS_STATE_AWAITING_CODE;
         }
@@ -384,7 +386,7 @@ void COBSDecode(const uint8_t in, cobs_decoder_t *dec)
         dec->num_data--;
 
         /* While there are data bytes left, add it to the output. */
-        dec->buffer[dec->buffer_count++] = in;
+        dec->generic_decoder.buffer[dec->generic_decoder.buffer_count++] = in;
 
         if (dec->num_data == 0)
         {
@@ -393,7 +395,8 @@ void COBSDecode(const uint8_t in, cobs_decoder_t *dec)
 
             /* Add all zeros. */
             while(dec->num_zeros-- > 0)
-                dec->buffer[dec->buffer_count++] = 0;
+                dec->generic_decoder.buffer[dec->generic_decoder.buffer_count++]
+                    = 0;
 
             dec->state = COBS_STATE_AWAITING_CODE;
         }
@@ -405,33 +408,33 @@ void COBSDecode(const uint8_t in, cobs_decoder_t *dec)
         if (dec->state == COBS_STATE_AWAITING_CODE)
         {
             /* If there are data bytes in the buffer, remove the extra zero. */
-            if (dec->buffer_count > 0)
+            if (dec->generic_decoder.buffer_count > 0)
             {
-                dec->buffer_count--;
+                dec->generic_decoder.buffer_count--;
 
                 /* RX successful! Add statistics and call the parser. */
-                dec->rx_success++;
+                dec->generic_decoder.rx_success++;
 
-                if (dec->parser != NULL)
-                    dec->parser(dec);
+                if (dec->generic_decoder.parser != NULL)
+                    dec->generic_decoder.parser(&dec->generic_decoder);
             }
             else
             {
                 /* Packet without data detected, just a consecutive frame
                  * delimiter. */
-                dec->rx_error++;
+                dec->generic_decoder.rx_error++;
             }
         }
         else
         {
             /* Packet separator detected in data section: Error!
              * Increase error counter. */
-            dec->rx_error++;
+            dec->generic_decoder.rx_error++;
         }
 
         /* Reset state and buffer. */
         dec->state = COBS_STATE_AWAITING_CODE;
-        dec->buffer_count = 0;
+        dec->generic_decoder.buffer_count = 0;
     }
 }
 
