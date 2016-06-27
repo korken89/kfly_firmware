@@ -22,7 +22,7 @@ All PCBs follow the standard 36 x 36 mm outline with 30.5 x 30.5 mm mounting hol
 * Separate analog and digital power supply with 6 V max input voltage
 * 8 outputs (50 Hz / 400 Hz / Oneshot125)
 * 4 expansion connectors (3 UARTs & 1 CAN port)
-* 6 slot RC input connector with support for (C)PPM up to 8 channels in and signal strength
+* 6 slot RC input connector with support for (C)PPM and SBUS with up to 18 channels and signal strength indication
 * MicroSD card holder for "Blackbox" flight logging
 
 
@@ -30,7 +30,7 @@ All PCBs follow the standard 36 x 36 mm outline with 30.5 x 30.5 mm mounting hol
 #### Common features
 * Runs ChibiOS 16.x
 * USB Serial Bootloader - no need for an external programmer!
-* Quaternion based Square-Root Multiplicative Extended Kalman Filter (SR-MEKF) provides identification and estimation
+* Quaternion based Square-Root Multiplicative Extended Kalman Filter (SR-MEKF) provides estimation
 * "Control signal to Motor"-mixing for different types of frames
 * Flight control: Rate mode, Attitude mode and more to come
 
