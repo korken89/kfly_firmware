@@ -7,7 +7,7 @@
 void you_tried_to_use_new(void);
 
 /**
- * @brief   Define non-existing function to catch the usage of new.
+ * @brief   Define non-existing function to catch the usage of delete.
  */
 void you_tried_to_use_delete(void);
 
