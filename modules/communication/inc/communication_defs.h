@@ -49,6 +49,10 @@ typedef struct _communication_decoder
     void (*parser)(struct _communication_decoder *);
 } communication_decoder_t;
 
+/**
+ * @brief   The generic parser definition.
+ */
+typedef void (*generic_parser_t)(communication_decoder_t *);
 
 /*===========================================================================*/
 /* Module macros.                                                            */
@@ -61,5 +65,27 @@ typedef struct _communication_decoder
 /*===========================================================================*/
 /* Module inline functions.                                                  */
 /*===========================================================================*/
+
+static inline void GenericDecoderInit(uint8_t *buffer,
+                                      const size_t buffer_size,
+                                      generic_parser_t parser,
+                                      communication_decoder_t *dec)
+{
+    dec->buffer = buffer;
+    dec->buffer_size = buffer_size;
+    dec->buffer_count = 0;
+    dec->buffer_overrun = 0;
+    dec->rx_error = 0;
+    dec->rx_success = 0;
+    dec->parser = parser;
+}
+
+static inline void GenericDecoderReset(communication_decoder_t *dec)
+{
+    dec->buffer_count = 0;
+    dec->buffer_overrun = 0;
+    dec->rx_error = 0;
+    dec->rx_success = 0;
+}
 
 #endif

@@ -294,16 +294,10 @@ bool COBSEncode_MultiChunk(const uint8_t *ptr_list[],
  */
 void COBSInitDecoder(uint8_t *buffer,
                      const size_t buffer_size,
-                     void (*parser)(communication_decoder_t *),
+                     generic_parser_t parser,
                      cobs_decoder_t *dec)
 {
-    dec->generic_decoder.buffer = buffer;
-    dec->generic_decoder.buffer_size = buffer_size;
-    dec->generic_decoder.buffer_count = 0;
-    dec->generic_decoder.buffer_overrun = 0;
-    dec->generic_decoder.rx_error = 0;
-    dec->generic_decoder.rx_success = 0;
-    dec->generic_decoder.parser = parser;
+    GenericDecoderInit(buffer, buffer_size, parser, &dec->generic_decoder);
     dec->state = COBS_STATE_AWAITING_CODE;
 }
 
@@ -314,10 +308,7 @@ void COBSInitDecoder(uint8_t *buffer,
  */
 void COBSResetDecoder(cobs_decoder_t *dec)
 {
-    dec->generic_decoder.buffer_count = 0;
-    dec->generic_decoder.buffer_overrun = 0;
-    dec->generic_decoder.rx_error = 0;
-    dec->generic_decoder.rx_success = 0;
+    GenericDecoderReset(&dec->generic_decoder);
     dec->state = COBS_STATE_AWAITING_CODE;
 }
 
