@@ -115,7 +115,7 @@ void COBSDecode(const uint8_t data, cobs_decoder_t *p);
 /* Module inline functions.                                                  */
 /*===========================================================================*/
 
-inline size_t COBSGetMaxEncodedSize(const size_t size)
+static inline size_t COBSGetMaxEncodedSize(const size_t size)
 {
     /* The expansion of COBS is 1 byte per 208 bytes, plus the frame delimiter
      * added between packets.
