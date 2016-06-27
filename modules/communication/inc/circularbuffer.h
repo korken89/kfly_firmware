@@ -21,27 +21,27 @@ typedef struct
     /**
      * @brief   Write lock mutex.
      */
-    mutex_t write_lock;     /* Write lock mutex */
+    mutex_t write_lock;
     /**
      * @brief   Position of the head of the buffer.
      */
-    size_t head;          /* Newest element */
+    size_t head;
     /**
      * @brief   Position of the tail of the buffer.
      */
-    size_t tail;          /* Oldest element */
+    size_t tail;
     /**
      * @brief   Size of the circular buffer.
      */
-    size_t size;          /* Size of buffer */
+    size_t size;
     /**
      * @brief   Mask for wrapping the buffer on overflow.
      */
-    size_t mask;          /* Size of buffer */
+    size_t mask;
     /**
      * @brief   Pointer to the data holding region.
      */
-    uint8_t *buffer;        /* Pointer to memory area */
+    uint8_t *buffer;
 } circular_buffer_t;
 
 /*===========================================================================*/
