@@ -2,11 +2,53 @@
 #include "hal.h"
 #include "system_init.h"
 #include "bootloader.h"
+#include "sensor_read.h"
+#include "kflypacket_generators.h"
 
 /**
  * @brief Placeholder for error messages.
  */
 volatile assert_errors kfly_assert_errors;
+
+THD_WORKING_AREA(waThreadCalibrationPrint, 1024);
+EVENTSOURCE_DECL(cal_events_es);
+
+static THD_FUNCTION(ThreadCalibrationPrint, arg)
+{
+    (void)arg;
+
+    chRegSetThreadName("CalPrint");
+
+    /* Event registration for new sensor data */
+    event_listener_t el;
+
+    /* Register to new data from accelerometer and gyroscope */
+    chEvtRegisterMaskWithFlags(ptrGetNewDataEventSource(),
+                               &el,
+                               EVENT_MASK(0),
+                               ACCGYRO_DATA_AVAILABLE_EVENTMASK |
+                               MAG_DATA_AVAILABLE_EVENTMASK |
+                               BARO_DATA_AVAILABLE_EVENTMASK);
+
+
+    while(1)
+    {
+        /* Wait for new measurement data */
+        chEvtWaitAny(ALL_EVENTS);
+
+        eventflags_t flags = chEvtGetAndClearFlags(&el);
+
+        /* Get sensor data */
+        //GetRawIMUData(&imu_data);
+
+        if (flags & ACCGYRO_DATA_AVAILABLE_EVENTMASK)
+        {
+            /* Send the acc and gyro data. */
+            GenerateMessage(Cmd_GetRawIMUData, PORT_USB);
+            GenerateMessage(Cmd_GetRawIMUData, PORT_AUX1);
+        }
+    }
+}
 
 int main(void)
 {
@@ -27,6 +69,11 @@ int main(void)
      */
     vSystemInit();
 
+    chThdCreateStatic(waThreadCalibrationPrint,
+                      sizeof(waThreadCalibrationPrint),
+                      HIGHPRIO - 2,
+                      ThreadCalibrationPrint,
+                      NULL);
     /*
      *
      * Main task loop.
@@ -34,12 +81,17 @@ int main(void)
      */
     while(bSystemShutdownRequested() == false)
     {
+        /* The "Calibration Blink"... */
         palSetPad(GPIOC, GPIOC_LED_USR);
-        chThdSleepMilliseconds(150);
+        chThdSleepMilliseconds(50);
         palClearPad(GPIOC, GPIOC_LED_USR);
-        chThdSleepMilliseconds(150);
+        chThdSleepMilliseconds(50);
         palSetPad(GPIOC, GPIOC_LED_USR);
-        chThdSleepMilliseconds(150);
+        chThdSleepMilliseconds(50);
+        palClearPad(GPIOC, GPIOC_LED_USR);
+        chThdSleepMilliseconds(50);
+        palSetPad(GPIOC, GPIOC_LED_USR);
+        chThdSleepMilliseconds(50);
         palClearPad(GPIOC, GPIOC_LED_USR);
         chThdSleepMilliseconds(500);
         //vSystemRequestShutdown(SYSTEM_SHUTDOWN_KEY);
