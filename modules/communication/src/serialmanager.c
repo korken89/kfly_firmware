@@ -96,7 +96,7 @@ serial_datapump_holder_t data_pumps = {
 /* Temporary settings until serial is settable through the USB */
 static const SerialConfig aux1_config =
 {
-  57600,
+  115200,
   0,
   USART_CR2_STOP1_BITS,
   0
