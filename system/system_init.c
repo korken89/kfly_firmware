@@ -226,14 +226,14 @@ static void vSystemInitList(void)
      * Initialize the estimation.
      *
      */
-    EstimationInit();
+    //EstimationInit();
 
     /*
      *
      * Initialize the controllers.
      *
      */
-    ControlInit();
+    //ControlInit();
 }
 
 /*
