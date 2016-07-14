@@ -219,9 +219,9 @@
 #define MPU6050_DEVICE_RESET                (1 << 7)
 #define MPU6050_GYRO_RESET                  (1 << 0)
 #define MPU6050_ACCEL_RESET                 (1 << 1)
-#define MPU6050_TEMP_RESET                  (1 << 2) 
+#define MPU6050_TEMP_RESET                  (1 << 2)
 
-#define MPU6050_CLK_INTERNAL_REFERENCE      0 
+#define MPU6050_CLK_INTERNAL_REFERENCE      0
 #define MPU6050_CLK_X_REFERENCE             1
 #define MPU6050_CLK_Y_REFERENCE             2
 #define MPU6050_CLK_Z_REFERENCE             3
@@ -240,6 +240,7 @@ typedef struct
     float accel_data[3];        /* Accelerometer calibrated data holder */
     float gyro_data[3];         /* Gyroscope calibrated data holder     */
     float temperature;          /* Temperature deg C data holder        */
+    uint32_t sample_dt_us;      /* Time between samples in microseconds */
     mutex_t read_lock;          /* Keep listeners from reading if
                                    new data is being written            */
 } MPU6050_Data;

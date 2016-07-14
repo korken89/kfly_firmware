@@ -89,9 +89,9 @@ uint8_t temp_data[14]; /* NOTE: This variable may NOT be placed in CCM
 /* Temporary holder for IMU calibration while saving to flash */
 imu_calibration_t imu_cal;
 
-/* Time measurement */
+/* Time measurement for each sample */
 time_measurement_t tm_accgyro;
-rtcnt_t tm_delta;
+volatile rtcnt_t acc_gyro_dt_us;
 
 /* Working area for the sensor read thread */
 THD_WORKING_AREA(waThreadSensorRead, 256);
@@ -170,6 +170,10 @@ static THD_FUNCTION(ThreadSensorRead, arg)
 
             /* Convert and save the raw data */
             MPU6050ConvertAndSave(sensorcfg.mpu6050cfg->data_holder, temp_data);
+
+            /* Save the current sample time */
+            sensorcfg.mpu6050cfg->data_holder->sample_dt_us =
+                (uint32_t)acc_gyro_dt_us;
 
             /* Apply calibration and save calibrated data */
             ApplyCalibration(sensorcfg.mpu6050cal,
@@ -411,7 +415,7 @@ void MPU6050cb(EXTDriver *extp, expchannel_t channel)
 
     /* Stop and read the time, save and restart */
     chTMStopMeasurementX(&tm_accgyro);
-    tm_delta = RTC2US(STM32_SYSCLK, tm_accgyro.last);
+    acc_gyro_dt_us = RTC2US(STM32_SYSCLK, tm_accgyro.last);
     chTMStartMeasurementX(&tm_accgyro);
 
     if (thread_sensor_read_p != NULL)
@@ -462,7 +466,7 @@ event_source_t *ptrGetNewDataEventSource(void)
  */
 rtcnt_t rtGetLatestAccelerometerSamplingTimeUS(void)
 {
-    return tm_delta;
+    return acc_gyro_dt_us;
 }
 
 /**
