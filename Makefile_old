@@ -5,7 +5,7 @@
 
 # Compiler options here.
 ifeq ($(USE_OPT),)
-  USE_OPT = -O1 --debug -ggdb -fomit-frame-pointer -falign-functions=16
+  USE_OPT = -O1 --debug -ggdb -fomit-frame-pointer -falign-functions=16  -fdiagnostics-color
 endif
 
 # C specific options here (added to USE_OPT).
@@ -15,7 +15,7 @@ endif
 
 # C++ specific options here (added to USE_OPT).
 ifeq ($(USE_CPPOPT),)
-  USE_CPPOPT = -fno-rtti -fno-exceptions -std=c++14
+  USE_CPPOPT = -fno-rtti -fno-exceptions -std=c++11
 endif
 
 # Enable this if you want the linker to remove unused code and data
@@ -74,11 +74,6 @@ ifeq ($(USE_FPU),)
   USE_FPU = hard
 endif
 
-# FPU-related options.
-ifeq ($(USE_FPU_OPT),)
-  USE_FPU_OPT = -mfloat-abi=$(USE_FPU) -mfpu=fpv5-sp-d16 -fsingle-precision-constant
-endif
-
 #
 # Architecture or project specific options
 ##############################################################################
@@ -90,43 +85,26 @@ endif
 # Define project name here
 PROJECT = kfly
 
-# Define KFly board version
-BOARDVERSION = v4
-
-ifeq ($(BOARDVERSION), v3)
-$(info Version 3 (STF32F4xx) board detected.)
-else
-ifeq ($(BOARDVERSION), v4)
-$(info Version 4 (STF32F7xx + SD card) board detected.)
-else
-$(error Unknown board version: $(BOARDVERSION))
-endif
-endif
-
 # Imported source files and paths
 CHIBIOS = ./ChibiOS
 # Startup files.
-#include $(CHIBIOS)/os/common/ports/ARMCMx/compilers/GCC/mk/startup_stm32f7xx.mk
-include $(CHIBIOS)/os/common/startup/ARMCMx/compilers/GCC/mk/startup_stm32f7xx.mk
+include $(CHIBIOS)/os/common/ports/ARMCMx/compilers/GCC/mk/startup_stm32f4xx.mk
 # HAL-OSAL files (optional).
 include $(CHIBIOS)/os/hal/hal.mk
-include $(CHIBIOS)/os/hal/ports/STM32/STM32F7xx/platform.mk
-#include $(CHIBIOS)/os/hal/boards/ST_STM32F746G_DISCOVERY/board.mk
-include board/board_f7.mk
+include $(CHIBIOS)/os/hal/ports/STM32/STM32F4xx/platform.mk
+include board/board_f4.mk
 include $(CHIBIOS)/os/hal/osal/rt/osal.mk
 # RTOS files (optional).
 include $(CHIBIOS)/os/rt/rt.mk
-include $(CHIBIOS)/os/common/ports/ARMCMx/compilers/GCC/mk/port_v7m.mk
-#include $(CHIBIOS)/os/rt/ports/ARMCMx/compilers/GCC/mk/port_v7m.mk
+include $(CHIBIOS)/os/rt/ports/ARMCMx/compilers/GCC/mk/port_v7m.mk
 # Other files (optional).
-include $(CHIBIOS)/os/hal/lib/streams/streams.mk
 include system/system.mk
-#include $(CHIBIOS)/test/rt/test.mk
-include $(CHIBIOS)/os/various/fatfs_bindings/fatfs.mk
+include drivers/drivers.mk
+# Modules
+include modules/modules.mk
 
 # Define linker script file here
-#LDSCRIPT = make/STM32F746xG.ld
-LDSCRIPT= $(STARTUPLD)/STM32F746xG.ld
+LDSCRIPT = make/STM32F405xG.ld
 
 # C sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
@@ -137,14 +115,16 @@ CSRC = $(STARTUPSRC) \
        $(HALSRC) \
        $(PLATFORMSRC) \
        $(BOARDSRC) \
-       $(FATFSSRC) \
        $(SYSTEMSRC) \
-       $(STREAMSSRC) \
-       usbcfg.c main.c
+       $(ADRIVERSSRC) \
+       $(CHIBIOS)/os/hal/lib/streams/memstreams.c \
+       $(CHIBIOS)/os/hal/lib/streams/chprintf.c \
+       main.c \
+       $(MODULES_SRC)
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
-CPPSRC =
+CPPSRC = $(SYSTEMCPPSRC)
 
 # C sources to be compiled in ARM mode regardless of the global setting.
 # NOTE: Mixing ARM and THUMB mode enables the -mthumb-interwork compiler
@@ -167,13 +147,12 @@ TCSRC =
 TCPPSRC =
 
 # List ASM source files here
-ASMSRC =
-ASMXSRC = $(STARTUPASM) $(PORTASM) $(OSALASM)
+ASMSRC = $(STARTUPASM) $(PORTASM) $(OSALASM)
 
-INCDIR = $(CHIBIOS)/os/license \
-         $(STARTUPINC) $(KERNINC) $(PORTINC) $(OSALINC) \
-         $(HALINC) $(PLATFORMINC) $(BOARDINC) $(FATFSINC) \
-         $(STREAMSINC)
+INCDIR = $(STARTUPINC) $(KERNINC) $(PORTINC) $(OSALINC) \
+         $(HALINC) $(PLATFORMINC) $(BOARDINC) $(SYSTEMINC) \
+         $(ADRIVERSINC) $(CHIBIOS)/os/hal/lib/streams $(CHIBIOS)/os/various \
+         $(MODULES_INC)
 
 #
 # Project, sources and paths
@@ -183,7 +162,7 @@ INCDIR = $(CHIBIOS)/os/license \
 # Compiler settings
 #
 
-MCU  = cortex-m7
+MCU  = cortex-m4
 
 #TRGT = arm-elf-
 TRGT = arm-none-eabi-
@@ -194,9 +173,9 @@ CPPC = $(TRGT)g++
 #       runtime support makes code size explode.
 LD   = $(TRGT)gcc
 #LD   = $(TRGT)g++
+GDB  = $(TRGT)gdb
 CP   = $(TRGT)objcopy
 AS   = $(TRGT)gcc -x assembler-with-cpp
-AR   = $(TRGT)ar
 OD   = $(TRGT)objdump
 SZ   = $(TRGT)size
 HEX  = $(CP) -O ihex
@@ -209,13 +188,57 @@ AOPT =
 TOPT = -mthumb -DTHUMB
 
 # Define C warning options here
-CWARN = -Wall -Wextra -Wundef -Wstrict-prototypes
+CWARN = -Wall -Wextra -Wstrict-prototypes
 
 # Define C++ warning options here
-CPPWARN = -Wall -Wextra -Wundef
+CPPWARN = -Wall -Wextra
 
 #
 # Compiler settings
+##############################################################################
+
+##############################################################################
+# Start of default section
+#
+
+EMPTY :=
+
+# Get Date
+ifeq ($(OS),Windows_NT)
+  GIT_DATE = $(shell $(subst /,\\,./make/date.bat))
+else
+  GIT_DATE = 20$(shell date +'%y%m%d-%H:%M')
+endif
+
+
+# Get Git Tags
+GIT_TAGS := $(shell git describe --tags HEAD)
+GIT_SHORTSTAT := $(shell git diff --name-only)
+
+ifeq ($(GIT_SHORTSTAT),$(EMPTY))
+	GIT_DIRTY := $(EMPTY)
+else
+	GIT_DIRTY := ~dirty
+endif
+GIT_VERSION := $(GIT_TAGS)$(GIT_DIRTY)
+
+# List all default C defines here, like -D_DEBUG=1
+DDEFS = -DSTM32F405xx -DGIT_VERSION=$(GIT_VERSION) -DDATE=$(GIT_DATE)
+
+# List all default ASM defines here, like -D_DEBUG=1
+DADEFS =
+
+# List all default directories to look for include files here
+DINCDIR =
+
+# List the default directory to look for the libraries here
+DLIBDIR =
+
+# List all default libraries here
+DLIBS =
+
+#
+# End of default section
 ##############################################################################
 
 ##############################################################################
@@ -223,7 +246,7 @@ CPPWARN = -Wall -Wextra -Wundef
 #
 
 # List all user C define here, like -D_DEBUG=1
-UDEFS = -DBOARDVERSION=$(BOARDVERSION)
+UDEFS =
 
 # Define ASM defines here
 UADEFS =
@@ -241,23 +264,18 @@ ULIBS =
 # End of user defines
 ##############################################################################
 
-#RULESPATH = $(CHIBIOS)/os/common/ports/ARMCMx/compilers/GCC
-RULESPATH = $(CHIBIOS)/os/common/startup/ARMCMx/compilers/GCC
+RULESPATH = $(CHIBIOS)/os/common/ports/ARMCMx/compilers/GCC
 include $(RULESPATH)/rules.mk
 
 ##############################################################################
 # Start of GDB section
 #
 
-OCD_TARGET = stm32f7x
+OCD_TARGET = stm32f4x
 OCD_INTERFFACE = stlink-v2.cfg
-GDB  = $(TRGT)gdb
 OPENOCD = openocd
 
-GDB_FLAGS = -tui -ex "target remote | $(OPENOCD) -c \"gdb_port pipe; log_output openocd.log\" -f interface/$(OCD_INTERFFACE) -f target/$(OCD_TARGET).cfg" -ex "monitor reset halt" -ex "set print pretty on" -ex "focus cmd" -ex "winheight SRC -8"
-#GDB_FLAGS = -tui -ex "target remote | $(OPENOCD) -c \"gdb_port pipe; log_output openocd.log\" -f interface/$(OCD_INTERFFACE) -f target/$(OCD_TARGET).cfg" -ex "load" -ex "monitor reset halt" -ex "set print pretty on" -ex "focus cmd" -ex "winheight SRC -8"
-
-FLASH_FLAGS = -f interface/$(OCD_INTERFFACE) -f target/$(OCD_TARGET) -c init -c targets -c "halt" -c "flash write_image erase unlock build/$(PROJECT).elf" -c "verify_image build/$(PROJECT).elf" -c "reset run" -c shutdown
+GDB_FLAGS = -tui -ex "target remote | $(OPENOCD) -c \"gdb_port pipe; log_output openocd.log\" -f interface/$(OCD_INTERFFACE) -f target/$(OCD_TARGET).cfg" -ex "load" -ex "monitor reset halt" -ex "set print pretty on" -ex "focus cmd" -ex "winheight SRC -8"
 
 gdb: build/$(PROJECT).elf
 	@echo "Starting GDB..."
@@ -266,3 +284,15 @@ gdb: build/$(PROJECT).elf
 #
 # End of GDB section
 ##############################################################################
+
+##############################################################################
+# Force version information to be rebuilt every time
+#
+
+build/obj/version_information.o: .FORCE
+
+.FORCE:
+
+#
+##############################################################################
+

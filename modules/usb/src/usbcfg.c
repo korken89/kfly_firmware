@@ -17,6 +17,7 @@
 
 /* Private external functions */
 
+
 /*
  * Serial over USB Driver structure.
  */

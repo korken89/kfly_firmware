@@ -7,6 +7,7 @@
 /* Module local definitions.                                                 */
 /*===========================================================================*/
 
+extern SerialUSBDriver SDU1;
 /*===========================================================================*/
 /* Module exported variables.                                                */
 /*===========================================================================*/
@@ -67,7 +68,7 @@ void USBDisconnect(void)
 
 /**
  * @brief       Check if there is an active USB connection.
- * 
+ *
  * @return      true if there is an active connection, else false.
  */
 bool isUSBActive(void)
@@ -90,7 +91,7 @@ void USBMutexInit(void)
 
 /**
  * @brief              Send data over the USB with timeout.
- * 
+ *
  * @param[in] data     Pointer to the data.
  * @param[in] size     Number of bytes to send.
  * @param[in] timeout  Timeout for the transmission.
@@ -107,12 +108,12 @@ size_t USBSendData(uint8_t *data, size_t size, systime_t timeout)
 
 /**
  * @brief              Receive data over the USB with timeout.
- * 
+ *
  * @param[in] timeout  Timeout for the reception.
  * @return             The byte read.
  *
  * @note               The USB must be active for the timeout to work. If there
- *                     is no connection it will return directly. 
+ *                     is no connection it will return directly.
  */
 size_t USBReadByte(systime_t timeout)
 {
