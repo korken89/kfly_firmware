@@ -22,13 +22,14 @@ static THD_FUNCTION(ThreadCalibrationPrint, arg)
     /* Event registration for new sensor data */
     event_listener_t el;
 
+    /* Data holder. */
+    imu_raw_data_t imu_data;
+
     /* Register to new data from accelerometer and gyroscope */
     chEvtRegisterMaskWithFlags(ptrGetNewDataEventSource(),
                                &el,
                                EVENT_MASK(0),
-                               ACCGYRO_DATA_AVAILABLE_EVENTMASK |
-                               MAG_DATA_AVAILABLE_EVENTMASK |
-                               BARO_DATA_AVAILABLE_EVENTMASK);
+                               ACCGYRO_DATA_AVAILABLE_EVENTMASK);
 
 
     while(1)
@@ -39,7 +40,7 @@ static THD_FUNCTION(ThreadCalibrationPrint, arg)
         eventflags_t flags = chEvtGetAndClearFlags(&el);
 
         /* Get sensor data */
-        //GetRawIMUData(&imu_data);
+        GetRawIMUData(&imu_data);
 
         if (flags & ACCGYRO_DATA_AVAILABLE_EVENTMASK)
         {

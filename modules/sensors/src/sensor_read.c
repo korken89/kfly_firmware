@@ -91,7 +91,7 @@ imu_calibration_t imu_cal;
 
 /* Time measurement for each sample */
 time_measurement_t tm_accgyro;
-volatile rtcnt_t acc_gyro_dt_us;
+volatile int64_t acc_gyro_dt_ns;
 
 /* Working area for the sensor read thread */
 THD_WORKING_AREA(waThreadSensorRead, 256);
@@ -172,8 +172,8 @@ static THD_FUNCTION(ThreadSensorRead, arg)
             MPU6050ConvertAndSave(sensorcfg.mpu6050cfg->data_holder, temp_data);
 
             /* Save the current sample time */
-            sensorcfg.mpu6050cfg->data_holder->sample_dt_us =
-                (uint32_t)acc_gyro_dt_us;
+            sensorcfg.mpu6050cfg->data_holder->sample_dt_ns =
+                (uint32_t)acc_gyro_dt_ns;
 
             /* Apply calibration and save calibrated data */
             ApplyCalibration(sensorcfg.mpu6050cal,
@@ -353,8 +353,8 @@ msg_t SensorReadInit(void)
         return MSG_RESET; /* Initialization failed */
 
     /* Initialize Magnetometer */
-    if (HMC5983Init(sensorcfg.hmc5983cfg) != MSG_OK)
-        return MSG_RESET; /* Initialization failed */
+    //if (HMC5983Init(sensorcfg.hmc5983cfg) != MSG_OK)
+    //    return MSG_RESET; /* Initialization failed */
 
     /* Initialize Barometer */
     /* TODO: Add barometer code */
@@ -408,6 +408,7 @@ msg_t SensorReadInit(void)
  * @param[in] extp      Pointer to EXT Driver.
  * @param[in] channel   EXT Channel whom fired the interrupt.
  */
+#define TICKS2NS(freq, n) (((n) * 1000000000ULL)/(freq))
 void MPU6050cb(EXTDriver *extp, expchannel_t channel)
 {
     (void)extp;
@@ -415,7 +416,7 @@ void MPU6050cb(EXTDriver *extp, expchannel_t channel)
 
     /* Stop and read the time, save and restart */
     chTMStopMeasurementX(&tm_accgyro);
-    acc_gyro_dt_us = RTC2US(STM32_SYSCLK, tm_accgyro.last);
+    acc_gyro_dt_ns = RTC2US(STM32_SYSCLK, tm_accgyro.last);
     chTMStartMeasurementX(&tm_accgyro);
 
     if (thread_sensor_read_p != NULL)
@@ -464,9 +465,9 @@ event_source_t *ptrGetNewDataEventSource(void)
  *
  * @note    The first sample from the sensor has an offset, discard that sample.
  */
-rtcnt_t rtGetLatestAccelerometerSamplingTimeUS(void)
+int64_t rtGetLatestAccelerometerSamplingTimeNS(void)
 {
-    return acc_gyro_dt_us;
+    return acc_gyro_dt_ns;
 }
 
 /**
@@ -626,14 +627,16 @@ void GetRawIMUData(imu_raw_data_t *data)
                         sensorcfg.mpu6050cfg->data_holder->raw_accel_data[i];
         data->gyroscope[i] =
                         sensorcfg.mpu6050cfg->data_holder->raw_gyro_data[i];
-        data->magnetometer[i] =
-                        sensorcfg.hmc5983cfg->data_holder->raw_mag_data[i];
+        data->magnetometer[i] = 0;
+
     }
 
     data->temperature = sensorcfg.mpu6050cfg->data_holder->raw_temperature;
 
     /* TODO: Get the true pressure */
     data->pressure = 0;
+
+    data->acc_gyro_dt_ns = (uint32_t)rtGetLatestAccelerometerSamplingTimeNS();
 
     /* Unlock data structures after reading */
     UnlockSensorStructures();
