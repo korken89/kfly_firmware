@@ -101,7 +101,7 @@ static int64_t GetIMUTime(void)
   uint32_t dwt = DWT->CYCCNT;
 
   if (dwt <= old_dwt) // Check for overflow
-    imu_time += 0xffffffff;
+    imu_time += 0x100000000;
 
   old_dwt = dwt;
 
@@ -360,8 +360,6 @@ msg_t SensorReadInit(void)
         return MSG_RESET; /* Error! */
 
     /* Initialize the time measurement */
-    //chTMObjectInit(&tm_accgyro);
-    //chTMStartMeasurementX(&tm_accgyro);
     (void)GetIMUTime();
 
     /* Initialize Accelerometer and Gyroscope */
@@ -616,6 +614,7 @@ void GetIMUData(imu_data_t *data)
     }
 
     data->temperature = sensorcfg.mpu6050cfg->data_holder->temperature;
+    data->acc_gyro_time_ns = rtGetLatestAccelerometerSamplingTimeNS();
 
     /* Unlock data structures after reading */
     UnlockSensorStructures();
@@ -631,7 +630,7 @@ void GetRawIMUData(imu_raw_data_t *data)
     int i;
 
     /* Lock data structures before reading */
-    //LockSensorStructures();
+    LockSensorStructures();
 
     /* Copy data to the requested IMU structure */
     for (i = 0; i < 3; i++)
@@ -652,7 +651,7 @@ void GetRawIMUData(imu_raw_data_t *data)
     data->acc_gyro_time_ns = rtGetLatestAccelerometerSamplingTimeNS();
 
     /* Unlock data structures after reading */
-    //UnlockSensorStructures();
+    UnlockSensorStructures();
 }
 
 /**
@@ -719,7 +718,7 @@ void SetIMUCalibration(imu_calibration_t *cal)
 void LockSensorStructures(void)
 {
     chMtxLock(&sensorcfg.mpu6050cfg->data_holder->read_lock);
-    chMtxLock(&sensorcfg.hmc5983cfg->data_holder->read_lock);
+    //chMtxLock(&sensorcfg.hmc5983cfg->data_holder->read_lock);
 }
 
 /**
@@ -727,7 +726,7 @@ void LockSensorStructures(void)
  */
 void UnlockSensorStructures(void)
 {
-    chMtxUnlock(&sensorcfg.hmc5983cfg->data_holder->read_lock);
+    //chMtxUnlock(&sensorcfg.hmc5983cfg->data_holder->read_lock);
     chMtxUnlock(&sensorcfg.mpu6050cfg->data_holder->read_lock);
 }
 
@@ -743,7 +742,7 @@ void UnlockSensorStructures(void)
 void LockSensorCalibration(void)
 {
     chMtxLock(&sensorcfg.mpu6050cal->lock);
-    chMtxLock(&sensorcfg.hmc5983cal->lock);
+    //chMtxLock(&sensorcfg.hmc5983cal->lock);
 }
 
 /**
@@ -751,7 +750,7 @@ void LockSensorCalibration(void)
  */
 void UnlockSensorCalibration(void)
 {
-    chMtxUnlock(&sensorcfg.hmc5983cal->lock);
+    //chMtxUnlock(&sensorcfg.hmc5983cal->lock);
     chMtxUnlock(&sensorcfg.mpu6050cal->lock);
 }
 
