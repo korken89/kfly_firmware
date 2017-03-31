@@ -71,6 +71,10 @@ typedef struct
      * @brief   Temperature of the accelerometer and gyroscope.
      */
     float temperature;
+    /**
+     * @brief   Sample time of the latest acc & gyro sample in nanoseconds.
+     */
+    int64_t acc_gyro_time_ns;
 } imu_data_t;
 
 /**
