@@ -99,9 +99,9 @@ typedef struct
      */
     uint32_t pressure;
     /**
-     * @brief   Sample time of the latest acc & gyro sample.
+     * @brief   Sample time of the latest acc & gyro sample in nanoseconds.
      */
-    uint32_t acc_gyro_dt_ns;
+    int64_t acc_gyro_time_ns;
 } imu_raw_data_t;
 
 /**

@@ -48,7 +48,7 @@ static const MPU6050_Configuration mpu6050cfg = {
     MPU6050_INTDRDY_ENABLE,         /* Interrupt enable config                */
     MPU6050_ADDRESS_AD0_HIGH,       /* MPU6050 address                        */
     MPU6050_CLK_X_REFERENCE,        /* Clock reference                        */
-    19,                             /* Sample rate divider: 8k/12 = 666 Hz    */
+    39,                             /* Sample rate divider: 8k/39 = 200 Hz    */
     &mpu6050data,                   /* Pointer to data holder                 */
     &I2CD2                          /* Pointer to I2C Driver                  */
 };
@@ -89,9 +89,24 @@ uint8_t temp_data[14]; /* NOTE: This variable may NOT be placed in CCM
 /* Temporary holder for IMU calibration while saving to flash */
 imu_calibration_t imu_cal;
 
-/* Time measurement for each sample */
-time_measurement_t tm_accgyro;
-volatile int64_t acc_gyro_dt_ns;
+/* Time measurement */
+volatile int64_t acc_gyro_time_ns;
+
+
+static int64_t GetIMUTime(void)
+{
+  static uint32_t old_dwt = 0;
+  static int64_t imu_time = 0;
+
+  uint32_t dwt = DWT->CYCCNT;
+
+  if (dwt <= old_dwt) // Check for overflow
+    imu_time += 0xffffffff;
+
+  old_dwt = dwt;
+
+  return imu_time + dwt;
+}
 
 /* Working area for the sensor read thread */
 THD_WORKING_AREA(waThreadSensorRead, 256);
@@ -172,8 +187,8 @@ static THD_FUNCTION(ThreadSensorRead, arg)
             MPU6050ConvertAndSave(sensorcfg.mpu6050cfg->data_holder, temp_data);
 
             /* Save the current sample time */
-            sensorcfg.mpu6050cfg->data_holder->sample_dt_ns =
-                (uint32_t)acc_gyro_dt_ns;
+            sensorcfg.mpu6050cfg->data_holder->sample_time_ns =
+                acc_gyro_time_ns;
 
             /* Apply calibration and save calibrated data */
             ApplyCalibration(sensorcfg.mpu6050cal,
@@ -345,8 +360,9 @@ msg_t SensorReadInit(void)
         return MSG_RESET; /* Error! */
 
     /* Initialize the time measurement */
-    chTMObjectInit(&tm_accgyro);
-    chTMStartMeasurementX(&tm_accgyro);
+    //chTMObjectInit(&tm_accgyro);
+    //chTMStartMeasurementX(&tm_accgyro);
+    (void)GetIMUTime();
 
     /* Initialize Accelerometer and Gyroscope */
     if (MPU6050Init(sensorcfg.mpu6050cfg) != MSG_OK)
@@ -408,16 +424,13 @@ msg_t SensorReadInit(void)
  * @param[in] extp      Pointer to EXT Driver.
  * @param[in] channel   EXT Channel whom fired the interrupt.
  */
-#define TICKS2NS(freq, n) (((n) * 1000000000ULL)/(freq))
 void MPU6050cb(EXTDriver *extp, expchannel_t channel)
 {
     (void)extp;
     (void)channel;
 
-    /* Stop and read the time, save and restart */
-    chTMStopMeasurementX(&tm_accgyro);
-    acc_gyro_dt_ns = RTC2US(STM32_SYSCLK, tm_accgyro.last);
-    chTMStartMeasurementX(&tm_accgyro);
+    int64_t cyci64 = GetIMUTime() * 1000;
+    acc_gyro_time_ns = cyci64 / 168;
 
     if (thread_sensor_read_p != NULL)
     {
@@ -467,7 +480,7 @@ event_source_t *ptrGetNewDataEventSource(void)
  */
 int64_t rtGetLatestAccelerometerSamplingTimeNS(void)
 {
-    return acc_gyro_dt_ns;
+    return acc_gyro_time_ns;
 }
 
 /**
@@ -618,7 +631,7 @@ void GetRawIMUData(imu_raw_data_t *data)
     int i;
 
     /* Lock data structures before reading */
-    LockSensorStructures();
+    //LockSensorStructures();
 
     /* Copy data to the requested IMU structure */
     for (i = 0; i < 3; i++)
@@ -636,10 +649,10 @@ void GetRawIMUData(imu_raw_data_t *data)
     /* TODO: Get the true pressure */
     data->pressure = 0;
 
-    data->acc_gyro_dt_ns = (uint32_t)rtGetLatestAccelerometerSamplingTimeNS();
+    data->acc_gyro_time_ns = rtGetLatestAccelerometerSamplingTimeNS();
 
     /* Unlock data structures after reading */
-    UnlockSensorStructures();
+    //UnlockSensorStructures();
 }
 
 /**

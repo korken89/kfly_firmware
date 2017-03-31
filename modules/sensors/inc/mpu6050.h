@@ -240,7 +240,7 @@ typedef struct
     float accel_data[3];        /* Accelerometer calibrated data holder */
     float gyro_data[3];         /* Gyroscope calibrated data holder     */
     float temperature;          /* Temperature deg C data holder        */
-    uint32_t sample_dt_ns;      /* Time between samples in nanoseconds  */
+    int64_t sample_time_ns;     /* Time of the sample in nanoseconds    */
     mutex_t read_lock;          /* Keep listeners from reading if
                                    new data is being written            */
 } MPU6050_Data;

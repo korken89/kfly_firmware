@@ -45,7 +45,7 @@ static THD_FUNCTION(ThreadCalibrationPrint, arg)
         if (flags & ACCGYRO_DATA_AVAILABLE_EVENTMASK)
         {
             /* Send the acc and gyro data. */
-            GenerateMessage(Cmd_GetRawIMUData, PORT_USB);
+            //GenerateMessage(Cmd_GetRawIMUData, PORT_USB);
             GenerateMessage(Cmd_GetRawIMUData, PORT_AUX1);
         }
     }
