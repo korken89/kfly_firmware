@@ -71,6 +71,10 @@ typedef struct
      * @brief   Temperature of the accelerometer and gyroscope.
      */
     float temperature;
+    /**
+     * @brief   Sample time of the latest acc & gyro sample in nanoseconds.
+     */
+    int64_t acc_gyro_time_ns;
 } imu_data_t;
 
 /**
@@ -98,6 +102,10 @@ typedef struct
      * @brief   Raw pressure of the barometer.
      */
     uint32_t pressure;
+    /**
+     * @brief   Sample time of the latest acc & gyro sample in nanoseconds.
+     */
+    int64_t acc_gyro_time_ns;
 } imu_raw_data_t;
 
 /**
@@ -142,7 +150,7 @@ msg_t SensorReadInit(void);
 void MPU6050cb(EXTDriver *extp, expchannel_t channel);
 void HMC5983cb(EXTDriver *extp, expchannel_t channel);
 event_source_t *ptrGetNewDataEventSource(void);
-rtcnt_t rtGetLatestAccelerometerSamplingTimeUS(void);
+int64_t rtGetLatestAccelerometerSamplingTimeNS(void);
 int16_t *ptrGetRawAccelerometerData(void);
 float *ptrGetAccelerometerData(void);
 int16_t *ptrGetRawGyroscopeData(void);
