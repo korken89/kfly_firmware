@@ -11,7 +11,7 @@
 #include "hal.h"
 #include "usb_access.h"
 #include "flash_save.h"
-#include "version_information.h"
+#include "system_information.h"
 #include "kflypacket_generators.h"
 #include "slip2kflypacket.h"
 #include "subscriptions.h"
@@ -327,21 +327,22 @@ static void ParseGetDeviceInfo(kfly_parser_t *pHolder)
  */
 static void ParseSetDeviceID(kfly_parser_t *pHolder)
 {
-    uint8_t *save_location;
+    UNUSED(pHolder);
+
+    typedef struct
+    {
+        const char vehicle_name[VEHICLE_NAME_SIZE];
+        const char vehicle_type[VEHICLE_TYPE_SIZE];
+    } type_name_conv_t;
 
     /* Check so the wasn't to big a string received */
-    if (pHolder->data_length > USER_ID_MAX_SIZE)
+    if (pHolder->data_length != VEHICLE_NAME_SIZE + VEHICLE_TYPE_SIZE)
         return;
 
-    save_location = ptrGetUserIDString();
+    type_name_conv_t *conv;
+    conv = (type_name_conv_t *)pHolder->buffer;
 
-    /* Save the string */
-    GenericSaveData(save_location,
-                    pHolder->buffer,
-                    pHolder->data_length);
-
-    /* Add a trailing zero to end the string */
-    save_location[pHolder->data_length] = 0x00;
+    SetSystemNameType(conv->vehicle_name, conv->vehicle_type);
 }
 
 /**

@@ -23,6 +23,7 @@
 #include "estimation.h"
 #include "control.h"
 #include "motion_capture.h"
+#include "system_information.h"
 
 /*===========================================================================*/
 /* Module local definitions.                                                 */
@@ -206,6 +207,12 @@ static void vSystemInitList(void)
     if (SensorReadInit() != MSG_OK)
         osalSysHalt("Sensor initialization failed.");
 
+    /*
+     *
+     * Start the System Information.
+     *
+     */
+    SystemInformationInit();
 
     /*
      *

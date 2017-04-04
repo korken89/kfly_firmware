@@ -7,7 +7,7 @@
 #include "ch.h"
 #include "hal.h"
 #include "usb_access.h"
-#include "version_information.h"
+#include "system_information.h"
 #include "serialmanager.h"
 #include "slip.h"
 #include "crc.h"
@@ -49,7 +49,7 @@ static bool GenerateGetEstimationAttitude(circular_buffer_t *Cbuff);
 static bool GenerateGetEstimationVelocity(circular_buffer_t *Cbuff);
 static bool GenerateGetEstimationPosition(circular_buffer_t *Cbuff);
 static bool GenerateGetEstimationAllStates(circular_buffer_t *Cbuff);
-static uint32_t myStrlen(const uint8_t *str, const uint32_t max_length);
+// static uint32_t myStrlen(const uint8_t *str, const uint32_t max_length);
 
 /*===========================================================================*/
 /* Module exported variables.                                                */
@@ -351,42 +351,13 @@ static bool GenerateGetRunningMode(circular_buffer_t *Cbuff)
  */
 static bool GenerateGetDeviceInfo(circular_buffer_t *Cbuff)
 {
-    const uint32_t size = 6;
-    uint8_t header[2];
-    uint8_t *ptr_list[size];
-    uint32_t len_list[size];
-    uint32_t data_count, i;
-    uint16_t crc16;
+    static system_information_t info;
+    GetSystemInformation(&info);
 
-    /* The strings are at known locations. */
-    ptr_list[0] = header;
-    ptr_list[1] = (uint8_t *)ptrGetUniqueID();
-    ptr_list[2] = (uint8_t *)ptrGetBootloaderVersion();
-    ptr_list[3] = (uint8_t *)ptrGetFirmwareVersion();
-    ptr_list[4] = ptrGetUserIDString();
-    ptr_list[5] = (uint8_t *)&crc16;
-
-    /* Find the length of the strings, + 1 for the null byte. */
-    len_list[0] = 2;
-    len_list[1] = UNIQUE_ID_SIZE;
-    len_list[2] = myStrlen(ptr_list[2], VERSION_MAX_SIZE) + 1;
-    len_list[3] = myStrlen(ptr_list[3], VERSION_MAX_SIZE) + 1;
-    len_list[4] = myStrlen(ptr_list[4], USER_ID_MAX_SIZE) + 1;
-    len_list[5] = 2;
-
-    /* Calculate data size. */
-    data_count = UNIQUE_ID_SIZE + len_list[2] + len_list[3] + len_list[4] ;
-
-    /* Fill header and build the CRC. */
-    header[0] = Cmd_GetDeviceInfo;
-    header[1] = (uint8_t) data_count;
-
-    crc16 = CRC16_START_VALUE;
-
-    for (i = 0; i < size - 1; i++)
-        crc16 = CRC16_chunk(ptr_list[i], len_list[i], crc16);
-
-    return GenerateSLIP_MultiChunk(ptr_list, len_list, size, Cbuff);
+    return GenerateGenericCommand(Cmd_GetDeviceInfo,
+                                  (uint8_t *)&info,
+                                  sizeof(system_information_t),
+                                  Cbuff);
 }
 
 /**
@@ -723,16 +694,16 @@ static bool GenerateGetEstimationAllStates(circular_buffer_t *Cbuff)
  * @param[in] max_length    Maximum length/timeout.
  * @return                  Returns the length of the string.
  */
-uint32_t myStrlen(const uint8_t *str, const uint32_t max_length)
-{
-    const uint8_t *s;
-    s = str;
-
-    while ((*s != '\0') && ((uint32_t)(s - str) < max_length))
-        s++;
-
-    return (s - str);
-}
+// uint32_t myStrlen(const uint8_t *str, const uint32_t max_length)
+// {
+//     const uint8_t *s;
+//     s = str;
+//
+//     while ((*s != '\0') && ((uint32_t)(s - str) < max_length))
+//         s++;
+//
+//     return (s - str);
+// }
 
 /*===========================================================================*/
 /* Module exported functions.                                                */

@@ -5,7 +5,7 @@
 
 # Compiler options here.
 ifeq ($(USE_OPT),)
-  USE_OPT = -O1 --debug -ggdb -fomit-frame-pointer -falign-functions=16  -fdiagnostics-color
+  USE_OPT = -O1 --debug -ggdb -fomit-frame-pointer -falign-functions=16
 endif
 
 # C specific options here (added to USE_OPT).
@@ -286,10 +286,10 @@ gdb: build/$(PROJECT).elf
 ##############################################################################
 
 ##############################################################################
-# Force version information to be rebuilt every time
+# Force system information to be rebuilt every time
 #
 
-build/obj/version_information.o: .FORCE
+build/obj/system_information.o: .FORCE
 
 .FORCE:
 

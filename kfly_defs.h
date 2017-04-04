@@ -57,7 +57,7 @@ typedef struct PACKED_VAR {
 /* Global macros.                                                            */
 /*===========================================================================*/
 
-/* Simplifcation for defining unused parameters. */
+/* Simplification for defining unused parameters. */
 #define UNUSED(expr)    do { (void)(expr); } while (0)
 
 /*===========================================================================*/
