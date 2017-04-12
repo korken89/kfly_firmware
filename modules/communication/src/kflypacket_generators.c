@@ -27,7 +27,7 @@
 static bool GenerateACK(circular_buffer_t *Cbuff);
 static bool GeneratePing(circular_buffer_t *Cbuff);
 static bool GenerateGetRunningMode(circular_buffer_t *Cbuff);
-static bool GenerateGetDeviceInfo(circular_buffer_t *Cbuff);
+static bool GenerateGetSystemInformaion(circular_buffer_t *Cbuff);
 static bool GenerateGetControllerReferences(circular_buffer_t *Cbuff);
 static bool GenerateGetControlSignals(circular_buffer_t *Cbuff);
 static bool GenerateGetControllerLimits(circular_buffer_t *Cbuff);
@@ -73,14 +73,14 @@ static const kfly_generator_t generator_lookup[128] = {
     NULL,                             /* 7:                                   */
     NULL,                             /* 8:                                   */
     NULL,                             /* 9:                                   */
-    NULL,                             /* 10:  Cmd_PrepareWriteFirmware        */
-    NULL,                             /* 11:  Cmd_WriteFirmwarePackage        */
-    NULL,                             /* 12:  Cmd_WriteLastFirmwarePackage    */
-    NULL,                             /* 13:  Cmd_ReadFirmwarePackage         */
-    NULL,                             /* 14:  Cmd_ReadLastFirmwarePackage     */
-    NULL,                             /* 15:  Cmd_NextPackage                 */
-    NULL,                             /* 16:  Cmd_ExitBootloader              */
-    GenerateGetDeviceInfo,            /* 17:  Cmd_GetDeviceInfo               */
+    NULL,                             /* 10:                                  */
+    NULL,                             /* 11:                                  */
+    NULL,                             /* 12:                                  */
+    NULL,                             /* 13:                                  */
+    NULL,                             /* 14:                                  */
+    NULL,                             /* 15:                                  */
+    NULL,                             /* 16:                                  */
+    GenerateGetSystemInformaion,      /* 17:  Cmd_GetSystemInformation        */
     NULL,                             /* 18:  Cmd_SetDeviceID                 */
     NULL,                             /* 19:  Cmd_SaveToFlash                 */
     NULL,                             /* 20:                                  */
@@ -349,12 +349,12 @@ static bool GenerateGetRunningMode(circular_buffer_t *Cbuff)
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-static bool GenerateGetDeviceInfo(circular_buffer_t *Cbuff)
+static bool GenerateGetSystemInformaion(circular_buffer_t *Cbuff)
 {
     static system_information_t info;
     GetSystemInformation(&info);
 
-    return GenerateGenericCommand(Cmd_GetDeviceInfo,
+    return GenerateGenericCommand(Cmd_GetSystemInformation,
                                   (uint8_t *)&info,
                                   sizeof(system_information_t),
                                   Cbuff);

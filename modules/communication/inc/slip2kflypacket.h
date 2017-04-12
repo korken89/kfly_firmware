@@ -78,13 +78,13 @@ typedef enum PACKED_VAR
     /*===============================================*/
 
     /**
-     * @brief   Get device IDs.
+     * @brief   Get system information.
      */
-    Cmd_GetDeviceInfo               = 17,
+    Cmd_GetSystemInformation        = 17,
     /**
-     * @brief   Set the user definable ID string.
+     * @brief   Set the user definable Type/ID strings.
      */
-    Cmd_SetDeviceID                 = 18,
+    Cmd_SetDeviceStrings            = 18,
     /**
      * @brief   Save all settings to flash.
      */

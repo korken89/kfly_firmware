@@ -33,8 +33,8 @@
 static void ParsePing(kfly_parser_t *pHolder);
 static void ParseGetRunningMode(kfly_parser_t *pHolder);
 static void ParseManageSubscriptions(kfly_parser_t *pHolder);
-static void ParseGetDeviceInfo(kfly_parser_t *pHolder);
-static void ParseSetDeviceID(kfly_parser_t *pHolder);
+static void ParseGetSystemInformation(kfly_parser_t *pHolder);
+static void ParseSetDeviceStrings(kfly_parser_t *pHolder);
 static void ParseSaveToFlash(kfly_parser_t *pHolder);
 static void ParseEraseFlash(kfly_parser_t *pHolder);
 static void ParseSetControllerLimits(kfly_parser_t *pHolder);
@@ -92,15 +92,15 @@ static const kfly_data_parser_t parser_lookup[128] = {
     NULL,                             /* 7:                                   */
     NULL,                             /* 8:                                   */
     NULL,                             /* 9:                                   */
-    NULL,                             /* 10:  Cmd_PrepareWriteFirmware        */
-    NULL,                             /* 11:  Cmd_WriteFirmwarePackage        */
-    NULL,                             /* 12:  Cmd_WriteLastFirmwarePackage    */
-    NULL,                             /* 13:  Cmd_ReadFirmwarePackage         */
-    NULL,                             /* 14:  Cmd_ReadLastFirmwarePackage     */
-    NULL,                             /* 15:  Cmd_NextPackage                 */
-    NULL,                             /* 16:  Cmd_ExitBootloader              */
-    ParseGetDeviceInfo,               /* 17:  Cmd_GetBootloaderVersion        */
-    ParseSetDeviceID,                 /* 18:  Cmd_SetDeviceID                 */
+    NULL,                             /* 10:                                  */
+    NULL,                             /* 11:                                  */
+    NULL,                             /* 12:                                  */
+    NULL,                             /* 13:                                  */
+    NULL,                             /* 14:                                  */
+    NULL,                             /* 15:                                  */
+    NULL,                             /* 16:                                  */
+    ParseGetSystemInformation,        /* 17:  Cmd_GetSystemInformation        */
+    ParseSetDeviceStrings,            /* 18:  Cmd_SetDeviceStrings            */
     ParseSaveToFlash,                 /* 19:  Cmd_SaveToFlash                 */
     ParseEraseFlash,                  /* 20:  Cmd_EraseFlash                  */
     NULL,                             /* 21:                                  */
@@ -309,23 +309,23 @@ static void ParseManageSubscriptions(kfly_parser_t *pHolder)
 }
 
 /**
- * @brief               Parses a GetDeviceInfo command.
+ * @brief               Parses a GetSystemInformation command.
  *
  * @param[in] pHolder   Message holder containing information
  *                      about the transmission.
  */
-static void ParseGetDeviceInfo(kfly_parser_t *pHolder)
+static void ParseGetSystemInformation(kfly_parser_t *pHolder)
 {
-    GenerateMessage(Cmd_GetDeviceInfo, pHolder->port);
+    GenerateMessage(Cmd_GetSystemInformation, pHolder->port);
 }
 
 /**
- * @brief               Parses a SetDeviceID command.
+ * @brief               Parses a SetDeviceStrings command.
  *
  * @param[in] pHolder   Message holder containing information
  *                      about the transmission.
  */
-static void ParseSetDeviceID(kfly_parser_t *pHolder)
+static void ParseSetDeviceStrings(kfly_parser_t *pHolder)
 {
     UNUSED(pHolder);
 
