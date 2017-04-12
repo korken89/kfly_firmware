@@ -74,46 +74,6 @@ typedef enum PACKED_VAR
     Cmd_ManageSubscriptions         = 5,
 
     /*===============================================*/
-    /* Bootloader specific commands.                 */
-    /*===============================================*/
-
-    /**
-     * @brief   Prepare to write firmware command.
-     * @note    Bootloader specific, shall always require ACK.
-     */
-    Cmd_PrepareWriteFirmware        = 10,
-    /**
-     * @brief   Write firmware package command.
-     * @note    Bootloader specific, shall always require ACK.
-     */
-    Cmd_WriteFirmwarePackage        = 11,
-    /**
-     * @brief   Write the last firmware package.
-     * @note    Bootloader specific, shall always require ACK.
-     */
-    Cmd_WriteLastFirmwarePackage    = 12,
-    /**
-     * @brief   Read firmware package.
-     * @note    Bootloader specific, shall always require ACK.
-     */
-    Cmd_ReadFirmwarePackage         = 13,
-    /**
-     * @brief   Read the last firmware package.
-     * @note    Bootloader specific, shall always require ACK.
-     */
-    Cmd_ReadLastFirmwarePackage     = 14,
-    /**
-     * @brief   Next package command (sent to PC to resume transmission).
-     * @note    Bootloader specific, shall always require ACK.
-     */
-    Cmd_NextPackage                 = 15,
-    /**
-     * @brief   Exit bootloader command.
-     * @note    Bootloader specific, shall always require ACK.
-     */
-    Cmd_ExitBootloader              = 16,
-
-    /*===============================================*/
     /* Info, ID and Save commands.                   */
     /*===============================================*/
 
