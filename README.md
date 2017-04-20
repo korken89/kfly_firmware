@@ -9,17 +9,17 @@ All PCBs follow the standard 36 x 36 mm outline with 30.5 x 30.5 mm mounting hol
 * Invensense's **MPU-6050** accelerometer / gyroscope
 * Honeywell's **HMC5983** magnetometer
 * Meas. Spec.'s **MS5611** pressure sensor
-* 8 outputs (50 Hz / 400 Hz / Oneshot125)
+* 8 outputs (50 Hz / 400 Hz / Oneshot125 / Oneshot42 / Multishot / Dshot)
 * 4 expansion connectors (3 UARTs & 1 CAN port)
 * 6 slot RC input connector with support for (C)PPM up to 8 channels in and signal strength
 * 433 MHz RF link for data, command and control transfers
 
 #### KFly PCB version 4:
-* ST's **STM32F746** CPU: 32-bit ARM Cortex-M7F @ 216 MHz with 32-bit FPU, DSP and advanced branch prediction
-* ST's **LSM6DSM** accelerometer / gyroscope (changed due to its low gain error)
+* ST's **STM32F765** CPU: 32-bit ARM Cortex-M7F @ 216 MHz with 64-bit FPU, DSP and advanced branch prediction
+* ST's **LSM6DSM** accelerometer / gyroscope
 * ST's **LPS22HB** pressure sensor
 * Separate analog and digital power supply with 6 V max input voltage
-* 8 outputs (50 Hz / 400 Hz / Oneshot125 / Oneshot42 / Multishot)
+* 8 outputs (50 Hz / 400 Hz / Oneshot125 / Oneshot42 / Multishot / Dshot)
 * 4 expansion connectors (4 UARTs & 1 CAN port)
 * 6 slot RC input connector with support for (C)PPM and SBUS with up to 18 channels and signal strength indication
 * MicroSD card holder for "Blackbox" flight logging
