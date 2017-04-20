@@ -56,7 +56,8 @@ __attribute__((used, section(".sw_version"))) const char kfly_build_version[] =
 /*===========================================================================*/
 
 /** @brief   System information structure. */
-static system_information_t system_information;
+static system_strings_t system_strings;
+static system_status_t system_status;
 
 /** @brief  Work area for the flash save. */
 static THD_WORKING_AREA(waThreadSysInfoFlashSave, 256);
@@ -92,12 +93,10 @@ static THD_FUNCTION(ThreadSysInfoFlashSave, arg)
 
     /* Save settings to flash */
     FlashSave_Write(FlashSave_STR2ID("SIVN"), true,
-                    (uint8_t *)system_information.vehicle_name,
-                    VEHICLE_NAME_SIZE);
+                    (uint8_t *)system_strings.vehicle_name, VEHICLE_NAME_SIZE);
 
     FlashSave_Write(FlashSave_STR2ID("SIVT"), true,
-                    (uint8_t *)system_information.vehicle_type,
-                    VEHICLE_TYPE_SIZE);
+                    (uint8_t *)system_strings.vehicle_type, VEHICLE_TYPE_SIZE);
   }
 }
 
@@ -110,27 +109,27 @@ static void SystemInformationReset(void)
   /* Identification         */
   /*========================*/
 
-  strncpy(system_information.vehicle_name, "no name", VEHICLE_NAME_SIZE);
-  strncpy(system_information.vehicle_type, "no type", VEHICLE_TYPE_SIZE);
-  memcpy(system_information.unique_id, UNIQUE_ID, UNIQUE_ID_SIZE);
-  strncpy(system_information.kfly_version, KFLY_VERSION, KFLY_VERSION_SIZE);
+  strncpy(system_strings.vehicle_name, "no name", VEHICLE_NAME_SIZE);
+  strncpy(system_strings.vehicle_type, "no type", VEHICLE_TYPE_SIZE);
+  memcpy(system_strings.unique_id, UNIQUE_ID, UNIQUE_ID_SIZE);
+  strncpy(system_strings.kfly_version, KFLY_VERSION, KFLY_VERSION_SIZE);
 
   /*========================*/
   /* General info           */
   /*========================*/
 
-  system_information.flight_time = -1;
-  system_information.up_time     = -1;
-  system_information.cpu_usage   = -1;
+  system_status.flight_time = -1;
+  system_status.up_time     = -1;
+  system_status.cpu_usage   = -1;
 
   /*========================*/
   /* Hardware info          */
   /*========================*/
 
-  system_information.battery_voltage                = -1;
-  system_information.motors_armed.value             = false;
-  system_information.in_air.value                   = false;
-  system_information.serial_interface_enabled.value = false;
+  system_status.battery_voltage                = -1;
+  system_status.motors_armed.value             = false;
+  system_status.in_air.value                   = false;
+  system_status.serial_interface_enabled.value = false;
 }
 
 /*===========================================================================*/
@@ -147,10 +146,12 @@ void SystemInformationInit()
 
   /* Read settings from flash */
   FlashSave_Read(FlashSave_STR2ID("SIVN"),
-                 (uint8_t *)system_information.vehicle_name, VEHICLE_NAME_SIZE);
+                 (uint8_t *)system_strings.vehicle_name,
+                 VEHICLE_NAME_SIZE);
 
   FlashSave_Read(FlashSave_STR2ID("SIVT"),
-                 (uint8_t *)system_information.vehicle_type, VEHICLE_TYPE_SIZE);
+                 (uint8_t *)system_strings.vehicle_type,
+                 VEHICLE_TYPE_SIZE);
 
   /* Start the Flash Save thread */
   chThdCreateStatic(waThreadSysInfoFlashSave, sizeof(waThreadSysInfoFlashSave),
@@ -158,30 +159,39 @@ void SystemInformationInit()
 }
 
 /**
- * @brief             Copies the system information structure to a destination.
+ * @brief             Copies the system status structure to a destination.
  *
  * @param[out] dest   Destination address.
  */
-void GetSystemInformation(system_information_t *dest)
+void GetSystemStatus(system_status_t *dest)
 {
   osalSysLock();
 
   /* Fill in system parameters. */
 
-  system_information.flight_time = -1;  // For future use
-  system_information.up_time = ((float)ST2US(chVTGetSystemTime())) / 1000000.0f;
-  system_information.cpu_usage = -1;  // For future use
+  system_status.flight_time = -1;  // For future use
+  system_status.up_time     = (float)ST2MS(osalOsGetSystemTimeX()) / 1000.0f;
+  system_status.cpu_usage   = -1;  // For future use
 
-  system_information.battery_voltage    = -1;  // For future use
-  system_information.motors_armed.value = bIsSystemArmed();
-  system_information.in_air.value       = true;  // For future use
-  system_information.serial_interface_enabled.value =
-      ComputerControlLinkActive();
+  system_status.battery_voltage                = -1;  // For future use
+  system_status.motors_armed.value             = bIsSystemArmed();
+  system_status.in_air.value                   = bIsSystemArmed();
+  system_status.serial_interface_enabled.value = ComputerControlLinkActive();
 
   /* Copy the system information structure to its destination. */
-  memcpy(dest, &system_information, sizeof(system_information_t));
+  memcpy(dest, &system_status, sizeof(system_status_t));
 
   osalSysUnlock();
+}
+
+/**
+ * @brief     Returns the pointe to the system strings structure.
+ *
+ * @return    Pointer to system strings.
+ */
+const system_strings_t* ptrGetSystemStrings(void)
+{
+  return &system_strings;
 }
 
 /**
@@ -196,8 +206,8 @@ void SetSystemNameType(const char name[VEHICLE_NAME_SIZE],
 {
   osalSysLock();
 
-  strncpy(system_information.vehicle_name, name, VEHICLE_NAME_SIZE);
-  strncpy(system_information.vehicle_type, type, VEHICLE_TYPE_SIZE);
+  strncpy(system_strings.vehicle_name, name, VEHICLE_NAME_SIZE);
+  strncpy(system_strings.vehicle_type, type, VEHICLE_TYPE_SIZE);
 
   osalSysUnlock();
 }

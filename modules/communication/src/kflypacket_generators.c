@@ -27,7 +27,8 @@
 static bool GenerateACK(circular_buffer_t *Cbuff);
 static bool GeneratePing(circular_buffer_t *Cbuff);
 static bool GenerateGetRunningMode(circular_buffer_t *Cbuff);
-static bool GenerateGetSystemInformaion(circular_buffer_t *Cbuff);
+static bool GenerateGetSystemStrings(circular_buffer_t *Cbuff);
+static bool GenerateGetSystemStatus(circular_buffer_t *Cbuff);
 static bool GenerateGetControllerReferences(circular_buffer_t *Cbuff);
 static bool GenerateGetControlSignals(circular_buffer_t *Cbuff);
 static bool GenerateGetControllerLimits(circular_buffer_t *Cbuff);
@@ -79,8 +80,8 @@ static const kfly_generator_t generator_lookup[128] = {
     NULL,                             /* 13:                                  */
     NULL,                             /* 14:                                  */
     NULL,                             /* 15:                                  */
-    NULL,                             /* 16:                                  */
-    GenerateGetSystemInformaion,      /* 17:  Cmd_GetSystemInformation        */
+    GenerateGetSystemStrings,         /* 16:  Cmd_GetSystemStrings            */
+    GenerateGetSystemStatus,          /* 17:  Cmd_GetSystemStatus             */
     NULL,                             /* 18:  Cmd_SetDeviceID                 */
     NULL,                             /* 19:  Cmd_SaveToFlash                 */
     NULL,                             /* 20:                                  */
@@ -349,14 +350,31 @@ static bool GenerateGetRunningMode(circular_buffer_t *Cbuff)
  * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                      if it did fit.
  */
-static bool GenerateGetSystemInformaion(circular_buffer_t *Cbuff)
+static bool GenerateGetSystemStrings(circular_buffer_t *Cbuff)
 {
-    static system_information_t info;
-    GetSystemInformation(&info);
+    const system_strings_t *temp = ptrGetSystemStrings();
 
-    return GenerateGenericCommand(Cmd_GetSystemInformation,
-                                  (uint8_t *)&info,
-                                  sizeof(system_information_t),
+    return GenerateGenericCommand(Cmd_GetSystemStrings,
+                                  (uint8_t *)temp,
+                                  sizeof(system_strings_t),
+                                  Cbuff);
+}
+
+/**
+ * @brief               Generates the message for the the ID of the system.
+ *
+ * @param[out] Cbuff    Pointer to the circular buffer to put the data in.
+ * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
+ *                      if it did fit.
+ */
+static bool GenerateGetSystemStatus(circular_buffer_t *Cbuff)
+{
+    static system_status_t temp;
+    GetSystemStatus(&temp);
+
+    return GenerateGenericCommand(Cmd_GetSystemStatus,
+                                  (uint8_t *)&temp,
+                                  sizeof(system_status_t),
                                   Cbuff);
 }
 

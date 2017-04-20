@@ -33,7 +33,8 @@
 static void ParsePing(kfly_parser_t *pHolder);
 static void ParseGetRunningMode(kfly_parser_t *pHolder);
 static void ParseManageSubscriptions(kfly_parser_t *pHolder);
-static void ParseGetSystemInformation(kfly_parser_t *pHolder);
+static void ParseGetSystemStrings(kfly_parser_t *pHolder);
+static void ParseGetSystemStatus(kfly_parser_t *pHolder);
 static void ParseSetDeviceStrings(kfly_parser_t *pHolder);
 static void ParseSaveToFlash(kfly_parser_t *pHolder);
 static void ParseEraseFlash(kfly_parser_t *pHolder);
@@ -98,8 +99,8 @@ static const kfly_data_parser_t parser_lookup[128] = {
     NULL,                             /* 13:                                  */
     NULL,                             /* 14:                                  */
     NULL,                             /* 15:                                  */
-    NULL,                             /* 16:                                  */
-    ParseGetSystemInformation,        /* 17:  Cmd_GetSystemInformation        */
+    ParseGetSystemStrings,            /* 16:  Cmd_GetSystemStrings            */
+    ParseGetSystemStatus,             /* 17:  Cmd_GetSystemStatus             */
     ParseSetDeviceStrings,            /* 18:  Cmd_SetDeviceStrings            */
     ParseSaveToFlash,                 /* 19:  Cmd_SaveToFlash                 */
     ParseEraseFlash,                  /* 20:  Cmd_EraseFlash                  */
@@ -309,14 +310,25 @@ static void ParseManageSubscriptions(kfly_parser_t *pHolder)
 }
 
 /**
- * @brief               Parses a GetSystemInformation command.
+ * @brief               Parses a GetSystemStrings command.
  *
  * @param[in] pHolder   Message holder containing information
  *                      about the transmission.
  */
-static void ParseGetSystemInformation(kfly_parser_t *pHolder)
+static void ParseGetSystemStrings(kfly_parser_t *pHolder)
 {
-    GenerateMessage(Cmd_GetSystemInformation, pHolder->port);
+    GenerateMessage(Cmd_GetSystemStrings, pHolder->port);
+}
+
+/**
+ * @brief               Parses a GetSystemStrings command.
+ *
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
+ */
+static void ParseGetSystemStatus(kfly_parser_t *pHolder)
+{
+    GenerateMessage(Cmd_GetSystemStatus, pHolder->port);
 }
 
 /**

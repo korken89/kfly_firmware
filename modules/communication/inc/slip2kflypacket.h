@@ -80,7 +80,11 @@ typedef enum PACKED_VAR
     /**
      * @brief   Get system information.
      */
-    Cmd_GetSystemInformation        = 17,
+    Cmd_GetSystemStrings            = 16,
+    /**
+     * @brief   Get system information.
+     */
+    Cmd_GetSystemStatus             = 17,
     /**
      * @brief   Set the user definable Type/ID strings.
      */

@@ -51,7 +51,10 @@ typedef struct PACKED_VAR
    * @brief   KFly and Git compile string.
    */
   char kfly_version[KFLY_VERSION_SIZE];
+} system_strings_t;
 
+typedef struct PACKED_VAR
+{
   /*========================*/
   /* General info           */
   /*========================*/
@@ -94,7 +97,7 @@ typedef struct PACKED_VAR
    * @brief   Flag for if the serial computer control is enabled.
    */
   bool8_t serial_interface_enabled;
-} system_information_t;
+} system_status_t;
 
 /*===========================================================================*/
 /* Module macros.                                                            */
@@ -109,7 +112,8 @@ typedef struct PACKED_VAR
 /*===========================================================================*/
 
 void SystemInformationInit(void);
-void GetSystemInformation(system_information_t *dest);
+const system_strings_t* ptrGetSystemStrings(void);
+void GetSystemStatus(system_status_t *dest);
 void SetSystemNameType(const char name[VEHICLE_NAME_SIZE],
                        const char type[VEHICLE_TYPE_SIZE]);
 
