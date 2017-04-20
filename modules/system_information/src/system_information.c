@@ -146,12 +146,10 @@ void SystemInformationInit()
 
   /* Read settings from flash */
   FlashSave_Read(FlashSave_STR2ID("SIVN"),
-                 (uint8_t *)system_strings.vehicle_name,
-                 VEHICLE_NAME_SIZE);
+                 (uint8_t *)system_strings.vehicle_name, VEHICLE_NAME_SIZE);
 
   FlashSave_Read(FlashSave_STR2ID("SIVT"),
-                 (uint8_t *)system_strings.vehicle_type,
-                 VEHICLE_TYPE_SIZE);
+                 (uint8_t *)system_strings.vehicle_type, VEHICLE_TYPE_SIZE);
 
   /* Start the Flash Save thread */
   chThdCreateStatic(waThreadSysInfoFlashSave, sizeof(waThreadSysInfoFlashSave),
@@ -170,14 +168,14 @@ void GetSystemStatus(system_status_t *dest)
   /* Fill in system parameters. */
 
   system_status.flight_time = -1;  // For future use
-  system_status.up_time     = (float)ST2MS(osalOsGetSystemTimeX()) / 1000.0f;
-  system_status.cpu_usage   = -1;  // For future use
+  system_status.up_time =
+      ((float)osalOsGetSystemTimeX()) / ((float)CH_CFG_ST_FREQUENCY);
+  system_status.cpu_usage = -1;  // For future use
 
   system_status.battery_voltage                = -1;  // For future use
   system_status.motors_armed.value             = bIsSystemArmed();
   system_status.in_air.value                   = bIsSystemArmed();
   system_status.serial_interface_enabled.value = ComputerControlLinkActive();
-
   /* Copy the system information structure to its destination. */
   memcpy(dest, &system_status, sizeof(system_status_t));
 
@@ -189,7 +187,7 @@ void GetSystemStatus(system_status_t *dest)
  *
  * @return    Pointer to system strings.
  */
-const system_strings_t* ptrGetSystemStrings(void)
+const system_strings_t *ptrGetSystemStrings(void)
 {
   return &system_strings;
 }
