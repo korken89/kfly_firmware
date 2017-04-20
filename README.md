@@ -1,4 +1,4 @@
-#The code and specifications for the KFly PCB version 3 and above
+# The code and specifications for the KFly PCB version 3 and above
 
 ### Hardware Specifications
 
