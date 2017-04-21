@@ -308,6 +308,8 @@ void vParseManageSubscription(const uint8_t *data,
                 /* Unsubscribe from command */
                 if ((uint8_t)p->port == 0xff) /* Port is the one the command came on */
                     bUnsubscribeFromCommand(p->command, reception_port);
+                else if (p->delta_time == 0xffffffff) /* Flag to unsubscribe all */
+                    vUnsubscribeFromAll();
                 else /* Port is is specified in the message */
                     bUnsubscribeFromCommand(p->command, p->port);
             }

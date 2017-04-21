@@ -102,7 +102,7 @@ static inline bool bUnsubscribeFromCommand(kfly_command_t command,
 /**
  * @brief   Removes all ongoing subscriptions.
  */
-static inline void bUnsubscribeFromAll(void)
+static inline void vUnsubscribeFromAll(void)
 {
     osalSysLock();
     vUnsubscribeFromAllI();
