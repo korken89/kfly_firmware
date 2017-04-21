@@ -190,7 +190,7 @@ bool bSubscribeToCommandI(kfly_command_t command,
 {
     int i;
 
-    /* Look for a free subscription slot */
+    /* Look if the subscription already exists */
     for (i = 0; i < MAX_NUMBER_OF_SUBSCRIPTIONS; i++)
     {
         if ((subscriptions.slot[i].command == command) &&
@@ -207,7 +207,12 @@ bool bSubscribeToCommandI(kfly_command_t command,
 
             return true;
         }
-        else if (subscriptions.slot[i].command == Cmd_None)
+    }
+
+    /* Look for a free subscription slot */
+    for (i = 0; i < MAX_NUMBER_OF_SUBSCRIPTIONS; i++)
+    {
+        if (subscriptions.slot[i].command == Cmd_None)
         {
             /* Free subscription slot! Set the structure and initialize
                the virtual timer. */
