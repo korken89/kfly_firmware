@@ -298,7 +298,7 @@ void vParseManageSubscription(const uint8_t *data,
         /* Check for valid port */
         if ((isPort(p->port) == true) || ((uint8_t)p->port == 0xff))
         {
-            if (p->on_off == 0)
+            if (p->subscribe.value == false)
             {
                 /* Unsubscribe from command */
                 if ((uint8_t)p->port == 0xff) /* Port is the one the command came on */

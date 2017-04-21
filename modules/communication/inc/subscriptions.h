@@ -2,6 +2,7 @@
 #define __SUBSCRIPTIONS_H
 
 #include "slip2kflypacket.h"
+#include "kfly_defs.h"
 
 /*===========================================================================*/
 /* Module global definitions.                                                */
@@ -26,9 +27,9 @@ typedef struct PACKED_VAR
     kfly_command_t command;
     /**
      * @brief   If the command shall be subscribed or unsubscribed.
-     *          0 denotes unsubscribe, anything else is subscribe.
+     *          false denotes unsubscribe, anything else is subscribe.
      */
-    uint8_t on_off;
+    bool8_t subscribe;
     /**
      * @brief   The time between transmissions of the subscription in ms.
      */
