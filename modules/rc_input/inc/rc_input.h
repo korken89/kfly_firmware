@@ -243,15 +243,19 @@ typedef struct PACKED_VAR {
 /**
  * @brief   Input capture settings holder.
  */
-typedef struct {
+typedef struct PACKED_VAR {
     /**
-     * @brief   Input capture mode selector.
+     * @brief   Input capture top calibration value.
      */
-    uint16_t mode;
+    uint16_t ch_top[RCINPUT_MAX_NUMBER_OF_INPUTS];
     /**
-     * @brief   RSSI usage selector.
+     * @brief   Input capture center calibration value.
      */
-    bool16_t use_rssi;
+    uint16_t ch_center[RCINPUT_MAX_NUMBER_OF_INPUTS];
+    /**
+     * @brief   Input capture bottom calibration value.
+     */
+    uint16_t ch_bottom[RCINPUT_MAX_NUMBER_OF_INPUTS];
     /**
      * @brief   Input capture role selector.
      */
@@ -265,17 +269,13 @@ typedef struct {
      */
     bool8_t ch_reverse[RCINPUT_MAX_NUMBER_OF_INPUTS];
     /**
-     * @brief   Input capture top calibration value.
+     * @brief   Input capture mode selector.
      */
-    uint16_t ch_top[RCINPUT_MAX_NUMBER_OF_INPUTS];
+    rcinput_mode_selector_t mode;
     /**
-     * @brief   Input capture center calibration value.
+     * @brief   RSSI usage selector.
      */
-    uint16_t ch_center[RCINPUT_MAX_NUMBER_OF_INPUTS];
-    /**
-     * @brief   Input capture bottom calibration value.
-     */
-    uint16_t ch_bottom[RCINPUT_MAX_NUMBER_OF_INPUTS];
+    bool8_t use_rssi;
 } rcinput_settings_t;
 
 /*===========================================================================*/
