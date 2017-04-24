@@ -215,6 +215,10 @@ typedef struct PACKED_VAR {
  */
 typedef struct PACKED_VAR {
     /**
+     * @brief   Calibrated and mapped data holder.
+     */
+    rcinput_calibrated_data_t calibrated_values;
+    /**
      * @brief   Number of active channels.
      */
     uint16_t number_active_connections;
@@ -230,10 +234,6 @@ typedef struct PACKED_VAR {
      * @brief   Current RSSI frequency.
      */
     uint16_t rssi_frequency;
-    /**
-     * @brief   Calibrated and mapped data holder.
-     */
-    rcinput_calibrated_data_t calibrated_values;
     /**
      * @brief   Active connection indicator.
      */
