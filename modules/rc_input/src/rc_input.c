@@ -420,12 +420,11 @@ static float GetAnalogLevel(uint32_t idx)
             return 0.0f;
 
         /* Use the calibration to calculate the position */
+        level = level / (float)(rcinput_settings.ch_top[idx] -
+                                rcinput_settings.ch_center[idx]);
+
         if (rcinput_settings.ch_reverse[idx].value == true)
-            level = 1.0f - level / (float)(rcinput_settings.ch_top[idx] -
-                                           rcinput_settings.ch_center[idx]);
-        else
-            level = level / (float)(rcinput_settings.ch_top[idx] -
-                                    rcinput_settings.ch_center[idx]);
+          level = -level;
     }
     /* If it is smaller than zero */
     else if (level < 0.0f)
@@ -435,12 +434,11 @@ static float GetAnalogLevel(uint32_t idx)
             return 0.0f;
 
         /* Use the calibration to calculate the position */
+        level = level / (float)(rcinput_settings.ch_center[idx] -
+                                rcinput_settings.ch_bottom[idx]);
+
         if (rcinput_settings.ch_reverse[idx].value == true)
-            level = -1.0f - level / (float)(rcinput_settings.ch_center[idx] -
-                                            rcinput_settings.ch_bottom[idx]);
-        else
-            level = level / (float)(rcinput_settings.ch_center[idx] -
-                                    rcinput_settings.ch_bottom[idx]);
+          level = -level;
     }
 
     return bound(1.0f, -1.0f, level);
