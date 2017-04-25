@@ -436,9 +436,9 @@ static float GetAnalogLevel(uint32_t idx)
     if (rcinput_settings.ch_reverse[idx].value == true)
     {
         if (rcinput_settings.ch_center[idx] == rcinput_settings.ch_bottom[idx])
-            level = 1.0f - level; /* Invert a positive only channel */
+            return bound(1.0f, 0.0f, 1.0f - level); /* Invert a positive only channel */
         if (rcinput_settings.ch_center[idx] == rcinput_settings.ch_top[idx])
-            level = -1.0f - level; /* Invert a negative only channel */
+            return bound(0.0f, -1.0f, -1.0f - level); /* Invert a negative only channel */
         else
             level = -level; /* Invert a normal channel */
     }
