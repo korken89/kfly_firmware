@@ -311,6 +311,8 @@ void vUpdateControlAction(const quaternion_t *attitude_m,
 
     if (bIsSystemArmed() == false)
     {
+        /* TODO: Check if override is active */
+
         control_reference.mode = FLIGHTMODE_DISARMED;
     }
     else if ((ComputerControlLinkActive() == true) &&

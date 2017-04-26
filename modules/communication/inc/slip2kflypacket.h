@@ -243,15 +243,6 @@ typedef enum PACKED_VAR
     Cmd_ResetEstimation             = 55,
 
     /*===============================================*/
-    /* Command reserved for experimental use.        */
-    /*===============================================*/
-
-    /**
-     * @brief   Experiment command.
-     */
-    Cmd_Experiment                  = 125,
-
-    /*===============================================*/
     /* Computer control specific commands.           */
     /*===============================================*/
 
