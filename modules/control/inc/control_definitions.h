@@ -29,7 +29,7 @@
 /**
  * @brief   Position, velocity, attitude and rate controller gains and states.
  */
-typedef struct PACKED_VAR
+typedef struct
 {
     /**
      * @brief   Attitude controller gains and states.
@@ -44,7 +44,7 @@ typedef struct PACKED_VAR
 /**
  * @brief   Velocity, attitude and rate control limits.
  */
-typedef struct PACKED_VAR
+typedef struct
 {
     /**
      * @brief   Holder for the rate limits.
@@ -87,7 +87,7 @@ typedef struct PACKED_VAR
 /**
  * @brief   Output mixer weights.
  */
-typedef struct PACKED_VAR
+typedef struct
 {
     /**
      * @brief   Weights.
@@ -106,7 +106,7 @@ typedef struct PACKED_VAR
 /**
  * @brief   PI controller parameters structure.
  */
-typedef struct PACKED_VAR
+typedef struct
 {
     /**
      * @brief   Controller proportional gain.
@@ -121,7 +121,7 @@ typedef struct PACKED_VAR
 /**
  * @brief   Control parameters structure for moving data.
  */
-typedef struct PACKED_VAR
+typedef struct
 {
     /**
      * @brief   Attitude controller parameters.
