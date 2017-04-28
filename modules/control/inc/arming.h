@@ -1,6 +1,9 @@
 #ifndef __ARMING_H
 #define __ARMING_H
 
+#include <stdint.h>
+#include <stdbool.h>
+
 /*===========================================================================*/
 /* Module global definitions.                                                */
 /*===========================================================================*/
@@ -100,6 +103,26 @@ typedef struct PACKED_VAR
     uint8_t arm_zero_throttle_timeout;
 } control_arm_settings_t;
 
+/**
+ * @brief   Settings for the motor override, used for ESC calibration
+ *          and motor testing.
+ */
+typedef struct
+{
+    /**
+     * @brief   Timeout counter for the override command.
+     */
+    int timeout;
+    /**
+     * @brief   Flag if the motor override is active.
+     */
+    bool active;
+    /**
+     * @brief   Holds the motor override thrust values.
+     */
+    float values[8];
+} motor_override_t;
+
 /*===========================================================================*/
 /* Module macros.                                                            */
 /*===========================================================================*/
@@ -117,5 +140,8 @@ bool bIsSystemArmed(void);
 float fGetArmedMinThrottle(void);
 void vForceDisarm(const uint32_t key);
 control_arm_settings_t *ptrGetControlArmSettings(void);
+void vParseMotorOverride(const uint8_t* data, const uint8_t size);
+bool bMotorOverrideActive(void);
+void vGetMotorOverrideValues(float dest[8]);
 
 #endif

@@ -49,8 +49,6 @@ control_data_t control_data;
 control_limits_t control_limits;
 output_mixer_t output_mixer;
 control_parameters_t flash_save_control_parameters;
-control_signals_t control_signals_save;
-control_reference_save_t control_reference_save;
 
 THD_WORKING_AREA(waThreadControl, 256);
 THD_WORKING_AREA(waThreadControlFlashSave, 256);
@@ -311,9 +309,13 @@ void vUpdateControlAction(const quaternion_t *attitude_m,
 
     if (bIsSystemArmed() == false)
     {
-        /* TODO: Check if override is active */
-
-        control_reference.mode = FLIGHTMODE_DISARMED;
+        if (bMotorOverrideActive())
+        {
+          control_reference.mode = FLIGHTMODE_DIRECT;
+          vGetMotorOverrideValues(control_reference.output);
+        }
+        else
+          control_reference.mode = FLIGHTMODE_DISARMED;
     }
     else if ((ComputerControlLinkActive() == true) &&
         (RCInputGetSwitchState(RCINPUT_ROLE_ENABLE_SERIAL_CONTROL) ==
@@ -521,13 +523,20 @@ void SetControlParameters(control_parameters_t *param)
 }
 
 /**
- * @brief           Copies current control singals to data structure.
+ * @brief           Copies current control signals to data structure.
  * @param[out] sig  Save location.
  */
 void GetControlSignals(control_signals_t *sig)
 {
-    sig->throttle = control_signals_save.throttle;
-    sig->torque = control_signals_save.torque;
+  osalSysLock();
+
+  sig->torque = control_reference.actuator_desired.torque;
+  sig->throttle = control_reference.actuator_desired.throttle;
+
+  for (int i = 0; i < 8; i++)
+    sig->motor_command[i] = control_reference.output[i];
+
+  osalSysUnlock();
 }
 
 /**
@@ -536,8 +545,12 @@ void GetControlSignals(control_signals_t *sig)
  */
 void GetControlReference(control_reference_save_t *ref)
 {
-    ref->throttle = control_reference_save.throttle;
-    ref->attitude = control_reference_save.attitude;
-    ref->rate = control_reference_save.rate;
+  osalSysLock();
+
+  ref->attitude = control_reference.attitude_reference;
+  ref->rate = control_reference.rate_reference;
+  ref->throttle = control_reference.actuator_desired.throttle;
+
+  osalSysUnlock();
 }
 

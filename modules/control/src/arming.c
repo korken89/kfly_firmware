@@ -28,11 +28,32 @@ static arming_stick_region_t SticksInRegion(void);
 static volatile bool system_armed;
 static volatile bool force_disarm;
 control_arm_settings_t arm_settings;
+motor_override_t override_settings;
 THD_WORKING_AREA(waThreadControlArming, 256);
 
 /*===========================================================================*/
 /* Module local functions.                                                   */
 /*===========================================================================*/
+
+static void CheckMotorOverride(void)
+{
+  static bool has_been_armed = false;
+
+  /* Once the system has been armed, override is disabled until restart. */
+  has_been_armed |= bIsSystemArmed();
+
+  if (!has_been_armed)
+  {
+    override_settings.timeout++;
+
+    if (override_settings.timeout > ARM_RATE / 2) /* Half second timeout */
+      override_settings.active = false;
+    else
+      override_settings.active = true;
+  }
+  else
+    override_settings.active = false;
+}
 
 /**
  * @brief           Thread for the arm and disarm functionality.
@@ -44,6 +65,7 @@ static THD_FUNCTION(ThreadControlArming, arg)
 {
     (void)arg;
 
+    override_settings.timeout = 0;
     uint16_t arm_time = 0, disarm_time = 0, timeout_time = 0;
     bool latch_released = false;
     float level;
@@ -210,6 +232,9 @@ static THD_FUNCTION(ThreadControlArming, arg)
             system_armed = false;
         }
     }
+
+    /* Check for override */
+    CheckMotorOverride();
 }
 
 /**
@@ -373,5 +398,58 @@ void vForceDisarm(const uint32_t key)
 control_arm_settings_t *ptrGetControlArmSettings(void)
 {
     return &arm_settings;
+}
+
+/**
+ * @brief       Parses a motor override command.
+ *
+ * @param[in] data  Pointer to the data message.
+ * @param[in] size  Size of the data message.
+ */
+void vParseMotorOverride(const uint8_t* data, const uint8_t size)
+{
+  if (size == sizeof(float)*8)
+  {
+    bool sane_values = true;
+    const float *p = (const float *)data;
+
+    /* Sanity check */
+    for (int i = 0; i < 8; i++)
+      sane_values &= (p[i] >= 0.0f) & (p[i] <= 1.0f);
+
+    if (sane_values)
+    {
+      /* Reset timeout and save values */
+      override_settings.timeout = 0;
+
+      for (int i = 0; i < 8; i++)
+        override_settings.values[i] = p[i];
+    }
+  }
+}
+
+/**
+ * @brief     Checks if the motor override is active.
+ *
+ * @return    Returns true if the motor override is active.
+ */
+bool bMotorOverrideActive(void)
+{
+  return override_settings.active;
+}
+
+/**
+ * @brief     Saves the motor override values.
+ *
+ * @param[out] dest   Pointer to where the motor override shall be saved.
+ */
+void vGetMotorOverrideValues(float dest[8])
+{
+  osalSysLock();
+
+  for (int i = 0; i < 8; i++)
+    dest[i] = override_settings.values[i];
+
+  osalSysUnlock();
 }
 

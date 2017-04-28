@@ -27,6 +27,10 @@ typedef struct
      * @brief   Current torque request.
      */
     vector3f_t torque;
+    /**
+     * @brief   Current motor commands.
+     */
+    float motor_command[8];
 } control_signals_t;
 
 /**
