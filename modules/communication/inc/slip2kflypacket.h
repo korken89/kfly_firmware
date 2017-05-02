@@ -103,6 +103,10 @@ typedef enum PACKED_VAR
     /*===============================================*/
 
     /**
+     * @brief   Motor override command for ESC calibration.
+     */
+    Cmd_MotorOverride               = 23,
+    /**
      * @brief   Get controller references (quaternion and rate).
      */
     Cmd_GetControllerReferences     = 24,

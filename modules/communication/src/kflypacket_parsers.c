@@ -38,6 +38,9 @@ static void ParseGetSystemStatus(kfly_parser_t *pHolder);
 static void ParseSetDeviceStrings(kfly_parser_t *pHolder);
 static void ParseSaveToFlash(kfly_parser_t *pHolder);
 static void ParseEraseFlash(kfly_parser_t *pHolder);
+static void ParseMotorOverride(kfly_parser_t *pHolder);
+static void ParseGetControllerReferences(kfly_parser_t *pHolder);
+static void ParseGetControlSignals(kfly_parser_t *pHolder);
 static void ParseSetControllerLimits(kfly_parser_t *pHolder);
 static void ParseGetControllerLimits(kfly_parser_t *pHolder);
 static void ParseSetArmSettings(kfly_parser_t *pHolder);
@@ -78,6 +81,8 @@ static void ParseMotionCaptureMeasurement(kfly_parser_t *pHolder);
 /* Module local variables and types.                                         */
 /*===========================================================================*/
 
+
+
 /**
  * @brief Lookup table for all the serial parsers.
  */
@@ -105,9 +110,9 @@ static const kfly_data_parser_t parser_lookup[128] = {
     ParseEraseFlash,                  /* 20:  Cmd_EraseFlash                  */
     NULL,                             /* 21:                                  */
     NULL,                             /* 22:                                  */
-    NULL,                             /* 23:                                  */
-    NULL,                             /* 24:                                  */
-    NULL,                             /* 25:                                  */
+    ParseMotorOverride,               /* 23:  Cmd_MotorOverride               */
+    ParseGetControllerReferences,     /* 24:  Cmd_GetControllerReferences     */
+    ParseGetControlSignals,           /* 25:  Cmd_GetControlSignals           */
     ParseGetControllerLimits,         /* 26:  Cmd_GetControllerLimits         */
     ParseSetControllerLimits,         /* 27:  Cmd_SetControllerLimits         */
     ParseGetArmSettings,              /* 28:  Cmd_GetArmSettings              */
@@ -387,6 +392,39 @@ static void ParseEraseFlash(kfly_parser_t *pHolder)
      */
     vFlashSave_EraseAll();
 
+}
+
+/**
+ * @brief               Parses a MotorOverride command.
+ *
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
+ */
+static void ParseMotorOverride(kfly_parser_t *pHolder)
+{
+    vParseMotorOverride(pHolder->buffer, pHolder->data_length);
+}
+
+/**
+ * @brief               Parses a GetControllerReferences command.
+ *
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
+ */
+static void ParseGetControllerReferences(kfly_parser_t *pHolder)
+{
+    GenerateMessage(Cmd_GetControllerReferences, pHolder->port);
+}
+
+/**
+ * @brief               Parses a GetControlSignals command.
+ *
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
+ */
+static void ParseGetControlSignals(kfly_parser_t *pHolder)
+{
+    GenerateMessage(Cmd_GetControlSignals, pHolder->port);
 }
 
 /**
