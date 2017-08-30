@@ -42,18 +42,178 @@ static void CheckMotorOverride(void)
   /* Once the system has been armed, override is disabled until restart. */
   has_been_armed |= bIsSystemArmed();
 
-  if (!has_been_armed)
+  if (!has_been_armed && !force_disarm)
   {
-    override_settings.timeout++;
-
     if (override_settings.timeout > ARM_RATE / 2) /* Half second timeout */
+    {
       override_settings.active = false;
+    }
     else
-      override_settings.active = true;
+      override_settings.timeout++;
   }
   else
     override_settings.active = false;
 }
+
+static void CheckArmingConditions(void)
+{
+    static uint16_t arm_time = 0, disarm_time = 0, timeout_time = 0;
+    static bool latch_released = false;
+    static float level;
+    static arming_stick_region_t current_region;
+
+    /* Check emergency stop. */
+    if (force_disarm)
+    {
+        system_armed = false;
+        force_disarm = false;
+        latch_released = false;
+        arm_time = 0;
+        disarm_time = 0;
+        timeout_time = 0;
+
+        return;
+    }
+
+    /* Check so there is an active RC connection and the arming stick
+       position has been set */
+    if ((bActiveRCInputConnection() == true) &&
+        (arm_settings.stick_direction != ARMING_DIRECTION_STICK_NONE))
+    {
+        /* Check so the sticks are in the correct region ( */
+        current_region = SticksInRegion();
+
+
+        /* If the computer control is active, don't disarm based on time. */
+        if ((system_armed == true) && (ComputerControlEnabled() == true))
+        {
+            timeout_time = 0;
+        }
+
+        if (arm_settings.stick_direction == ARMING_DIRECTION_NON_LATCHING_SWITCH)
+        {
+            /*
+             * Switch based arming and disarm.
+             */
+            if (current_region == ARMING_REGION_NON_LATCHING_SWITCH_ACTIVE)
+            {
+                level = RCInputGetInputLevel(RCINPUT_ROLE_THROTTLE);
+
+                /* If it is in the correct state, increase the arm counter,
+                 * and if it has reached the correct time - arm. */
+                if ((system_armed == false) && (latch_released == true) &&
+                    (level <= arm_settings.stick_threshold))
+                {
+                    if ((arm_time / ARM_RATE * 10) >= arm_settings.arm_stick_time)
+                    {
+                        system_armed = true;
+                        latch_released = false;
+                    }
+                    else
+                    {
+                        arm_time++;
+                        timeout_time = 0;
+                    }
+                }
+                else if ((system_armed == true) &&
+                         (latch_released == true))
+                {
+                    /* Disarm does not need to use the wait time as arm
+                     * does, only a quick tap will disarm. */
+                    latch_released = false;
+                    system_armed = false;
+                    arm_time = 0;
+                    timeout_time = 0;
+                }
+            }
+            else
+            {
+                arm_time = 0;
+                timeout_time++;
+                latch_released = true;
+            }
+        }
+        else
+        {
+            /*
+             * Stick based arming and disarm.
+             */
+
+            if (current_region == ARMING_REGION_STICK_ARM)
+            {
+                /* Check if the required time has been reached
+                   to arm the system */
+                if ((arm_time / ARM_RATE * 10) >= arm_settings.arm_stick_time)
+                {
+                    system_armed = true;
+                }
+                else
+                {
+                    arm_time++;
+                    disarm_time = 0;
+                    timeout_time = 0;
+                }
+            }
+            else if (current_region == ARMING_REGION_STICK_DISARM)
+            {
+                /* Check if the required time has been reached
+                   to disarm the system*/
+                if ((disarm_time / ARM_RATE) >= arm_settings.arm_stick_time)
+                {
+                    system_armed = false;
+                }
+                else
+                {
+                    disarm_time++;
+                    arm_time = 0;
+                    timeout_time = 0;
+                }
+            }
+            else
+            {
+                /* Sticks are not in the correct region,
+                   reset timing counters */
+                arm_time = 0;
+                disarm_time = 0;
+
+            }
+        }
+
+        /* Timeout counter. */
+        /* Check the zero throttle timeout */
+        if ((arm_settings.arm_zero_throttle_timeout != 0) &&
+            (system_armed == true))
+        {
+            if ((RCInputGetInputLevel(RCINPUT_ROLE_THROTTLE) <=
+                arm_settings.stick_threshold))
+            {
+                /* Check if the required time has passed to disarm due
+                   to timeout, else increment the timing counter */
+                if ((timeout_time / ARM_RATE) >
+                    arm_settings.arm_zero_throttle_timeout)
+                {
+                    system_armed = false;
+                }
+                else
+                {
+                    timeout_time++;
+                    arm_time = 0;
+                    disarm_time = 0;
+                }
+            }
+            /* The throttle is not in the correct position,
+               reset the timing counter */
+            else
+                timeout_time = 0;
+        }
+
+    }
+    else
+    {
+        system_armed = false;
+    }
+}
+
 
 /**
  * @brief           Thread for the arm and disarm functionality.
@@ -66,10 +226,6 @@ static THD_FUNCTION(ThreadControlArming, arg)
     (void)arg;
 
     override_settings.timeout = 0;
-    uint16_t arm_time = 0, disarm_time = 0, timeout_time = 0;
-    bool latch_released = false;
-    float level;
-    arming_stick_region_t current_region;
 
     /* Set thread name */
     chRegSetThreadName("Arm Control");
@@ -82,159 +238,13 @@ static THD_FUNCTION(ThreadControlArming, arg)
         /*
          * Check all conditions for arming and disarming the system
          */
+        if (!override_settings.active)
+            CheckArmingConditions();
 
-        /* Check emergency stop. */
-        if (force_disarm)
-        {
-            system_armed = false;
-            force_disarm = false;
-            latch_released = false;
-            arm_time = 0;
-            disarm_time = 0;
-            timeout_time = 0;
-        }
-
-        /* Check so there is an active RC connection and the arming stick
-           position has been set */
-        if ((bActiveRCInputConnection() == true) &&
-            (arm_settings.stick_direction != ARMING_DIRECTION_STICK_NONE))
-        {
-            /* Check so the sticks are in the correct region ( */
-            current_region = SticksInRegion();
-
-
-            /* If the computer control is active, don't disarm based on time. */
-            if ((system_armed == true) && (ComputerControlEnabled() == true))
-            {
-                timeout_time = 0;
-            }
-
-            if (arm_settings.stick_direction == ARMING_DIRECTION_NON_LATCHING_SWITCH)
-            {
-                /*
-                 * Switch based arming and disarm.
-                 */
-                if (current_region == ARMING_REGION_NON_LATCHING_SWITCH_ACTIVE)
-                {
-                    level = RCInputGetInputLevel(RCINPUT_ROLE_THROTTLE);
-
-                    /* If it is in the correct state, increase the arm counter,
-                     * and if it has reached the correct time - arm. */
-                    if ((system_armed == false) && (latch_released == true) &&
-                        (level <= arm_settings.stick_threshold))
-                    {
-                        if ((arm_time / ARM_RATE * 10) >= arm_settings.arm_stick_time)
-                        {
-                            system_armed = true;
-                            latch_released = false;
-                        }
-                        else
-                        {
-                            arm_time++;
-                            timeout_time = 0;
-                        }
-                    }
-                    else if ((system_armed == true) &&
-                             (latch_released == true))
-                    {
-                        /* Disarm does not need to use the wait time as arm
-                         * does, only a quick tap will disarm. */
-                        latch_released = false;
-                        system_armed = false;
-                        arm_time = 0;
-                        timeout_time = 0;
-                    }
-                }
-                else
-                {
-                    arm_time = 0;
-                    timeout_time++;
-                    latch_released = true;
-                }
-            }
-            else
-            {
-                /*
-                 * Stick based arming and disarm.
-                 */
-
-                if (current_region == ARMING_REGION_STICK_ARM)
-                {
-                    /* Check if the required time has been reached
-                       to arm the system */
-                    if ((arm_time / ARM_RATE * 10) >= arm_settings.arm_stick_time)
-                    {
-                        system_armed = true;
-                    }
-                    else
-                    {
-                        arm_time++;
-                        disarm_time = 0;
-                        timeout_time = 0;
-                    }
-                }
-                else if (current_region == ARMING_REGION_STICK_DISARM)
-                {
-                    /* Check if the required time has been reached
-                       to disarm the system*/
-                    if ((disarm_time / ARM_RATE) >= arm_settings.arm_stick_time)
-                    {
-                        system_armed = false;
-                    }
-                    else
-                    {
-                        disarm_time++;
-                        arm_time = 0;
-                        timeout_time = 0;
-                    }
-                }
-                else
-                {
-                    /* Sticks are not in the correct region,
-                       reset timing counters */
-                    arm_time = 0;
-                    disarm_time = 0;
-
-                }
-            }
-
-            /* Timeout counter. */
-            /* Check the zero throttle timeout */
-            if ((arm_settings.arm_zero_throttle_timeout != 0) &&
-                (system_armed == true))
-            {
-                if ((RCInputGetInputLevel(RCINPUT_ROLE_THROTTLE) <=
-                    arm_settings.stick_threshold))
-                {
-                    /* Check if the required time has passed to disarm due
-                       to timeout, else increment the timing counter */
-                    if ((timeout_time / ARM_RATE) >
-                        arm_settings.arm_zero_throttle_timeout)
-                    {
-                        system_armed = false;
-                    }
-                    else
-                    {
-                        timeout_time++;
-                        arm_time = 0;
-                        disarm_time = 0;
-                    }
-                }
-                /* The throttle is not in the correct position,
-                   reset the timing counter */
-                else
-                    timeout_time = 0;
-            }
-
-        }
-        else
-        {
-            system_armed = false;
-        }
+        /* Check for override */
+        CheckMotorOverride();
     }
 
-    /* Check for override */
-    CheckMotorOverride();
 }
 
 /**
@@ -351,6 +361,9 @@ void ArmingInit(void)
     arm_settings.arm_stick_time = 10;
     arm_settings.arm_zero_throttle_timeout = 30;
 
+    /* Initialize override */
+    override_settings.active = false;
+
     /* Initialize arming control thread */
     chThdCreateStatic(waThreadControlArming,
                       sizeof(waThreadControlArming),
@@ -366,7 +379,7 @@ void ArmingInit(void)
  */
 bool bIsSystemArmed(void)
 {
-    return system_armed;
+    return system_armed || override_settings.active;
 }
 
 /**
@@ -411,20 +424,22 @@ void vParseMotorOverride(const uint8_t* data, const uint8_t size)
   if (size == sizeof(float)*8)
   {
     bool sane_values = true;
-    const float *p = (const float *)data;
+
+    memcpy(override_settings.values, data, size);
 
     /* Sanity check */
     for (int i = 0; i < 8; i++)
-      sane_values &= (p[i] >= 0.0f) & (p[i] <= 1.0f);
+      if ((override_settings.values[i] < 0.0f) ||
+          (override_settings.values[i] > 1.0f))
+        sane_values = false;
 
     if (sane_values)
     {
-      /* Reset timeout and save values */
       override_settings.timeout = 0;
-
-      for (int i = 0; i < 8; i++)
-        override_settings.values[i] = p[i];
+      override_settings.active = true;
     }
+    else
+      override_settings.active = false;
   }
 }
 

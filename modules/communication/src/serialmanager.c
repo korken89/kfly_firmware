@@ -108,10 +108,10 @@ static const SerialConfig aux1_config =
 /* and data decode threads.                          */
 /*===================================================*/
 
-THD_WORKING_AREA(waUSBSerialManagerTask, 256);
+THD_WORKING_AREA(waUSBSerialManagerTask, 512);
 THD_WORKING_AREA(waUSBDataPumpTask, 256);
 
-THD_WORKING_AREA(waAux1SerialManagerTask, 256);
+THD_WORKING_AREA(waAux1SerialManagerTask, 512);
 THD_WORKING_AREA(waAux1DataPumpTask, 256);
 /* TODO: Add for the rest of the communication interfaces */
 

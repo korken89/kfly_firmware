@@ -307,15 +307,14 @@ void vUpdateControlAction(const quaternion_t *attitude_m,
 {
     /* Check if manual control or computer control. */
 
-    if (bIsSystemArmed() == false)
+    if (bMotorOverrideActive())
     {
-        if (bMotorOverrideActive())
-        {
-          control_reference.mode = FLIGHTMODE_DIRECT;
-          vGetMotorOverrideValues(control_reference.output);
-        }
-        else
-          control_reference.mode = FLIGHTMODE_DISARMED;
+        control_reference.mode = FLIGHTMODE_DIRECT;
+        vGetMotorOverrideValues(control_reference.output);
+    }
+    else if (bIsSystemArmed() == false)
+    {
+        control_reference.mode = FLIGHTMODE_DISARMED;
     }
     else if ((ComputerControlLinkActive() == true) &&
         (RCInputGetSwitchState(RCINPUT_ROLE_ENABLE_SERIAL_CONTROL) ==
