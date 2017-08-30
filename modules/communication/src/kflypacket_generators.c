@@ -44,7 +44,6 @@ static bool GenerateGetRCValues(circular_buffer_t *Cbuff);
 static bool GenerateGetIMUData(circular_buffer_t *Cbuff);
 static bool GenerateGetRawIMUData(circular_buffer_t *Cbuff);
 static bool GenerateGetIMUCalibration(circular_buffer_t *Cbuff);
-static bool GenerateGetIMUCalibration(circular_buffer_t *Cbuff);
 static bool GenerateGetEstimationRate(circular_buffer_t *Cbuff);
 static bool GenerateGetEstimationAttitude(circular_buffer_t *Cbuff);
 static bool GenerateGetEstimationVelocity(circular_buffer_t *Cbuff);
