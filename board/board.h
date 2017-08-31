@@ -54,7 +54,7 @@
 #define GPIOA_AUX3_TX               0
 #define GPIOA_AUX3_RX               1
 #define GPIOA_CONTROL_IN1           2
-#define GPIOA_CONTROL_IN6           3
+#define GPIOA_INV_SBUS_IN           3
 #define GPIOA_RF_SEL                4
 #define GPIOA_RF_SCLK               5
 #define GPIOA_RF_MISO               6
@@ -232,7 +232,7 @@
  * PA0  - AUX3_TX                   (input pullup).
  * PA1  - AUX3_RX                   (input pullup).
  * PA2  - CONTROL_IN1               (input pullup).
- * PA3  - CONTROL_IN6               (input pullup).
+ * PA3  - INV_SBUS_IN               (input pullup).
  * PA4  - RF_SEL                    (input pullup).
  * PA5  - RF_SCLK                   (input pullup).
  * PA6  - RF_MISO                   (input pullup).
@@ -249,7 +249,7 @@
 #define VAL_GPIOA_MODER             (PIN_MODE_ALTERNATE(GPIOA_AUX3_TX) |      \
                                      PIN_MODE_ALTERNATE(GPIOA_AUX3_RX) |      \
                                      PIN_MODE_ALTERNATE(GPIOA_CONTROL_IN1) |  \
-                                     PIN_MODE_ALTERNATE(GPIOA_CONTROL_IN6) |  \
+                                     PIN_MODE_ALTERNATE(GPIOA_INV_SBUS_IN) |  \
                                      PIN_MODE_OUTPUT(GPIOA_RF_SEL) |          \
                                      PIN_MODE_ALTERNATE(GPIOA_RF_SCLK) |      \
                                      PIN_MODE_ALTERNATE(GPIOA_RF_MISO) |      \
@@ -266,7 +266,7 @@
 #define VAL_GPIOA_OTYPER            (PIN_OTYPE_PUSHPULL(GPIOA_AUX3_TX) |      \
                                      PIN_OTYPE_PUSHPULL(GPIOA_AUX3_RX) |      \
                                      PIN_OTYPE_PUSHPULL(GPIOA_CONTROL_IN1) |  \
-                                     PIN_OTYPE_PUSHPULL(GPIOA_CONTROL_IN6) |  \
+                                     PIN_OTYPE_PUSHPULL(GPIOA_INV_SBUS_IN) |  \
                                      PIN_OTYPE_PUSHPULL(GPIOA_RF_SEL) |       \
                                      PIN_OTYPE_PUSHPULL(GPIOA_RF_SCLK) |      \
                                      PIN_OTYPE_PUSHPULL(GPIOA_RF_MISO) |      \
@@ -283,7 +283,7 @@
 #define VAL_GPIOA_OSPEEDR           (PIN_OSPEED_25M(GPIOA_AUX3_TX) |          \
                                      PIN_OSPEED_25M(GPIOA_AUX3_RX) |          \
                                      PIN_OSPEED_100M(GPIOA_CONTROL_IN1) |     \
-                                     PIN_OSPEED_100M(GPIOA_CONTROL_IN6) |     \
+                                     PIN_OSPEED_100M(GPIOA_INV_SBUS_IN) |     \
                                      PIN_OSPEED_2M(GPIOA_RF_SEL) |            \
                                      PIN_OSPEED_50M(GPIOA_RF_SCLK) |          \
                                      PIN_OSPEED_50M(GPIOA_RF_MISO) |          \
@@ -300,7 +300,7 @@
 #define VAL_GPIOA_PUPDR             (PIN_PUPDR_FLOATING(GPIOA_AUX3_TX) |      \
                                      PIN_PUPDR_PULLUP(GPIOA_AUX3_RX) |        \
                                      PIN_PUPDR_PULLDOWN(GPIOA_CONTROL_IN1) |  \
-                                     PIN_PUPDR_PULLDOWN(GPIOA_CONTROL_IN6) |  \
+                                     PIN_PUPDR_PULLUP(GPIOA_INV_SBUS_IN) |    \
                                      PIN_PUPDR_FLOATING(GPIOA_RF_SEL) |       \
                                      PIN_PUPDR_FLOATING(GPIOA_RF_SCLK) |      \
                                      PIN_PUPDR_FLOATING(GPIOA_RF_MISO) |      \
@@ -317,7 +317,7 @@
 #define VAL_GPIOA_ODR               (PIN_ODR_HIGH(GPIOA_AUX3_TX) |            \
                                      PIN_ODR_HIGH(GPIOA_AUX3_RX) |            \
                                      PIN_ODR_HIGH(GPIOA_CONTROL_IN1) |        \
-                                     PIN_ODR_HIGH(GPIOA_CONTROL_IN6) |        \
+                                     PIN_ODR_HIGH(GPIOA_INV_SBUS_IN) |        \
                                      PIN_ODR_HIGH(GPIOA_RF_SEL) |             \
                                      PIN_ODR_HIGH(GPIOA_RF_SCLK) |            \
                                      PIN_ODR_HIGH(GPIOA_RF_MISO) |            \
@@ -334,7 +334,7 @@
 #define VAL_GPIOA_AFRL              (PIN_AFIO_AF(GPIOA_AUX3_TX, 8) |          \
                                      PIN_AFIO_AF(GPIOA_AUX3_RX, 8) |          \
                                      PIN_AFIO_AF(GPIOA_CONTROL_IN1, 3) |      \
-                                     PIN_AFIO_AF(GPIOA_CONTROL_IN6, 3) |      \
+                                     PIN_AFIO_AF(GPIOA_INV_SBUS_IN, 7) |      \
                                      PIN_AFIO_AF(GPIOA_RF_SEL, 0) |           \
                                      PIN_AFIO_AF(GPIOA_RF_SCLK, 5) |          \
                                      PIN_AFIO_AF(GPIOA_RF_MISO, 5) |          \
