@@ -773,7 +773,7 @@ void RCInputInit(void)
     /* Start the SBUS thread */
     chThdCreateStatic(waThreadRCInputSBUS,
                       sizeof(waThreadRCInputSBUS),
-                      NORMALPRIO,
+                      HIGHPRIO,
                       ThreadRCInputSBUS,
                       NULL);
 }
