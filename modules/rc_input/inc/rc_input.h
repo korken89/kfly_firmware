@@ -13,8 +13,13 @@
 #define RCINPUT_RSSI_TIMEOUT            100     /* Number of bad RSSI
                                                    measurements to disable the
                                                    connection */
+
+#define RCINPUT_SBUS_START_BYTE         0x0f
+#define RCINPUT_SBUS_END_BYTE           0x00
+#define RCINPUT_SBUS_DATA_COUNT         23
+
 #define RCINPUT_NUMBER_OF_SWITCHES      3
-#define RCINPUT_NO_CON_TIMEOUT_MS       500
+#define RCINPUT_NO_CON_TIMEOUT_MS       200
 #define RCINPUT_LOST_EVENTMASK          EVENT_MASK(0)
 #define RCINPUT_ACTIVE_EVENTMASK        EVENT_MASK(1)
 #define RCINPUT_NEWINPUT_EVENTMASK      EVENT_MASK(2)
@@ -25,6 +30,58 @@
 /*===========================================================================*/
 /* Module data structures and types.                                         */
 /*===========================================================================*/
+
+
+/**
+ * @brief   SBUS data packet.
+ */
+typedef struct PACKED_VAR {
+  /**
+   * @brief   SBUS channel data.
+   */
+  uint8_t channels[22];
+  /**
+   * @brief   SBUS flags.
+   */
+  uint8_t flags;
+} sbus_data_t;
+
+/**
+ * @brief   SBUS state.
+ */
+typedef enum {
+    /**
+     * @brief Waiting for start byte.
+     */
+    SBUS_WAITING_FOR_START = 0,
+    /**
+     * @brief Receiving data.
+     */
+    SBUS_RECEIVING,
+    /**
+     * @brief Waiting for stop byte.
+     */
+    SBUS_WAITING_FOR_END
+} sbus_state_t;
+
+/**
+ * @brief   SBUS paser data holder.
+ */
+typedef struct {
+  /**
+   * @brief   Current SBUS parser state.
+   */
+  sbus_state_t state;
+  /**
+   * @brief   SBUS data packet, before parsing.
+   */
+  sbus_data_t data;
+  /**
+   * @brief   Current count of received bytes.
+   */
+  int data_count;
+} sbus_state_machine_t;
+
 /**
  * @brief   Input capture channel selector.
  */
@@ -76,10 +133,10 @@ typedef enum {
      */
     RCINPUT_MODE_CPPM_INPUT = 1,
     /**
-     * @brief   PWM input: all channels have its own input line.
+     * @brief   SBUS input: serial input
      */
-    RCINPUT_MODE_PWM_INPUT = 2
-} rcinput_mode_selector_t;
+    RCINPUT_MODE_SBUS_INPUT = 2
+} rcinput_mode_t;
 
 /**
  * @brief   Input capture channel role selector.
@@ -238,6 +295,11 @@ typedef struct PACKED_VAR {
      * @brief   Current RSSI frequency.
      */
     uint16_t rssi_frequency;
+    /**
+     * @brief   Current detected input mode.
+     */
+    rcinput_mode_t input_mode;
+
 } rcinput_data_t;
 
 /**
@@ -268,10 +330,6 @@ typedef struct PACKED_VAR {
      * @brief   Input reverse selector.
      */
     bool8_t ch_reverse[RCINPUT_MAX_NUMBER_OF_INPUTS];
-    /**
-     * @brief   Input capture mode selector.
-     */
-    rcinput_mode_selector_t mode;
     /**
      * @brief   RSSI usage selector.
      */

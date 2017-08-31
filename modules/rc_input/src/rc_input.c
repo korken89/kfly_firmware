@@ -14,11 +14,14 @@
 /*===========================================================================*/
 /* Module local definitions.                                                 */
 /*===========================================================================*/
+static void ParseSBUSInput(const uint8_t data);
+static void ParseCPPMInput(const uint32_t capture);
 static void RawInputToCalibratedInput(void);
 static void cppm_callback(EICUDriver *eicup, eicuchannel_t channel);
 static void rssi_callback(EICUDriver *eicup, eicuchannel_t channel);
-static void pwm_callback(EICUDriver *eicup, eicuchannel_t channel);
 static void vt_no_connection_timeout_callback(void *p);
+
+#define SBUS_SERIAL_DRIVER                  SD2
 
 /*===========================================================================*/
 /* Module exported variables.                                                */
@@ -44,6 +47,11 @@ rcinput_role_lookup_t rcinput_role_lookup;
 rcinput_settings_t rcinput_settings;
 
 /**
+ * @brief   Data holder for the SBUS input.
+ */
+sbus_state_machine_t sbus_parser;
+
+/**
  * @brief   Event source for the RC input, indicates new measurements and
  *          connection status.
  */
@@ -53,6 +61,17 @@ EVENTSOURCE_DECL(rcinput_es);
  * @brief   Timer for checking time out of the RC input.
  */
 virtual_timer_t rcinput_timeout_vt;
+
+/* SBUS configuration:  1 start + 8 data + 1 parity + 2 stop (8E2),
+ *                      baudrate = 100000 bit/s
+ */
+static const SerialConfig sbus_config =
+{
+  100000,                 // 100000 bit/s
+  USART_CR1_PCE,          // even parity
+  USART_CR2_STOP2_BITS,   // 2 stop bits
+  0
+};
 
 /* EICU Configuration for CPPM, RSSI and PWM inputs */
 static const EICU_IC_Settings cppmsettings = {
@@ -91,40 +110,9 @@ static const EICUConfig rssi_rcinputcfg = {
     0                           /* DEIR init data */
 };
 
-static const EICU_IC_Settings pwmsettings = {
-    EICU_INPUT_ACTIVE_HIGH,     /* Edge detection setting */
-    pwm_callback                /* Detection callback */
-};
-static const EICUConfig pwm_rcinputcfg_1 = {
-    EICU_INPUT_PULSE,           /* Input type configuration */
-    RCINPUT_CAPTURE_TIMER_RATE, /* Timer clock in Hz */
-    {
-        &pwmsettings,           /* Input capture settings pointer 1 */
-        &pwmsettings,           /* Input capture settings pointer 2 */
-        NULL,                   /* Input capture settings pointer 3 */
-        NULL                    /* Input capture settings pointer 4 */
-    },
-    NULL,                       /* Period capture callback */
-    NULL,                       /* Overflow capture callback */
-    0                           /* DEIR init data */
-};
-
-static const EICUConfig pwm_rcinputcfg_2 = {
-    EICU_INPUT_PULSE,           /* Input type configuration */
-    RCINPUT_CAPTURE_TIMER_RATE, /* Timer clock in Hz */
-    {
-        NULL,                   /* Input capture settings pointer 1 */
-        NULL,                   /* Input capture settings pointer 2 */
-        &pwmsettings,           /* Input capture settings pointer 3 */
-        &pwmsettings            /* Input capture settings pointer 4 */
-    },
-    NULL,                       /* Period capture callback */
-    NULL,                       /* Overflow capture callback */
-    0                           /* DEIR init data */
-};
-
 uint16_t rssi_counter = 0;
 THD_WORKING_AREA(waThreadRCInputFlashSave, 256);
+THD_WORKING_AREA(waThreadRCInputSBUS, 256);
 
 /*===========================================================================*/
 /* Module local functions.                                                   */
@@ -165,16 +153,147 @@ static THD_FUNCTION(ThreadRCInputFlashSave, arg)
 }
 
 /**
+ * @brief           Thread for SBUS.
+ *
+ * @param[in] arg   Unused.
+ * @return          Unused.
+ */
+static THD_FUNCTION(ThreadRCInputSBUS, arg)
+{
+    (void)arg;
+
+    /* Set thread name */
+    chRegSetThreadName("RCInput SBUS");
+
+    while (1)
+    {
+        ParseSBUSInput(sdGet(&SBUS_SERIAL_DRIVER));
+    }
+}
+
+/**
+ * @brief           Parses SBUS inputs.
+ *
+ * @param[in] data  The value of the latest input byte.
+ */
+static void ParseSBUSInput(const uint8_t data)
+{
+    uint8_t *p = (uint8_t *)&sbus_parser.data;
+    uint8_t *pld = (uint8_t *)&sbus_parser.data.channels;
+
+    switch (sbus_parser.state)
+    {
+      case SBUS_WAITING_FOR_START:
+        if (data != RCINPUT_SBUS_START_BYTE)
+          return;
+
+        sbus_parser.state = SBUS_RECEIVING;
+        sbus_parser.data_count = 0;
+
+        break;
+
+      case SBUS_RECEIVING:
+
+        // Cast to byte array to write to it
+
+        p[sbus_parser.data_count++] = data;
+
+        if (sbus_parser.data_count == RCINPUT_SBUS_DATA_COUNT)
+          sbus_parser.state = SBUS_WAITING_FOR_END;
+
+
+        break;
+
+      case SBUS_WAITING_FOR_END:
+        sbus_parser.state = SBUS_WAITING_FOR_START;
+
+        if (data == RCINPUT_SBUS_END_BYTE)
+        {
+          // Save the data
+          rcinput_data.number_active_connections = 16;
+          rcinput_data.active_connection.value = true;
+
+          rcinput_data.value[0] =
+              (uint16_t)((pld[0] | pld[1] << 8) & 0x07FF);
+          rcinput_data.value[1] =
+              (uint16_t)((pld[1] >> 3 | pld[2] << 5) & 0x07FF);
+          rcinput_data.value[2] =
+              (uint16_t)((pld[2] >> 6 | pld[3] << 2 | pld[4] << 10) & 0x07FF);
+          rcinput_data.value[3] =
+              (uint16_t)((pld[4] >> 1 | pld[5] << 7) & 0x07FF);
+          rcinput_data.value[4] =
+              (uint16_t)((pld[5] >> 4 | pld[6] << 4) & 0x07FF);
+          rcinput_data.value[5] =
+              (uint16_t)((pld[6] >> 7 | pld[7] << 1 | pld[8] << 9) & 0x07FF);
+          rcinput_data.value[6] =
+              (uint16_t)((pld[8] >> 2 | pld[9] << 6) & 0x07FF);
+          rcinput_data.value[7] =
+              (uint16_t)((pld[9] >> 5 | pld[10] << 3) & 0x07FF);
+          rcinput_data.value[8] =
+              (uint16_t)((pld[11] | pld[12] << 8) & 0x07FF);
+          rcinput_data.value[9] =
+              (uint16_t)((pld[12] >> 3 | pld[13] << 5) & 0x07FF);
+          rcinput_data.value[10] =
+              (uint16_t)((pld[13] >> 6 | pld[14] << 2 | pld[15] << 10) & 0x07FF);
+          rcinput_data.value[11] =
+              (uint16_t)((pld[15] >> 1 | pld[16] << 7) & 0x07FF);
+          rcinput_data.value[12] =
+              (uint16_t)((pld[16] >> 4 | pld[17] << 4) & 0x07FF);
+          rcinput_data.value[13] =
+              (uint16_t)((pld[17] >> 7 | pld[18] << 1 | pld[19] << 9) & 0x07FF);
+          rcinput_data.value[14] =
+              (uint16_t)((pld[19] >> 2 | pld[20] << 6) & 0x07FF);
+          rcinput_data.value[15] =
+              (uint16_t)((pld[20] >> 5 | pld[21] << 3) & 0x07FF);
+
+          // Set input mode
+          rcinput_data.input_mode = RCINPUT_MODE_SBUS_INPUT;
+
+          /* Parse new input to calibrated values. */
+          RawInputToCalibratedInput();
+
+          chEvtBroadcastFlags(&rcinput_es, RCINPUT_NEWINPUT_EVENTMASK);
+        }
+        else
+        {
+          /* Reset connection */
+          //rcinput_data.active_connection.value = false;
+
+          /* Disable timeout timer and broadcast connection lost */
+          //chVTReset(&rcinput_timeout_vt);
+          //chEvtBroadcastFlags(&rcinput_es, RCINPUT_LOST_EVENTMASK);
+          //rcinput_data.input_mode = RCINPUT_MODE_NONE;
+
+          return;
+        }
+
+        break;
+
+      default:
+        sbus_parser.state = SBUS_WAITING_FOR_START;
+        rcinput_data.active_connection.value = false;
+        return;
+    }
+
+    chVTSet(&rcinput_timeout_vt,
+            MS2ST(RCINPUT_NO_CON_TIMEOUT_MS),
+            vt_no_connection_timeout_callback,
+            NULL);
+}
+
+/**
  * @brief               Parses CPPM inputs. This function runs inside a
  *                      osalSysLockFromISR.
  *
- *
- * @param[in/out] data  Pointer to RC Input data structure.
  * @param[in] capture   The value of the latest input capture.
  */
 static void ParseCPPMInput(const uint32_t capture)
 {
     static uint16_t cppm_count = 0; /* Current CPPM channel */
+
+    // SBUS has priority
+    if (rcinput_data.input_mode == RCINPUT_MODE_SBUS_INPUT)
+      return;
 
     if (rcinput_data.active_connection.value == true)
     {
@@ -183,6 +302,9 @@ static void ParseCPPMInput(const uint32_t capture)
         {
             /* Save the current number of active channels */
             rcinput_data.number_active_connections = cppm_count;
+
+            // Set input mode
+            rcinput_data.input_mode = RCINPUT_MODE_CPPM_INPUT;
 
             /* Parse new input to calibrated values. */
             RawInputToCalibratedInput();
@@ -208,6 +330,7 @@ static void ParseCPPMInput(const uint32_t capture)
                 /* Disable timeout timer and broadcast connection lost */
                 chVTResetI(&rcinput_timeout_vt);
                 chEvtBroadcastFlagsI(&rcinput_es, RCINPUT_LOST_EVENTMASK);
+                rcinput_data.input_mode = RCINPUT_MODE_NONE;
             }
             else
             {
@@ -293,6 +416,11 @@ static void RCInputDataReset(void)
     rcinput_data.number_active_connections = 0;
     rcinput_data.rssi = 0;
     rcinput_data.rssi_frequency = 0;
+    rcinput_data.input_mode = RCINPUT_MODE_NONE;
+
+    sbus_parser.state = SBUS_WAITING_FOR_START;
+    sbus_parser.data_count = 0;
+
 
     for (i = 0; i < RCINPUT_MAX_NUMBER_OF_INPUTS; i++)
     {
@@ -323,7 +451,6 @@ static void RCInputSettingsReset(void)
         rcinput_settings.ch_top[i]           = 2000;
     }
 
-    rcinput_settings.mode = RCINPUT_MODE_CPPM_INPUT;
     rcinput_settings.use_rssi.value = false;
 }
 
@@ -564,6 +691,7 @@ static void vt_no_connection_timeout_callback(void *p)
 
     chVTResetI(&rcinput_timeout_vt);
     chEvtBroadcastFlagsI(&rcinput_es, RCINPUT_LOST_EVENTMASK);
+    rcinput_data.input_mode = RCINPUT_MODE_NONE;
 
     osalSysUnlockFromISR();
 }
@@ -612,35 +740,6 @@ static void rssi_callback(EICUDriver *eicup, eicuchannel_t channel)
     osalSysUnlockFromISR();
 }
 
-/**
- * @brief               Callback for a new PWM capture.
- *
- * @param[out] eicup    Pointer to the EICU driver.
- * @param[in] channel   Channel that detected the input capture.
- */
-static void pwm_callback(EICUDriver *eicup, eicuchannel_t channel)
-{
-    (void)channel;
-
-    /* TODO: Implement this!!! */
-    /* TODO: Parse new input to calibrated values. */
-
-    osalSysLockFromISR();
-
-    /* Checl from which PWM unit the pulse came from. */
-    if (eicup == &EICUD3)
-    {
-    }
-    else if (eicup == &EICUD9)
-    {
-    }
-    else if (eicup == &EICUD12)
-    {
-    }
-
-    osalSysUnlockFromISR();
-}
-
 /*===========================================================================*/
 /* Module exported functions.                                                */
 /*===========================================================================*/
@@ -670,6 +769,13 @@ void RCInputInit(void)
                       NORMALPRIO,
                       ThreadRCInputFlashSave,
                       NULL);
+
+    /* Start the SBUS thread */
+    chThdCreateStatic(waThreadRCInputSBUS,
+                      sizeof(waThreadRCInputSBUS),
+                      NORMALPRIO,
+                      ThreadRCInputSBUS,
+                      NULL);
 }
 
 /**
@@ -692,33 +798,20 @@ msg_t RCInputInitialization(void)
     if (EICUD12.state != EICU_STOP)
         eicuDisable(&EICUD12);
 
-    /* Configure the input capture unit */
-    if (rcinput_settings.mode == RCINPUT_MODE_CPPM_INPUT)
-    {
-        /* Start and enable the EICU driver */
-        eicuStart(&EICUD9, &cppm_rcinputcfg);
-        eicuEnable(&EICUD9);
+    /* Configure the input capture unit for CPPM */
+    eicuStart(&EICUD9, &cppm_rcinputcfg);
+    eicuEnable(&EICUD9);
 
-        if (rcinput_settings.use_rssi.value == true)
-        {
-            eicuStart(&EICUD12, &rssi_rcinputcfg);
-            eicuEnable(&EICUD12);
-        }
-    }
-    else if (rcinput_settings.mode == RCINPUT_MODE_PWM_INPUT)
+    if (rcinput_settings.use_rssi.value == true)
     {
-        /* Start and enable the EICU driver */
-        eicuStart(&EICUD3, &pwm_rcinputcfg_2);
-        eicuStart(&EICUD9, &pwm_rcinputcfg_1);
-        eicuStart(&EICUD12, &pwm_rcinputcfg_1);
-        eicuEnable(&EICUD3);
-        eicuEnable(&EICUD9);
+        eicuStart(&EICUD12, &rssi_rcinputcfg);
         eicuEnable(&EICUD12);
     }
-    else /* Invalid input, return error */
-        return MSG_RESET;
 
-    /* Gernerate the role lookup table */
+    /* Configure the SBUS input */
+    sdStart(&SBUS_SERIAL_DRIVER, &sbus_config);
+
+    /* Generate the role lookup table */
     GenerateRoleLookupTable();
 
     return status;

@@ -16,7 +16,7 @@
 /**
  * @brief   Setting for max supported number of inputs.
  */
-#define RCINPUT_MAX_NUMBER_OF_INPUTS    12
+#define RCINPUT_MAX_NUMBER_OF_INPUTS    16
 
 /*===========================================================================*/
 /* Global data structures and types.                                         */
