@@ -98,7 +98,7 @@ static void CheckArmingConditions(void)
                 if ((system_armed == false) && (latch_released == true) &&
                     (level <= arm_settings.stick_threshold))
                 {
-                    if ((arm_time / ARM_RATE * 10) >= arm_settings.arm_stick_time)
+                    if (((arm_time * 10) / ARM_RATE) >= arm_settings.arm_stick_time)
                     {
                         system_armed = true;
                         latch_released = false;
@@ -137,7 +137,7 @@ static void CheckArmingConditions(void)
             {
                 /* Check if the required time has been reached
                    to arm the system */
-                if ((arm_time / ARM_RATE * 10) >= arm_settings.arm_stick_time)
+                if (((arm_time * 10) / ARM_RATE) >= arm_settings.arm_stick_time)
                 {
                     system_armed = true;
                 }
@@ -152,7 +152,7 @@ static void CheckArmingConditions(void)
             {
                 /* Check if the required time has been reached
                    to disarm the system*/
-                if ((disarm_time / ARM_RATE) >= arm_settings.arm_stick_time)
+                if (((disarm_time * 10) / ARM_RATE) >= arm_settings.arm_stick_time)
                 {
                     system_armed = false;
                 }
