@@ -37,17 +37,11 @@ THD_WORKING_AREA(waThreadControlArming, 256);
 
 static void CheckMotorOverride(void)
 {
-  static bool has_been_armed = false;
-
-  /* Once the system has been armed, override is disabled until restart. */
-  has_been_armed |= bIsSystemArmed();
-
-  if (!has_been_armed && !force_disarm)
+  if (!force_disarm)
   {
-    if (override_settings.timeout > ARM_RATE / 2) /* Half second timeout */
-    {
+    if (override_settings.active &&
+        (override_settings.timeout > ARM_RATE / 2)) /* Half second timeout */
       override_settings.active = false;
-    }
     else
       override_settings.timeout++;
   }
