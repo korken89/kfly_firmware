@@ -46,14 +46,14 @@ void euler2quat(const float roll,
     const float yaw_h   = yaw * 0.5f;
 
     /* Calculate sines and cosines */
-    const float cp = fast_cos(pitch_h);
-    const float sp = fast_sin(pitch_h);
+    const float cp = cosf(pitch_h);
+    const float sp = sinf(pitch_h);
 
-    const float cr = fast_cos(roll_h);
-    const float sr = fast_sin(roll_h);
+    const float cr = cosf(roll_h);
+    const float sr = sinf(roll_h);
 
-    const float cy = fast_cos(yaw_h);
-    const float sy = fast_sin(yaw_h);
+    const float cy = cosf(yaw_h);
+    const float sy = sinf(yaw_h);
 
     /* Create the quaternion */
     q->w = cr * cp * cy + sr * sp * sy;

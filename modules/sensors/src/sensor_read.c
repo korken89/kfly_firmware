@@ -9,6 +9,7 @@
 #include "kfly_defs.h"
 #include "flash_save.h"
 #include "sensor_read.h"
+#include "biquad.h"
 
 /*===========================================================================*/
 /* Module local definitions.                                                 */
@@ -48,7 +49,7 @@ static const MPU6050_Configuration mpu6050cfg = {
     MPU6050_INTDRDY_ENABLE,         /* Interrupt enable config                */
     MPU6050_ADDRESS_AD0_HIGH,       /* MPU6050 address                        */
     MPU6050_CLK_X_REFERENCE,        /* Clock reference                        */
-    39,                             /* Sample rate divider: 8k/39 = 200 Hz    */
+    39,                             /* Sample rate divider: 8k/(39+1) = 200 Hz*/
     &mpu6050data,                   /* Pointer to data holder                 */
     &I2CD2                          /* Pointer to I2C Driver                  */
 };
@@ -78,6 +79,10 @@ static const sensor_read_configuration_t sensorcfg = {
     &calibration_timestamp,
     &new_data_es
 };
+
+/* Biquads for the gyro and accelerometer */
+biquad_df2t_t acc_lpf_biquad[3];
+biquad_df2t_t gyro_lpf_biquad[3];
 
 /* Private pointer to the Sensor Read Thread */
 static thread_t *thread_sensor_read_p = NULL;
@@ -191,15 +196,25 @@ static THD_FUNCTION(ThreadSensorRead, arg)
                 acc_gyro_time_ns;
 
             /* Apply calibration and save calibrated data */
+            float *acc_p = sensorcfg.mpu6050cfg->data_holder->accel_data;
+            float *gyro_p = sensorcfg.mpu6050cfg->data_holder->gyro_data;
+
             ApplyCalibration(sensorcfg.mpu6050cal,
                              sensorcfg.mpu6050cfg->data_holder->raw_accel_data,
-                             sensorcfg.mpu6050cfg->data_holder->accel_data,
+                             acc_p,
                              1.0f);
 
             ApplyCalibration(NULL,
                              sensorcfg.mpu6050cfg->data_holder->raw_gyro_data,
-                             sensorcfg.mpu6050cfg->data_holder->gyro_data,
+                             gyro_p,
                              MPU6050GetGyroGain(sensorcfg.mpu6050cfg));
+
+            /* Apply biquad filters */
+            for (int i = 0; i < 3; i++)
+            {
+                acc_p[i] = BiquadDF2TApply(&acc_lpf_biquad[i], acc_p[i]);
+                gyro_p[i] = BiquadDF2TApply(&gyro_lpf_biquad[i], gyro_p[i]);
+            }
 
             /* Unlock the data structure */
             chMtxUnlock(&sensorcfg.mpu6050cfg->data_holder->read_lock);
@@ -358,6 +373,24 @@ msg_t SensorReadInit(void)
     /* Parameter checks */
     if ((sensorcfg.mpu6050cfg == NULL) || (sensorcfg.hmc5983cfg == NULL))
         return MSG_RESET; /* Error! */
+
+    /* Initialize the filters */
+    for (int i = 0; i < 3; i++)
+    {
+      BiquadInitStateDF2T(&acc_lpf_biquad[i].state);
+      BiquadInitCoeffs(&acc_lpf_biquad[i].coeffs,
+                       SENSOR_ACCGYRO_HZ,
+                       ACCGYRO_BIQUAD_CUT_HZ,
+                       ACCGYRO_LPF_Q,
+                       BIQUAD_LPF);
+
+      BiquadInitStateDF2T(&gyro_lpf_biquad[i].state);
+      BiquadInitCoeffs(&gyro_lpf_biquad[i].coeffs,
+                       SENSOR_ACCGYRO_HZ,
+                       ACCGYRO_BIQUAD_CUT_HZ,
+                       ACCGYRO_LPF_Q,
+                       BIQUAD_LPF);
+    }
 
     /* Initialize the time measurement */
     (void)GetIMUTime();
