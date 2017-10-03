@@ -378,18 +378,18 @@ msg_t SensorReadInit(void)
     for (int i = 0; i < 3; i++)
     {
       BiquadInitStateDF2T(&acc_lpf_biquad[i].state);
-      BiquadInitCoeffs(&acc_lpf_biquad[i].coeffs,
-                       SENSOR_ACCGYRO_HZ,
-                       ACCGYRO_BIQUAD_CUT_HZ,
-                       ACCGYRO_LPF_Q,
-                       BIQUAD_LPF);
+      BiquadUpdateCoeffs(&acc_lpf_biquad[i].coeffs,
+                         SENSOR_ACCGYRO_HZ,
+                         ACCGYRO_BIQUAD_CUT_HZ,
+                         ACCGYRO_LPF_Q,
+                         BIQUAD_LPF);
 
       BiquadInitStateDF2T(&gyro_lpf_biquad[i].state);
-      BiquadInitCoeffs(&gyro_lpf_biquad[i].coeffs,
-                       SENSOR_ACCGYRO_HZ,
-                       ACCGYRO_BIQUAD_CUT_HZ,
-                       ACCGYRO_LPF_Q,
-                       BIQUAD_LPF);
+      BiquadUpdateCoeffs(&gyro_lpf_biquad[i].coeffs,
+                         SENSOR_ACCGYRO_HZ,
+                         ACCGYRO_BIQUAD_CUT_HZ,
+                         ACCGYRO_LPF_Q,
+                         BIQUAD_LPF);
     }
 
     /* Initialize the time measurement */

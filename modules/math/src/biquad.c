@@ -1,12 +1,14 @@
 
 #include "biquad.h"
 
-
-void BiquadInitCoeffs(biquad_coeffs_t *coeffs,
-                      float sampling_frequency,
-                      float center_frequency,
-                      float Q,
-                      biquad_type_t type)
+/**
+ * @brief
+ */
+void BiquadUpdateCoeffs(biquad_coeffs_t *coeffs,
+                        float sampling_frequency,
+                        float center_frequency,
+                        float Q,
+                        biquad_type_t type)
 {
     // Based on:
     // http://shepazu.github.io/Audio-EQ-Cookbook/audio-eq-cookbook.html
