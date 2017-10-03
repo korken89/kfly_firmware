@@ -105,6 +105,14 @@ void ComputerControlGetAttitudeReference(quaternion_t *attitude_ref,
     *throttle_ref = computer_control.attitude.throttle;
 }
 
+void ComputerControlGetAttitudeEulerReference(vector3f_t *euler_ref,
+                                              float *throttle_ref)
+{
+    // Get the roll angle, pitch angle, and yaw rate
+    *euler_ref = *((vector3f_t *)&computer_control.attitude_euler.roll);
+    *throttle_ref = computer_control.attitude_euler.throttle;
+}
+
 /**
  * @brief   Gets the current rate and trottle reference from the computer
  *          control.

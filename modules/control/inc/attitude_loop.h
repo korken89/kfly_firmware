@@ -118,6 +118,8 @@ static inline void vAttitudeControlEuler(const vector3f_t *ref,
                           rate_limits->y,
                           -rate_limits->y,
                           dt);
+
+    out->z = bound(rate_limits->z, -rate_limits->z, ref->z);
 }
 /*===========================================================================*/
 /* External declarations.                                                    */

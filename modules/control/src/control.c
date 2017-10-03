@@ -32,6 +32,7 @@
 #include "rc_output.h"
 #include "rate_loop.h"
 #include "attitude_loop.h"
+#include "sensor_read.h"
 
 /*===========================================================================*/
 /* Module local definitions.                                                 */
@@ -88,7 +89,7 @@ static THD_FUNCTION(ThreadControl, arg)
         chEvtWaitOne(ESTIMATION_NEW_ESTIMATION_EVENTMASK);
 
         /* Run control. */
-        vUpdateControlAction(&states->q, &states->w, ESTIMATION_DT);
+        vUpdateControlAction(&states->q, &states->w, SENSOR_ACCGYRO_DT);
     }
 }
 
@@ -324,18 +325,27 @@ void vUpdateControlAction(const quaternion_t *attitude_m,
 
         if (control_reference.mode == FLIGHTMODE_ATTITUDE)
         {
-            ComputerControlGetAttitudeReference(&control_reference.attitude_reference,
-                                        &control_reference.actuator_desired.throttle);
+            ComputerControlGetAttitudeReference(
+                &control_reference.attitude_reference,
+                &control_reference.actuator_desired.throttle);
+        }
+        else if (control_reference.mode == FLIGHTMODE_ATTITUDE_EULER)
+        {
+            ComputerControlGetAttitudeEulerReference(
+                &control_reference.attitude_reference_euler,
+                &control_reference.actuator_desired.throttle);
         }
         else if (control_reference.mode == FLIGHTMODE_RATE)
         {
-            ComputerControlGetRateReference(&control_reference.rate_reference,
-                                     &control_reference.actuator_desired.throttle);
+            ComputerControlGetRateReference(
+                &control_reference.rate_reference,
+                &control_reference.actuator_desired.throttle);
         }
         else if (control_reference.mode == FLIGHTMODE_INDIRECT)
         {
-            ComputerControlGetIndirectReference(&control_reference.actuator_desired.torque,
-                                         &control_reference.actuator_desired.throttle);
+            ComputerControlGetIndirectReference(
+                &control_reference.actuator_desired.torque,
+                &control_reference.actuator_desired.throttle);
         }
         else if (control_reference.mode == FLIGHTMODE_DIRECT)
         {

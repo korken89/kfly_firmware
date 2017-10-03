@@ -49,6 +49,17 @@ typedef struct PACKED_VAR
         } rate;
 
         /**
+         * @brief Attitude euler control data.
+         */
+        struct
+        {
+            float roll;
+            float pitch;
+            float yaw_rate;
+            float throttle;
+        } attitude_euler;
+
+        /**
          * @brief Attitude control data.
          */
         struct
@@ -77,6 +88,8 @@ bool ComputerControlEnabled(void);
 flightmode_t ComputerControlGetFlightmode(void);
 void ComputerControlGetAttitudeReference(quaternion_t *attitude_ref,
                                          float *throttle_ref);
+void ComputerControlGetAttitudeEulerReference(vector3f_t *euler_ref,
+                                              float *throttle_ref);
 void ComputerControlGetRateReference(vector3f_t *rate_ref,
                                      float *throttle_ref);
 void ComputerControlGetIndirectReference(vector3f_t *torque_ref,
