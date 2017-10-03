@@ -378,7 +378,7 @@ static void ParseSaveToFlash(kfly_parser_t *pHolder)
 /**
  * @brief               Parses a EraseFlash command.
  * @note                The serial communication will be locked until the erase
- *                      has finnished.
+ *                      has finished.
  *
  * @param[in] pHolder   Message holder containing information
  *                      about the transmission.
@@ -387,10 +387,13 @@ static void ParseEraseFlash(kfly_parser_t *pHolder)
 {
     (void)pHolder;
 
-    /* Erase the external flash, the communicaiton will be locked until it is
+    /* Erase the external flash, the communication will be locked until it is
      * done.
      */
     vFlashSave_EraseAll();
+
+    /* Reset the system */
+    NVIC_SystemReset();
 
 }
 
