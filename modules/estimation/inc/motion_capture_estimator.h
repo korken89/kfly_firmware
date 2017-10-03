@@ -32,7 +32,6 @@ void vInitializeMotionCaptureEstimator(attitude_states_t *states);
 void vInnovateMotionCaptureEstimator(attitude_states_t *states,
                                      const imu_data_t *imu_data,
                                      const float imu_dt,
-                                     const float wb_gain,
-                                     const float gyro_lpf);
+                                     const float wb_gain);
 
 #endif /* __VICON_ESTIMATOR_H */

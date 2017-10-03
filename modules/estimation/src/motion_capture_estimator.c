@@ -50,15 +50,12 @@ void vInitializeMotionCaptureEstimator(attitude_states_t *states)
  * @param[in] imu_data      Latest IMU measurement.
  * @param[in] imu_dt        Sampling time of the IMU data.
  * @param[in] wb_gain       Gain for the rate bias estimation.
- * @param[in] gyro_lpf      Time constant for the gyro lowpass filter.
  */
 void vInnovateMotionCaptureEstimator(attitude_states_t *states,
                                      const imu_data_t *imu_data,
                                      const float imu_dt,
-                                     const float wb_gain,
-                                     const float gyro_lpf)
+                                     const float wb_gain)
 {
-    (void) wb_gain;
     vector3f_t w_hat, wb_step;
     quaternion_t q_err;
 
@@ -106,7 +103,7 @@ void vInnovateMotionCaptureEstimator(attitude_states_t *states,
         /* 5. Apply estimate and update the estimation. */
         states->wb = vector_add(states->wb, wb_step);
         states->q = mc_data.pose.orientation;
-        w_hat = vector_sub(w_hat, wb_step);
+        states->w = vector_sub(w_hat, wb_step);
     }
     else
     {
@@ -114,9 +111,7 @@ void vInnovateMotionCaptureEstimator(attitude_states_t *states,
 
         /* 2. Integrate and save the quaternion, and save the omega. */
         states->q = qint(states->q, w_hat, imu_dt);
+        states->w = w_hat;
     }
-
-    /* 6. Apply low-pass filtering of gyro data and save it. */
-    states->w = vector_lowpassfilter(w_hat, states->w, gyro_lpf);
 }
 
