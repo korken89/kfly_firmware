@@ -381,14 +381,14 @@ msg_t SensorReadInit(void)
       BiquadUpdateCoeffs(&acc_lpf_biquad[i].coeffs,
                          SENSOR_ACCGYRO_HZ,
                          ACCGYRO_BIQUAD_CUT_HZ,
-                         ACCGYRO_LPF_Q,
+                         ACCGYRO_BUTTERWORTH_Q,
                          BIQUAD_LPF);
 
       BiquadInitStateDF2T(&gyro_lpf_biquad[i].state);
       BiquadUpdateCoeffs(&gyro_lpf_biquad[i].coeffs,
                          SENSOR_ACCGYRO_HZ,
                          ACCGYRO_BIQUAD_CUT_HZ,
-                         ACCGYRO_LPF_Q,
+                         ACCGYRO_BUTTERWORTH_Q,
                          BIQUAD_LPF);
     }
 
