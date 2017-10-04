@@ -92,18 +92,22 @@ static inline void vAttitudeControlEuler(const vector3f_t *ref,
                                          vector3f_t *out,
                                          pi_data_t attitude_controller[3],
                                          const vector3f_t *rate_limits,
+                                         const float *angle_limits,
                                          const float dt)
 {
     vector3f_t err;
 
     /* TODO: Check the calculations */
     /* Calculate the attitude error */
-    err.x = ref->x - atan2f(2.0f * (attitude_m->w * attitude_m->x +
+    const float x_ref = bound(angle_limits[0], -angle_limits[0], ref->x);
+    const float y_ref = bound(angle_limits[1], -angle_limits[1], ref->y);
+
+    err.x = x_ref - atan2f(2.0f * (attitude_m->w * attitude_m->x +
                                     attitude_m->y * attitude_m->z),
                             1.0f - 2.0f * (attitude_m->x * attitude_m->x +
                                            attitude_m->y * attitude_m->y));
 
-    err.y = ref->y - asinf(2.0f * (attitude_m->w * attitude_m->y -
+    err.y = y_ref - asinf(2.0f * (attitude_m->w * attitude_m->y -
                                    attitude_m->x * attitude_m->z));
 
     /* Update controllers, send bounded control signal to the next step */
