@@ -14,6 +14,7 @@ include $(MODULE_DIR)/sensors/sensors.mk
 include $(MODULE_DIR)/usb/usb.mk
 include $(MODULE_DIR)/system_information/system_information.mk
 include $(MODULE_DIR)/motion_capture/motion_capture.mk
+include $(MODULE_DIR)/spectral_estimation/spectral_estimation.mk
 
 # List of all the module related files.
 MODULES_SRC = $(COMMUNICATION_SRCS) \
@@ -27,7 +28,8 @@ MODULES_SRC = $(COMMUNICATION_SRCS) \
               $(SENSORS_SRCS) \
               $(USB_SRCS) \
               $(SYSTEMINFO_SRCS) \
-              $(MOTION_CAPTURE_SRCS)
+              $(MOTION_CAPTURE_SRCS) \
+              $(SESTIMATION_SRCS)
 
 # Required include directories
 MODULES_INC = $(COMMUNICATION_INC) \
@@ -41,4 +43,5 @@ MODULES_INC = $(COMMUNICATION_INC) \
               $(SENSORS_INC) \
               $(USB_INC) \
               $(SYSTEMINFO_INC) \
-              $(MOTION_CAPTURE_INC)
+              $(MOTION_CAPTURE_INC) \
+              $(SESTIMATION_INC)
