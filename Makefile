@@ -25,7 +25,7 @@ endif
 
 # Linker extra options here.
 ifeq ($(USE_LDOPT),)
-  USE_LDOPT = -lm
+  USE_LDOPT = -Llib,-lm,-larm_cortexM4lf_math
 endif
 
 # Enable this if you want link time optimizations (LTO)
@@ -152,7 +152,7 @@ ASMSRC = $(STARTUPASM) $(PORTASM) $(OSALASM)
 INCDIR = $(STARTUPINC) $(KERNINC) $(PORTINC) $(OSALINC) \
          $(HALINC) $(PLATFORMINC) $(BOARDINC) $(SYSTEMINC) \
          $(ADRIVERSINC) $(CHIBIOS)/os/hal/lib/streams $(CHIBIOS)/os/various \
-         $(MODULES_INC)
+         $(MODULES_INC) ./lib
 
 #
 # Project, sources and paths
