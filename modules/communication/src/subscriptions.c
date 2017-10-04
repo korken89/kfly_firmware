@@ -190,6 +190,10 @@ bool bSubscribeToCommandI(kfly_command_t command,
 {
     int i;
 
+    /* Sanity check */
+    if (delay_ms == 0)
+      return false;
+
     /* Look if the subscription already exists */
     for (i = 0; i < MAX_NUMBER_OF_SUBSCRIPTIONS; i++)
     {
