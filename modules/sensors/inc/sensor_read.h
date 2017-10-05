@@ -75,6 +75,10 @@ typedef struct
      */
     float temperature;
     /**
+     * @brief   Pressure of the barometer.
+     */
+    float pressure;
+    /**
      * @brief   Sample time of the latest acc & gyro sample in nanoseconds.
      */
     int64_t acc_gyro_time_ns;

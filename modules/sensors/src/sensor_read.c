@@ -647,6 +647,10 @@ void GetIMUData(imu_data_t *data)
     }
 
     data->temperature = sensorcfg.mpu6050cfg->data_holder->temperature;
+
+    /* TODO: Get the true pressure */
+    data->pressure = 0;
+
     data->acc_gyro_time_ns = rtGetLatestAccelerometerSamplingTimeNS();
 
     /* Unlock data structures after reading */
