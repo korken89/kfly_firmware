@@ -56,7 +56,7 @@ typedef struct
 /**
  * @brief   Calibrated IMU data structure.
  */
-typedef struct
+typedef struct PACKED_VAR
 {
     /**
      * @brief   Calibrated accelerometer data.
@@ -87,7 +87,7 @@ typedef struct
 /**
  * @brief   Raw IMU data structure.
  */
-typedef struct
+typedef struct PACKED_VAR
 {
     /**
      * @brief   Raw accelerometer data.
