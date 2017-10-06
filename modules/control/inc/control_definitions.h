@@ -47,11 +47,11 @@ typedef struct
 typedef struct
 {
     /**
-     * @brief   Holder for the rate limits.
+     * @brief   Holder for the rate limits in rad/s.
      */
     vector3f_t max_rate;
     /**
-     * @brief   Holder for the rate limits in attitude mode.
+     * @brief   Holder for the rate limits in attitude mode in rad/s.
      */
     vector3f_t max_rate_attitude;
     /**
