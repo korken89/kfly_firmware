@@ -43,9 +43,9 @@ static inline void vRateControl(const vector3f_t *ref,
     error = vector_sub(*ref, *omega_m);
 
     /* Update the PI controllers */
-    out->x = fPIUpdate_BC(&rate_controller[0], error.x, 1.0f, -1.0f, dt);
-    out->y = fPIUpdate_BC(&rate_controller[1], error.y, 1.0f, -1.0f, dt);
-    out->z = fPIUpdate_BC(&rate_controller[2], error.z, 1.0f, -1.0f, dt);
+    out->x = fPIUpdate_BC(&rate_controller[0], error.x, 0.4f, -0.4f, dt);
+    out->y = fPIUpdate_BC(&rate_controller[1], error.y, 0.4f, -0.4f, dt);
+    out->z = fPIUpdate_BC(&rate_controller[2], error.z, 0.4f, -0.4f, dt);
 }
 
 /*===========================================================================*/
