@@ -43,10 +43,10 @@ static const EPWMConfig opmcfg = {
     RCOUTPUT_FREQUENCY_OPM,             /* 7 MHz clock frequency    */
     RCOUTPUT_PERIOD_OPM,
     {
-        {EPWM_OUTPUT_ACTIVE_HIGH},      /* Active high */
-        {EPWM_OUTPUT_ACTIVE_HIGH},      /* Active high */
-        {EPWM_OUTPUT_ACTIVE_HIGH},      /* Active high */
-        {EPWM_OUTPUT_ACTIVE_HIGH}       /* Active high */
+        {EPWM_OUTPUT_ACTIVE_LOW},      /* Active LOW */
+        {EPWM_OUTPUT_ACTIVE_LOW},      /* Active LOW */
+        {EPWM_OUTPUT_ACTIVE_LOW},      /* Active LOW */
+        {EPWM_OUTPUT_ACTIVE_LOW}       /* Active LOW */
     },
     EPWM_OPM_MODE
 };
