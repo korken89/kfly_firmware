@@ -1,8 +1,9 @@
 #ifndef __RC_OUTPUT_H
 #define __RC_OUTPUT_H
 
+#include "ch.h"
+#include "hal.h"
 #include "kfly_defs.h"
-#include "epwm.h"
 
 /*===========================================================================*/
 /* Module global definitions.                                                */
@@ -11,65 +12,57 @@
 #define RCOUTPUT_SETTINGS_SIZE              (sizeof(rcoutput_settings_t))
 #define RCOUTPUT_NUM_OUTPUTS                (8)
 #define RCOUTPUT_BANK_SIZE                  (4)
-#define RCOUTPUT_OPM_WIDTH                  (875.0f)
-#define RCOUTPUT_PWM_WIDTH                  (1000.0f)
 
 /*===========================================================================*/
 /* Module data structures and types.                                         */
 /*===========================================================================*/
 
+typedef enum
+{
+    DSHOT_CMD_MOTOR_STOP = 0,
+    DSHOT_CMD_BEACON1,
+    DSHOT_CMD_BEACON2,
+    DSHOT_CMD_BEACON3,
+    DSHOT_CMD_BEACON4,
+    DSHOT_CMD_BEACON5,
+    DSHOT_CMD_ESC_INFO,
+    DSHOT_CMD_SPIN_DIRECTION_1,             // Needs to be sent 10x
+    DSHOT_CMD_SPIN_DIRECTION_2,             // Needs to be sent 10x
+    DSHOT_CMD_3D_MODE_OFF,                  // Needs to be sent 10x
+    DSHOT_CMD_3D_MODE_ON,                   // Needs to be sent 10x
+    DSHOT_CMD_SETTINGS_REQUEST,             // Currently not implemented
+    DSHOT_CMD_SAVE_SETTINGS,                // Needs to be sent 10x
+    DSHOT_CMD_SPIN_DIRECTION_NORMAL = 20,   // Needs to be sent 10x
+    DSHOT_CMD_SPIN_DIRECTION_REVERSED = 21, // Needs to be sent 10x
+    DSHOT_CMD_LED0_ON,                      // BLHeli32 only
+    DSHOT_CMD_LED1_ON,                      // BLHeli32 only
+    DSHOT_CMD_LED2_ON,                      // BLHeli32 only
+    DSHOT_CMD_LED3_ON,                      // BLHeli32 only
+    DSHOT_CMD_LED0_OFF,                     // BLHeli32 only
+    DSHOT_CMD_LED1_OFF,                     // BLHeli32 only
+    DSHOT_CMD_LED2_OFF,                     // BLHeli32 only
+    DSHOT_CMD_LED3_OFF,                     // BLHeli32 only
+    DSHOT_CMD_MAX = 47
+} dshot_commands_t;
+
 /**
  * @brief Enum for selecting the period of the output PPM.
  */
 typedef enum
 {
-    /**
-     * @brief Output mode PWM @ 400 Hz.
-     */
-    RCOUTPUT_MODE_400HZ_PWM = 0,
-    /**
-     * @brief Output mode PWM @ 50 Hz.
-     */
-    RCOUTPUT_MODE_50HZ_PWM = 1,
-    /**
-     * @brief Output mode OPM (OneShot125).
-     */
-    RCOUTPUT_MODE_OPM = 2
+    RCOUTPUT_MODE_50HZ_PWM = 0,
+    RCOUTPUT_MODE_400HZ_PWM,
+    RCOUTPUT_MODE_ONESHOT125,
+    RCOUTPUT_MODE_ONESHOT42,
+    RCOUTPUT_MODE_MULTISHOT,
+    RCOUTPUT_MODE_DSHOT150,
+    RCOUTPUT_MODE_DSHOT300,
+    RCOUTPUT_MODE_DSHOT600,
+    RCOUTPUT_MODE_DSHOT1200,
+    RCOUTPUT_MODE_ONESHOT_START = RCOUTPUT_MODE_ONESHOT125,
+    RCOUTPUT_MODE_DSHOT_START = RCOUTPUT_MODE_DSHOT150
 } rcoutput_mode_t;
 
-/**
- * @brief Enum for selecting the period of the output PPM.
- */
-typedef enum
-{
-    /**
-     * @brief Output period for PWM @ 400 Hz.
-     */
-    RCOUTPUT_PERIOD_400HZ = 2500,
-    /**
-     * @brief Output period for PWM @ 50 Hz.
-     */
-    RCOUTPUT_PERIOD_50HZ = 20000,
-    /**
-     * @brief Output period for OPM (OneShot125).
-     */
-    RCOUTPUT_PERIOD_OPM = 1760   /* 10 ticks of padding added. */
-} rcoutput_period_t;
-
-/**
- * @brief Enum for selecting the frequency of the timer.
- */
-typedef enum
-{
-    /**
-     * @brief Timer frequency for PWM mode.
-     */
-    RCOUTPUT_FREQUENCY_PWM = 1000000,
-    /**
-     * @brief Timer frequency for OPM (OneShot125) mode.
-     */
-    RCOUTPUT_FREQUENCY_OPM = 7000000
-} rcoutput_frequency_t;
 
 /**
  * @brief Enum for defining the RC output channels.
@@ -100,22 +93,22 @@ typedef enum
  */
 typedef struct
 {
-    /**
-     * @brief PWM driver for the low (1 to 4) bank.
-     */
-    EPWMDriver *pwmp_lowbank;
-    /**
-     * @brief PWM driver for the high (5 to 8) bank.
-     */
-    EPWMDriver *pwmp_highbank;
-    /**
-     * @brief PWM configuration structure.
-     */
-    const EPWMConfig *pwmcfg;
-    /**
-     * @brief PWM configuration structure.
-     */
-    const EPWMConfig *opmcfg;
+    DMA_TypeDef *bank1_dmap;
+    DMA_TypeDef *bank2_dmap;
+
+    const stm32_dma_stream_t *bank1_dmasp;
+    const stm32_dma_stream_t *bank2_dmasp;
+
+    stm32_tim_t *bank1_tim;
+    stm32_tim_t *bank2_tim;
+
+    uint32_t bank1_tim_clock;
+    uint32_t bank2_tim_clock;
+
+    uint16_t bank1_buffer[RCOUTPUT_NUM_OUTPUTS * 2 + 1][RCOUTPUT_BANK_SIZE];
+    uint16_t bank2_buffer[RCOUTPUT_NUM_OUTPUTS * 2 + 1][RCOUTPUT_BANK_SIZE];
+
+    bool request_telemetry[RCOUTPUT_NUM_OUTPUTS];
 } rcoutput_configuration_t;
 
 /**
@@ -141,24 +134,21 @@ typedef struct PACKED_VAR {
 /*===========================================================================*/
 
 /*===========================================================================*/
-/* Module inline functions.                                                  */
-/*===========================================================================*/
-
-/*===========================================================================*/
 /* External declarations.                                                    */
 /*===========================================================================*/
 void RCOutputInit(void);
-void RCOutputInitialization(void);
+void RCOutputTimerInit(void);
 void RCOutputDisableI(void);
-msg_t RCOutputSetChannelWidthAbsolute(const rcoutput_channel_t sel,
-                                      const epwmcnt_t width);
-msg_t RCOutputSetChannelWidth(const rcoutput_channel_t sel,
-                              const float width);
-msg_t RCOutputSetChannelPeriod(const rcoutput_bank_t sel,
-                               const rcoutput_period_t rate);
-void RCOutputSyncOutput(void);
+void RCOutputSetChannelWidth(const rcoutput_channel_t channel,
+                             float value);
+void RCOutputSync(void);
 void vParseSetRCOutputSettings(const uint8_t *payload,
                                const size_t data_length);
 rcoutput_settings_t *ptrGetRCOutoutSettings(void);
+
+/*===========================================================================*/
+/* Module inline functions.                                                  */
+/*===========================================================================*/
+
 
 #endif

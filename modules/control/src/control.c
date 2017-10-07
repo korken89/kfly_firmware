@@ -228,7 +228,7 @@ static void vSendPWMCommands(void)
     for (i = 0; i < 8; i++)
         RCOutputSetChannelWidth(i, control_reference.output[i]);
 
-    RCOutputSyncOutput();
+    RCOutputSync();
 }
 
 /**
