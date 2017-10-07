@@ -548,6 +548,20 @@ void RCOutputSync(void)
 }
 
 /**
+ * @brief     Checks if the effects of the @p RCOutputSync have taken hold.
+ *
+ * @return    True if there is an Sync active, false if sync has finished.
+ */
+bool RCOutputSyncActive(void)
+{
+  if ((rcoutput_config.bank1_dmasp->stream->CR & STM32_DMA_CR_EN) != 0 ||
+      (rcoutput_config.bank2_dmasp->stream->CR & STM32_DMA_CR_EN) != 0)
+    return true;
+  else
+    return false;
+}
+
+/**
  * @brief               Parses a payload from the serial communication for
  *                      all the RC output settings.
  *

@@ -19,30 +19,30 @@
 
 typedef enum
 {
-    DSHOT_CMD_MOTOR_STOP = 0,
-    DSHOT_CMD_BEACON1,
-    DSHOT_CMD_BEACON2,
-    DSHOT_CMD_BEACON3,
-    DSHOT_CMD_BEACON4,
-    DSHOT_CMD_BEACON5,
-    DSHOT_CMD_ESC_INFO,
-    DSHOT_CMD_SPIN_DIRECTION_1,             // Needs to be sent 10x
-    DSHOT_CMD_SPIN_DIRECTION_2,             // Needs to be sent 10x
-    DSHOT_CMD_3D_MODE_OFF,                  // Needs to be sent 10x
-    DSHOT_CMD_3D_MODE_ON,                   // Needs to be sent 10x
-    DSHOT_CMD_SETTINGS_REQUEST,             // Currently not implemented
-    DSHOT_CMD_SAVE_SETTINGS,                // Needs to be sent 10x
-    DSHOT_CMD_SPIN_DIRECTION_NORMAL = 20,   // Needs to be sent 10x
-    DSHOT_CMD_SPIN_DIRECTION_REVERSED = 21, // Needs to be sent 10x
-    DSHOT_CMD_LED0_ON,                      // BLHeli32 only
-    DSHOT_CMD_LED1_ON,                      // BLHeli32 only
-    DSHOT_CMD_LED2_ON,                      // BLHeli32 only
-    DSHOT_CMD_LED3_ON,                      // BLHeli32 only
-    DSHOT_CMD_LED0_OFF,                     // BLHeli32 only
-    DSHOT_CMD_LED1_OFF,                     // BLHeli32 only
-    DSHOT_CMD_LED2_OFF,                     // BLHeli32 only
-    DSHOT_CMD_LED3_OFF,                     // BLHeli32 only
-    DSHOT_CMD_MAX = 47
+    DSHOT_COMMAND_MOTOR_STOP = 0,
+    DSHOT_COMMAND_BEACON1,
+    DSHOT_COMMAND_BEACON2,
+    DSHOT_COMMAND_BEACON3,
+    DSHOT_COMMAND_BEACON4,
+    DSHOT_COMMAND_BEACON5,
+    DSHOT_COMMAND_ESC_INFO,
+    DSHOT_COMMAND_SPIN_DIRECTION_1,             // Needs to be sent 10x
+    DSHOT_COMMAND_SPIN_DIRECTION_2,             // Needs to be sent 10x
+    DSHOT_COMMAND_3D_MODE_OFF,                  // Needs to be sent 10x
+    DSHOT_COMMAND_3D_MODE_ON,                   // Needs to be sent 10x
+    DSHOT_COMMAND_SETTINGS_REQUEST,             // Currently not implemented
+    DSHOT_COMMAND_SAVE_SETTINGS,                // Needs to be sent 10x
+    DSHOT_COMMAND_SPIN_DIRECTION_NORMAL = 20,   // Needs to be sent 10x
+    DSHOT_COMMAND_SPIN_DIRECTION_REVERSED = 21, // Needs to be sent 10x
+    DSHOT_COMMAND_LED0_ON,                      // BLHeli32 only
+    DSHOT_COMMAND_LED1_ON,                      // BLHeli32 only
+    DSHOT_COMMAND_LED2_ON,                      // BLHeli32 only
+    DSHOT_COMMAND_LED3_ON,                      // BLHeli32 only
+    DSHOT_COMMAND_LED0_OFF,                     // BLHeli32 only
+    DSHOT_COMMAND_LED1_OFF,                     // BLHeli32 only
+    DSHOT_COMMAND_LED2_OFF,                     // BLHeli32 only
+    DSHOT_COMMAND_LED3_OFF,                     // BLHeli32 only
+    DSHOT_COMMAND_MAX = 47
 } dshot_commands_t;
 
 /**
@@ -142,6 +142,7 @@ void RCOutputDisableI(void);
 void RCOutputSetChannelWidth(const rcoutput_channel_t channel,
                              float value);
 void RCOutputSync(void);
+bool RCOutputSyncActive(void);;
 void vParseSetRCOutputSettings(const uint8_t *payload,
                                const size_t data_length);
 rcoutput_settings_t *ptrGetRCOutoutSettings(void);
