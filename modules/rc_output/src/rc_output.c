@@ -45,7 +45,7 @@
 #define DSHOT_PERIOD          35
 #define DSHOT_BIAS            48
 #define DSHOT_GAIN            1999
-#define DSHOT_BIT_0           13  // 37 %
+#define DSHOT_BIT_0           12  // 35 %
 #define DSHOT_BIT_1           25  // 75 %
 
 /*===========================================================================*/
