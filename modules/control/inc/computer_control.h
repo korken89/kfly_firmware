@@ -18,11 +18,6 @@
  */
 typedef struct PACKED_VAR
 {
-    /**
-     * @brief Flight mode to differentiate the following data.
-     */
-    flightmode_t mode;
-
     union
     {
         /**
@@ -68,6 +63,11 @@ typedef struct PACKED_VAR
             float throttle;
         } attitude;
     };
+
+    /**
+     * @brief Flight mode to differentiate the data union.
+     */
+    flightmode_t mode;
 } computer_control_reference_t;
 
 /*===========================================================================*/
