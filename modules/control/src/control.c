@@ -378,7 +378,7 @@ void vUpdateControlAction(const quaternion_t *attitude_m,
                                       attitude_m,
                                       &control_reference.rate_reference,
                                       control_data.attitude_controller,
-                                      &control_limits.max_rate_attitude,
+                                      &control_limits.max_rate.max_rate,
                                       (float *)&control_limits.max_angle,
                                       dt);
             }
@@ -388,7 +388,7 @@ void vUpdateControlAction(const quaternion_t *attitude_m,
                                  attitude_m,
                                  &control_reference.rate_reference,
                                  control_data.attitude_controller,
-                                 &control_limits.max_rate_attitude,
+                                 &control_limits.max_rate.max_rate,
                                  dt);
             }
 
