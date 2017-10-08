@@ -1,5 +1,9 @@
 # The code and specifications for the KFly PCB version 3 and above
 
+### Stuff to fix
+
+* Generalize RC Input, should not be dependent on the center value to determine if it is a "positive / negative only". Throttle will be used for more in the future.
+
 ### Hardware Specifications
 
 All PCBs follow the standard 36 x 36 mm outline with 30.5 x 30.5 mm mounting holes, unless nothing else is stated.
