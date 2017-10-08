@@ -47,13 +47,24 @@ typedef struct
 typedef struct
 {
     /**
-     * @brief   Holder for the rate limits in rad/s.
+     * @brief   Holder for the rate limits which builds up the exponential
+     *          response in manual mode and limits in automatic mode.
+     *
+     * @note    max_rate >= center_rate
+     * @note    Manual rate = stick * center_rate +
+     *                        stick^3 * (max_rate - center_rate)
      */
-    vector3f_t max_rate;
-    /**
-     * @brief   Holder for the rate limits in attitude mode in rad/s.
-     */
-    vector3f_t max_rate_attitude;
+    struct
+    {
+        /**
+         * @brief   Holder for the rate limits in rad/s.
+         */
+        vector3f_t max_rate;
+        /**
+         * @brief   Holder for the center linear rate in rad/s.
+         */
+        vector3f_t center_rate;
+    } max_rate;
     /**
      * @brief   Holder for the attitude limits.
      */

@@ -89,14 +89,17 @@ void RCInputsToControlAction(control_reference_t *ref,
 
     if (ref->mode == FLIGHTMODE_RATE)
     {
-        ref->rate_reference.x =
-            lim->max_rate.x * RCInputGetInputLevel(RCINPUT_ROLE_ROLL);
-        ref->rate_reference.y =
-            lim->max_rate.y * RCInputGetInputLevel(RCINPUT_ROLE_PITCH);
-        ref->rate_reference.z =
-            lim->max_rate.z * RCInputGetInputLevel(RCINPUT_ROLE_YAW);
+      ref->rate_reference.x = ApplyRateLimitsAndExponentials(
+          lim->max_rate.center_rate.x, lim->max_rate.max_rate.x,
+          RCInputGetInputLevel(RCINPUT_ROLE_ROLL));
+      ref->rate_reference.y = ApplyRateLimitsAndExponentials(
+          lim->max_rate.center_rate.y, lim->max_rate.max_rate.y,
+          RCInputGetInputLevel(RCINPUT_ROLE_PITCH));
+      ref->rate_reference.z = ApplyRateLimitsAndExponentials(
+          lim->max_rate.center_rate.z, lim->max_rate.max_rate.z,
+          RCInputGetInputLevel(RCINPUT_ROLE_YAW));
 
-        ref->actuator_desired.throttle = throttle;
+      ref->actuator_desired.throttle = throttle;
     }
     else if (ref->mode == FLIGHTMODE_ATTITUDE_EULER)
     {
@@ -104,8 +107,9 @@ void RCInputsToControlAction(control_reference_t *ref,
             lim->max_angle.roll * RCInputGetInputLevel(RCINPUT_ROLE_ROLL);
         ref->attitude_reference_euler.y =
             lim->max_angle.pitch * RCInputGetInputLevel(RCINPUT_ROLE_PITCH);
-        ref->rate_reference.z =
-            lim->max_rate.z * RCInputGetInputLevel(RCINPUT_ROLE_YAW);
+        ref->rate_reference.z = ApplyRateLimitsAndExponentials(
+            lim->max_rate.center_rate.z, lim->max_rate.max_rate.z,
+            RCInputGetInputLevel(RCINPUT_ROLE_YAW));
 
         ref->actuator_desired.throttle = throttle;
     }
@@ -115,4 +119,3 @@ void RCInputsToControlAction(control_reference_t *ref,
         ref->actuator_desired.throttle = 0.0f;
     }
 }
-
