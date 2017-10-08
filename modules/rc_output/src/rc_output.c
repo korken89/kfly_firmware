@@ -141,7 +141,7 @@ static THD_FUNCTION(ThreadRCOutputFlashSave, arg)
 static void RCOutputSettingsReset(void)
 {
     for (int i = 0; i < RCOUTPUT_NUM_OUTPUTS; i++)
-        rcoutput_settings.channel_enabled[i] = true;
+        rcoutput_settings.channel_enabled[i] = false;
 
     rcoutput_settings.mode_bank1 = RCOUTPUT_MODE_DSHOT150;
     rcoutput_settings.mode_bank2 = RCOUTPUT_MODE_DSHOT150;
@@ -397,6 +397,7 @@ void RCOutputTimerInit(void)
     tim_b1->CCR[1] = 0;
     tim_b1->CCR[2] = 0;
     tim_b1->CCR[3] = 0;
+    tim_b1->CCER  = 0;
 
     tim_b2->CR1 = 0;
     tim_b2->CR2 = 0;
@@ -405,6 +406,7 @@ void RCOutputTimerInit(void)
     tim_b2->CCR[1] = 0;
     tim_b2->CCR[2] = 0;
     tim_b2->CCR[3] = 0;
+    tim_b2->CCER  = 0;
 
     //
     // Set up clock settings
@@ -437,12 +439,32 @@ void RCOutputTimerInit(void)
     // Enable the TIM Main Output (for advanced control timers)
     tim_b2->BDTR  = STM32_TIM_BDTR_MOE;
 
-    // Enable outputs
-    tim_b1->CCER  = STM32_TIM_CCER_CC1E | STM32_TIM_CCER_CC2E |
-                    STM32_TIM_CCER_CC3E | STM32_TIM_CCER_CC4E;
+    // Enable outputs (if enabled in settings)
+    if (rcoutput_settings
+            .channel_enabled[rcoutput_channellut[RCOUTPUT_CHANNEL_1]])
+      tim_b1->CCER |= STM32_TIM_CCER_CC1E;
+    if (rcoutput_settings
+            .channel_enabled[rcoutput_channellut[RCOUTPUT_CHANNEL_2]])
+      tim_b1->CCER |= STM32_TIM_CCER_CC2E;
+    if (rcoutput_settings
+            .channel_enabled[rcoutput_channellut[RCOUTPUT_CHANNEL_3]])
+      tim_b1->CCER |= STM32_TIM_CCER_CC3E;
+    if (rcoutput_settings
+            .channel_enabled[rcoutput_channellut[RCOUTPUT_CHANNEL_4]])
+      tim_b1->CCER |= STM32_TIM_CCER_CC4E;
 
-    tim_b2->CCER  = STM32_TIM_CCER_CC1E | STM32_TIM_CCER_CC2E |
-                    STM32_TIM_CCER_CC3E | STM32_TIM_CCER_CC4E;
+    if (rcoutput_settings
+            .channel_enabled[rcoutput_channellut[RCOUTPUT_CHANNEL_5] + 4])
+      tim_b2->CCER |= STM32_TIM_CCER_CC1E;
+    if (rcoutput_settings
+            .channel_enabled[rcoutput_channellut[RCOUTPUT_CHANNEL_6] + 4])
+      tim_b2->CCER |= STM32_TIM_CCER_CC2E;
+    if (rcoutput_settings
+            .channel_enabled[rcoutput_channellut[RCOUTPUT_CHANNEL_7] + 4])
+      tim_b2->CCER |= STM32_TIM_CCER_CC3E;
+    if (rcoutput_settings
+            .channel_enabled[rcoutput_channellut[RCOUTPUT_CHANNEL_8] + 4])
+      tim_b2->CCER |= STM32_TIM_CCER_CC4E;
 
     //
     // Setup Timer DMA settings
@@ -495,8 +517,9 @@ void RCOutputDisableI(void)
 void RCOutputSetChannelWidth(const rcoutput_channel_t channel,
                              float value)
 {
-    const int idx = rcoutput_channellut[channel];
+    int idx = rcoutput_channellut[channel];
 
+    // Bound intput value
     if (value > 1.0f)
         value = 1.0f;
     else if (value < 0.0f)
@@ -504,20 +527,20 @@ void RCOutputSetChannelWidth(const rcoutput_channel_t channel,
 
     if (channel <= RCOUTPUT_CHANNEL_4)
     {
-        bool request_telemetry = rcoutput_config.request_telemetry[idx];
         SetChannelWidthGeneric(rcoutput_settings.mode_bank1,
                                idx,
                                value,
-                               request_telemetry,
+                               rcoutput_config.request_telemetry[idx],
                                rcoutput_config.bank1_buffer);
     }
     else
     {
-        bool request_telemetry = rcoutput_config.request_telemetry[idx + 4];
+        idx += 4;
+
         SetChannelWidthGeneric(rcoutput_settings.mode_bank2,
                                idx,
                                value,
-                               request_telemetry,
+                               rcoutput_config.request_telemetry[idx],
                                rcoutput_config.bank2_buffer);
     }
 }
