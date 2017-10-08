@@ -25,6 +25,36 @@
 /* Module local functions.                                                   */
 /*===========================================================================*/
 
+static inline float ApplyRateLimitsAndExponentials(const float center_rate,
+                                                   const float total_rate,
+                                                   const float input)
+{
+  // Rate exponentials designed to have controlled center linear rate, while
+  // having "exponential"l kick in outside a small center span (about +/- 15%).
+  //
+  //
+  // Matlab test code:
+  //
+  // rate_max = 1000;
+  // center_rate = 200;
+  //
+  // x = linspace(-1,1,1000);
+  //
+  // % Create rate curve
+  // linear_rate = x * center_rate;
+  // super_rate = x.^3 * (rate_max - center_rate);
+  // y = linear_rate + super_rate;
+  //
+  // % Plot
+  // plot(x,y)
+  // grid on
+  // xlabel('Normalized input')
+  // ylabel('Output rate')
+
+   return input * center_rate +
+          input * input * input * (total_rate - center_rate);
+}
+
 /*===========================================================================*/
 /* Module exported functions.                                                */
 /*===========================================================================*/
@@ -39,8 +69,7 @@
  * @param[in] attitude_lim  Attitude limits around roll (x) and pitch (y).
  */
 void RCInputsToControlAction(control_reference_t *ref,
-                             const vector3f_t *rate_lim,
-                             const vector3f_t *attitude_lim)
+                             const control_limits_t *lim)
 {
     /* Get the zero integrals function.  */
     void vZeroControlIntegrals(void);
@@ -61,22 +90,22 @@ void RCInputsToControlAction(control_reference_t *ref,
     if (ref->mode == FLIGHTMODE_RATE)
     {
         ref->rate_reference.x =
-            rate_lim->x * RCInputGetInputLevel(RCINPUT_ROLE_ROLL);
+            lim->max_rate.x * RCInputGetInputLevel(RCINPUT_ROLE_ROLL);
         ref->rate_reference.y =
-            rate_lim->y * RCInputGetInputLevel(RCINPUT_ROLE_PITCH);
+            lim->max_rate.y * RCInputGetInputLevel(RCINPUT_ROLE_PITCH);
         ref->rate_reference.z =
-            rate_lim->z * RCInputGetInputLevel(RCINPUT_ROLE_YAW);
+            lim->max_rate.z * RCInputGetInputLevel(RCINPUT_ROLE_YAW);
 
         ref->actuator_desired.throttle = throttle;
     }
     else if (ref->mode == FLIGHTMODE_ATTITUDE_EULER)
     {
         ref->attitude_reference_euler.x =
-            attitude_lim->x * RCInputGetInputLevel(RCINPUT_ROLE_ROLL);
+            lim->max_angle.roll * RCInputGetInputLevel(RCINPUT_ROLE_ROLL);
         ref->attitude_reference_euler.y =
-            attitude_lim->y * RCInputGetInputLevel(RCINPUT_ROLE_PITCH);
+            lim->max_angle.pitch * RCInputGetInputLevel(RCINPUT_ROLE_PITCH);
         ref->rate_reference.z =
-            rate_lim->z * RCInputGetInputLevel(RCINPUT_ROLE_YAW);
+            lim->max_rate.z * RCInputGetInputLevel(RCINPUT_ROLE_YAW);
 
         ref->actuator_desired.throttle = throttle;
     }

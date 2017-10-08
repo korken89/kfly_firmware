@@ -363,8 +363,7 @@ void vUpdateControlAction(const quaternion_t *attitude_m,
         control_reference.mode = FLIGHTMODE_RATE;
 
         RCInputsToControlAction(&control_reference,
-                                &control_limits.max_rate,
-                                (vector3f_t *)&control_limits.max_angle);
+                                &control_limits);
     }
 
 

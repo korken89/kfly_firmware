@@ -3,6 +3,7 @@
 
 #include "geometry.h"
 #include "rc_input.h"
+#include "control_definitions.h"
 
 /*===========================================================================*/
 /* Module global definitions.                                                */
@@ -97,7 +98,6 @@ typedef struct
 /*===========================================================================*/
 
 void RCInputsToControlAction(control_reference_t *ref,
-                             const vector3f_t *rate_lim,
-                             const vector3f_t *attitude_lim);
+                             const control_limits_t *lim);
 
 #endif
