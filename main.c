@@ -2,6 +2,7 @@
 #include "hal.h"
 #include "system_init.h"
 #include "bootloader.h"
+#include "spectral.h"
 
 /**
  * @brief Placeholder for error messages.
@@ -25,8 +26,9 @@ int main(void)
      * Initialize all drivers and modules.
      *
      */
-    vSystemInit();
+    //vSystemInit();
 
+    test_spectral();
     /*
      *
      * Main task loop.

@@ -223,7 +223,7 @@ endif
 GIT_VERSION := $(GIT_TAGS)$(GIT_DIRTY)
 
 # List all default C defines here, like -D_DEBUG=1
-DDEFS = -DSTM32F405xx -DGIT_VERSION=$(GIT_VERSION) -DDATE=$(GIT_DATE)
+DDEFS = -DSTM32F405xx -DGIT_VERSION=$(GIT_VERSION) -DDATE=$(GIT_DATE) -DARM_MATH_CM4
 
 # List all default ASM defines here, like -D_DEBUG=1
 DADEFS =
