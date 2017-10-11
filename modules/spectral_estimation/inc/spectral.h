@@ -35,12 +35,7 @@ typedef struct
 
   arm_rfft_fast_instance_f32 fft_instance;
 
-  struct
-  {
-    int x;
-    int y;
-    int z;
-  } axis_counts;
+  uint32_t axis_counts;
 
   int state;
 } spectral_estimation_t;

@@ -30,6 +30,7 @@ void ApplyFFT(arm_rfft_fast_instance_f32 *fft, float *input, float *scratch)
 }
 
 
+
 void SpectralEstimationInit(spectral_estimation_t *p)
 {
   arm_cfft_instance_f32 *Sint  = &(p->fft_instance.Sint);
@@ -55,32 +56,35 @@ void SpectralEstimationInit(spectral_estimation_t *p)
 
 }
 
+
+
 void SpectralEstimationUpdate(spectral_estimation_t *p, float x, float y, float z)
 {
+  // Apply Hann window and save for processing
+  const float hann = hann_window[p->axis_counts];
+  p->samples_x[p->axis_counts] = x * hann;
+  p->samples_y[p->axis_counts] = y * hann;
+  p->samples_z[p->axis_counts] = z * hann;
+
   // Check which axis to perform FFT on
   if (p->state == 0)
   {
-    // X axis state
+    // X axis FFT
     p->state++;
   }
   else if (p->state == 1)
   {
-    // Y axis state
+    // Y axis FFT
     p->state++;
-  }
-  else if ( p->state > 1)
-  {
-    // Z axis state
-    p->state = 0;
   }
   else
-    p->state++;
+  {
+    // Z axis FFT
+    p->state = 0;
+  }
 
   // Increment counters
-  p->axis_counts.x = p->axis_counts.x % SPECTRAL_FFT_SIZE;
-  p->axis_counts.y = p->axis_counts.y % SPECTRAL_FFT_SIZE;
-  p->axis_counts.z = p->axis_counts.z % SPECTRAL_FFT_SIZE;
-
+  p->axis_counts = (p->axis_counts + 1) % SPECTRAL_FFT_SIZE;
 }
 
 
