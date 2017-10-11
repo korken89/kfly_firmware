@@ -63,7 +63,7 @@ void SpectralEstimationInit(spectral_estimation_t *p)
   }
 
   p->axis_counts = 0;
-  p->state = 0;
+  p->state = SPECTRAL_X_AXIS;
 }
 
 
@@ -77,7 +77,7 @@ void SpectralEstimationUpdate(spectral_estimation_t *p, float x, float y, float 
   p->samples_z[p->axis_counts] = z * hann;
 
   // Check which axis to perform FFT on
-  if (p->state == 0)
+  if (p->state == SPECTRAL_X_AXIS)
   {
     // X axis FFT
     for (int i = 0; i < SPECTRAL_FFT_SIZE; i++)
@@ -87,7 +87,7 @@ void SpectralEstimationUpdate(spectral_estimation_t *p, float x, float y, float 
 
     p->state++;
   }
-  else if (p->state == 1)
+  else if (p->state == SPECTRAL_Y_AXIS)
   {
     // Y axis FFT
     for (int i = 0; i < SPECTRAL_FFT_SIZE; i++)
@@ -105,7 +105,7 @@ void SpectralEstimationUpdate(spectral_estimation_t *p, float x, float y, float 
 
     ApplyFFT(&p->fft_instance, p->fft_area, p->scratchpad);
 
-    p->state = 0;
+    p->state = SPECTRAL_X_AXIS;
   }
 
 

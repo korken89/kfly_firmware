@@ -16,6 +16,12 @@
 /* Module data structures and types.                                         */
 /*===========================================================================*/
 
+typedef enum
+{
+  SPECTRAL_X_AXIS = 0,
+  SPECTRAL_Y_AXIS,
+  SPECTRAL_Z_AXIS
+} spectral_estimation_state_t;
 
 /**
  * @brief
@@ -33,7 +39,7 @@ typedef struct
 
   uint32_t axis_counts;
 
-  int state;
+  spectral_estimation_state_t state;
 } spectral_estimation_t;
 
 
