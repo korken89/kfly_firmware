@@ -1,4 +1,3 @@
-
 #include <stdint.h>
 #include "spectral.h"
 #include "hann_windows.h"
@@ -54,6 +53,17 @@ void SpectralEstimationInit(spectral_estimation_t *p)
   p->fft_instance.pTwiddleRFFT = (float32_t *)twiddleCoef_rfft_128;
 #endif
 
+
+
+  for (int i = 0; i < SPECTRAL_FFT_SIZE; i++)
+  {
+    p->samples_x[i] = 0;
+    p->samples_y[i] = 0;
+    p->samples_z[i] = 0;
+  }
+
+  p->axis_counts = 0;
+  p->state = 0;
 }
 
 
@@ -70,18 +80,34 @@ void SpectralEstimationUpdate(spectral_estimation_t *p, float x, float y, float 
   if (p->state == 0)
   {
     // X axis FFT
+    for (int i = 0; i < SPECTRAL_FFT_SIZE; i++)
+      p->fft_area[i] = p->samples_x[i];
+
+    ApplyFFT(&p->fft_instance, p->fft_area, p->scratchpad);
+
     p->state++;
   }
   else if (p->state == 1)
   {
     // Y axis FFT
+    for (int i = 0; i < SPECTRAL_FFT_SIZE; i++)
+      p->fft_area[i] = p->samples_y[i];
+
+    ApplyFFT(&p->fft_instance, p->fft_area, p->scratchpad);
+
     p->state++;
   }
   else
   {
     // Z axis FFT
+    for (int i = 0; i < SPECTRAL_FFT_SIZE; i++)
+      p->fft_area[i] = p->samples_y[i];
+
+    ApplyFFT(&p->fft_instance, p->fft_area, p->scratchpad);
+
     p->state = 0;
   }
+
 
   // Increment counters
   p->axis_counts = (p->axis_counts + 1) % SPECTRAL_FFT_SIZE;
@@ -122,5 +148,6 @@ void test_spectral(void)
   /* Process the data through the CFFT/CIFFT module */
   fft_cyc2 = DWT->CYCCNT;
   fft_cyc2 = DWT->CYCCNT - fft_cyc2;
-
 }
+
+

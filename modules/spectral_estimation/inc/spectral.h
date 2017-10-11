@@ -23,15 +23,11 @@
 typedef struct
 {
   float samples_x[SPECTRAL_FFT_SIZE];
-  float fft_area_x[SPECTRAL_FFT_SIZE];
-
   float samples_y[SPECTRAL_FFT_SIZE];
-  float fft_area_y[SPECTRAL_FFT_SIZE];
-
   float samples_z[SPECTRAL_FFT_SIZE];
-  float fft_area_z[SPECTRAL_FFT_SIZE];
 
-  float _scratchpad[SPECTRAL_FFT_SIZE];
+  float fft_area[SPECTRAL_FFT_SIZE];
+  float scratchpad[SPECTRAL_FFT_SIZE];
 
   arm_rfft_fast_instance_f32 fft_instance;
 
