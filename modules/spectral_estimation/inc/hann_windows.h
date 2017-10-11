@@ -1,50 +1,17 @@
-#ifndef __SPECTRAL_H
-#define __SPECTRAL_H
+#ifndef __HANN_WINDOWS_H
+#define __HANN_WINDOWS_H
 
 #include "ch.h"
 #include "hal.h"
 #include "kfly_defs.h"
-#include "arm_math.h"
 
 /*===========================================================================*/
 /* Module global definitions.                                                */
 /*===========================================================================*/
 
-#define SPECTRAL_FFT_SIZE     32
-
 /*===========================================================================*/
 /* Module data structures and types.                                         */
 /*===========================================================================*/
-
-
-/**
- * @brief
- */
-typedef struct
-{
-  float samples_x[SPECTRAL_FFT_SIZE];
-  float fft_area_x[SPECTRAL_FFT_SIZE];
-
-  float samples_y[SPECTRAL_FFT_SIZE];
-  float fft_area_y[SPECTRAL_FFT_SIZE];
-
-  float samples_z[SPECTRAL_FFT_SIZE];
-  float fft_area_z[SPECTRAL_FFT_SIZE];
-
-  float _scratchpad[SPECTRAL_FFT_SIZE];
-
-  arm_rfft_fast_instance_f32 fft_instance;
-
-  struct
-  {
-    int x;
-    int y;
-    int z;
-  } axis_counts;
-
-  int state;
-} spectral_estimation_t;
-
 
 /*===========================================================================*/
 /* Module macros.                                                            */
@@ -53,9 +20,14 @@ typedef struct
 /*===========================================================================*/
 /* External declarations.                                                    */
 /*===========================================================================*/
-void SpectralEstimationInit(spectral_estimation_t *p);
-void SpectralEstimationUpdate(spectral_estimation_t *p, float x, float y, float z);
-void test_spectral(void);
+
+#if SPECTRAL_FFT_SIZE == 32
+extern const float hann_window[32];
+#elif SPECTRAL_FFT_SIZE == 64
+extern const float hann_window[64];
+#elif SPECTRAL_FFT_SIZE == 128
+extern const float hann_window[128];
+#endif
 
 /*===========================================================================*/
 /* Module inline functions.                                                  */

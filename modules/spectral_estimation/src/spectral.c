@@ -1,17 +1,89 @@
 
 #include <stdint.h>
-#include "ch.h"
-#include "hal.h"
 #include "spectral.h"
-#include "arm_math.h"
+#include "hann_windows.h"
 #include "arm_const_structs.h"
 #include "arm_common_tables.h"
+
 
 void stage_rfft_f32(arm_rfft_fast_instance_f32 * S, float32_t * p, float32_t * pOut);
 void arm_cfft_radix8by2_f32( arm_cfft_instance_f32 * S, float32_t * p1);
 void arm_cfft_radix8by4_f32( arm_cfft_instance_f32 * S, float32_t * p1);
 void arm_radix8_butterfly_f32(float32_t * pSrc, uint16_t fftLen, const float32_t * pCoef, uint16_t twidCoefModifier);
 void arm_bitreversal_32(uint32_t * pSrc, const uint16_t bitRevLen, const uint16_t * pBitRevTable);
+
+
+void ApplyFFT(arm_rfft_fast_instance_f32 *fft, float *input, float *scratch)
+{
+  arm_cfft_instance_f32 *Sint  = &(fft->Sint);
+
+#if SPECTRAL_FFT_SIZE == 32 || SPECTRAL_FFT_SIZE == 256 || SPECTRAL_FFT_SIZE == 2048
+  arm_cfft_radix8by2_f32(Sint, input);
+#elif SPECTRAL_FFT_SIZE == 64 || SPECTRAL_FFT_SIZE == 512 || SPECTRAL_FFT_SIZE == 4096
+  arm_cfft_radix8by4_f32(Sint, input);
+#elif SPECTRAL_FFT_SIZE == 128 || SPECTRAL_FFT_SIZE == 1024 || SPECTRAL_FFT_SIZE == 8192
+  arm_radix8_butterfly_f32(input, SPECTRAL_FFT_SIZE / 2, Sint->pTwiddle, 1);
+#endif
+
+  arm_bitreversal_32((uint32_t*) input, Sint->bitRevLength, Sint->pBitRevTable);
+  stage_rfft_f32(fft, input, scratch);
+}
+
+
+void SpectralEstimationInit(spectral_estimation_t *p)
+{
+  arm_cfft_instance_f32 *Sint  = &(p->fft_instance.Sint);
+  Sint->fftLen                 = SPECTRAL_FFT_SIZE / 2;
+  p->fft_instance.fftLenRFFT   = SPECTRAL_FFT_SIZE;
+
+#if SPECTRAL_FFT_SIZE == 32
+  Sint->bitRevLength           = ARMBITREVINDEXTABLE__16_TABLE_LENGTH;
+  Sint->pBitRevTable           = (uint16_t *)armBitRevIndexTable16;
+  Sint->pTwiddle               = (float32_t *)twiddleCoef_16;
+  p->fft_instance.pTwiddleRFFT = (float32_t *)twiddleCoef_rfft_32;
+#elif SPECTRAL_FFT_SIZE == 64
+  Sint->bitRevLength           = ARMBITREVINDEXTABLE__32_TABLE_LENGTH;
+  Sint->pBitRevTable           = (uint16_t *)armBitRevIndexTable32;
+  Sint->pTwiddle               = (float32_t *)twiddleCoef_32;
+  p->fft_instance.pTwiddleRFFT = (float32_t *)twiddleCoef_rfft_64;
+#elif SPECTRAL_FFT_SIZE == 128
+  Sint->bitRevLength           = ARMBITREVINDEXTABLE__64_TABLE_LENGTH;
+  Sint->pBitRevTable           = (uint16_t *)armBitRevIndexTable64;
+  Sint->pTwiddle               = (float32_t *)twiddleCoef_64;
+  p->fft_instance.pTwiddleRFFT = (float32_t *)twiddleCoef_rfft_128;
+#endif
+
+}
+
+void SpectralEstimationUpdate(spectral_estimation_t *p, float x, float y, float z)
+{
+  // Check which axis to perform FFT on
+  if (p->state == 0)
+  {
+    // X axis state
+    p->state++;
+  }
+  else if (p->state == 1)
+  {
+    // Y axis state
+    p->state++;
+  }
+  else if ( p->state > 1)
+  {
+    // Z axis state
+    p->state = 0;
+  }
+  else
+    p->state++;
+
+  // Increment counters
+  p->axis_counts.x = p->axis_counts.x % SPECTRAL_FFT_SIZE;
+  p->axis_counts.y = p->axis_counts.y % SPECTRAL_FFT_SIZE;
+  p->axis_counts.z = p->axis_counts.z % SPECTRAL_FFT_SIZE;
+
+}
+
+
 
 
 float rfft_data[32] = {
