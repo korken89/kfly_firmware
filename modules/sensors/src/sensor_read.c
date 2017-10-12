@@ -382,14 +382,14 @@ msg_t SensorReadInit(void)
                          SENSOR_ACCGYRO_HZ,
                          ACCGYRO_BIQUAD_CUT_HZ,
                          ACCGYRO_BUTTERWORTH_Q,
-                         BIQUAD_LPF);
+                         BIQUAD_TYPE_LPF);
 
       BiquadInitStateDF2T(&gyro_lpf_biquad[i].state);
       BiquadUpdateCoeffs(&gyro_lpf_biquad[i].coeffs,
                          SENSOR_ACCGYRO_HZ,
                          ACCGYRO_BIQUAD_CUT_HZ,
                          ACCGYRO_BUTTERWORTH_Q,
-                         BIQUAD_LPF);
+                         BIQUAD_TYPE_LPF);
     }
 
     /* Initialize the time measurement */

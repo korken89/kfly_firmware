@@ -65,6 +65,7 @@ typedef struct
 /*===========================================================================*/
 
 void ControlInit(void);
+void ControlFiltersInit(void);
 void vUpdateControlAction(const quaternion_t *q_m,
                           const vector3f_t *omega_m,
                           const float dt);
@@ -73,8 +74,9 @@ control_reference_t *ptrGetControlReferences(void);
 control_data_t *ptrGetControlData(void);
 control_limits_t *ptrGetControlLimits(void);
 output_mixer_t *ptrGetOutputMixer(void);
+control_filter_settings_t *ptrGetControlFilters(void);
 void GetControlParameters(control_parameters_t *param);
-void SetControlParameters(control_parameters_t *param);
+void SetControlParameters(const control_parameters_t *param);
 void GetControlSignals(control_signals_t *sig);
 void GetControlReference(control_reference_save_t *ref);
 

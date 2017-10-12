@@ -17,10 +17,19 @@
  */
 typedef enum
 {
-    BIQUAD_LPF,
-    BIQUAD_HPF,
-    BIQUAD_NOTCH
+    BIQUAD_TYPE_LPF,
+    BIQUAD_TYPE_HPF,
+    BIQUAD_TYPE_NOTCH
 } biquad_type_t;
+
+/**
+ * @brief
+ */
+typedef enum
+{
+    BIQUAD_MODE_BIQUAD,
+    BIQUAD_MODE_PT1
+} biquad_mode_t;
 
 /**
  * @brief
@@ -133,6 +142,21 @@ static inline float BiquadDF1Apply(biquad_df1_t *p, float in)
     p->state.y1 = out;
 
     return out;
+}
+
+static inline void BiquadPT1LPFUpdateCoeffs(biquad_coeffs_t *coeffs,
+                                            float sampling_frequency,
+                                            float cutoff)
+{
+    const float dt = 1.0f / sampling_frequency;
+    const float tmp = 2.0f * M_PI * dt * cutoff;
+    const float alpha = tmp / (tmp + 1.0f);
+
+    coeffs->b0 = alpha;
+    coeffs->b1 = 0.0f;
+    coeffs->b2 = 0.0f;
+    coeffs->a1 = -(1.0f - alpha);
+    coeffs->a2 = 0.0f;
 }
 
 /*===========================================================================*/
