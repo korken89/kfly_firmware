@@ -8,6 +8,7 @@
 #include "control_reference.h"
 #include "arming.h"
 #include "rc_input.h"
+#include "math.h"
 
 /*===========================================================================*/
 /* Module local definitions.                                                 */
@@ -30,7 +31,7 @@ static inline float ApplyRateLimitsAndExponentials(const float center_rate,
                                                    const float input)
 {
   // Rate exponentials designed to have controlled center linear rate, while
-  // having "exponential"l kick in outside a small center span (about +/- 15%).
+  // having "exponential" kick in outside a small center span (about +/- 30%).
   //
   //
   // Matlab test code:
@@ -42,7 +43,7 @@ static inline float ApplyRateLimitsAndExponentials(const float center_rate,
   //
   // % Create rate curve
   // linear_rate = x * center_rate;
-  // super_rate = x.^3 * (rate_max - center_rate);
+  // super_rate = x.^3 .* abs(x) * (rate_max - center_rate);
   // y = linear_rate + super_rate;
   //
   // % Plot
@@ -52,7 +53,7 @@ static inline float ApplyRateLimitsAndExponentials(const float center_rate,
   // ylabel('Output rate')
 
    return input * center_rate +
-          input * input * input * (total_rate - center_rate);
+          fabsf(input) * input * input * input * (total_rate - center_rate);
 }
 
 /*===========================================================================*/
