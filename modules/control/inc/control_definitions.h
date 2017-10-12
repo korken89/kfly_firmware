@@ -5,21 +5,19 @@
 #include "trigonometry.h"
 #include "vector3.h"
 #include "quaternion.h"
+#include "biquad.h"
 
 /*===========================================================================*/
 /* Module global definitions.                                                */
 /*===========================================================================*/
 
-#define RATE_PI_OFFSET                          3
-#define ATTITUDE_PI_OFFSET                      0
-
-#define CONTROL_NUMBER_OF_CONTROLLERS           (6) /* 3 rate + 3 attitude */
 #define OUTPUT_MIXER_SIZE                       (sizeof(output_mixer_t))
 #define CONTROL_ARM_SIZE                        (sizeof(control_arm_settings_t))
 #define CONTROL_LIMITS_SIZE                     (sizeof(control_limits_t))
 #define CONTROL_REFERENCE_SIZE                  (sizeof(control_reference_t))
 #define CONTROL_DATA_SIZE                       (sizeof(control_data_t))
 #define CONTROL_PARAMETERS_SIZE                 (sizeof(control_parameters_t))
+#define CONTROL_FILTER_SETTINGS_SIZE            (sizeof(control_filter_settings_t))
 
 /*===========================================================================*/
 /* Module data structures and types.                                         */
@@ -34,11 +32,11 @@ typedef struct
     /**
      * @brief   Attitude controller gains and states.
      */
-    pi_data_t attitude_controller[3];
+    pid_data_t attitude_controller[3];
     /**
      * @brief   Rate controller gains and states.
      */
-    pi_data_t rate_controller[3];
+    pid_data_t rate_controller[3];
 } control_data_t;
 
 /**
@@ -115,34 +113,61 @@ typedef struct
  */
 
 /**
- * @brief   PI controller parameters structure.
- */
-typedef struct
-{
-    /**
-     * @brief   Controller proportional gain.
-     */
-    float P_gain;
-    /**
-     * @brief   Controller integral gain.
-     */
-    float I_gain;
-} pi_parameters_t;
-
-/**
  * @brief   Control parameters structure for moving data.
  */
-typedef struct
+typedef struct PACKED_VAR
 {
     /**
      * @brief   Attitude controller parameters.
      */
-    pi_parameters_t attitude_parameters[3];
+    pid_parameters_t attitude_parameters[3];
     /**
      * @brief   Rate controller parameters.
      */
-    pi_parameters_t rate_parameters[3];
+    pid_parameters_t rate_parameters[3];
+    /**
+     * @brief   D-term filter cutoff
+     */
+    float dterm_cutoff[3];
+    /**
+     * @brief   D-term filter type
+     */
+    biquad_mode_t dterm_filter_mode[3];
+
 } control_parameters_t;
+
+/**
+ * @brief   Control filter settings structure.
+ */
+typedef struct PACKED_VAR
+{
+    /**
+     * @brief   D-term filter cutoff (used for transferring settings)
+     */
+    float dterm_cutoff[3];
+    /**
+     * @brief   D-term filter type (used for transferring settings)
+     */
+    biquad_mode_t dterm_filter_mode[3];
+} control_filter_settings_t;
+
+/**
+ * @brief   Control filters structure.
+ */
+typedef struct
+{
+    /**
+     * @brief   D-term filters
+     */
+    biquad_df2t_t dterm_biquads[3];
+    /**
+     * @brief   D-term filter settings
+     */
+    control_filter_settings_t settings;
+} control_filters_t;
+
+
+
 
 /*===========================================================================*/
 /* Module macros.                                                            */

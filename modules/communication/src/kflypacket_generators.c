@@ -49,6 +49,7 @@ static bool GenerateGetEstimationAttitude(circular_buffer_t *Cbuff);
 static bool GenerateGetEstimationVelocity(circular_buffer_t *Cbuff);
 static bool GenerateGetEstimationPosition(circular_buffer_t *Cbuff);
 static bool GenerateGetEstimationAllStates(circular_buffer_t *Cbuff);
+static bool GenerateGetControlFilters(circular_buffer_t *Cbuff);
 // static uint32_t myStrlen(const uint8_t *str, const uint32_t max_length);
 
 /*===========================================================================*/
@@ -119,8 +120,8 @@ static const kfly_generator_t generator_lookup[128] = {
     GenerateGetEstimationPosition,    /* 53:  Cmd_GetEstimationPosition       */
     GenerateGetEstimationAllStates,   /* 54:  Cmd_GetEstimationAllStates      */
     NULL,                             /* 55:                                  */
-    NULL,                             /* 56:                                  */
-    NULL,                             /* 57:                                  */
+    GenerateGetControlFilters,        /* 56:  Cmd_GetControlFilters           */
+    NULL,                             /* 57:  Cmd_SetControlFilters           */
     NULL,                             /* 58:                                  */
     NULL,                             /* 59:                                  */
     NULL,                             /* 60:                                  */
@@ -202,48 +203,41 @@ static const kfly_generator_t generator_lookup[128] = {
  *                          controller data.
  *
  * @param[in] command       Command to generate message for.
- * @param[in] pi_offset     Offset to the correct PI controller.
+ * @param[in] pi_offset     Offset to the correct PID controller.
  * @param[out] Cbuff        Pointer to the circular buffer to put the data in.
  * @return                  HAL_FAILED if the message didn't fit or HAL_SUCCESS
  *                          if it did fit.
  */
 static bool GenerateGenericGetControllerData(kfly_command_t command,
-                                             const uint32_t pi_offset,
+                                             pid_data_t pids[3],
                                              circular_buffer_t *Cbuff)
 {
     const uint32_t size = 5;
     uint8_t header[2];
     uint8_t *ptr_list[size];
     uint32_t len_list[size];
-    uint32_t i;
-    uint16_t crc16;
-    pi_data_t *pi_list;
-
-    /* Select the correct set of PI controllers. */
-    pi_list = (pi_data_t *)ptrGetControlData();
-    pi_list = &pi_list[pi_offset];
+    uint16_t crc16 = CRC16_START_VALUE;
 
     /* Add the placements of the data. */
     ptr_list[0] = header;
-    ptr_list[1] = (uint8_t *)&pi_list[0];
-    ptr_list[2] = (uint8_t *)&pi_list[1];
-    ptr_list[3] = (uint8_t *)&pi_list[2];
+    ptr_list[1] = (uint8_t *)&pids[0].gains;
+    ptr_list[2] = (uint8_t *)&pids[1].gains;
+    ptr_list[3] = (uint8_t *)&pids[2].gains;
     ptr_list[4] = (uint8_t *)&crc16;
 
     /* Add the length of each chunk. */
     len_list[0] = 2;
-    len_list[1] = PI_SETTINGS_SIZE;
-    len_list[2] = PI_SETTINGS_SIZE;
-    len_list[3] = PI_SETTINGS_SIZE;
+    len_list[1] = PID_PARAMETERS_SIZE;
+    len_list[2] = PID_PARAMETERS_SIZE;
+    len_list[3] = PID_PARAMETERS_SIZE;
     len_list[4] = 2;
 
     /* Fill header and build the CRC. */
     header[0] = command;
-    header[1] = 3*PI_SETTINGS_SIZE;
+    header[1] = 3 * PID_PARAMETERS_SIZE;
 
-    crc16 = CRC16_START_VALUE;
 
-    for (i = 0; i < size - 1; i++)
+    for (uint32_t i = 0; i < size - 1; i++)
         crc16 = CRC16_chunk(ptr_list[i], len_list[i], crc16);
 
     return GenerateSLIP_MultiChunk(ptr_list, len_list, size, Cbuff);
@@ -452,8 +446,9 @@ static bool GenerateGetArmSettings(circular_buffer_t *Cbuff)
  */
 static bool GenerateGetRateControllerData(circular_buffer_t *Cbuff)
 {
+
     return GenerateGenericGetControllerData(Cmd_GetRateControllerData,
-                                            RATE_PI_OFFSET,
+                                            ptrGetControlData()->rate_controller,
                                             Cbuff);
 }
 
@@ -468,7 +463,7 @@ static bool GenerateGetRateControllerData(circular_buffer_t *Cbuff)
 static bool GenerateGetAttitudeControllerData(circular_buffer_t *Cbuff)
 {
     return GenerateGenericGetControllerData(Cmd_GetAttitudeControllerData,
-                                            ATTITUDE_PI_OFFSET,
+                                            ptrGetControlData()->attitude_controller,
                                             Cbuff);
 }
 
@@ -700,6 +695,22 @@ static bool GenerateGetEstimationAllStates(circular_buffer_t *Cbuff)
     return GenerateGenericCommand(Cmd_GetEstimationAllStates,
                                   (uint8_t *)ptrGetAttitudeEstimationStates(),
                                   ESTIMATION_STATES_SIZE,
+                                  Cbuff);
+}
+
+/**
+ * @brief               Generates the message for sending all the
+ *                      control filters data.
+ *
+ * @param[out] Cbuff    Pointer to the circular buffer to put the data in.
+ * @return              HAL_FAILED if the message didn't fit or HAL_SUCCESS
+ *                      if it did fit.
+ */
+static bool GenerateGetControlFilters(circular_buffer_t *Cbuff)
+{
+    return GenerateGenericCommand(Cmd_GetControlFilters,
+                                  (uint8_t *)ptrGetControlFilters(),
+                                  CONTROL_FILTER_SETTINGS_SIZE,
                                   Cbuff);
 }
 

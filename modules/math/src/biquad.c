@@ -27,7 +27,7 @@ void BiquadUpdateCoeffs(biquad_coeffs_t *coeffs,
 
     switch (type)
     {
-        case BIQUAD_LPF:
+        case BIQUAD_TYPE_LPF:
             b0 = (1.0f - oc) * 0.5f;
             b1 =  1.0f - oc;
             b2 = (1.0f - oc) * 0.5f;
@@ -36,7 +36,7 @@ void BiquadUpdateCoeffs(biquad_coeffs_t *coeffs,
             a2 =  1.0f - alpha;
             break;
 
-        case BIQUAD_HPF:
+        case BIQUAD_TYPE_HPF:
             b0 =  (1.0f + oc) * 0.5f;
             b1 = -(1.0f + oc);
             b2 =  (1.0f + oc) * 0.5f;
@@ -45,7 +45,7 @@ void BiquadUpdateCoeffs(biquad_coeffs_t *coeffs,
             a2 =   1.0f - alpha;
             break;
 
-        case BIQUAD_NOTCH:
+        case BIQUAD_TYPE_NOTCH:
             b0 =  1.0f;
             b1 = -2.0f * oc;
             b2 =  1.0f;

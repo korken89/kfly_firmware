@@ -70,6 +70,8 @@ static void ParseGetEstimationVelocity(kfly_parser_t *pHolder);
 static void ParseGetEstimationPosition(kfly_parser_t *pHolder);
 static void ParseGetEstimationAllStates(kfly_parser_t *pHolder);
 static void ParseResetEstimation(kfly_parser_t *pHolder);
+static void ParseGetControlFilters(kfly_parser_t *pHolder);
+static void ParseSetControlFilters(kfly_parser_t *pHolder);
 static void ParseComputerControlReference(kfly_parser_t *pHolder);
 static void ParseMotionCaptureMeasurement(kfly_parser_t *pHolder);
 
@@ -143,8 +145,8 @@ static const kfly_data_parser_t parser_lookup[128] = {
     ParseGetEstimationPosition,       /* 53:  Cmd_GetEstimationPosition       */
     ParseGetEstimationAllStates,      /* 54:  Cmd_GetEstimationAllStates      */
     ParseResetEstimation,             /* 55:  Cmd_ResetEstimation             */
-    NULL,                             /* 56:                                  */
-    NULL,                             /* 57:                                  */
+    ParseGetControlFilters,           /* 56:  Cmd_GetControlFilters           */
+    ParseSetControlFilters,           /* 57:  Cmd_SetControlFilters           */
     NULL,                             /* 58:                                  */
     NULL,                             /* 59:                                  */
     NULL,                             /* 60:                                  */
@@ -253,26 +255,22 @@ static inline void GenericSaveData(uint8_t *save_location,
  * @param[in] limit_count   Number of bytes to write to the limits structure.
  * @param[in] data          Input data so save.
  */
-static void ParseGenericSetControllerData(const uint32_t pi_offset,
+static void ParseGenericSetControllerData(pid_data_t pids[3],
                                           uint8_t *data)
 {
-    pi_data_t *pi_list;
-    uint32_t i;
 
     /* Lock while saving the data */
     osalSysLock();
 
     /* Cast the control data to an array of pi_data_t
     to access each PI controller */
-    pi_list = (pi_data_t *)ptrGetControlData();
-    pi_list = &pi_list[pi_offset];
 
     /* Write only the PI coefficients */
-    for (i = 0; i < 3; i++)
+    for (int i = 0; i < 3; i++)
     {
-        memcpy((uint8_t *)&pi_list[i],      // Settings save location
-               &data[i * PI_SETTINGS_SIZE], // Offset in the data package
-               PI_SETTINGS_SIZE);           // Settings size
+        memcpy((uint8_t *)&pids[i].gains,      // Settings save location
+               &data[i * PID_PARAMETERS_SIZE], // Offset in the data package
+               PID_PARAMETERS_SIZE);           // Settings size
     }
 
     osalSysUnlock();
@@ -505,8 +503,8 @@ static void ParseGetRateControllerData(kfly_parser_t *pHolder)
  */
 static void ParseSetRateControllerData(kfly_parser_t *pHolder)
 {
-    if (pHolder->data_length == (3 * PI_SETTINGS_SIZE))
-        ParseGenericSetControllerData(RATE_PI_OFFSET,
+    if (pHolder->data_length == (3 * PID_PARAMETERS_SIZE))
+        ParseGenericSetControllerData(ptrGetControlData()->rate_controller,
                                       pHolder->buffer);
 }
 
@@ -529,8 +527,8 @@ static void ParseGetAttitudeControllerData(kfly_parser_t *pHolder)
  */
 static void ParseSetAttitudeControllerData(kfly_parser_t *pHolder)
 {
-    if (pHolder->data_length == (3 * PI_SETTINGS_SIZE))
-        ParseGenericSetControllerData(ATTITUDE_PI_OFFSET,
+    if (pHolder->data_length == (3 * PID_PARAMETERS_SIZE))
+        ParseGenericSetControllerData(ptrGetControlData()->attitude_controller,
                                       pHolder->buffer);
 }
 
@@ -793,6 +791,41 @@ static void ParseGetEstimationAllStates(kfly_parser_t *pHolder)
 static void ParseResetEstimation(kfly_parser_t *pHolder)
 {
     (void)pHolder;
+}
+
+/**
+ * @brief               Parses a GetControlFilters command.
+ *
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
+ */
+static void ParseGetControlFilters(kfly_parser_t *pHolder)
+{
+    GenerateMessage(Cmd_GetControlFilters, pHolder->port);
+}
+
+/**
+ * @brief               Parses a SetControlFilters command.
+ *
+ * @param[in] pHolder   Message holder containing information
+ *                      about the transmission.
+ */
+static void ParseSetControlFilters(kfly_parser_t *pHolder)
+{
+    /* Save the data */
+    if (pHolder->data_length == CONTROL_FILTER_SETTINGS_SIZE)
+    {
+        osalSysLock();
+
+        /* Save the data. */
+        memcpy(ptrGetControlFilters(), pHolder->buffer,
+               CONTROL_FILTER_SETTINGS_SIZE);
+
+        /* Reinitialize the control filters */
+        ControlFiltersInit();
+
+        osalSysUnlock();
+    }
 }
 
 /**
