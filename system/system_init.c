@@ -9,7 +9,6 @@
 
 /* All includes from modules */
 #include "eicu.h"
-#include "epwm.h"
 #include "usb_access.h"
 #include "mpu6050.h"
 #include "hmc5983.h"
@@ -168,13 +167,6 @@ static void vSystemInitList(void)
      *
      */
     eicuInit();
-
-    /*
-     *
-     * Start the extended PWM  module for RC outputs.
-     *
-     */
-    epwmInit();
 
     /*
      *
