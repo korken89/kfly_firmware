@@ -125,7 +125,7 @@
  * @brief   Enables the EPWM subsystem.
  */
 #if !defined(HAL_USE_EPWM) || defined(__DOXYGEN__)
-#define HAL_USE_EPWM                TRUE
+#define HAL_USE_EPWM                FALSE
 #endif
 
 /**
