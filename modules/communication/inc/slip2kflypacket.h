@@ -247,6 +247,19 @@ typedef enum PACKED_VAR
     Cmd_ResetEstimation             = 55,
 
     /*===============================================*/
+    /* Filter specific commands.                     */
+    /*===============================================*/
+
+    /**
+     * @brief   Get control filters.
+     */
+    Cmd_GetControlFilters           = 56,
+    /**
+     * @brief   Set control filters.
+     */
+    Cmd_SetControlFilters           = 57,
+
+    /*===============================================*/
     /* Computer control specific commands.           */
     /*===============================================*/
 

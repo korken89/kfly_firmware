@@ -33,14 +33,14 @@
  * @param[in] I_gain            Controller I gain.
  * @param[in] I_limit           Controller I limit.
  */
-void vInitPIController(pi_data_t *pi_settings,
-                       const float P_gain,
-                       const float I_gain)
-{
-    pi_settings->P_gain = P_gain;
-    pi_settings->I_gain = I_gain;
-    pi_settings->I_state = 0.0f;
-}
+// void vInitPIController(pid_data_t *pi_settings,
+//                        const float P_gain,
+//                        const float I_gain)
+// {
+//     pi_settings->P_gain = P_gain;
+//     pi_settings->I_gain = I_gain;
+//     pi_settings->I_state = 0.0f;
+// }
 
 /**
  * @brief       Updates the gains of a PI controller.
@@ -50,11 +50,11 @@ void vInitPIController(pi_data_t *pi_settings,
  * @param[in] I_gain            Controller I gain.
  * @param[in] I_limit           Controller I limit.
  */
-void vUpdatePISettings(pi_data_t *pi_settings,
-                       const float P_gain,
-                       const float I_gain)
-{
-    pi_settings->P_gain = P_gain;
-    pi_settings->I_gain = I_gain;
-}
-
+// void vUpdatePISettings(pi_data_t *pi_settings,
+//                        const float P_gain,
+//                        const float I_gain)
+// {
+//     pi_settings->P_gain = P_gain;
+//     pi_settings->I_gain = I_gain;
+// }
+//

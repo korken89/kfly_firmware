@@ -36,7 +36,7 @@
 static inline void vAttitudeControl(const quaternion_t *ref,
                                     const quaternion_t *attitude_m,
                                     vector3f_t *out,
-                                    pi_data_t attitude_controller[3],
+                                    pid_data_t attitude_controller[3],
                                     const vector3f_t *rate_limits,
                                     const float dt)
 {
@@ -55,23 +55,26 @@ static inline void vAttitudeControl(const quaternion_t *ref,
         err = qneg(err);
 
     /* Update controllers, send bounded control signal to the next step */
-    out->x = fPIUpdate_BC(&attitude_controller[0],
-                          err.x,
-                          rate_limits->x,
-                          -rate_limits->x,
-                          dt);
+    out->x = fPIDUpdate_BC(&attitude_controller[0],
+                           NULL,
+                           err.x,
+                           rate_limits->x,
+                           -rate_limits->x,
+                           dt);
 
-    out->y = fPIUpdate_BC(&attitude_controller[1],
-                          err.y,
-                          rate_limits->y,
-                          -rate_limits->y,
-                          dt);
+    out->y = fPIDUpdate_BC(&attitude_controller[1],
+                           NULL,
+                           err.y,
+                           rate_limits->y,
+                           -rate_limits->y,
+                           dt);
 
-    out->z = fPIUpdate_BC(&attitude_controller[2],
-                          err.z,
-                          rate_limits->z,
-                          -rate_limits->z,
-                          dt);
+    out->z = fPIDUpdate_BC(&attitude_controller[2],
+                           NULL,
+                           err.z,
+                           rate_limits->z,
+                           -rate_limits->z,
+                           dt);
 }
 
 /**
@@ -90,7 +93,7 @@ static inline void vAttitudeControl(const quaternion_t *ref,
 static inline void vAttitudeControlEuler(const vector3f_t *ref,
                                          const quaternion_t *attitude_m,
                                          vector3f_t *out,
-                                         pi_data_t attitude_controller[3],
+                                         pid_data_t attitude_controller[3],
                                          const vector3f_t *rate_limits,
                                          const float *angle_limits,
                                          const float dt)
@@ -111,17 +114,19 @@ static inline void vAttitudeControlEuler(const vector3f_t *ref,
                                    attitude_m->x * attitude_m->z));
 
     /* Update controllers, send bounded control signal to the next step */
-    out->x = fPIUpdate_BC(&attitude_controller[0],
-                          err.x,
-                          rate_limits->x,
-                          -rate_limits->x,
-                          dt);
+    out->x = fPIDUpdate_BC(&attitude_controller[0],
+                           NULL,
+                           err.x,
+                           rate_limits->x,
+                           -rate_limits->x,
+                           dt);
 
-    out->y = fPIUpdate_BC(&attitude_controller[1],
-                          err.y,
-                          rate_limits->y,
-                          -rate_limits->y,
-                          dt);
+    out->y = fPIDUpdate_BC(&attitude_controller[1],
+                           NULL,
+                           err.y,
+                           rate_limits->y,
+                           -rate_limits->y,
+                           dt);
 
     out->z = bound(rate_limits->z, -rate_limits->z, ref->z);
 }

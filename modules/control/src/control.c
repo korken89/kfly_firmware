@@ -50,6 +50,7 @@ control_data_t control_data;
 control_limits_t control_limits;
 output_mixer_t output_mixer;
 control_parameters_t flash_save_control_parameters;
+control_filters_t control_filters;
 
 THD_WORKING_AREA(waThreadControl, 256);
 THD_WORKING_AREA(waThreadControlFlashSave, 256);
@@ -244,6 +245,19 @@ static void vSetOutputsDefault(void)
     vSendPWMCommands();
 }
 
+/**
+ * @brief   Set D-term filters to a safe value
+ */
+static void DTermFilterDefaults(void)
+{
+  for (int i = 0; i < 3; i++)
+  {
+    control_filters.settings.dterm_cutoff[i] = 50.0f;
+    control_filters.settings.dterm_filter_mode[i] = BIQUAD_MODE_BIQUAD;
+  }
+}
+
+
 
 /*===========================================================================*/
 /* Module exported functions.                                                */
@@ -273,8 +287,14 @@ void ControlInit(void)
     /* Initialize arming. */
     ArmingInit();
 
+    /* Dterm filters defaults */
+    DTermFilterDefaults();
+
     /* Read data from flash (if available). */
     vReadControlParametersFromFlash();
+
+    /* Initialize control filter */
+    ControlFiltersInit();
 
     /* Set outputs to default value. */
     vSetOutputsDefault();
@@ -292,6 +312,44 @@ void ControlInit(void)
                       NORMALPRIO,
                       ThreadControlFlashSave,
                       NULL);
+}
+
+/**
+ * @brief   Calculate filter coefficients
+ */
+void ControlFiltersInit(void)
+{
+  for (int i = 0; i < 3; i++)
+  {
+    BiquadInitStateDF2T(&control_filters.dterm_biquads[i].state);
+
+    const float cutoff = control_filters.settings.dterm_cutoff[i];
+    const biquad_mode_t mode = control_filters.settings.dterm_filter_mode[i];
+
+    // Sanity check
+    if (cutoff > (SENSOR_ACCGYRO_HZ / 2) || cutoff < 1.0f)
+      control_filters.settings.dterm_cutoff[i] = 50.0f;
+
+    if (mode != BIQUAD_MODE_PT1 && mode != BIQUAD_MODE_BIQUAD)
+      control_filters.settings.dterm_filter_mode[i] = BIQUAD_MODE_BIQUAD;
+
+
+    // Init filters
+    if (control_filters.settings.dterm_filter_mode[i] == BIQUAD_MODE_BIQUAD)
+    {
+      BiquadUpdateCoeffs(&control_filters.dterm_biquads[i].coeffs,
+                         SENSOR_ACCGYRO_HZ,
+                         control_filters.settings.dterm_cutoff[i],
+                         ACCGYRO_BUTTERWORTH_Q,
+                         BIQUAD_TYPE_LPF);
+    }
+    else
+    {
+      BiquadPT1LPFUpdateCoeffs(&control_filters.dterm_biquads[i].coeffs,
+                               SENSOR_ACCGYRO_HZ,
+                               control_filters.settings.dterm_cutoff[i]);
+    }
+  }
 }
 
 
@@ -397,6 +455,7 @@ void vUpdateControlAction(const quaternion_t *attitude_m,
                          rate_m,
                          &control_reference.actuator_desired.torque,
                          control_data.rate_controller,
+                         control_filters.dterm_biquads,
                          dt);
 
         case FLIGHTMODE_INDIRECT:
@@ -431,12 +490,12 @@ void vZeroControlIntegrals(void)
 {
     int i;
 
-    /* Cast the controller data into an array of PI controllers. */
-    pi_data_t *pi = (pi_data_t *)&control_data;
-
     /* Zero each controllers Integral state. */
-    for (i = 0; i < CONTROL_NUMBER_OF_CONTROLLERS; i++)
-        pi[i].I_state = 0.0f;
+    for (i = 0; i < 3; i++)
+    {
+        control_data.attitude_controller[i].I_state = 0.0f;
+        control_data.rate_controller[i].I_state = 0.0f;
+    }
 }
 /**
  * @brief       Return the pointer to the control reference structure.
@@ -479,29 +538,38 @@ output_mixer_t *ptrGetOutputMixer(void)
 }
 
 /**
+ * @brief       Return the pointer to the control filters structure.
+ *
+ * @return      Pointer to the control filters structure.
+ */
+control_filter_settings_t *ptrGetControlFilters(void)
+{
+    return &control_filters.settings;
+}
+
+/**
  * @brief       Copies current PI control parameters to an external structure.
  * @param[out] param    Save location.
  */
 void GetControlParameters(control_parameters_t *param)
 {
-    int i, j;
-    float *f_pi, *f_par;
+  // Rate controller parameters
+  for (int i = 0; i < 3; i++)
+  {
+    param->rate_parameters[i].P = control_data.rate_controller[i].gains.P;
+    param->rate_parameters[i].I = control_data.rate_controller[i].gains.I;
+    param->rate_parameters[i].D = control_data.rate_controller[i].gains.D;
+    param->dterm_cutoff[i]      = control_filters.settings.dterm_cutoff[i];
+    param->dterm_filter_mode[i] = control_filters.settings.dterm_filter_mode[i];
+  }
 
-    /* Cast parameters and PI controller to arrays of respective kind. */
-    pi_data_t *pi = (pi_data_t *)&control_data;
-    pi_parameters_t *par = (pi_parameters_t *)param;
-
-    for (i = 0; i < CONTROL_NUMBER_OF_CONTROLLERS; i++)
-    {
-        /* Cast each of the PI and parameters to float arrays
-           for easy copying. */
-        f_pi = (float *)&pi[i];
-        f_par = (float *)&par[i];
-
-        /* Copy PI parameters to the external location. */
-        for (j = 0; j < PI_NUM_PARAMETERS; j++)
-            f_par[j] = f_pi[j];
-    }
+  // Attitude controller parameters
+  for (int i = 0; i < 3; i++)
+  {
+    param->attitude_parameters[i].P = control_data.attitude_controller[i].gains.P;
+    param->attitude_parameters[i].I = control_data.attitude_controller[i].gains.I;
+    param->attitude_parameters[i].D = control_data.attitude_controller[i].gains.D;
+  }
 }
 
 /**
@@ -509,26 +577,24 @@ void GetControlParameters(control_parameters_t *param)
  *              current PI control parameters.
  * @param[out] param    Copy location.
  */
-void SetControlParameters(control_parameters_t *param)
+void SetControlParameters(const control_parameters_t *param)
 {
-    int i, j;
-    float *f_pi, *f_par;
+  for (int i = 0; i < 3; i++)
+  {
+    control_data.rate_controller[i].gains.P       = param->rate_parameters[i].P;
+    control_data.rate_controller[i].gains.I       = param->rate_parameters[i].I;
+    control_data.rate_controller[i].gains.D       = param->rate_parameters[i].D;
+    control_filters.settings.dterm_cutoff[i]      = param->dterm_cutoff[i];
+    control_filters.settings.dterm_filter_mode[i] = param->dterm_filter_mode[i];
+  }
 
-    /* Cast parameters and PI controller to arrays of respective kind. */
-    pi_data_t *pi = (pi_data_t *)&control_data;
-    pi_parameters_t *par = (pi_parameters_t *)param;
-
-    for (i = 0; i < CONTROL_NUMBER_OF_CONTROLLERS; i++)
-    {
-        /* Cast each of the PI and parameters to float arrays
-           for easy copying. */
-        f_pi = (float *)&pi[i];
-        f_par = (float *)&par[i];
-
-        /* Save PI parameters from the external location. */
-        for (j = 0; j < PI_NUM_PARAMETERS; j++)
-            f_pi[j] = f_par[j];
-    }
+  // Attitude controller parameters
+  for (int i = 0; i < 3; i++)
+  {
+    control_data.attitude_controller[i].gains.P = param->attitude_parameters[i].P;
+    control_data.attitude_controller[i].gains.I = param->attitude_parameters[i].I;
+    control_data.attitude_controller[i].gains.D = param->attitude_parameters[i].D;
+  }
 }
 
 /**
@@ -562,4 +628,3 @@ void GetControlReference(control_reference_save_t *ref)
 
   osalSysUnlock();
 }
-

@@ -34,7 +34,8 @@
 static inline void vRateControl(const vector3f_t *ref,
                                 const vector3f_t *omega_m,
                                 vector3f_t *out,
-                                pi_data_t rate_controller[3],
+                                pid_data_t rate_controller[3],
+                                biquad_df2t_t dterm_filter[3],
                                 const float dt)
 {
     vector3f_t error;
@@ -43,9 +44,12 @@ static inline void vRateControl(const vector3f_t *ref,
     error = vector_sub(*ref, *omega_m);
 
     /* Update the PI controllers */
-    out->x = fPIUpdate_BC(&rate_controller[0], error.x, 0.4f, -0.4f, dt);
-    out->y = fPIUpdate_BC(&rate_controller[1], error.y, 0.4f, -0.4f, dt);
-    out->z = fPIUpdate_BC(&rate_controller[2], error.z, 0.4f, -0.4f, dt);
+    out->x = fPIDUpdate_BC(&rate_controller[0], &dterm_filter[0], error.x, 0.4f,
+                           -0.4f, dt);
+    out->y = fPIDUpdate_BC(&rate_controller[1], &dterm_filter[1], error.y, 0.4f,
+                           -0.4f, dt);
+    out->z = fPIDUpdate_BC(&rate_controller[2], &dterm_filter[2], error.z, 0.4f,
+                           -0.4f, dt);
 }
 
 /*===========================================================================*/

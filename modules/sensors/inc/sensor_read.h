@@ -10,7 +10,7 @@
 /*===========================================================================*/
 #define SENSOR_ACCGYRO_HZ                           200.0f
 #define SENSOR_ACCGYRO_DT                           (1.0f / SENSOR_ACCGYRO_HZ)
-#define ACCGYRO_BIQUAD_CUT_HZ                       60.0f
+#define ACCGYRO_BIQUAD_CUT_HZ                       90.0f
 #define ACCGYRO_BUTTERWORTH_Q                       0.707106781f // Butterworth
 #define ACCGYRO_DATA_AVAILABLE_EVENTMASK            EVENT_MASK(0)
 #define MAG_DATA_AVAILABLE_EVENTMASK                EVENT_MASK(1)
