@@ -3,14 +3,17 @@
 #include "hann_windows.h"
 #include "arm_const_structs.h"
 #include "arm_common_tables.h"
+#include "sensor_read.h"
 
-
-void stage_rfft_f32(arm_rfft_fast_instance_f32 * S, float32_t * p, float32_t * pOut);
-void arm_cfft_radix8by2_f32( arm_cfft_instance_f32 * S, float32_t * p1);
-void arm_cfft_radix8by4_f32( arm_cfft_instance_f32 * S, float32_t * p1);
-void arm_radix8_butterfly_f32(float32_t * pSrc, uint16_t fftLen, const float32_t * pCoef, uint16_t twidCoefModifier);
-void arm_bitreversal_32(uint32_t * pSrc, const uint16_t bitRevLen, const uint16_t * pBitRevTable);
-
+void stage_rfft_f32(arm_rfft_fast_instance_f32 *S, float32_t *p,
+                    float32_t *pOut);
+void arm_cfft_radix8by2_f32(arm_cfft_instance_f32 *S, float32_t *p1);
+void arm_cfft_radix8by4_f32(arm_cfft_instance_f32 *S, float32_t *p1);
+void arm_radix8_butterfly_f32(float32_t *pSrc, uint16_t fftLen,
+                              const float32_t *pCoef,
+                              uint16_t twidCoefModifier);
+void arm_bitreversal_32(uint32_t *pSrc, const uint16_t bitRevLen,
+                        const uint16_t *pBitRevTable);
 
 void ApplyFFT(arm_rfft_fast_instance_f32 *fft, float *input, float *scratch)
 {
@@ -28,14 +31,21 @@ void ApplyFFT(arm_rfft_fast_instance_f32 *fft, float *input, float *scratch)
   stage_rfft_f32(fft, input, scratch);
 }
 
+void EstimateVibrationFrequencies(void)
+{
+}
+
 
 
 void SpectralEstimationInit(spectral_estimation_t *p)
 {
   arm_cfft_instance_f32 *Sint  = &(p->fft_instance.Sint);
+
+  // Lengths
   Sint->fftLen                 = SPECTRAL_FFT_SIZE / 2;
   p->fft_instance.fftLenRFFT   = SPECTRAL_FFT_SIZE;
 
+  // Lookup tables
 #if SPECTRAL_FFT_SIZE == 32
   Sint->bitRevLength           = ARMBITREVINDEXTABLE__16_TABLE_LENGTH;
   Sint->pBitRevTable           = (uint16_t *)armBitRevIndexTable16;
@@ -53,13 +63,23 @@ void SpectralEstimationInit(spectral_estimation_t *p)
   p->fft_instance.pTwiddleRFFT = (float32_t *)twiddleCoef_rfft_128;
 #endif
 
-
-
+  // Init sample vectors
   for (int i = 0; i < SPECTRAL_FFT_SIZE; i++)
   {
     p->samples_x[i] = 0;
     p->samples_y[i] = 0;
     p->samples_z[i] = 0;
+  }
+
+  // Init filters
+  for (int i = 0; i < 3; i++)
+  {
+    BiquadInitStateDF2T(&p->frequency_filters[i].state);
+    BiquadUpdateCoeffs(&p->frequency_filters[i].coeffs,
+                       SENSOR_ACCGYRO_HZ,
+                       SPECTRAL_FILTERS_CUTOFF,
+                       ACCGYRO_BUTTERWORTH_Q,
+                       BIQUAD_TYPE_LPF);
   }
 
   p->axis_counts = 0;
@@ -82,32 +102,23 @@ void SpectralEstimationUpdate(spectral_estimation_t *p, float x, float y, float 
     // X axis FFT
     for (int i = 0; i < SPECTRAL_FFT_SIZE; i++)
       p->fft_area[i] = p->samples_x[i];
-
-    ApplyFFT(&p->fft_instance, p->fft_area, p->scratchpad);
-
-    p->state++;
   }
   else if (p->state == SPECTRAL_Y_AXIS)
   {
     // Y axis FFT
     for (int i = 0; i < SPECTRAL_FFT_SIZE; i++)
       p->fft_area[i] = p->samples_y[i];
-
-    ApplyFFT(&p->fft_instance, p->fft_area, p->scratchpad);
-
-    p->state++;
   }
   else
   {
     // Z axis FFT
     for (int i = 0; i < SPECTRAL_FFT_SIZE; i++)
       p->fft_area[i] = p->samples_y[i];
-
-    ApplyFFT(&p->fft_instance, p->fft_area, p->scratchpad);
-
-    p->state = SPECTRAL_X_AXIS;
   }
 
+  ApplyFFT(&p->fft_instance, p->fft_area, p->scratchpad);
+
+  EstimateVibrationFrequencies();
 
   // Increment counters
   p->axis_counts = (p->axis_counts + 1) % SPECTRAL_FFT_SIZE;
@@ -149,5 +160,4 @@ void test_spectral(void)
   fft_cyc2 = DWT->CYCCNT;
   fft_cyc2 = DWT->CYCCNT - fft_cyc2;
 }
-
 
