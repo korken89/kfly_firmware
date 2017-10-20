@@ -1,10 +1,10 @@
 #include <stdint.h>
 #include "spectral.h"
 #include "hann_windows.h"
-#include "arm_const_structs.h"
 #include "arm_common_tables.h"
 #include "sensor_read.h"
 
+// Functions hidden in the CMSIS DSP library that are needed
 void stage_rfft_f32(arm_rfft_fast_instance_f32 *S, float32_t *p,
                     float32_t *pOut);
 void arm_cfft_radix8by2_f32(arm_cfft_instance_f32 *S, float32_t *p1);
@@ -14,6 +14,9 @@ void arm_radix8_butterfly_f32(float32_t *pSrc, uint16_t fftLen,
                               uint16_t twidCoefModifier);
 void arm_bitreversal_32(uint32_t *pSrc, const uint16_t bitRevLen,
                         const uint16_t *pBitRevTable);
+
+
+
 
 void ApplyFFT(arm_rfft_fast_instance_f32 *fft, float *input, float *scratch)
 {
@@ -25,17 +28,41 @@ void ApplyFFT(arm_rfft_fast_instance_f32 *fft, float *input, float *scratch)
   arm_cfft_radix8by4_f32(Sint, input);
 #elif SPECTRAL_FFT_SIZE == 128 || SPECTRAL_FFT_SIZE == 1024 || SPECTRAL_FFT_SIZE == 8192
   arm_radix8_butterfly_f32(input, SPECTRAL_FFT_SIZE / 2, Sint->pTwiddle, 1);
+#else
+#error "SPECTRAL_FFT_SIZE is not a valid number, must be a power of 2"
 #endif
 
   arm_bitreversal_32((uint32_t*) input, Sint->bitRevLength, Sint->pBitRevTable);
   stage_rfft_f32(fft, input, scratch);
 }
 
-void EstimateVibrationFrequencies(void)
+
+
+void EstimateVibrationFrequencies(spectral_estimation_t *p)
 {
+  // Calculate the magnitude squared of the FFT
+  arm_cmplx_mag_squared_f32(p->scratchpad, p->fft_area, SPECTRAL_FFT_SIZE/2);
+
+  // Find the frequency of the FFT peak by averaging
+  const int idx_start = 2;
+  const int idx_end = 7;
+
+  float sum = 0;
+  float weighted_sum = 0;
+
+  for (int i = idx_start; i < idx_end; i++)
+  {
+    weighted_sum += i * p->fft_area[i];
+    sum += p->fft_area[i];
+  }
+
+  if (sum < 1e-6f)
+    return;
+
+
+  float frequency_estimate = weighted_sum / sum;
+
 }
-
-
 
 void SpectralEstimationInit(spectral_estimation_t *p)
 {
@@ -61,6 +88,8 @@ void SpectralEstimationInit(spectral_estimation_t *p)
   Sint->pBitRevTable           = (uint16_t *)armBitRevIndexTable64;
   Sint->pTwiddle               = (float32_t *)twiddleCoef_64;
   p->fft_instance.pTwiddleRFFT = (float32_t *)twiddleCoef_rfft_128;
+#else
+#error "SPECTRAL_FFT_SIZE is not valid, only [32, 64, 128] are supported"
 #endif
 
   // Init sample vectors
@@ -76,7 +105,7 @@ void SpectralEstimationInit(spectral_estimation_t *p)
   {
     BiquadInitStateDF2T(&p->frequency_filters[i].state);
     BiquadUpdateCoeffs(&p->frequency_filters[i].coeffs,
-                       SENSOR_ACCGYRO_HZ,
+                       SENSOR_ACCGYRO_HZ / 3.0f,
                        SPECTRAL_FILTERS_CUTOFF,
                        ACCGYRO_BUTTERWORTH_Q,
                        BIQUAD_TYPE_LPF);
@@ -95,6 +124,10 @@ void SpectralEstimationUpdate(spectral_estimation_t *p, float x, float y, float 
   p->samples_x[p->axis_counts] = x * hann;
   p->samples_y[p->axis_counts] = y * hann;
   p->samples_z[p->axis_counts] = z * hann;
+
+  // Increment counters
+  p->axis_counts = (p->axis_counts + 1) % SPECTRAL_FFT_SIZE;
+
 
   // Check which axis to perform FFT on
   if (p->state == SPECTRAL_X_AXIS)
@@ -116,12 +149,20 @@ void SpectralEstimationUpdate(spectral_estimation_t *p, float x, float y, float 
       p->fft_area[i] = p->samples_y[i];
   }
 
+  // This makes the FFT run on one axis per input sample, so the
+  // FFT is practically run on ever 3rd sample on each axis
   ApplyFFT(&p->fft_instance, p->fft_area, p->scratchpad);
 
-  EstimateVibrationFrequencies();
+  // Final processing step, estimate the vibration peak
+  EstimateVibrationFrequencies(p);
 
-  // Increment counters
-  p->axis_counts = (p->axis_counts + 1) % SPECTRAL_FFT_SIZE;
+  // Update state
+  if (p->state == SPECTRAL_X_AXIS)
+    p->state = SPECTRAL_Y_AXIS;
+  else if (p->state == SPECTRAL_Y_AXIS)
+    p->state = SPECTRAL_Z_AXIS;
+  else
+    p->state = SPECTRAL_X_AXIS;
 }
 
 
@@ -160,4 +201,3 @@ void test_spectral(void)
   fft_cyc2 = DWT->CYCCNT;
   fft_cyc2 = DWT->CYCCNT - fft_cyc2;
 }
-
