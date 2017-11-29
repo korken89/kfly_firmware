@@ -305,6 +305,8 @@ void SetChannelWidthGeneric(rcoutput_mode_t mode, int idx, float value,
         buffer[i][idx] = (packet & 0x8000) ? DSHOT_BIT_1 : DSHOT_BIT_0;
         packet <<= 1;
       }
+
+      buffer[16][idx] = 0;
     }
 
     default:
@@ -517,9 +519,9 @@ void RCOutputDisableI(void)
 void RCOutputSetChannelWidth(const rcoutput_channel_t channel,
                              float value)
 {
-    int idx = rcoutput_channellut[channel];
+    const int idx = rcoutput_channellut[channel];
 
-    // Bound intput value
+    // Bound input value
     if (value > 1.0f)
         value = 1.0f;
     else if (value < 0.0f)
@@ -535,12 +537,10 @@ void RCOutputSetChannelWidth(const rcoutput_channel_t channel,
     }
     else
     {
-        idx += 4;
-
         SetChannelWidthGeneric(rcoutput_settings.mode_bank2,
                                idx,
                                value,
-                               rcoutput_config.request_telemetry[idx],
+                               rcoutput_config.request_telemetry[idx + 4],
                                rcoutput_config.bank2_buffer);
     }
 }
