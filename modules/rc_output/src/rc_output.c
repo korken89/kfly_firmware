@@ -38,15 +38,15 @@
 #define MULTISHOT_BIAS        420
 #define MULTISHOT_GAIN        1680
 
-#define DSHOT1200_FREQUENCY   42000000
+#define DSHOT1200_FREQUENCY   84000000
 #define DSHOT600_FREQUENCY    (DSHOT1200_FREQUENCY / 2)
 #define DSHOT300_FREQUENCY    (DSHOT1200_FREQUENCY / 4)
 #define DSHOT150_FREQUENCY    (DSHOT1200_FREQUENCY / 8)
-#define DSHOT_PERIOD          35
+#define DSHOT_PERIOD          70
 #define DSHOT_BIAS            48
 #define DSHOT_GAIN            1999
-#define DSHOT_BIT_0           12  // 35 %
-#define DSHOT_BIT_1           25  // 75 %
+#define DSHOT_BIT_0           26
+#define DSHOT_BIT_1           53
 
 /*===========================================================================*/
 /* Module exported variables.                                                */
