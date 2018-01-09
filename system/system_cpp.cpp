@@ -14,7 +14,7 @@ void you_tried_to_use_delete(void);
 /**
  * @brief   Redefinition of new to stop the usage of it.
  */
-void *operator new(std::size_t size) throw(std::bad_alloc)
+void *operator new(std::size_t size)
 {
     (void) size;
     you_tried_to_use_new();
@@ -24,7 +24,7 @@ void *operator new(std::size_t size) throw(std::bad_alloc)
 /**
  * @brief   Redefinition of new to stop the usage of it.
  */
-void *operator new(std::size_t size, std::nothrow_t const &) throw()
+void *operator new(std::size_t size, std::nothrow_t const &) noexcept
 {
     (void) size;
     you_tried_to_use_new();
@@ -34,7 +34,7 @@ void *operator new(std::size_t size, std::nothrow_t const &) throw()
 /**
  * @brief   Redefinition of new to stop the usage of it.
  */
-void *operator new [](std::size_t size) throw (std::bad_alloc)
+void *operator new [](std::size_t size)
 {
     (void) size;
     you_tried_to_use_new();
@@ -44,7 +44,7 @@ void *operator new [](std::size_t size) throw (std::bad_alloc)
 /**
  * @brief   Redefinition of new to stop the usage of it.
  */
-void *operator new [] (std::size_t size, std::nothrow_t const &) throw ()
+void *operator new [] (std::size_t size, std::nothrow_t const &) noexcept
 {
     (void) size;
     you_tried_to_use_new();
@@ -54,7 +54,7 @@ void *operator new [] (std::size_t size, std::nothrow_t const &) throw ()
 /**
  * @brief   Redefinition of delete to stop the usage of it.
  */
-void operator delete(void *p) throw(std::bad_alloc)
+void operator delete(void *p)
 {
     (void)p;
     you_tried_to_use_delete();
@@ -63,7 +63,7 @@ void operator delete(void *p) throw(std::bad_alloc)
 /**
  * @brief   Redefinition of delete to stop the usage of it.
  */
-void operator delete(void *p, std::nothrow_t const &) throw()
+void operator delete(void *p, std::nothrow_t const &) noexcept
 {
     (void)p;
     you_tried_to_use_delete();
@@ -72,7 +72,7 @@ void operator delete(void *p, std::nothrow_t const &) throw()
 /**
  * @brief   Redefinition of delete to stop the usage of it.
  */
-void operator delete(void *p, std::size_t size) throw(std::bad_alloc)
+void operator delete(void *p, std::size_t size)
 {
     (void)p;
     (void)size;
@@ -82,7 +82,7 @@ void operator delete(void *p, std::size_t size) throw(std::bad_alloc)
 /**
  * @brief   Redefinition of delete to stop the usage of it.
  */
-void operator delete(void *p, std::size_t size, std::nothrow_t const &) throw()
+void operator delete(void *p, std::size_t size, std::nothrow_t const &) noexcept
 {
     (void)p;
     (void)size;
