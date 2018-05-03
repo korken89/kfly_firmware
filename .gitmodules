@@ -1,8 +1,0 @@
-[submodule "drivers"]
-	path = drivers
-    url = https://github.com/korken89/ChibiOS-Custom-Drivers.git
-	branch = master
-[submodule "ChibiOS"]
-	path = ChibiOS
-	url = https://github.com/ChibiOS/ChibiOS.git
-	branch = stable_16.1.x
