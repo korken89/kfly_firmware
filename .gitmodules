@@ -6,3 +6,7 @@
 	path = deps/esl
 	url = git@github.com:korken89/esl.git
 	branch = master
+[submodule "deps/CMSIS_5"]
+	path = deps/CMSIS_5
+	url = https://github.com/ARM-software/CMSIS_5.git
+	branch = master
