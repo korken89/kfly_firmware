@@ -1,19 +1,18 @@
-#include <crect/crect.hpp>
+//#include <crect/crect.hpp>
 
 int main()
 {
 
   /* Initialization code */
-  crect::initialize();
+  // crect::initialize();
 
   /*
    * Convoluted way to blink a LED
    */
-  crect::pend<J1>();
-
+  // crect::pend<J1>();
 
   while(1)
   {
-    __WFI();
+    //__WFI();
   }
 }
