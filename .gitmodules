@@ -1,0 +1,8 @@
+[submodule "deps/crect"]
+	path = deps/crect
+	url = git@github.com:korken89/crect.git
+	branch = master
+[submodule "deps/esl"]
+	path = deps/esl
+	url = git@github.com:korken89/esl.git
+	branch = master
