@@ -221,7 +221,7 @@ extern "C" void Reset_Handler()
   // the link file.
   bss_init();
 
-  // Enable FPU ( Set bits 20-23 to enable CP10 and CP11 coprocessors)
+  // Enable FPU (Enable CP10 and CP11 coprocessors)
   SCB->CPACR |= ((3UL << 10 * 2) | (3UL << 11 * 2));
 
   // ////////////////////////////////////////////////////////////////////
@@ -250,10 +250,12 @@ extern "C" void Reset_Handler()
   SCB->VTOR = FLASH_BASE;
 
   __ISB();
+  __DSB();
 
   // Run ctors
   constructor_init();
 
+  __ISB();
   __DSB();
 
   // Setup clocks
