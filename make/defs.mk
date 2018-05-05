@@ -7,6 +7,7 @@ endif
 
 # Build tools
 GCC     = arm-none-eabi-gcc
+GPP     = arm-none-eabi-g++
 SIZE    = arm-none-eabi-size
 OBJDUMP = arm-none-eabi-objdump
 OBJCOPY = arm-none-eabi-objcopy
@@ -14,18 +15,19 @@ GDB     = arm-none-eabi-gdb
 NM      = arm-none-eabi-nm
 
 # Flags
-MCU     = -mcpu=cortex-m4 -mthumb -g -mfpu=fpv4-sp-d16 -mfloat-abi=hard 
+MCU     = -mcpu=cortex-m7 -mthumb -mfpu=fpv5-dp-d16 -mfloat-abi=hard
 CFLAGS  = $(MCU) $(COMMON) -std=gnu99 -fno-builtin-exit -O$(OPTIMIZATION) $(INCLUDE) -ffast-math -fsingle-precision-constant
-AFLAGS  = $(MCU) $(COMMON) $(INCLUDE) 
+AFLAGS  = $(MCU) $(COMMON) $(INCLUDE)
 LDFLAGS = $(MCU) $(COMMON) -Tstm32f4x_flash.ld -Wl,--build-id=none,-Map=$(ELFDIR)/$(TARGET).map
-BINPLACE = -j.isr_vector -j.sw_version -j.text -j.ARM.extab -j.ARM 
+BINPLACE = -j.isr_vector -j.sw_version -j.text -j.ARM.extab -j.ARM
 BINPLACE += -j.preinit_array -j.init_array -j.fini_array -j.data
- 
+
 MSG_BINARY_HEX       = ${quote} BIN/HEX  ${quote}
 MSG_DUMP             = ${quote} DUMP     ${quote}
 MSG_SIZE             = ${quote} SIZE     ${quote}
 MSG_LINKING          = ${quote} LD       ${quote}
 MSG_COMPILING        = ${quote} CC       ${quote}
+MSG_COMPILING_CPP    = ${quote} CPP      ${quote}
 MSG_ASSEMBLING       = ${quote} AS       ${quote}
 MSG_CLEANING         = ${quote} CLEAN    ${quote}
 MSG_EXTENDED_LISTING = ${quote} LIS      ${quote}
@@ -40,7 +42,7 @@ toprel = $(subst $(realpath $(TOP))/,,$(abspath $(1)))
 %.bin: %.elf
 	@echo $(MSG_BINARY_HEX) $@
 	$(V0) $(OBJCOPY) $(BINPLACE) -O binary $< $@
-	
+
 %.lss: %.elf
 	@echo $(MSG_EXTENDED_LISTING) $@
 	$(V0) $(OBJDUMP) -h -S -C -r $< > $@
@@ -61,6 +63,13 @@ define COMPILE_C_TEMPLATE
 $(OBJDIR)/$(notdir $(basename $(1))).o : $(1)
 	@echo $(MSG_COMPILING) $$<
 	$(V0) $(GCC) $$(CFLAGS) -c $$< -o $$@
+endef
+
+# Compile: Create object files from C++ source files.
+define COMPILE_CPP_TEMPLATE
+$(OBJDIR)/$(notdir $(basename $(1))).o : $(1)
+	@echo $(MSG_COMPILING_CPP) $$<
+	$(V0) $(GPP) $$(CFLAGS) -c $$< -o $$@
 endef
 
 # Link: create ELF output file from object files.
