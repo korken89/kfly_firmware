@@ -128,6 +128,7 @@ dirs:
 	$(V0) mkdir -p $(OBJDIR)
 	$(V0) mkdir -p $(DEPDIR)
 	$(V0) mkdir -p $(ELFDIR)
+	$(V0) mkdir -p $(BUILDDIR)
 
 elf: dirs $(ELFDIR)/$(TARGET).elf
 lss: dirs $(ELFDIR)/$(TARGET).lss
