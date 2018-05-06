@@ -26,6 +26,7 @@ INCLUDE  = -I./deps/esl/src/
 INCLUDE += -I./deps/crect/deps/mpl/src
 INCLUDE += -I./deps/crect/src
 INCLUDE += -I./system
+INCLUDE += -I./
 
 # CRECT sources
 CPPSRCS  = ./deps/crect/src/crect/async.cpp
