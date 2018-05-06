@@ -1,9 +1,4 @@
-result = ${shell echo "test"}
-ifeq (${result}, test)
-	quote = "
-else
-	quote =
-endif
+EMPTY =
 
 # Build tools
 GCC     = arm-none-eabi-gcc
@@ -16,24 +11,22 @@ NM      = arm-none-eabi-nm
 
 # Flags
 MCU     = -mcpu=cortex-m7 -mthumb -mfpu=fpv5-dp-d16 -mfloat-abi=hard
-CFLAGS  = $(MCU) $(COMMON) -std=gnu99 -fno-builtin-exit -O$(OPTIMIZATION) $(INCLUDE) -ffast-math -fsingle-precision-constant
+CFLAGS  = $(MCU) $(COMMON) -std=gnu99 -fno-builtin-exit $(OPTIMIZATION) $(INCLUDE) -ffast-math -fsingle-precision-constant
 AFLAGS  = $(MCU) $(COMMON) $(INCLUDE)
 LDFLAGS = $(MCU) $(COMMON) -Tstm32f4x_flash.ld -Wl,--build-id=none,-Map=$(ELFDIR)/$(TARGET).map
 BINPLACE = -j.isr_vector -j.sw_version -j.text -j.ARM.extab -j.ARM
 BINPLACE += -j.preinit_array -j.init_array -j.fini_array -j.data
 
-MSG_BINARY_HEX       = ${quote} BIN/HEX  ${quote}
-MSG_DUMP             = ${quote} DUMP     ${quote}
-MSG_SIZE             = ${quote} SIZE     ${quote}
-MSG_LINKING          = ${quote} LD       ${quote}
-MSG_COMPILING        = ${quote} CC       ${quote}
-MSG_COMPILING_CPP    = ${quote} CPP      ${quote}
-MSG_ASSEMBLING       = ${quote} AS       ${quote}
-MSG_CLEANING         = ${quote} CLEAN    ${quote}
-MSG_EXTENDED_LISTING = ${quote} LIS      ${quote}
-MSG_SYMBOL_TABLE     = ${quote} NM       ${quote}
-
-toprel = $(subst $(realpath $(TOP))/,,$(abspath $(1)))
+MSG_BINARY_HEX       = ${EMPTY} BIN/HEX  ${EMPTY}
+MSG_DUMP             = ${EMPTY} DUMP     ${EMPTY}
+MSG_SIZE             = ${EMPTY} SIZE     ${EMPTY}
+MSG_LINKING          = ${EMPTY} LD       ${EMPTY}
+MSG_COMPILING        = ${EMPTY} CC       ${EMPTY}
+MSG_COMPILING_CPP    = ${EMPTY} CPP      ${EMPTY}
+MSG_ASSEMBLING       = ${EMPTY} AS       ${EMPTY}
+MSG_CLEANING         = ${EMPTY} CLEAN    ${EMPTY}
+MSG_EXTENDED_LISTING = ${EMPTY} LIS      ${EMPTY}
+MSG_SYMBOL_TABLE     = ${EMPTY} NM       ${EMPTY}
 
 %.hex: %.elf
 	@echo $(MSG_BINARY_HEX) $@
