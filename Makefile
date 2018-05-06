@@ -11,33 +11,28 @@ V0 = @
 
 # Where the build will be located and create the folder
 OBJDIR = ./build/obj
+DEPSDIR = ./build/deps
 ELFDIR = ./build
 
 # Optimization
 OPTIMIZATION = -O1 -g
 
-# Create include paths and find sources in all the modules
-MODULES = $(wildcard ./Modules/*)
-$(foreach dir, $(MODULES), $(eval MODULES_INC += -I$(dir)/include))
-$(foreach dir, $(MODULES), $(eval MODULES_CSRCS += $(wildcard $(dir)/source/*.c)))
-$(foreach dir, $(MODULES), $(eval MODULES_ASRCS += $(wildcard $(dir)/source/*.s)))
+# Includes
+INCLUDE  = -I./deps/esl/src/
+INCLUDE += -I./deps/crect/deps/mpl/src
+INCLUDE += -I./deps/crect/src
+INCLUDE += -I./deps/CMSIS_5/CMSIS/Core/Include
+INCLUDE += -I./system
+
+
 
 # Sources
-INCLUDE = $(MODULES_INC)
-INCLUDE += -I./CMSIS -I./Libraries/STM32F4xx_StdPeriph_Driver/inc
-CSRCS = $(wildcard ./CMSIS/*.c) $(MODULES_CSRCS)
+CSRCS   =
+CPPSRCS = ./system/init.cpp
+ASRCS   =
 
-# FreeRTOS includes and source files
-RTOS_DIR = ./FreeRTOS/
-RTOS_PORT = $(RTOS_DIR)portable/GCC/ARM_CM4F/
-RTOS_MEM = $(RTOS_DIR)portable/MemMang/
-INCLUDE += -I$(RTOS_PORT) -I$(RTOS_DIR)include/
-CSRCS += $(RTOS_DIR)list.c $(RTOS_DIR)tasks.c $(RTOS_DIR)queue.c $(RTOS_PORT)port.c $(RTOS_MEM)heap_1.c
-
-COMMON += -DDATE="\"$(DATE)\"" -DGIT_HASH="\"$(GIT_HASH_SUBSTR)\""  -DGIT_VERSION="\"$(GIT_VERSION)\"" -fno-builtin-_exit
-
-ASRCS   = $(wildcard ./CMSIS/*.s) $(MODULES_ASRCS)
-ALLSRC = $(ASRCS) $(CSRCS)
+# Generate object files
+ALLSRC  = $(ASRCS) $(CSRCS) $(CPPSRCS)
 ALLSRCBASE = $(notdir $(basename $(ALLSRC)))
 ALLOBJECTS = $(addprefix $(OBJDIR)/, $(addsuffix .o, $(ALLSRCBASE)))
 

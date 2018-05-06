@@ -13,7 +13,7 @@ NM      = arm-none-eabi-nm
 MCU     = -mcpu=cortex-m7 -mthumb -mfpu=fpv5-dp-d16 -mfloat-abi=hard
 CFLAGS  = $(MCU) $(COMMON) -std=gnu99 -fno-builtin-exit $(OPTIMIZATION) $(INCLUDE) -ffast-math -fsingle-precision-constant
 AFLAGS  = $(MCU) $(COMMON) $(INCLUDE)
-LDFLAGS = $(MCU) $(COMMON) -Tstm32f4x_flash.ld -Wl,--build-id=none,-Map=$(ELFDIR)/$(TARGET).map
+LDFLAGS = $(MCU) $(COMMON) -T./system/stm32f765.ld -Wl,--build-id=none,-Map=$(ELFDIR)/$(TARGET).map
 BINPLACE = -j.isr_vector -j.sw_version -j.text -j.ARM.extab -j.ARM
 BINPLACE += -j.preinit_array -j.init_array -j.fini_array -j.data
 
