@@ -11,7 +11,7 @@ NM      = arm-none-eabi-nm
 
 # Flags
 MCU     = -mcpu=cortex-m7 -mthumb -mfpu=fpv5-dp-d16 -mfloat-abi=hard
-CFLAGS  = $(MCU) $(COMMON) -std=gnu99 -fno-builtin-exit $(OPTIMIZATION) $(INCLUDE) -ffast-math -fsingle-precision-constant
+CFLAGS  = $(MCU) $(COMMON) -std=gnu99 $(OPTIMIZATION) $(INCLUDE) -ffast-math -fsingle-precision-constant
 AFLAGS  = $(MCU) $(COMMON) $(INCLUDE)
 LDFLAGS = $(MCU) $(COMMON) -T./system/stm32f765.ld -Wl,--build-id=none,-Map=$(ELFDIR)/$(TARGET).map
 BINPLACE = -j.isr_vector -j.sw_version -j.text -j.ARM.extab -j.ARM
