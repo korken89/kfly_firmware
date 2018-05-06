@@ -16,7 +16,10 @@ OBJDIR = $(BUILDDIR)/obj
 DEPDIR = $(BUILDDIR)/deps
 
 # Optimization
-OPTIMIZATION = -O1 -g
+OPTIMIZATION = -O1 -ggdb
+
+# Warnings
+WARNINGS = -Wall -Wextra -Wfatal-errors
 
 # Includes
 INCLUDE  = -I./deps/esl/src/
@@ -38,3 +41,7 @@ include make/defs.mk
 # Include the dependency files
 #
 -include $(wildcard $(DEPDIR)/*)
+
+####
+#### NOTHING AFTER THE DEP INCLUDE!!!
+#### EOF

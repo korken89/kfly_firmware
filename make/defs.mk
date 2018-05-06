@@ -8,14 +8,24 @@ GDB     = arm-none-eabi-gdb
 NM      = arm-none-eabi-nm
 
 # Flags
-MCU       = -ffast-math -fsingle-precision-constant -mcpu=cortex-m7 -mthumb -mfpu=fpv5-d16 -mfloat-abi=hard
+COMMON  = -mcpu=cortex-m7 -mthumb -mfpu=fpv5-d16 -mfloat-abi=hard
+COMMON += -ffast-math -fsingle-precision-constant
+COMMON += -fno-rtti -fno-non-call-exceptions -fno-exceptions
+COMMON += -ffreestanding -fomit-frame-pointer -falign-functions=16 -fno-common
+COMMON += -mno-thumb-interwork -fno-threadsafe-statics -nostartfiles
+COMMON += -fsigned-char -fno-move-loop-invariants -ffunction-sections
+COMMON += -fdata-sections -Xlinker --gc-sections
 
-CFLAGS  = $(MCU) $(OPTIMIZATION) $(INCLUDE)
+CFLAGS  = $(COMMON) $(OPTIMIZATION) $(INCLUDE) $(WARNINGS)
 CFLAGS += -std=c99
-CPPFLAGS  = $(MCU) $(OPTIMIZATION) $(INCLUDE)
+
+CPPFLAGS  = $(COMMON) $(OPTIMIZATION) $(INCLUDE) $(WARNINGS)
 CPPFLAGS += -std=c++17
-AFLAGS    = $(MCU) $(INCLUDE)
-LDFLAGS   = $(MCU) -T./system/stm32f765.ld -Wl,--build-id=none,-Map=$(ELFDIR)/$(TARGET).map
+
+AFLAGS    = $(COMMON) $(INCLUDE) $(WARNINGS)
+
+LDFLAGS   = $(COMMON) -T./system/stm32f765.ld -Wl,--build-id=none,-Map=$(ELFDIR)/$(TARGET).map
+LDFLAGS   = --specs=nano.specs
 
 # Binary generation sections
 BINPLACE = -j.isr_vector -j.sw_version -j.text -j.ARM.extab -j.ARM
