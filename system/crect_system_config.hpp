@@ -15,18 +15,17 @@
  * - __F_CPU              Clock speed of the MCU (needed for time conversions)
  * - __CRECT_ASYNC_QUEUE_SIZE  The async queue size.
  */
-#include "stm32f7.h"
+#include "stm32f7xx.h"
 
 /**
  * @brief Stack definition.
  */
 extern uint32_t __stack;
 
-
-#define __STACK_END               &__stack
-#define __MCU_NUM_VECTORS         (MDIOS_IRQn + 1)
-#define __F_CPU                   216000000
-#define __CRECT_ASYNC_QUEUE_SIZE  10
+#define __STACK_END &__stack
+#define __MCU_NUM_VECTORS (MDIOS_IRQn + 1)
+#define __F_CPU 216000000
+#define __CRECT_ASYNC_QUEUE_SIZE 20
 
 /****************************************************************************
  * End MCU definitions.

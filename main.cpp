@@ -1,10 +1,10 @@
-//#include <crect/crect.hpp>
+#include <crect/crect.hpp>
 
 int main()
 {
 
   /* Initialization code */
-  // crect::initialize();
+  crect::initialize();
 
   /*
    * Convoluted way to blink a LED

@@ -129,6 +129,7 @@ hex: dirs $(ELFDIR)/$(TARGET).hex
 bin: dirs $(ELFDIR)/$(TARGET).bin
 
 size: $(ELFDIR)/$(TARGET).elf
+	@sleep 0.1
 	@echo $(MSG_SIZE) $(TARGET).elf
 	$(V0) $(SIZE) -A $(ELFDIR)/$(TARGET).elf
 

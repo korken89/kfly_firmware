@@ -46,7 +46,6 @@ flags = [
     '-I./deps/esl/src/',
     '-I./deps/crect/deps/mpl/src',
     '-I./deps/crect/src',
-    '-I./deps/CMSIS_5/CMSIS/Core/Include',
     '-I./system',
 ]
 

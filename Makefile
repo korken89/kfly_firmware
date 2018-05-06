@@ -7,7 +7,7 @@
 TARGET ?= kfly_dronecode
 
 # Verbose
-V0 =
+V0 = @
 
 # Where the build will be located and create the folder
 BUILDDIR = ./build
@@ -27,10 +27,15 @@ INCLUDE += -I./deps/crect/deps/mpl/src
 INCLUDE += -I./deps/crect/src
 INCLUDE += -I./system
 
+# CRECT sources
+CPPSRCS  = ./deps/crect/src/crect/async.cpp
+CPPSRCS += ./deps/crect/src/crect/clock.cpp
+CPPSRCS += ./deps/crect/src/crect/vector_table.cpp
+
 # Sources
-CSRCS   =
-CPPSRCS = main.cpp system/system_init.cpp
-ASRCS   =
+CSRCS    =
+CPPSRCS += main.cpp system/system_init.cpp
+ASRCS    =
 
 #
 # Include make definitions
