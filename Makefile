@@ -34,7 +34,8 @@ CPPSRCS += ./deps/crect/src/crect/vector_table.cpp
 
 # Sources
 CSRCS    =
-CPPSRCS += main.cpp system/system_init.cpp
+CPPSRCS += system/system_init.cpp system/system_new.cpp
+CPPSRCS += main.cpp
 ASRCS    =
 
 #
