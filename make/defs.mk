@@ -1,3 +1,10 @@
+result = ${shell echo "test"}
+ifeq (${result}, test)
+	quote = "
+else
+	quote =
+endif
+
 # Build tools
 GCC     = arm-none-eabi-gcc
 GXX     = arm-none-eabi-g++
@@ -38,15 +45,15 @@ AFLAGS 	 += -MD -MP -MF $(DEPDIR)/$(@F).d
 
 ################
 
-MSG_BINARY_HEX       = BIN/HEX
-MSG_DUMP             = DUMP
-MSG_SIZE             = SIZE
-MSG_LINKING          = LD
-MSG_COMPILING        = CC
-MSG_ASSEMBLING       = AS
-MSG_CLEANING         = CLEAN
-MSG_EXTENDED_LISTING = LIS
-MSG_SYMBOL_TABLE     = NM
+MSG_BINARY_HEX       = $(quote) BIN/HEX    $(quote)
+MSG_DUMP             = $(quote) DUMP       $(quote)
+MSG_SIZE             = $(quote) SIZE       $(quote)
+MSG_LINKING          = $(quote) LD         $(quote)
+MSG_COMPILING        = $(quote) CC         $(quote)
+MSG_ASSEMBLING       = $(quote) AS         $(quote)
+MSG_CLEANING         = $(quote) CLEAN      $(quote)
+MSG_EXTENDED_LISTING = $(quote) LIS        $(quote)
+MSG_SYMBOL_TABLE     = $(quote) NM         $(quote)
 
 %.hex: %.elf
 	@echo $(MSG_BINARY_HEX) $@
