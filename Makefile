@@ -7,12 +7,13 @@
 TARGET ?= kfly_dronecode
 
 # Verbose
-V0 = @
+V0 =
 
 # Where the build will be located and create the folder
-OBJDIR = ./build/obj
-DEPSDIR = ./build/deps
+BUILDDIR = ./build
 ELFDIR = ./build
+OBJDIR = $(BUILDDIR)/obj
+DEPDIR = $(BUILDDIR)/deps
 
 # Optimization
 OPTIMIZATION = -O1 -g
@@ -21,10 +22,7 @@ OPTIMIZATION = -O1 -g
 INCLUDE  = -I./deps/esl/src/
 INCLUDE += -I./deps/crect/deps/mpl/src
 INCLUDE += -I./deps/crect/src
-INCLUDE += -I./deps/CMSIS_5/CMSIS/Core/Include
 INCLUDE += -I./system
-
-
 
 # Sources
 CSRCS   =
@@ -42,7 +40,7 @@ include make/defs.mk
 
 all: build
 
-build: elf bin hex lss sym size
+build: dirs elf bin hex lss sym size
 
 # Link: Create elf output file from object files.
 $(eval $(call LINK_TEMPLATE, $(ELFDIR)/$(TARGET).elf, $(ALLOBJECTS)))
@@ -55,6 +53,11 @@ $(foreach src, $(CSRCS), $(eval $(call COMPILE_C_TEMPLATE, $(src))))
 
 # Compile: Create object files from C++ source files.
 $(foreach src, $(CPPSRCS), $(eval $(call COMPILE_CPP_TEMPLATE, $(src))))
+
+dirs:
+	$(V0) mkdir -p $(OBJDIR)
+	$(V0) mkdir -p $(DEPDIR)
+	$(V0) mkdir -p $(ELFDIR)
 
 elf: $(ELFDIR)/$(TARGET).elf
 lss: $(ELFDIR)/$(TARGET).lss
@@ -71,15 +74,11 @@ dump: $(ELFDIR)/$(TARGET).elf
 	$(V0) $(OBJDUMP) -D $(ELFDIR)/$(TARGET).elf > $(ELFDIR)/$(TARGET)_dump.txt
 
 
-clean: clean_list
+clean:
+	$(V0) echo $(MSG_CLEANING) $(BUILDDIR)
+	$(V0) rm -rf $(BUILDDIR)
 
-clean_list:
-	$(V0) echo $(MSG_CLEANING)
-	$(V0) $(REMOVE) $(ALLOBJECTS)
-	$(V0) $(REMOVE) $(ELFDIR)/$(TARGET).map
-	$(V0) $(REMOVE) $(ELFDIR)/$(TARGET).elf
-	$(V0) $(REMOVE) $(ELFDIR)/$(TARGET).hex
-	$(V0) $(REMOVE) $(ELFDIR)/$(TARGET).bin
-	$(V0) $(REMOVE) $(ELFDIR)/$(TARGET).sym
-	$(V0) $(REMOVE) $(ELFDIR)/$(TARGET).lss
-
+#
+# Include the dependency files
+#
+-include $(wildcard $(DEPDIR)/*)
