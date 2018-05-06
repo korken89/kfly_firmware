@@ -29,7 +29,7 @@ INCLUDE += -I./system
 
 # Sources
 CSRCS   =
-CPPSRCS = system/system_init.cpp
+CPPSRCS = main.cpp system/system_init.cpp
 ASRCS   =
 
 #

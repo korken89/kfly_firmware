@@ -24,8 +24,8 @@ CPPFLAGS += -std=c++17
 
 AFLAGS    = $(COMMON) $(INCLUDE) $(WARNINGS)
 
-LDFLAGS   = $(COMMON) -T./system/stm32f765.ld -Wl,--build-id=none,-Map=$(ELFDIR)/$(TARGET).map
-LDFLAGS   = --specs=nano.specs
+LDFLAGS   = $(COMMON) -Tsystem/stm32f765.ld -Wl,--build-id=none,-Map=$(ELFDIR)/$(TARGET).map
+LDFLAGS  += --specs=nano.specs -lm -lc
 
 # Binary generation sections
 BINPLACE = -j.isr_vector -j.sw_version -j.text -j.ARM.extab -j.ARM
@@ -93,7 +93,7 @@ define LINK_TEMPLATE
 .PRECIOUS : $(2)
 $(1):  $(2)
 	@echo $(MSG_LINKING) $$@
-	$(V0) $(GXX) $$(CFLAGS) $(2) --output $$@ $$(LDFLAGS) -lm -lc
+	$(V0) $(GXX) $$(CFLAGS) $(2) --output $$@ $$(LDFLAGS)
 endef
 
 all: build
@@ -122,20 +122,20 @@ dirs:
 	$(V0) mkdir -p $(DEPDIR)
 	$(V0) mkdir -p $(ELFDIR)
 
-elf: $(ELFDIR)/$(TARGET).elf
-lss: $(ELFDIR)/$(TARGET).lss
-sym: $(ELFDIR)/$(TARGET).sym
-hex: $(ELFDIR)/$(TARGET).hex
-bin: $(ELFDIR)/$(TARGET).bin
+elf: dirs $(ELFDIR)/$(TARGET).elf
+lss: dirs $(ELFDIR)/$(TARGET).lss
+sym: dirs $(ELFDIR)/$(TARGET).sym
+hex: dirs $(ELFDIR)/$(TARGET).hex
+bin: dirs $(ELFDIR)/$(TARGET).bin
 
 size: $(ELFDIR)/$(TARGET).elf
-	$(V0) echo $(MSG_SIZE) $(TARGET).elf
+	@echo $(MSG_SIZE) $(TARGET).elf
 	$(V0) $(SIZE) -A $(ELFDIR)/$(TARGET).elf
 
 dump: $(ELFDIR)/$(TARGET).elf
-	$(V0) echo $(MSG_DUMP) $(TARGET).elf
+	@echo $(MSG_DUMP) $(TARGET).elf
 	$(V0) $(OBJDUMP) -D $(ELFDIR)/$(TARGET).elf > $(ELFDIR)/$(TARGET)_dump.txt
 
 clean:
-	$(V0) echo $(MSG_CLEANING) $(BUILDDIR)
+	@echo $(MSG_CLEANING) $(BUILDDIR)
 	$(V0) rm -rf $(BUILDDIR)
