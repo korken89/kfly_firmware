@@ -33,9 +33,9 @@ CPPSRCS += ./deps/crect/src/crect/clock.cpp
 CPPSRCS += ./deps/crect/src/crect/vector_table.cpp
 
 # Sources
-CSRCS    =
 CPPSRCS += system/system_init.cpp system/system_new.cpp
 CPPSRCS += main.cpp
+CSRCS    =
 ASRCS    =
 
 #
