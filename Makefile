@@ -26,7 +26,7 @@ INCLUDE += -I./system
 
 # Sources
 CSRCS   =
-CPPSRCS = ./system/init.cpp
+CPPSRCS = ./system/system_init.cpp
 ASRCS   =
 
 # Generate object files
