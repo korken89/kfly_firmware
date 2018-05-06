@@ -209,6 +209,7 @@ extern "C" void Reset_Handler()
 {
   __disable_irq();
 
+  extern uint32_t __stack;
   // Set the stack pointer
   __set_MSP((uint32_t)&__stack);
 
