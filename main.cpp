@@ -2,7 +2,6 @@
 
 int main()
 {
-
   /* Initialization code */
   crect::initialize();
 
@@ -13,6 +12,7 @@ int main()
 
   while(1)
   {
-    //__WFI();
+    asm volatile("nop");
+    // __WFI();
   }
 }
