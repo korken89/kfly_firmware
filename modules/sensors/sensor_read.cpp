@@ -3,15 +3,30 @@
 //    (See accompanying file LICENSE.md or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include "sensors/imu.hpp"
+#include "sensors/sensor_read.hpp"
 
 namespace kfly_firmware
 {
-void imu::init_imu()
+void imu::init_sensor_read()
 {
+  // Setup clocks
+
+  // Setup GPIOs
+
+  // Setup Input Capture Timer
+
+  // Setup SPI bus
+
+  // Setup DMA
 }
 
 void imu::imu_start_read()
 {
+  // Initialize DMA transfer
+}
+
+void imu::barometer_start_read()
+{
+  // Initialize DMA transfer
 }
 }

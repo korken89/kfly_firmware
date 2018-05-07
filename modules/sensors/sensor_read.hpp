@@ -14,9 +14,12 @@ class imu
   // Actual sensor data
 public:
   // Initialization and setup
-  void init_imu();
+  void init_sensor_read();
 
-  // Starts sensor read
+  // Starts IMU sensor read
   void imu_start_read();
+
+  // Starts barobeter sensor read
+  void barometer_start_read();
 };
 }
