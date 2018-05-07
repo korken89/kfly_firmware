@@ -26,6 +26,7 @@ INCLUDE  = -I./deps/esl/src/
 INCLUDE += -I./deps/crect/deps/mpl/src
 INCLUDE += -I./deps/crect/src
 INCLUDE += -I./system
+INCLUDE += -I./modules
 INCLUDE += -I./
 
 # CRECT sources
@@ -33,9 +34,12 @@ CPPSRCS  = ./deps/crect/src/crect/async.cpp
 CPPSRCS += ./deps/crect/src/crect/clock.cpp
 CPPSRCS += ./deps/crect/src/crect/vector_table.cpp
 
+# System sources
+CPPSRCS += ./system/system_init.cpp ./system/system_new.cpp
+CPPSRCS += ./main.cpp
+
 # Sources
-CPPSRCS += system/system_init.cpp system/system_new.cpp
-CPPSRCS += main.cpp
+CPPSRCS += ./modules/sensors/imu.cpp
 CSRCS    =
 ASRCS    =
 

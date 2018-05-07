@@ -46,6 +46,7 @@ flags = [
     '-I./deps/esl/src/',
     '-I./deps/crect/deps/mpl/src',
     '-I./deps/crect/src',
+    '-I./modules',
     '-I./system',
 ]
 
