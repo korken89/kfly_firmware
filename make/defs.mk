@@ -55,39 +55,39 @@ MSG_CLEANING         = $(quote) CLEAN      $(quote)
 MSG_EXTENDED_LISTING = $(quote) LIS        $(quote)
 MSG_SYMBOL_TABLE     = $(quote) NM         $(quote)
 
-%.hex: %.elf
+%.hex: %.elf Makefile make/defs.mk
 	@echo $(MSG_BINARY_HEX) $@
 	$(V0) $(OBJCOPY) -O ihex $< $@
 
-%.bin: %.elf
+%.bin: %.elf Makefile make/defs.mk
 	@echo $(MSG_BINARY_HEX) $@
 	$(V0) $(OBJCOPY) $(BINPLACE) -O binary $< $@
 
-%.lss: %.elf
+%.lss: %.elf Makefile make/defs.mk
 	@echo $(MSG_EXTENDED_LISTING) $@
 	$(V0) $(OBJDUMP) -h -S -C -r $< > $@
 
-%.sym: %.elf
+%.sym: %.elf Makefile make/defs.mk
 	@echo $(MSG_SYMBOL_TABLE) $@
 	$(V0) $(NM) -n $< > $@
 
 # Compile: Create object files from ASM source files.
 define ASSEMBLE_TEMPLATE
-$(OBJDIR)/$(notdir $(basename $(1))).o : $(1)
+$(OBJDIR)/$(notdir $(basename $(1))).o : $(1) Makefile make/defs.mk
 	@echo $(MSG_ASSEMBLING) $$<
 	$(V0) $(GXX) -c $$(AFLAGS) $$< -o $$@
 endef
 
 # Compile: Create object files from C source files.
 define COMPILE_C_TEMPLATE
-$(OBJDIR)/$(notdir $(basename $(1))).o : $(1)
+$(OBJDIR)/$(notdir $(basename $(1))).o : $(1) Makefile make/defs.mk
 	@echo $(MSG_COMPILING) $$<
 	$(V0) $(GXX) $$(CFLAGS) -c $$< -o $$@
 endef
 
 # Compile: Create object files from C++ source files.
 define COMPILE_CPP_TEMPLATE
-$(OBJDIR)/$(notdir $(basename $(1))).o : $(1)
+$(OBJDIR)/$(notdir $(basename $(1))).o : $(1) Makefile make/defs.mk
 	@echo $(MSG_COMPILING) $$<
 	$(V0) $(GXX) $$(CPPFLAGS) -c $$< -o $$@
 endef
@@ -98,7 +98,7 @@ endef
 define LINK_TEMPLATE
 .SECONDARY : $(1)
 .PRECIOUS : $(2)
-$(1):  $(2)
+$(1):  $(2) Makefile make/defs.mk
 	@echo $(MSG_LINKING) $$@
 	$(V0) $(GXX) $$(CFLAGS) $(2) --output $$@ $$(LDFLAGS)
 endef
@@ -136,12 +136,12 @@ sym: dirs $(ELFDIR)/$(TARGET).sym
 hex: dirs $(ELFDIR)/$(TARGET).hex
 bin: dirs $(ELFDIR)/$(TARGET).bin
 
-size: $(ELFDIR)/$(TARGET).elf
+size: $(ELFDIR)/$(TARGET).elf Makefile make/defs.mk
 	@sleep 0.1
 	@echo $(MSG_SIZE) $(TARGET).elf
 	$(V0) $(SIZE) -A $(ELFDIR)/$(TARGET).elf
 
-dump: $(ELFDIR)/$(TARGET).elf
+dump: $(ELFDIR)/$(TARGET).elf Makefile make/defs.mk
 	@echo $(MSG_DUMP) $(TARGET).elf
 	$(V0) $(OBJDUMP) -D $(ELFDIR)/$(TARGET).elf > $(ELFDIR)/$(TARGET)_dump.txt
 
