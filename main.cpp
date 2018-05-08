@@ -12,7 +12,9 @@ int main()
 
   while(1)
   {
-    asm volatile("nop");
+    for (volatile unsigned i = 0; i < 0xFFFFFFFF; i++)
+      ;
+    // asm volatile("nop");
     // __WFI();
   }
 }

@@ -115,11 +115,10 @@ inline void InitClocks()
 
   // Configure main PLL
   RCC->PLLCFGR = RCC_PLLCFGR_PLLSRC_HSE |         // HSE as source
-                 (25 << RCC_PLLCFGR_PLLM_Pos) |   // PLLM
-                 (432 << RCC_PLLCFGR_PLLN_Pos) |  // PLLN
-                 (0 << RCC_PLLCFGR_PLLP_Pos) |    // PLLP div / 2
-                 (9 << RCC_PLLCFGR_PLLQ_Pos);     // PLLQ
-  //             (__PLLR__ << RCC_PLLCFGR_PLLR_Pos));        // PLLR
+                 (25 << RCC_PLLCFGR_PLLM_Pos) |   // PLLM (25 Mhz / 25 = 1 MHz)
+                 (432 << RCC_PLLCFGR_PLLN_Pos) |  // PLLN (1 * 432 = 432 MHz)
+                 (0 << RCC_PLLCFGR_PLLP_Pos) |    // PLLP (432 / 2 = 216 MHz)
+                 (9 << RCC_PLLCFGR_PLLQ_Pos);     // PLLQ (432 / 9 = 48 MHz)
 
   // Enable the main PLL
   RCC->CR |= RCC_CR_PLLON;
@@ -213,7 +212,6 @@ extern "C" void Reset_Handler()
   // Set the stack pointer
   __set_MSP((uint32_t)&__stack);
 
-
   // Copy data from Flash to SRAM, assumes 4 byte alignment of DATA must be
   // correct in the link file.
   data_init();
@@ -261,6 +259,7 @@ extern "C" void Reset_Handler()
 
   // Setup clocks
   InitClocks();
+  InitCachesAndAccelerators();
 
   __enable_irq();
   __ISB();
