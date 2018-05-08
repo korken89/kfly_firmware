@@ -16,7 +16,7 @@ OBJDIR = $(BUILDDIR)/obj
 DEPDIR = $(BUILDDIR)/deps
 
 # Optimization
-OPTIMIZATION = -O1 -ggdb
+OPTIMIZATION = -O1 -ggdb3
 
 # Warnings
 WARNINGS = -Wall -Wextra -Wfatal-errors
@@ -39,7 +39,7 @@ CPPSRCS += ./system/system_init.cpp ./system/system_new.cpp
 CPPSRCS += ./main.cpp
 
 # Sources
-CPPSRCS += ./modules/sensors/imu.cpp
+CPPSRCS += ./modules/sensors/sensor_read.cpp
 CSRCS    =
 ASRCS    =
 
