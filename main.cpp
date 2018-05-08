@@ -2,13 +2,8 @@
 
 int main()
 {
-  /* Initialization code */
+  // Initialization code (enables interrupts)
   crect::initialize();
-
-  /*
-   * Convoluted way to blink a LED
-   */
-  // crect::pend<J1>();
 
   while(1)
   {

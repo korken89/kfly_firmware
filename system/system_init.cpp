@@ -258,7 +258,6 @@ extern "C" void Reset_Handler()
   InitClocks();
   InitCachesAndAccelerators();
 
-  __enable_irq();
   __ISB();
   __DSB();
 
