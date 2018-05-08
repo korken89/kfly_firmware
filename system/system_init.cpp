@@ -208,9 +208,6 @@ extern "C" void Reset_Handler()
 {
   __disable_irq();
 
-  extern uint32_t __stack;
-  // Set the stack pointer
-  __set_MSP((uint32_t)&__stack);
 
   // Copy data from Flash to SRAM, assumes 4 byte alignment of DATA must be
   // correct in the link file.
@@ -265,10 +262,11 @@ extern "C" void Reset_Handler()
   __ISB();
   __DSB();
 
+  // Set the stack pointer as we will never return here
+  extern uint32_t __stack;
+  __set_MSP((uint32_t)&__stack);
+
   int main(void);
 
   main();
-
-  /* Runc ctors */
-  // my_exec_array(&__fini_array_start, &__fini_array_end);
 }
