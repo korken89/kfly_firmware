@@ -143,7 +143,7 @@ size: $(ELFDIR)/$(TARGET).elf Makefile make/defs.mk
 
 dump: $(ELFDIR)/$(TARGET).elf Makefile make/defs.mk
 	@echo $(MSG_DUMP) $(TARGET).elf
-	$(V0) $(OBJDUMP) -D $(ELFDIR)/$(TARGET).elf > $(ELFDIR)/$(TARGET)_dump.txt
+	$(V0) $(OBJDUMP) -D $(ELFDIR)/$(TARGET).elf | sed '/Disassembly of section .debug_info:/Q' > $(ELFDIR)/$(TARGET)_dump.txt
 
 clean:
 	@echo $(MSG_CLEANING) $(BUILDDIR)
