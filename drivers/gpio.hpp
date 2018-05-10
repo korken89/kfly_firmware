@@ -43,10 +43,17 @@ inline void config_pin()
 
   auto io = details::port_to_GPIO< P >();
 
-  io->MODER |= (static_cast< unsigned >(M) << (2 * Pin));
-  io->OTYPER |= (static_cast< unsigned >(OT) << Pin);
-  io->OSPEEDR |= (static_cast< unsigned >(OS) << (2 * Pin));
-  io->PUPDR |= (static_cast< unsigned >(PUD) << (2 * Pin));
+  if constexpr (M != mode::input)
+    io->MODER |= (static_cast< unsigned >(M) << (2 * Pin));
+
+  if constexpr (OT != output_type::push_pull)
+    io->OTYPER |= (static_cast< unsigned >(OT) << Pin);
+
+  if constexpr (OS != output_speed::low)
+    io->OSPEEDR |= (static_cast< unsigned >(OS) << (2 * Pin));
+
+  if constexpr (PUD != pull_up_down::none)
+    io->PUPDR |= (static_cast< unsigned >(PUD) << (2 * Pin));
 
   if constexpr (M == mode::alternate_function)
   {
