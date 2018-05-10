@@ -20,8 +20,19 @@ enum class port
   h = 7,
   i = 8,
   j = 9,
-  k = 10
+  k = 10,
+  END_OF_PORTS
 };
+
+/// \brief Converts a number to a gpio::port.
+template < unsigned Port >
+constexpr port to_port()
+{
+  static_assert(Port < static_cast< unsigned >(port::END_OF_PORTS),
+                "Port number is too big, there are not this many ports.");
+
+  return static_cast< port >(Port);
+}
 
 /// \brief Possible pin states.
 enum class state

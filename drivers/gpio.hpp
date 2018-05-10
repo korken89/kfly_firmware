@@ -42,17 +42,17 @@ inline void config_pin()
 
   auto io = details::port_to_GPIO< P >();
 
-  io->MODER = (static_cast< unsigned >(M) << (2 * Pin));
-  io->OTYPER = (static_cast< unsigned >(OT) << Pin);
-  io->OSPEEDR = (static_cast< unsigned >(OS) << (2 * Pin));
-  io->PUPDR = (static_cast< unsigned >(PUD) << (2 * Pin));
+  io->MODER |= (static_cast< unsigned >(M) << (2 * Pin));
+  io->OTYPER |= (static_cast< unsigned >(OT) << Pin);
+  io->OSPEEDR |= (static_cast< unsigned >(OS) << (2 * Pin));
+  io->PUPDR |= (static_cast< unsigned >(PUD) << (2 * Pin));
 
   if constexpr (M == mode::alternate_function)
   {
     if constexpr (Pin < 8)
-      io->AFR[0] = (static_cast< unsigned >(AF) << (4 * Pin));
+      io->AFR[0] |= (static_cast< unsigned >(AF) << (4 * Pin));
     else
-      io->AFR[1] = (static_cast< unsigned >(AF) << (4 * (Pin - 8)));
+      io->AFR[1] |= (static_cast< unsigned >(AF) << (4 * (Pin - 8)));
   }
 }
 
