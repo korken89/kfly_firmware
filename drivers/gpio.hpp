@@ -3,8 +3,9 @@
 //    (See accompanying file LICENSE.md or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include "drivers/gpio_defs.hpp"
 #include "stm32f7xx.h"
+#include "drivers/gpio_defs.hpp"
+#include "helpers/port_pin_literal.hpp"
 
 #pragma once
 
