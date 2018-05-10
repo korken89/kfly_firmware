@@ -46,13 +46,13 @@ flags = [
     '-I./deps/crect/deps/mpl/src',
     '-I./deps/crect/src',
     '-I./deps/esl/src/',
+    '-I./drivers',
     '-I./modules',
     '-I./system',
     '-Wall',
     '-Wextra',
     '-Wfatal-errors',
     '-std=c++17',
-    '-std=c99',
 ]
 
 
