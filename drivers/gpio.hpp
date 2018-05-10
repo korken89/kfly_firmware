@@ -12,17 +12,28 @@ namespace gpio
 {
 namespace details
 {
-static constexpr uint32_t ports[] = {
-    GPIOA_BASE, GPIOB_BASE, GPIOC_BASE, GPIOD_BASE, GPIOE_BASE, GPIOF_BASE,
-    GPIOG_BASE, GPIOH_BASE, GPIOI_BASE, GPIOJ_BASE, GPIOK_BASE};
-
+/// \brief Converts a gpio::port enum into a pointer to the correct GPIO.
+/// \tparam P   The port enum.
+/// \return     Pointer to GPIO port.
 template < port P >
 inline GPIO_TypeDef* port_to_GPIO()
 {
+  static constexpr uint32_t ports[] = {
+      GPIOA_BASE, GPIOB_BASE, GPIOC_BASE, GPIOD_BASE, GPIOE_BASE, GPIOF_BASE,
+      GPIOG_BASE, GPIOH_BASE, GPIOI_BASE, GPIOJ_BASE, GPIOK_BASE};
+
   return reinterpret_cast< GPIO_TypeDef* >(ports[static_cast< int >(P)]);
 }
-}
+}  // END namespace details
 
+/// \brief Configures a GPIO pin.
+/// \tparam P     The port in which the pin to configure is located.
+/// \tparam Pin   The pin to configure.
+/// \tparam M     Pin mode setting.
+/// \tparam OT    Output type setting.
+/// \tparam OS    Output speed setting.
+/// \tparam PUD   Pull up/down setting.
+/// \tparam AF    Alternate function setting, is only used if mode is set to AF.
 template < port P, unsigned Pin, mode M, output_type OT, output_speed OS,
            pull_up_down PUD, alternate_function AF = alternate_function::af0 >
 inline void config_pin()
@@ -45,8 +56,12 @@ inline void config_pin()
   }
 }
 
+/// \brief Sets a GPIO pin high or low.
+/// \tparam P     The port in which the pin to control is located.
+/// \tparam Pin   The pin to control.
+/// \tparam S     Pin state value (high/low).
 template < port P, unsigned Pin, state S >
-inline void set()
+inline void write()
 {
   static_assert(Pin < 16, "Invalid pin number.");
 
@@ -56,6 +71,9 @@ inline void set()
     details::port_to_GPIO< P >()->BSRR = (1 << (Pin + 16));
 }
 
+/// \brief Toggles a GPIO pin.
+/// \tparam P     The port in which the pin to control is located.
+/// \tparam Pin   The pin to control.
 template < port P, unsigned Pin >
 inline void toggle()
 {
@@ -64,8 +82,12 @@ inline void toggle()
   details::port_to_GPIO< P >()->ODR ^= (1 << Pin);
 }
 
+/// \brief Reads a GPIO pin.
+/// \tparam P     The port in which the pin to read is located.
+/// \tparam Pin   The pin to read.
+/// \return       The state of the pin.
 template < port P, unsigned Pin >
-inline state get()
+inline state read()
 {
   static_assert(Pin < 16, "Invalid pin number.");
 
@@ -74,4 +96,4 @@ inline state get()
   else
     return state::low;
 }
-}
+}  // END namespace gpio

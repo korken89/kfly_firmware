@@ -7,6 +7,7 @@
 
 namespace gpio
 {
+/// \brief Available ports definition.
 enum class port
 {
   a = 0,
@@ -22,12 +23,14 @@ enum class port
   k = 10
 };
 
+/// \brief Possible pin states.
 enum class state
 {
   low = 0,
   high = 1
 };
 
+/// \brief Possible pin modes.
 enum class mode
 {
   input = 0,
@@ -36,12 +39,14 @@ enum class mode
   analog = 3
 };
 
+/// \brief Possible pin output types.
 enum class output_type
 {
   push_pull = 0,
   open_drain = 1
 };
 
+/// \brief Possible pin output speeds.
 enum class output_speed
 {
   low = 0,
@@ -50,6 +55,7 @@ enum class output_speed
   extreme = 3
 };
 
+/// \brief Possible pin pull up/down settings.
 enum class pull_up_down
 {
   none = 0,
@@ -57,6 +63,7 @@ enum class pull_up_down
   down = 2
 };
 
+/// \brief Possible pin alternate functions.
 enum class alternate_function
 {
   af0 = 0,
