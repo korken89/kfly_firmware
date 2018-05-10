@@ -22,12 +22,18 @@ enum class port
   k = 10
 };
 
+enum class state
+{
+  low = 0,
+  high = 1
+};
+
 enum class mode
 {
   input = 0,
   output = 1,
   alternate_function = 2,
-  analog = 4
+  analog = 3
 };
 
 enum class output_type
