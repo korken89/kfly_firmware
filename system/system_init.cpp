@@ -197,17 +197,39 @@ inline void InitClocks()
   RCC->DCKCFGR2 =
       ((RCC->DCKCFGR2 & ~RCC_DCKCFGR2_I2C1SEL) | RCC_DCKCFGR2_I2C1SEL_0);
 
-  // CLK48 (fed by PLL)
+  // CLK48MUX (fed by PLLQ)
   RCC->DCKCFGR2 = ((RCC->DCKCFGR2 & ~RCC_DCKCFGR2_CK48MSEL) | 0);
 
   // SDMMC1 (fed by CLK48)
   RCC->DCKCFGR2 = ((RCC->DCKCFGR2 & ~RCC_DCKCFGR2_SDMMC1SEL) | 0);
+
+  // ////////////////////////////////////////////////////////////////////
+  // Enable peripherals
+  // ////////////////////////////////////////////////////////////////////
+
+  // AHB1 (GPIOs, DMA1, DMA2)
+  RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN | RCC_AHB1ENR_GPIOBEN |
+                  RCC_AHB1ENR_GPIOCEN | RCC_AHB1ENR_GPIODEN |
+                  RCC_AHB1ENR_GPIOEEN | RCC_AHB1ENR_DMA1EN | RCC_AHB1ENR_DMA2EN;
+
+  // AHB2 (USB, RNG)
+  RCC->AHB2ENR |= RCC_AHB2ENR_OTGFSEN | RCC_AHB2ENR_RNGEN;
+
+  // APB1 (USART2, USART3, UART4, UART7, I2C1, SPI3, TIM3, TIM4, TIM5)
+  RCC->APB1ENR |= RCC_APB1ENR_USART2EN | RCC_APB1ENR_USART3EN |
+                  RCC_APB1ENR_UART4EN | RCC_APB1ENR_UART7EN |
+                  RCC_APB1ENR_I2C1EN | RCC_APB1ENR_SPI3EN | RCC_APB1ENR_TIM3EN |
+                  RCC_APB1ENR_TIM4EN | RCC_APB1ENR_TIM5EN;
+
+  // APB2 (TIM1, TIM9, SPI1, ADC1, USART1, USART6, SDMMC1)
+  RCC->APB2ENR |= RCC_APB2ENR_TIM1EN | RCC_APB2ENR_TIM9EN | RCC_APB2ENR_SPI1EN |
+                  RCC_APB2ENR_ADC1EN | RCC_APB2ENR_USART1EN |
+                  RCC_APB2ENR_USART6EN | RCC_APB2ENR_SDMMC1EN;
 }
 
 extern "C" void Reset_Handler()
 {
   __disable_irq();
-
 
   // Copy data from Flash to SRAM, assumes 4 byte alignment of DATA must be
   // correct in the link file.
