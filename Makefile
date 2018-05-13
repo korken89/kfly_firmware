@@ -36,7 +36,7 @@ CPPSRCS += ./deps/crect/src/crect/vector_table.cpp
 
 # System sources
 CPPSRCS += ./system/system_init.cpp ./system/system_new.cpp
-CPPSRCS += ./main.cpp
+CPPSRCS += ./board/kflydc_v1.cpp ./main.cpp
 
 # Sources
 CPPSRCS += ./modules/sensors/sensor_read.cpp
