@@ -139,7 +139,8 @@ bin: dirs $(ELFDIR)/$(TARGET).bin
 size: $(ELFDIR)/$(TARGET).elf Makefile make/defs.mk
 	@sleep 0.1
 	@echo $(MSG_SIZE) $(TARGET).elf
-	$(V0) $(SIZE) -A $(ELFDIR)/$(TARGET).elf
+	@echo
+	$(V0) $(SIZE) -A -x $(ELFDIR)/$(TARGET).elf | sed '/.debug_*/Q'
 
 dump: $(ELFDIR)/$(TARGET).elf Makefile make/defs.mk
 	@echo $(MSG_DUMP) $(TARGET).elf
