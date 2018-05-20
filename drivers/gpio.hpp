@@ -15,16 +15,16 @@ namespace gpio
 namespace details
 {
 /// \brief Converts a gpio::port enum into a pointer to the correct GPIO.
-/// \tparam P   The port enum.
+/// \tparam Port   The port enum.
 /// \return     Pointer to GPIO port.
-template < port P >
+template < port Port >
 inline GPIO_TypeDef* port_to_GPIO()
 {
   static constexpr uint32_t ports[] = {
       GPIOA_BASE, GPIOB_BASE, GPIOC_BASE, GPIOD_BASE, GPIOE_BASE, GPIOF_BASE,
       GPIOG_BASE, GPIOH_BASE, GPIOI_BASE, GPIOJ_BASE, GPIOK_BASE};
 
-  return reinterpret_cast< GPIO_TypeDef* >(ports[static_cast< int >(P)]);
+  return reinterpret_cast< GPIO_TypeDef* >(ports[static_cast< int >(Port)]);
 }
 
 /// \brief Holdning structure for a GPIO's mask.
@@ -88,12 +88,12 @@ public:
 };
 
 /// \brief Helper function for writing a mask to the hardware.
-/// \tparam P   	The port enum.
+/// \tparam Port  The port enum.
 /// \param mask   The mask to be written to hardware.
-template < port P >
+template < port Port >
 inline void set_bank(const gpio_mask& mask)
 {
-  auto io = details::port_to_GPIO< P >();
+  auto io = details::port_to_GPIO< Port >();
 
   io->MODER = mask.MODER;
   io->OTYPER = mask.OTYPER;
@@ -142,13 +142,7 @@ struct is_pin_config< pin_config< Port, Pin, M, OT, PUD, OS, AF > >
 };
 
 /// \brief Configures a GPIO pin, without altering other pins.
-/// \tparam P     The port in which the pin to configure is located.
-/// \tparam Pin   The pin to configure.
-/// \tparam M     Pin mode setting.
-/// \tparam OT    Output type setting.
-/// \tparam PUD   Pull up/down setting.
-/// \tparam OS    Output speed setting.
-/// \tparam AF    Alternate function setting, is only used if mode is set to AF.
+/// \tparam Config     Configuration holder.
 template < typename Config >
 inline void config_pin()
 {
@@ -223,41 +217,41 @@ void config_all_banks()
 }
 
 /// \brief Sets a GPIO pin high or low.
-/// \tparam P     The port in which the pin to control is located.
-/// \tparam Pin   The pin to control.
-/// \tparam S     Pin state value (high/low).
-template < port P, unsigned Pin, state S >
+/// \tparam Port  	The port in which the pin to control is located.
+/// \tparam Pin   	The pin to control.
+/// \tparam State 	Pin state value (high/low).
+template < port Port, unsigned Pin, state State >
 inline void write()
 {
   static_assert(Pin < 16, "Invalid pin number.");
 
-  if constexpr (S == state::high)
-    details::port_to_GPIO< P >()->BSRR = (1 << Pin);
+  if constexpr (State == state::high)
+    details::port_to_GPIO< Port >()->BSRR = (1 << Pin);
   else
-    details::port_to_GPIO< P >()->BSRR = (1 << (Pin + 16));
+    details::port_to_GPIO< Port >()->BSRR = (1 << (Pin + 16));
 }
 
 /// \brief Toggles a GPIO pin.
-/// \tparam P     The port in which the pin to control is located.
+/// \tparam Port  The port in which the pin to control is located.
 /// \tparam Pin   The pin to control.
-template < port P, unsigned Pin >
+template < port Port, unsigned Pin >
 inline void toggle()
 {
   static_assert(Pin < 16, "Invalid pin number.");
 
-  details::port_to_GPIO< P >()->ODR ^= (1 << Pin);
+  details::port_to_GPIO< Port >()->ODR ^= (1 << Pin);
 }
 
 /// \brief Reads a GPIO pin.
-/// \tparam P     The port in which the pin to read is located.
+/// \tparam Port  The port in which the pin to read is located.
 /// \tparam Pin   The pin to read.
 /// \return       The state of the pin.
-template < port P, unsigned Pin >
+template < port Port, unsigned Pin >
 inline state read()
 {
   static_assert(Pin < 16, "Invalid pin number.");
 
-  if (details::port_to_GPIO< P >()->IDR & (1 << Pin))
+  if (details::port_to_GPIO< Port >()->IDR & (1 << Pin))
     return state::high;
   else
     return state::low;
