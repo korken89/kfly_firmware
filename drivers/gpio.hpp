@@ -6,6 +6,7 @@
 #include "stm32f7xx.h"
 #include "drivers/gpio_defs.hpp"
 #include "helpers/port_pin_literal.hpp"
+#include "esl/esl.hpp"
 
 #pragma once
 
@@ -27,16 +28,18 @@ inline GPIO_TypeDef* port_to_GPIO()
 }
 }  // END namespace details
 
-/// \brief Configures a GPIO pin.
+/// \brief Configures a GPIO pin, without altering other pins;
 /// \tparam P     The port in which the pin to configure is located.
 /// \tparam Pin   The pin to configure.
 /// \tparam M     Pin mode setting.
 /// \tparam OT    Output type setting.
-/// \tparam OS    Output speed setting.
 /// \tparam PUD   Pull up/down setting.
+/// \tparam OS    Output speed setting.
 /// \tparam AF    Alternate function setting, is only used if mode is set to AF.
-template < port P, unsigned Pin, mode M, output_type OT, output_speed OS,
-           pull_up_down PUD, alternate_function AF = alternate_function::af0 >
+template < port P, unsigned Pin, mode M, output_type OT,
+           pull_up_down PUD = pull_up_down::down,
+           output_speed OS = output_speed::low,
+           alternate_function AF = alternate_function::af0 >
 inline void config_pin()
 {
   static_assert(Pin < 16, "Invalid pin number.");
@@ -104,4 +107,105 @@ inline state read()
   else
     return state::low;
 }
+
+//
+//
+//
+// Testing area
+//
+//
+//
+template < port P, unsigned Pin, mode M, output_type OT,
+           pull_up_down PUD = pull_up_down::down,
+           output_speed OS = output_speed::low,
+           alternate_function AF = alternate_function::af0 >
+struct gpio_config
+{
+  using port = constant< P >;
+  using pin = constant< Pin >;
+  using mode = constant< M >;
+  using output_type = constant< OT >;
+  using pull_up_down = constant< PUD >;
+  using output_speed = constant< OS >;
+  using alternate_function = constant< AF >;
+};
+
+struct gpio_mask
+{
+  uint32_t MODER = 0;
+  uint32_t OTYPER = 0;
+  uint32_t OSPEEDR = 0;
+  uint32_t PUPDR = 0;
+  uint32_t AFR0 = 0;
+  uint32_t AFR1 = 0;
+};
+
+class gpio_masks
+{
+private:
+  template < alternate_function AF, unsigned Pin >
+  constexpr uint32_t afr0_helper()
+  {
+    if constexpr (Pin < 8)
+      return static_cast< uint32_t >(AF) << (4 * Pin);
+    else
+      return 0;
+  }
+
+  template < alternate_function AF, unsigned Pin >
+  constexpr uint32_t afr1_helper()
+  {
+    if constexpr (Pin < 8)
+      return 0;
+    else
+      return static_cast< uint32_t >(AF) << (4 * (Pin - 8));
+  }
+
+public:
+  gpio_mask masks[static_cast< uint32_t >(port::END_OF_PORTS)];
+
+  template < typename... Configs >
+  constexpr gpio_masks(Configs...)
+  {
+    ((masks[static_cast< uint32_t >(Configs::port)].MODER |=
+      (static_cast< uint32_t >(Configs::M) << (2 * Configs::Pin))),
+     ...);
+    ((masks[static_cast< uint32_t >(Configs::port)].OTYPER |=
+      (static_cast< uint32_t >(Configs::OT) << Configs::Pin)),
+     ...);
+    ((masks[static_cast< uint32_t >(Configs::port)].OSPEEDR |=
+      (static_cast< uint32_t >(Configs::OS) << (2 * Configs::Pin))),
+     ...);
+    ((masks[static_cast< uint32_t >(Configs::port)].PUPDR |=
+      (static_cast< uint32_t >(Configs::PUD) << (2 * Configs::Pin))),
+     ...);
+    ((masks[static_cast< uint32_t >(Configs::port)].AFR0 |=
+      afr0_helper< Configs::AF, Configs::Pin >()),
+     ...);
+    ((masks[static_cast< uint32_t >(Configs::port)].AFR1 |=
+      afr1_helper< Configs::AF, Configs::Pin >()),
+     ...);
+  }
+};
+
+template < typename... Configs >
+inline void config_gpio(Configs... configs)
+{
+  // Generate config masks
+  constexpr gpio_masks masks(configs...);
+
+  // Write configs to registers
+  esl::repeat< static_cast< std::size_t >(port::END_OF_PORTS) >([&](auto idx) {
+    auto io = details::port_to_GPIO< static_cast< port >(idx) >();
+    const auto &mask = masks.masks[idx];
+
+    io->MODER = mask.MODER;
+    io->OTYPER = mask.OTYPER;
+    io->OSPEEDR = mask.OSPEEDR;
+    io->PUPDR = mask.PUPDR;
+    io->AFR[0] = mask.AFR0;
+    io->AFR[1] = mask.AFR1;
+  });
+}
+
 }  // END namespace gpio

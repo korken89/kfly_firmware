@@ -1,5 +1,6 @@
 #include <crect/crect.hpp>
 #include "board/kflydc_v1.hpp"
+#include "drivers/gpio.hpp"
 
 int main()
 {

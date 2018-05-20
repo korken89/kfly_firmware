@@ -1,6 +1,8 @@
 # The code and specifications for KFly Dronecode
 
-This is mostly a rewrite/redesign of the old KFly code into C++17 and utilizing and testing the [CRECT scheduler](https://github.com/korken89/crect) in real-world usage.
+This is mostly a complete rewrite/redesign of the old KFly code into C++17 and utilizing and testing the [CRECT scheduler](https://github.com/korken89/crect) in real-world usage.
+
+Will also be the testing ground for a forward looking COBS ZP/ZRE generator.
 
 ### Hardware Specifications
 
@@ -12,8 +14,9 @@ All PCBs follow the standard 30.5 x 30.5 mm mounting holes, but the external for
 * ST's **LPS22HB** pressure sensor
 * Dronecode compatible
     * Separate analog and digital power supply with 5.3 V input voltage specification (dronecode)
-    * All inputs and outputs are dronecode compatible
+    * Most inputs and outputs are dronecode compatible
 * 8 outputs (50 Hz / 400 Hz / Oneshot125 / Oneshot42 / Multishot / Dshot)
     * Supports ESC telemetry
+    * All outputs on easy to use 3-pin JST-GH
 * MicroSD card holder for "Blackbox" flight logging
 
