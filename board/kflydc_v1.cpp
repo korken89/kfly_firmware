@@ -229,7 +229,7 @@ void board::init_gpios()
 
   // Setup all pins to their correct function
   gpio::config_all_banks<
-      // LEDs
+      // Board LEDs
       gpio::pin_config< gpio::port::b, 12, gpio::mode::output,
                         gpio::output_type::open_drain,
                         gpio::pull_up_down::none >,
@@ -237,6 +237,12 @@ void board::init_gpios()
       gpio::pin_config< gpio::port::b, 13, gpio::mode::output,
                         gpio::output_type::open_drain,
                         gpio::pull_up_down::none >,
+
+      // Safety button LED
+      gpio::pin_config< gpio::port::e, 4, gpio::mode::output,
+                        gpio::output_type::open_drain,
+                        gpio::pull_up_down::none >,
+
       // IMU Heater
       gpio::pin_config< gpio::port::e, 12, gpio::mode::output >,
 
@@ -247,10 +253,11 @@ void board::init_gpios()
       >();
 
   // Default of pins
-  gpio::write< gpio::port::b, 12, gpio::state::high >(); // LED off
-  gpio::write< gpio::port::b, 13, gpio::state::high >(); // LED off
-  gpio::write< gpio::port::e, 12, gpio::state::low >(); // Heater off
-  gpio::write< gpio::port::e, 15, gpio::state::low >(); // Sensor power off
+  gpio::write< gpio::port::b, 12, gpio::state::high >();  // LED off
+  gpio::write< gpio::port::b, 13, gpio::state::high >();  // LED off
+  gpio::write< gpio::port::e, 4, gpio::state::high >();   // Safety LED off
+  gpio::write< gpio::port::e, 12, gpio::state::low >();   // Heater off
+  gpio::write< gpio::port::e, 15, gpio::state::low >();   // Sensor power off
 }
 
 void board::init_sensor_communication()
