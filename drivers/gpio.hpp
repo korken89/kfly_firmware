@@ -27,6 +27,7 @@ inline GPIO_TypeDef* port_to_GPIO()
   return reinterpret_cast< GPIO_TypeDef* >(ports[static_cast< int >(P)]);
 }
 
+/// \brief Holdning structure for a GPIO's mask.
 struct gpio_mask
 {
   uint32_t MODER = 0;
@@ -37,6 +38,7 @@ struct gpio_mask
   uint32_t AFR1 = 0;
 };
 
+/// \brief Class for generating GPIO masks from `pin_config`s.
 class gpio_masks
 {
 private:
@@ -85,6 +87,9 @@ public:
   }
 };
 
+/// \brief Helper function for writing a mask to the hardware.
+/// \tparam P   	The port enum.
+/// \param mask   The mask to be written to hardware.
 template < port P >
 inline void set_bank(const gpio_mask& mask)
 {
@@ -122,6 +127,20 @@ struct pin_config
   static constexpr alternate_function Alternate_function = AF;
 };
 
+/// \brief Traits to check for configs.
+template < typename >
+struct is_pin_config : std::false_type
+{
+};
+
+/// \brief Traits to check for configs.
+template < port Port, unsigned Pin, mode M, output_type OT, pull_up_down PUD,
+           output_speed OS, alternate_function AF >
+struct is_pin_config< pin_config< Port, Pin, M, OT, PUD, OS, AF > >
+    : std::true_type
+{
+};
+
 /// \brief Configures a GPIO pin, without altering other pins.
 /// \tparam P     The port in which the pin to configure is located.
 /// \tparam Pin   The pin to configure.
@@ -131,8 +150,9 @@ struct pin_config
 /// \tparam OS    Output speed setting.
 /// \tparam AF    Alternate function setting, is only used if mode is set to AF.
 template < typename Config >
-inline void config_pin(Config)
+inline void config_pin()
 {
+  static_assert(is_pin_config< Config >(), "Is not a config.");
   static_assert(Config::Pin_ < 16, "Invalid pin number.");
 
   auto io = details::port_to_GPIO< Config::Port_ >();
@@ -144,7 +164,8 @@ inline void config_pin(Config)
     io->MODER |= (static_cast< unsigned >(Config::Mode) << (2 * Config::Pin_));
 
   if constexpr (Config::Output_type != output_type::push_pull)
-    io->OTYPER |= (static_cast< unsigned >(Config::Output_type) << Config::Pin_);
+    io->OTYPER |=
+        (static_cast< unsigned >(Config::Output_type) << Config::Pin_);
 
   if constexpr (Config::Output_speed != output_speed::low)
     io->OSPEEDR |=
@@ -166,12 +187,15 @@ inline void config_pin(Config)
 }
 
 /// \brief Configures all GPIO pins, overwriting any existing config.
-/// \tparam Configs   Variadic list of configurations.
+/// \tparam Configs   Variadic list of configurations (pin_configs).
 template < typename... Configs >
-void config_all_banks(Configs... configs)
+void config_all_banks()
 {
+  static_assert((... && is_pin_config< Configs >()),
+                "Config error, at least one input is not a config!");
+
   // Generate config masks
-  constexpr details::gpio_masks generated_masks(configs...);
+  constexpr details::gpio_masks generated_masks(Configs{}...);
 
   // Write configs to registers
   details::set_bank< port::a >(
@@ -238,13 +262,5 @@ inline state read()
   else
     return state::low;
 }
-
-//
-//
-//
-// Testing area
-//
-//
-//
 
 }  // END namespace gpio
