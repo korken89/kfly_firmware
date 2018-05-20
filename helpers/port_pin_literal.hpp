@@ -10,7 +10,6 @@
 
 #pragma once
 
-
 namespace details
 {
 /// \brief Check if str only has numbers in it.
@@ -66,10 +65,10 @@ constexpr unsigned find_dot(const char (&str)[N])
 /// \brief Abstraction for holding port & pin definitions.
 /// \tparam Port  Port number
 /// \tparam Pin   Pin number
-template < unsigned Port, unsigned Pin >
+template < gpio::port Port, unsigned Pin >
 struct pin_location
 {
-  using port = constant< gpio::to_port< Port > >;
+  using port = constant< Port >;
   using pin = constant< Pin >;
 };
 
@@ -81,13 +80,13 @@ constexpr auto operator"" _pin()
   constexpr auto N = sizeof...(Str);
 
   // Get dot position
-  constexpr auto dot_pos = find_dot(str);
+  constexpr auto dot_pos = details::find_dot(str);
 
   // Check format
-  static_assert(is_pin_port(str, dot_pos),
+  static_assert(details::is_pin_port(str, dot_pos),
                 "Pin error! Format <PORT>.<PIN>_pin");
 
   // Make pin_location object
-  return pin_location< to_number(str, 0, dot_pos),
-                       to_number(str, dot_pos + 1, N) >{};
+  return pin_location< gpio::to_port< details::to_number(str, 0, dot_pos) >(),
+                       details::to_number(str, dot_pos + 1, N) >{};
 }
