@@ -61,11 +61,22 @@ private:
   }
 
 public:
-  gpio_mask masks[static_cast< uint32_t >(port::END_OF_PORTS)];
+  gpio_mask masks[static_cast< uint32_t >(port::END_OF_PORTS)]{};
 
   template < typename... Configs >
   constexpr gpio_masks(Configs...)
   {
+    // Defaults
+    masks[static_cast< uint32_t >(port::a)].MODER = 0xA8000000;
+    masks[static_cast< uint32_t >(port::b)].MODER = 0x00000280;
+
+    masks[static_cast< uint32_t >(port::a)].OSPEEDR = 0x0C000000;
+    masks[static_cast< uint32_t >(port::b)].OSPEEDR = 0x000000C0;
+
+    masks[static_cast< uint32_t >(port::a)].PUPDR = 0x64000000;
+    masks[static_cast< uint32_t >(port::b)].PUPDR = 0x00000100;
+
+    // Add settings
     ((masks[static_cast< uint32_t >(Configs::Port_)].MODER |=
       (static_cast< uint32_t >(Configs::Mode) << (2 * Configs::Pin_))),
      ...);

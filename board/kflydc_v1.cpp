@@ -5,14 +5,15 @@
 
 #include "stm32f7xx.h"
 #include "board/kflydc_v1.hpp"
+#include "drivers/gpio.hpp"
 
 namespace kfly_firmware
 {
 void board::init()
 {
   reset_clocks();
-  init_clocks();
   init_accelerators();
+  init_clocks();
   init_peripherals();
 }
 
@@ -217,7 +218,39 @@ void board::init_peripherals()
                   RCC_APB2ENR_ADC1EN | RCC_APB2ENR_USART1EN |
                   RCC_APB2ENR_USART6EN | RCC_APB2ENR_SDMMC1EN;
 
+  // Configure system peripherals
+  init_gpios();
   init_sensor_communication();
+}
+
+void board::init_gpios()
+{
+  using namespace gpio;
+
+  // Setup all pins to their correct function
+  gpio::config_all_banks<
+      // LEDs
+      gpio::pin_config< gpio::port::b, 12, gpio::mode::output,
+                        gpio::output_type::open_drain,
+                        gpio::pull_up_down::none >,
+
+      gpio::pin_config< gpio::port::b, 13, gpio::mode::output,
+                        gpio::output_type::open_drain,
+                        gpio::pull_up_down::none >,
+      // IMU Heater
+      gpio::pin_config< gpio::port::e, 12, gpio::mode::output >,
+
+      // Sensor Voltage rail on/off
+      gpio::pin_config< gpio::port::e, 15, gpio::mode::output >
+
+      // END
+      >();
+
+  // Default of pins
+  gpio::write< gpio::port::b, 12, gpio::state::high >(); // LED off
+  gpio::write< gpio::port::b, 13, gpio::state::high >(); // LED off
+  gpio::write< gpio::port::e, 12, gpio::state::low >(); // Heater off
+  gpio::write< gpio::port::e, 15, gpio::state::low >(); // Sensor power off
 }
 
 void board::init_sensor_communication()

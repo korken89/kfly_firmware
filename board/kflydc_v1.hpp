@@ -14,6 +14,7 @@ private:
   static void init_clocks();
   static void init_accelerators();
   static void init_peripherals();
+  static void init_gpios();
   static void init_sensor_communication();
 
 public:
