@@ -229,25 +229,70 @@ void board::init_gpios()
 
   // Setup all pins to their correct function
   gpio::config_all_banks<
+      //
       // Board LEDs
+      //
       gpio::pin_config< gpio::port::b, 12, gpio::mode::output,
                         gpio::output_type::open_drain,
                         gpio::pull_up_down::none >,
-
       gpio::pin_config< gpio::port::b, 13, gpio::mode::output,
                         gpio::output_type::open_drain,
                         gpio::pull_up_down::none >,
 
-      // Safety button LED
+      //
+      // Safety port
+      //
       gpio::pin_config< gpio::port::e, 4, gpio::mode::output,
                         gpio::output_type::open_drain,
-                        gpio::pull_up_down::none >,
+                        gpio::pull_up_down::none >,  // Safety LED
 
-      // IMU Heater
-      gpio::pin_config< gpio::port::e, 12, gpio::mode::output >,
+      //
+      // Sensors
+      //
+      gpio::pin_config< gpio::port::e, 15,
+                        gpio::mode::output >,  // Sensor voltage rail on/off
+      gpio::pin_config< gpio::port::e, 12,
+                        gpio::mode::output >,  // IMU Heater
 
-      // Sensor Voltage rail on/off
-      gpio::pin_config< gpio::port::e, 15, gpio::mode::output >
+      //
+      // Telemetry 1 port
+      //
+
+      //
+      // Telemetry 2 port
+      //
+
+      //
+      // Debug port
+      //
+
+      //
+      // GPS / I2C port
+      //
+
+      //
+      // Current / Voltage port
+      //
+
+      //
+      // RC in
+      //
+
+      //
+      // RC out
+      //
+
+      //
+      // SDCard
+      //
+
+      //
+      // Flash
+      //
+
+      //
+      // USB
+      //
 
       // END
       >();
