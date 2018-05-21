@@ -6,7 +6,7 @@
 #include <cstdint>
 #include <type_traits>
 #include "helpers/constant.hpp"
-#include "drivers/gpio_defs.hpp"
+#include "drivers/gpio/gpio_defs.hpp"
 
 #pragma once
 

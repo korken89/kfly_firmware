@@ -5,7 +5,7 @@
 
 #include "stm32f7xx.h"
 #include "board/kflydc_v1.hpp"
-#include "drivers/gpio.hpp"
+#include "drivers/gpio/gpio.hpp"
 
 namespace kfly_firmware
 {

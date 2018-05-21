@@ -4,7 +4,7 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include "stm32f7xx.h"
-#include "drivers/gpio_defs.hpp"
+#include "drivers/gpio/gpio_defs.hpp"
 #include "helpers/port_pin_literal.hpp"
 #include "esl/esl.hpp"
 
