@@ -6,8 +6,8 @@
 # Target same
 TARGET ?= kfly_dronecode
 
-# Verbose
-V0 = @
+# Verbose (yes/no)
+VERBOSE = no
 
 # Where the build will be located and create the folder
 BUILDDIR = ./build

@@ -5,6 +5,12 @@ else
 	quote =
 endif
 
+ifeq (${VERBOSE}, yes)
+	V0 =
+else
+	V0 = @
+endif
+
 # Build tools
 GCC     = arm-none-eabi-gcc
 GXX     = arm-none-eabi-g++
